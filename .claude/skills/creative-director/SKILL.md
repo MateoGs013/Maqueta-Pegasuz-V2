@@ -29,6 +29,29 @@ You are the creative director for award-level web experiences. Your job is NOT t
 
 ---
 
+## Precision Mandate — Specificity Beats Vagueness by 10×
+
+The #1 difference between award-level prompts and generic ones is **specificity**. Every design decision must have exact values. Never describe vaguely.
+
+| WRONG (vague) | RIGHT (specific) |
+|---|---|
+| "animate the headline in" | `blur 10px→5px→0px, opacity 0→0.5→1, y 50→-5→0, 100ms stagger/word, 0.35s/word, ease: back.out(1.4)` |
+| "large display typography" | `Instrument Serif italic, clamp(4rem, 2rem + 5vw, 7.5rem), line-height: 0.85, letter-spacing: -0.04em` |
+| "soft glassmorphism" | `backdrop-filter: blur(12px), background: rgba(255,255,255,0.04), border gradient via mask-composite: exclude` |
+| "staggered card entrance" | `scale 0.92→1, opacity 0→1, y 30→0, stagger: 0.06s from center, duration: 0.7s, ease: expo.out` |
+| "dark muted palette" | `#0d1117 canvas, #f0ebe3 ink, #c9a96e signal, warm-atm: #3d2b1f, cool-atm: #1a2332` |
+
+**RULE**: If a value could be any number → it MUST be a specific number. If a technique could be done multiple ways → it MUST specify which.
+
+Every Section Recipe Card's **Motion Detail** must include: FROM values, TO values, duration (s), stagger (s), easing (cubic-bezier or named GSAP ease), mid-state keyframes if the animation has a notable intermediate.
+
+**Typography display specs for award-level feel**:
+- Tight leading: `line-height: 0.85–0.92` for headline display (creates architectural mass)
+- Negative tracking: `letter-spacing: -0.04em` to `-0.06em` at large sizes
+- Mixed: bold display at 7vw + light body at 1.1rem = visual tension that reads as premium
+
+---
+
 ## Phase 0 — Read Existing Skills
 
 Before anything, read these skill files to understand what downstream skills need:
@@ -275,7 +298,7 @@ This is the MOST CRITICAL phase. Each section gets a Creative Recipe Card that b
 - **Layout**: {{FROM LAYOUT LIBRARY — e.g., asymmetric-60-40, bento-grid, full-bleed-hero, horizontal-pin}}
 - **Typography treatment**: {{SPECIFIC — e.g., "Hero text at 8vw, tight leading 0.9, display font, 3-word max per line"}}
 - **Motion technique**: {{CATEGORY — Timeline/Scrub/Reveal/Stagger/Pin/Depth/Morphing/Typography/Cinematic}}
-- **Motion detail**: {{SPECIFIC — e.g., "blur(20px) to blur(0) with opacity 0→1, stagger 0.04s per element, ease: power4.out, duration 1.2s"}}
+- **Motion detail**: {{EXACT VALUES — e.g., "blur 10px→5px→0px, opacity 0→0.5→1, y 50→-5→0, 100ms stagger/word, 0.35s/word, ease: back.out(1.4)" — NO vague descriptions. Must include: FROM, TO, duration, stagger, easing}}
 - **Interaction**: {{SPECIFIC — e.g., "Cards: tilt on hover with translateZ(20px) + shadow deepening. CTA: magnetic with spring physics"}}
 - **Atmospheric element**: {{SPECIFIC — e.g., "Canvas visible behind (section bg: transparent). Grain overlay 2%. Accent glow behind heading."}}
 - **Responsive redesign**: {{SPECIFIC — e.g., "Mobile: single column, hero text at 12vw, image moves below. Tablet: 50/50 split instead of 60/40"}}
@@ -511,6 +534,32 @@ Bento grid of images/elements. On load: elements are stacked in center. They fly
 - Layout: bento-grid
 - Motion: Stagger (spring-based grid pop, 0.04s stagger)
 - Interaction: Elements tilt on hover individually
+
+**H6 — "The Glass Layer"** (Liquid Glass hero)
+Dark atmospheric background (video, canvas, or gradient). Floating glass panels layered in front — text lives above the glass. Badge uses glass-strong variant. Typography is oversized serif italic at tight leading.
+
+Design specs:
+- `glass-light`: `backdrop-filter: blur(4px)`, `background: rgba(255,255,255,0.01)`, `mix-blend-mode: luminosity`, gradient border via `::before` + `mask-composite: exclude`
+- `glass-strong`: `backdrop-filter: blur(50px)`, `background: rgba(255,255,255,0.05)`, inset box-shadow
+- Typography: display font italic, `line-height: 0.85`, `letter-spacing: -0.04em`, fills ~70% viewport width
+- Layout: full-bleed-hero with floating glass elements positioned absolutely
+- Motion: Timeline (panels materialize sequentially with blur-in, 0.2s stagger)
+- Interaction: Glass panels have subtle parallax on mouse move (opposite directions)
+
+**H7 — "The Precision Entrance"** (Motionsites-inspired exact timing)
+Hero where every element has a rigorously timed entrance. The sequence IS the design statement.
+
+Entrance choreography (exact):
+- **T=0ms**: Badge/eyebrow — instant (`opacity 0→1, y 8→0, 0.25s, power2.out`)
+- **T=0ms**: Headline words begin — each word: `blur 10px→5px→0px, opacity 0→0.5→1, y 50→-5→0, 100ms stagger/word, 0.35s/word, back.out(1.4)`
+- **T=800ms**: Subheadline — `opacity 0→1, y 20→0, 0.6s, BRAND_EASING`
+- **T=1100ms**: CTAs stagger — `opacity 0→1, y 16→0, 0.5s, stagger 0.12s`
+- **T=1500ms**: Supporting elements (scroll indicator, decorative)
+
+Typography: `font-size: clamp(4rem, 2rem + 5vw, 7.5rem)`, `line-height: 0.85`, `letter-spacing: -0.04em`
+- Layout: asymmetric or full-bleed (NEVER centered column for this recipe)
+- Motion: Timeline (the precision entrance above)
+- Interaction: Headline and background parallax at different speeds on mouse move
 
 ### CONTENT SECTION RECIPES
 

@@ -901,6 +901,123 @@ function animCinematic(section) {
 
 ---
 
+## Hero Entrance Sequence (MANDATORY Template)
+
+Every hero section follows a rigorously timed entrance. The **structure is fixed** — the values come from `motion-spec.md`.
+
+```js
+// src/composables/useHeroEntrance.js
+import { gsap } from 'gsap'
+
+/**
+ * Precision hero entrance sequence — Motionsites timing formula
+ * All durations/delays in seconds. Replace BRAND_EASING from motion-spec.md.
+ *
+ * @param {Object} refs - { badge, headlineEl, subheadline, ctaGroup, extras[] }
+ */
+export function useHeroEntrance(refs, { brandEasing = 'power2.out' } = {}) {
+  function play() {
+    const { badge, headlineEl, subheadline, ctaGroup, extras = [] } = refs
+    const tl = gsap.timeline()
+
+    // T=0ms — Badge / eyebrow label
+    if (badge) {
+      tl.from(badge, { opacity: 0, y: 8, duration: 0.25, ease: 'power2.out' }, 0)
+    }
+
+    // T=0ms — Headline: word-by-word 3-state blur reveal
+    // Formula: blur 10px→5px→0px, opacity 0→0.5→1, y 50→-5→0
+    // 100ms stagger per word, 0.35s total per word
+    if (headlineEl) {
+      // Wrap words if not already split
+      if (!headlineEl.querySelector('.word')) {
+        headlineEl.innerHTML = headlineEl.textContent
+          .split(' ')
+          .map(w => `<span class="word" style="display:inline-block;will-change:transform,opacity,filter">${w}</span>`)
+          .join(' ')
+      }
+      const words = headlineEl.querySelectorAll('.word')
+      words.forEach((word, i) => {
+        const wDelay = i * 0.1  // 100ms stagger
+        const wordTl = gsap.timeline({ delay: wDelay })
+        wordTl
+          .fromTo(word,
+            { filter: 'blur(10px)', opacity: 0, y: 50 },
+            { filter: 'blur(5px)', opacity: 0.5, y: -5, duration: 0.15, ease: 'power2.out' }
+          )
+          .to(word,
+            { filter: 'blur(0px)', opacity: 1, y: 0, duration: 0.20, ease: 'back.out(1.4)' }
+          )
+        tl.add(wordTl, wDelay)
+      })
+    }
+
+    // T=800ms — Subheadline
+    if (subheadline) {
+      tl.from(subheadline, {
+        opacity: 0, y: 20, duration: 0.6, ease: brandEasing
+      }, 0.8)
+    }
+
+    // T=1100ms — CTA group (stagger 0.12s between buttons)
+    if (ctaGroup) {
+      const btns = ctaGroup.querySelectorAll('a, button')
+      tl.from(btns, {
+        opacity: 0, y: 16, duration: 0.5, stagger: 0.12, ease: brandEasing
+      }, 1.1)
+    }
+
+    // T=1500ms — Supporting elements (scroll indicator, decorative lines, etc.)
+    if (extras.length) {
+      tl.from(extras, {
+        opacity: 0, y: 12, duration: 0.4, stagger: 0.08
+      }, 1.5)
+    }
+
+    return tl
+  }
+
+  return { play }
+}
+```
+
+**Timing structure** (adapt values from motion-spec, keep proportions):
+```
+T=0.00s  Badge label
+T=0.00s  Headline word 1 starts
+T=0.10s  Headline word 2 starts
+T=0.20s  Headline word 3 starts  ← each word: 0.35s total (blur 0.15s + settle 0.20s)
+...      (continue at 100ms intervals)
+T=0.80s  Subheadline enters
+T=1.10s  CTA group enters
+T=1.50s  Supporting elements
+```
+
+**Usage in Vue component**:
+```vue
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useHeroEntrance } from '@/composables/useHeroEntrance'
+
+const badge = ref(null)
+const headlineEl = ref(null)
+const subheadline = ref(null)
+const ctaGroup = ref(null)
+
+onMounted(() => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  const { play } = useHeroEntrance(
+    { badge: badge.value, headlineEl: headlineEl.value,
+      subheadline: subheadline.value, ctaGroup: ctaGroup.value },
+    { brandEasing: 'BRAND_EASING_FROM_MOTION_SPEC' }
+  )
+  play()
+})
+</script>
+```
+
+---
+
 ## Repeat Detection System
 
 **MANDATORY**: Before implementing section N's animation, run this check:

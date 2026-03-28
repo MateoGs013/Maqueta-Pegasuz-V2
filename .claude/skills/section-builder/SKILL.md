@@ -1162,6 +1162,123 @@ function gradientFollow(el) {
 }
 ```
 
+**I16 — Liquid Glass panels** (glassmorphism with gradient border)
+Two variants: light (subtle shimmer) and strong (heavy frost). Use for badges, cards, hero overlays.
+```css
+/* Light glass — subtle, luminosity-blended */
+.glass-light {
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  mix-blend-mode: luminosity;
+  border-radius: var(--radius-md);
+  position: relative;
+}
+/* Gradient border via mask-composite (no actual border needed) */
+.glass-light::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.4px;
+  border-radius: inherit;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.45),
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.45)
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+}
+
+/* Strong glass — heavy frost panel */
+.glass-strong {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.15),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-lg);
+}
+
+/* Usage: apply .glass-light::before trick for gradient border on strong too */
+.glass-strong::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+}
+```
+
+**I17 — Word-by-word blur reveal** (3-state keyframe — Motionsites signature)
+The key is the mid-state: blur 10→5→0 with opacity 0→0.5→1 and overshoot on y (50→-5→0).
+```js
+// Requires words wrapped in <span class="word"> (SplitType or manual)
+function wordBlurReveal(textEl, { delay = 0, staggerMs = 100, duration = 0.35 } = {}) {
+  const words = textEl.querySelectorAll('.word')
+
+  words.forEach((word, i) => {
+    const wordDelay = delay + (i * staggerMs / 1000)
+    const tl = gsap.timeline({ delay: wordDelay })
+
+    // 3-state: blur 10→5→0, opacity 0→0.5→1, y 50→-5→0
+    tl.fromTo(word,
+      { filter: 'blur(10px)', opacity: 0, y: 50 },
+      { filter: 'blur(5px)', opacity: 0.5, y: -5, duration: duration * 0.43, ease: 'power2.out' }
+    ).to(word,
+      { filter: 'blur(0px)', opacity: 1, y: 0, duration: duration * 0.57, ease: 'back.out(1.4)' }
+    )
+  })
+}
+
+// Char-by-char variant (for shorter display text)
+function charBlurReveal(textEl, { delay = 0, staggerMs = 25, duration = 0.3 } = {}) {
+  const chars = textEl.querySelectorAll('.char')
+  gsap.fromTo(chars,
+    { filter: 'blur(8px)', opacity: 0, y: 20 },
+    {
+      filter: 'blur(0px)', opacity: 1, y: 0,
+      duration,
+      stagger: staggerMs / 1000,
+      delay,
+      ease: 'power3.out'
+    }
+  )
+}
+
+// Helper — wrap words manually (no SplitType dependency)
+function wrapWords(el) {
+  const text = el.textContent
+  el.innerHTML = text.split(' ')
+    .map(word => `<span class="word" style="display:inline-block">${word}</span>`)
+    .join(' ')
+}
+```
+
+---
+
+## Precision Mandate for Motion
+
+**NEVER** write vague motion specs. Every animation implemented in a section must have exact values.
+
+| WRONG | RIGHT |
+|---|---|
+| "animate the heading in" | `blur 10px→0px, opacity 0→1, y 50→0, 100ms stagger/word, 0.35s duration, back.out(1.4)` |
+| "stagger the cards" | `scale 0.92→1, opacity 0→1, y 30→0, stagger: 0.06s from center, 0.7s, expo.out` |
+| "fade the section in" | `opacity 0→1, y 40→0, 0.9s, BRAND_EASING, scrollTrigger start: top 75%` |
+
+Extract exact values from `docs/motion-spec.md`. If values are missing, ask `creative-director` to specify them before building.
+
 ---
 
 ## Post-Build Validation
