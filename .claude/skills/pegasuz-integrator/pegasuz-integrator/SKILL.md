@@ -85,7 +85,18 @@ These are the specialized skills this integrator coordinates. Each has defined i
 | Output | Design Brief saved to `Clientes/<slug>/docs/design-brief.md` |
 | Key Rule | No frontend construction happens without a brief. The brief IS the spec for all visual decisions. |
 
-### 5. Frontend Executor Skill (UI Application)
+### 5. Frontend Normalization Skill (System Preparation)
+
+| Attribute | Value |
+|-----------|-------|
+| Skill Name | `pegasuz-frontend-normalization` |
+| Scope | Detects anti-patterns (AP-1 through AP-17), normalizes frontend architecture to View → Store → Service → API chain |
+| Trigger | Phase 4 — ALWAYS before Feature Binding. Hard gate. |
+| Input | Client slug, existing frontend codebase |
+| Output | Normalized codebase (classification: Scaffold / Non-Standard / Misaligned / Compliant) |
+| Key Rule | No feature binding on un-normalized code. Normalization MUST report NORMALIZED or COMPLIANT before Phase 5. |
+
+### 6. Frontend Executor Skill (UI Application)
 
 | Attribute | Value |
 |-----------|-------|
@@ -209,26 +220,27 @@ Standard feature endpoint inventory:
 
 **Checkpoint:** Every requested feature has a working API endpoint with documented response shape.
 
-### Phase 4 — Frontend Scaffolding Verification
+### Phase 4 — Frontend Normalization & Scaffolding Verification
 
-**Skill:** Feature Binding Skill (preparation)
+**Skill:** `pegasuz-frontend-normalization` (MANDATORY) + Feature Binding Skill (preparation)
 **Trigger:** Always (when frontend work is needed).
 
 Actions:
 1. Verify the target client frontend exists under `Clientes/<slug>/`.
-2. Verify mandatory architecture files exist:
-   - `src/config/api.js` or `src/services/api.js` — single axios instance with `x-client` header + **Media V3 `resolveImageUrl()` export**
+2. **Invoke `pegasuz-frontend-normalization`** to detect and fix anti-patterns (AP-1 through AP-17). This skill classifies the codebase as Scaffold / Non-Standard / Misaligned / Compliant and applies the corresponding fixes.
+3. Verify mandatory architecture files exist (post-normalization):
+   - `src/config/api.js` — single axios instance with `x-client` header + **Media V3 `resolveImageUrl()` export**
    - `src/stores/content.js` — CMS bootstrap store
    - `src/main.js` — bootstraps CMS before mount
    - `src/router/index.js` — route definitions
    - `.env` or `.env.local` — `VITE_API_URL` **AND** `VITE_CLIENT_SLUG`
-3. If any mandatory files are missing — create them following PEGASUZ_FRONTEND_IMPLEMENTATION_SPEC patterns.
 4. Verify `.env` values:
    - `VITE_API_URL` points to correct API
    - `VITE_CLIENT_SLUG` matches exact client slug (**MANDATORY — required by `resolveImageUrl()` for tenant-scoped media**)
 5. **Verify `resolveImageUrl()` is the V3 canonical implementation** (NOT a simple `API_URL + path` prepend). It MUST handle: absolute URLs, V3 canonical paths, legacy `/media/` paths, legacy `/uploads/` paths, and bare relative paths. See Feature Binding Skill R3 for the exact implementation.
+6. Proceed to Phase 5 ONLY if normalization reports status NORMALIZED or COMPLIANT.
 
-**Checkpoint:** Frontend project structure is valid, API-connected, and `resolveImageUrl()` V3 is present.
+**Checkpoint:** Frontend is normalized (no anti-patterns), project structure is valid, API-connected, and `resolveImageUrl()` V3 is present.
 
 ### Phase 5 — Feature Binding
 

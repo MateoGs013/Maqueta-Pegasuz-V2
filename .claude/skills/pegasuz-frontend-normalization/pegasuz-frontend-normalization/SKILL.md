@@ -251,6 +251,22 @@ These anti-patterns have been observed across actual Pegasuz client frontends. T
 
 **Impact:** Needs full bootstrapping, not normalization. Identify as "scaffold required" and generate baseline structure.
 
+### AP-16 — Stores Without Loading/Error State
+
+**Detection:** In store files, check for `loading` and `error` refs. If a store has fetch actions but no `loading = ref(false)` and `error = ref(null)`, it is missing reactive UI feedback.
+
+**Impact:** Views cannot show loading spinners or error messages. Feature Binding Skill requires every store to expose `loading` and `error` state. Validation QA flags this as a BLOCKING defect in Layer 3.
+
+**Fix:** Add `const loading = ref(false)` and `const error = ref(null)` to the store. Wrap every async action in `loading.value = true` / `finally { loading.value = false }` and `catch { error.value = err.message }`.
+
+### AP-17 — CMS Data Used for Feature Entities
+
+**Detection:** In view files, search for `contentStore.get()` or `contentStore.getJSON()` calls that retrieve feature entity data (properties, services, projects, posts, testimonials). CMS content (`contentStore`) should ONLY be used for site-level content (site name, hero text, section labels, branding). Feature data MUST come from dedicated feature stores.
+
+**Impact:** Architectural contamination. Feature data becomes unfiltered, unpaginated, and coupled to the CMS bootstrap. Violates the separation between CMS content and feature data mandated by the locked architecture.
+
+**Fix:** Replace `contentStore.get/getJSON` calls for entity data with proper feature store usage. Create the feature store + service if they don't exist.
+
 ---
 
 ## Execution Mode
@@ -322,9 +338,10 @@ Produce the audit using this checklist:
 □ No API calls outside src/services/
 □ src/stores/ directory exists with entity stores
 □ Stores import from services (not API directly)
-□ Stores have loading + error state
+□ Stores have loading + error state (AP-16)
 □ No JSON.parse in views or components
 □ Views import from stores only
+□ No contentStore.get/getJSON for feature entity data (AP-17)
 □ Views are in src/views/ (not src/pages/)
 □ Router uses lazy-loaded imports
 □ Router has list + detail routes per feature
@@ -508,6 +525,8 @@ For codebases that are close but have specific anti-patterns:
 10. **AP-8: Setup Pinia** in `main.js` if missing.
 11. **AP-9: Add CMS bootstrap** in `main.js` if missing.
 12. **AP-14: Wire unused services** → If services exist but stores don't use them, update store imports.
+13. **AP-16: Add loading/error state** → For each store missing `loading` and `error` refs, add them with proper try/catch/finally in async actions.
+14. **AP-17: Separate CMS from feature data** → For each view using `contentStore.get/getJSON` to retrieve feature entity data (properties, services, projects, posts, testimonials), replace with dedicated feature store. Create the feature store + service if they don't exist.
 
 ---
 
@@ -525,6 +544,8 @@ Stores MUST extract API responses using the correct pattern per entity. No defen
 | Properties | Direct array | `items = data` |
 | Categories | Direct array | `items = data` |
 | Tags | Direct array | `items = data` |
+| Menu | Direct array (nested categories → items) | `items = data` |
+| Media | Direct array | `items = data` |
 | SiteContent | `{ tenant, version, contents: [...] }` | `contents = data.contents || data` |
 
 ---

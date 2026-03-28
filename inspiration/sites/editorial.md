@@ -24,6 +24,30 @@
 - **Tecnica:** Storytelling editorial, scroll-driven narrative, parallax photography
 - **Implementar con:** GSAP ScrollTrigger pinned sections + parallax layers + SplitType headers
 
+### Bloomberg (Visual Stories)
+- **Referencia:** La seccion de visual stories de Bloomberg — data journalism con scroll-driven visualizations, animated charts, narrative long-form
+- **Tecnica:** Pinned data viz que se actualiza con scroll, chart animations, number counters, editorial photography, dark mode contraste
+- **Implementar con:** GSAP ScrollTrigger pin + SVG chart animations + Vue 3 dynamic data component + CSS grid editorial
+- **Relevancia:** Define el standard de data storytelling interactivo — numeros que cobran vida con scroll
+
+### Sites tipo "Digital Magazine / Webzine"
+- **Referencia:** Revistas digitales que usan el formato web como ventaja (no PDF portado) — layouts asimetricos, tipografia expresiva, video inline
+- **Tecnica:** Broken grid editorial, pull quotes gigantes, full-bleed photography, video embed contextual, variable font expression
+- **Implementar con:** CSS Grid template-areas + CSS clamp() fluid type + Vue 3 lazy video + GSAP stagger reveals
+- **Relevancia:** El web magazine NO es un blog con posts — es un medio con identidad visual propia por edicion
+
+### Sites tipo "Scrollytelling Documentary"
+- **Referencia:** Piezas de periodismo inmersivo donde el scroll cuenta una historia con chapters, multimedia, y data inline (estilo New York Times interactive features)
+- **Tecnica:** Pinned sections con contenido cambiante, maps animados, timeline scroll, audio opcional, chapter navigation sticky
+- **Implementar con:** GSAP ScrollTrigger multi-pin + Vue 3 chapter navigation + Lenis + IntersectionObserver for active chapter
+- **Relevancia:** El formato mas impactante para contar historias complejas — cada scroll es un avance narrativo
+
+### Sites tipo "Archive / Retrospective"
+- **Referencia:** Sitios que presentan archivos historicos o retrospectivas con timeline interactivo, fotografia de epoca, y tipografia period-accurate
+- **Tecnica:** Horizontal timeline scrolleable, era-specific color palette shifts, image grain/texture filters, date-based navigation
+- **Implementar con:** GSAP horizontal scroll + CSS filter grain overlay + Vue 3 timeline component + scroll-driven palette transitions
+- **Relevancia:** Combina editorial rigor con interactividad moderna — ideal para instituciones, museos, marcas con historia
+
 ---
 
 ## Que observar

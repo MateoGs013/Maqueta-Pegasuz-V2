@@ -202,14 +202,17 @@ For each Pinia store, verify:
 
 **Response extraction rules (from backend):**
 ```
-Posts:     data.posts     + data.pagination
-Projects:  data.projects  + data.pagination
-Contacts:  data.contacts  + data.pagination
-Testimonials: data.testimonials + data.pagination
-Services:  data (direct array)
-Properties: data (direct array)
-Categories: data (direct array)
-Tags:      data (direct array)
+Posts:         data.posts          + data.pagination
+Projects:      data.projects       + data.pagination
+Contacts:      data.contacts       + data.pagination
+Testimonials:  data.testimonials   + data.pagination
+Services:      data (direct array)
+Properties:    data (direct array)
+Categories:    data (direct array)
+Tags:          data (direct array)
+Menu:          data (direct array, nested categories → items)
+Media:         data (direct array)
+SiteContent:   data.contents (from { tenant, version, contents })
 ```
 
 ### Layer 4 — View Validation

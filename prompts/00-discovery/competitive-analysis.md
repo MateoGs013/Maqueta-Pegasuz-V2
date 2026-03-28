@@ -64,10 +64,70 @@ DESPUES del analisis individual, producir:
 
 ---
 
+## Ejemplos: buena vs mala respuesta
+
+### Primera impresion
+
+**Mala:** "Se ve profesional y moderno."
+(No dice nada util. Todos los competidores "se ven profesionales".)
+
+**Buena:** "Comunica confianza institutional inmediatamente: hero con foto de equipo en oficina, headline directo 'Transformamos negocios desde 2005'. Pero se siente frio — no hay personalidad ni motion. Parece un template corporativo editado."
+(Especifico, con elementos concretos y una opinion formada que guia diferenciacion.)
+
+### Mapa de oportunidades
+
+**Mala:**
+| Area | Bien | Mal |
+| Visual | Buenos colores | Podria mejorar |
+
+**Buena:**
+| Area | Bien (NO copiar) | Mal (OPORTUNIDAD) |
+| Motion | Competidor A tiene scroll-triggered reveals en portfolio | Ninguno tiene 3D/WebGL. TODOS son estaticos. Oportunidad: experiencia inmersiva. |
+| Content | Competidor B tiene testimonios con metricas ($2M ahorro) | Todos usan headlines genericos ("Soluciones a medida"). Oportunidad: copy especifico con numeros. |
+
+---
+
+## Variaciones por industria
+
+Aspectos especificos a evaluar segun rubro:
+
+| Industria | Evaluar adicionalmente |
+|-----------|----------------------|
+| Gastronomia | Fotografia de platos, integracion con delivery, carta digital, reservas online, Google Maps |
+| Inmobiliaria | Calidad del listado, filtros de busqueda, mapa interactivo, tours virtuales, velocidad de carga con muchas imagenes |
+| E-commerce | Flujo de checkout (cuantos pasos), fotografia de producto, filtros, recomendaciones, mobile UX del carrito |
+| SaaS | Pricing page clarity, demo/trial flow, feature comparison, docs/API, onboarding |
+| Salud | Confianza/credenciales visibles, facilidad para agendar turnos, informacion de seguros, testimonios con consentimiento |
+| Fintech | Seguridad percibida, claridad del producto, regulaciones visibles, onboarding flow, dashboard UX |
+
+---
+
+## Common errors
+
+- **Analizar solo lo visual.** Un competidor puede tener un diseno mediocre pero excelente UX y conversion. Evaluar todas las capas.
+- **Copiar lo que hacen bien.** El objetivo es DIFERENCIARSE, no converger. Lo que hacen bien se nota, lo que hacen mal es la oportunidad.
+- **Analizar pocos competidores.** 3-5 es el minimo. Con 1-2 no se pueden ver patrones del sector.
+- **No visitar en mobile.** Muchos sitios se ven bien en desktop pero colapsan en mobile. Eso es una oportunidad enorme.
+- **Olvidar la velocidad.** Abrir DevTools > Network. Si un competidor carga en 8 segundos, esa es una ventaja competitiva gratuita.
+- **No documentar URLs y capturas.** Las referencias visuales se pierden. Guardar URLs y describir lo que se ve para que el documento sea autosuficiente.
+
+---
+
+## Pipeline connection
+
+```
+Input: client-intake.md (URLs de competidores, rubro)
+Output de este prompt -> Analisis competitivo + Mapa de oportunidades
+  Alimenta directamente:
+    - brand-questionnaire.md (benchmark visual, anti-referencias)
+    - design-direction.md (diferenciacion visual, oportunidades)
+    - copy-framework.md (tono de voz, CTAs que otros no usan)
+```
+
 ## Output esperado
 
 Documento de analisis competitivo que informa las decisiones de diferenciacion visual.
 
 ## Siguiente paso
 
-Usar las oportunidades identificadas en `01-identity/design-direction.md`.
+Usar las oportunidades identificadas en `brand-questionnaire.md` y luego `01-identity/design-direction.md`.

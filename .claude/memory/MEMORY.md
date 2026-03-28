@@ -1,84 +1,130 @@
-# Memory — Pegasuz Maqueta V2
+# Memory -- Pegasuz Maqueta V2
 
-## Qué es esta carpeta
+## Quick Reference
 
-**Maqueta maestra** — template reutilizable para crear proyectos nuevos (Pegasuz multi-tenant o Vue 3 independiente). Cada proyecto nuevo parte de esta base.
+| Field | Value |
+|-------|-------|
+| Version | 2.0 |
+| Created | 2026-03-28 |
+| Last updated | 2026-03-28 |
+| Repo | https://github.com/MateoGs013/Maqueta-Pegasuz-V2 |
+| Branch | master |
+| Skills | 20 (in `.claude/skills/`) |
+| Agents | 7 (in `.claude/agents/`) |
+| Doc templates | 4 (in `docs/_templates/`) |
+| Prompts | 24 across 8 phases (in `prompts/`) |
+| Inspiration files | 21 across 4 categories (in `inspiration/`) |
+| Guides | 9 (in `guides/`) |
+| Scheduled tasks | 16 (in `.claude/scheduled-tasks/`) |
 
-## Estado actual
+## What this is
 
-Repo: https://github.com/MateoGs013/Maqueta-Pegasuz-V2
-Versión: 2.0
-Última actualización: 2026-03-28
+**Master template** for creating unique web projects (Pegasuz multi-tenant clients or standalone Vue 3 sites). Every new project starts from this base but gets its own identity -- never copy design decisions between projects.
 
-## Scheduled Tasks pendientes
+## Memory files index
 
-Hay 16 scheduled tasks en `.claude/scheduled-tasks/` listas para ejecutar. Cada una tiene su SKILL.md con el prompt completo. Ejecutar en este orden:
+| File | Purpose | When to read |
+|------|---------|--------------|
+| `MEMORY.md` (this file) | Project overview, task status, quick reference | Start of every session |
+| `active-projects.md` | Registry of projects built from this maqueta | When starting/resuming a project |
+| `lessons-learned.md` | Problems found and solutions applied | Before running any task to avoid repeating mistakes |
 
-### Fase 1 — Auditoría y consistencia (ejecutar primero, se pueden paralelizar)
-1. `cross-skill-consistency-check` — Verificar que todos los skills usen mismas convenciones
-2. `skill-optimization-audit` — Optimizar cada SKILL.md (triggers, instrucciones, output)
-3. `scaffold-validation-test` — Validar que _project-scaffold compile como Vue 3 real
-4. `agent-completeness-review` — Revisar y mejorar los 7 agentes
-5. `doc-templates-stress-test` — Testear los 4 templates con proyecto ficticio
-6. `new-project-wizard-dry-run` — Validar flujo del wizard, fonts, paletas
+## Scheduled tasks status
 
-### Fase 2 — Mejoras de contenido
-7. `prompt-library-quality-review` — Mejorar los 24 prompts con ejemplos y anti-patterns
-8. `pegasuz-skills-deep-review` — Auditar pipeline Pegasuz end-to-end
-9. `guides-completeness-rewrite` — Reescribir guías como tutoriales autocontenidos
-10. `claude-md-optimization` — Reducir tokens del CLAUDE.md (-50%+)
-11. `memory-system-improvement` — Crear active-projects.md y lessons-learned.md
-12. `inspiration-catalog-expansion` — Investigar tendencias 2025-2026, agregar rubros
+### Fase 1 -- Audit and consistency (6 tasks)
 
-### Fase 3 — Nuevas features
-13. `create-project-review-skill` — Crear skill para auditar proyectos existentes
-14. `design-system-research` — Investigar y crear micro design system base
+| # | Task | Status | Key findings |
+|---|------|--------|-------------|
+| 1 | `cross-skill-consistency-check` | DONE (commit 9a1766e) | YAML frontmatter added to `new-project`, `page-scaffold` now references `docs/page-plans.md`, `gsap-motion` reads `docs/motion-spec.md` |
+| 2 | `skill-optimization-audit` | DONE (commit 9a1766e) | Triggers, output format, and instructions improved across all skills |
+| 3 | `scaffold-validation-test` | DONE (commit 9a1766e) | Vue 3 scaffold validated, package.json dependencies aligned |
+| 4 | `agent-completeness-review` | DONE (commit 9a1766e) | All 7 agents genericized, `binding-auditor` improved |
+| 5 | `doc-templates-stress-test` | DONE (commit 9a1766e) | Templates expanded: page-plans meets minimums, design-brief adds accent-secondary/border/transition tokens, content-brief hero changed to 2-8 words, motion-spec restructured with homepage subsection |
+| 6 | `new-project-wizard-dry-run` | DONE (commit 9a1766e) | Wizard flow validated, font/palette generation working |
 
-### Fase 4 — Los 10 sitios demo (DESPUÉS de todo lo anterior)
-15. `create-10-demo-sites` — 10 proyectos completos en C:\Users\mateo\Desktop\
+### Fase 2 -- Content improvements (6 tasks)
 
-### Fase 5 — Critique (DESPUÉS de los 10 sitios)
-16. `awwwards-design-critique` — Iterar cada sitio hasta score ≥ 9.0/10
+| # | Task | Status | Key findings |
+|---|------|--------|-------------|
+| 7 | `prompt-library-quality-review` | DONE (commit 9a1766e) | 20/23 prompts got errores comunes, 14/23 got concrete examples, 10/23 got rubro variations |
+| 8 | `pegasuz-skills-deep-review` | DONE (commit 9a1766e) | 10 gaps found and fixed across 5 skills (pipeline, extraction, tenant, normalization, QA) |
+| 9 | `guides-completeness-rewrite` | DONE (commit 9a1766e) | Guides rewritten as self-contained tutorials, `skill-dispatch-table.md` updated with `new-project` entry |
+| 10 | `claude-md-optimization` | DONE (commit 9a1766e) | CLAUDE.md contradictions fixed (threejs step, motion defaults, extraction table) |
+| 11 | `memory-system-improvement` | IN PROGRESS | This task -- improving memory files for cross-session context |
+| 12 | `inspiration-catalog-expansion` | DONE (commit 9a1766e) | Added fintech, gastronomy rubros + trends-2026.md |
 
-## Hallazgos de auditorías previas (aplicar al re-ejecutar)
+### Fase 3 -- New features (2 tasks)
 
-Estos hallazgos fueron descubiertos por agentes que corrieron y fueron revertidos. Las tasks los van a re-descubrir y aplicar:
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 13 | `create-project-review-skill` | PENDING | Skill for auditing existing projects |
+| 14 | `design-system-research` | DONE (in PROCESS-LOG, referenced but template file not on disk) | Research complete, output planned for `docs/_templates/design-system-base.template.md` but file not yet materialized |
 
-- `new-project` SKILL.md no tiene YAML frontmatter → invisible al matching
-- `page-scaffold` no referencia `docs/page-plans.md`
-- `gsap-motion` no lee `docs/motion-spec.md` como fuente primaria
-- CLAUDE.md tiene contradicción threejs-3d paso 3 vs paso 5
-- CLAUDE.md motion defaults se contradicen con regla de "nunca defaultear"
-- Pipeline integrator no registra normalization skill
-- Feature-binding sin tabla consolidada de response extraction
-- Frontend-executor sin tenant checks en pre-QA
-- Normalization faltan AP-16 y AP-17
-- `skill-dispatch-table.md` no tiene el entry point `new-project`
+### Fase 4 -- Demo sites (1 task)
 
-## Reglas permanentes
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 15 | `create-10-demo-sites` | PENDING | Requires all previous phases complete |
 
-- **Design-first**: sin brief no hay código
-- **Content-first**: copy antes que visual
-- **Identidad única**: nunca reutilizar paleta/tipo/motion de otro proyecto
-- **3D siempre**: Tier 1 mínimo (shader atmosférico o partículas)
-- **Variación de animación**: cada sección usa técnica diferente
-- **Pegasuz**: View → Store → Service → API. Sin atajos.
-- **prefers-reduced-motion**: siempre respetado
+### Fase 5 -- Critique (1 task)
 
-## Estructura
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 16 | `awwwards-design-critique` | PENDING | Requires demo sites first |
+
+## Uncommitted changes (as of 2026-03-28)
+
+Working tree has staged changes from Fase 1 execution that modify:
+- `.claude/agents/binding-auditor.md`
+- `.claude/skills/new-project/SKILL.md`, `page-scaffold/SKILL.md`
+- `CLAUDE.md`, `PROCESS-LOG.md`
+- `docs/_templates/` (all 4 templates)
+- `guides/skill-dispatch-table.md`
+- `inspiration/` (new: fintech, gastronomy, trends-2026)
+- `prompts/07-quality/audit-sequence.md`
+
+Plus untracked: `active-projects.md`, `lessons-learned.md`, `guides/06-troubleshooting.md`
+
+## Key files for any session
+
+| Need | File |
+|------|------|
+| Architecture rules | `CLAUDE.md` |
+| Which skill to use | `guides/skill-dispatch-table.md` |
+| How to start a project | `guides/00-project-init.md` or use `/new-project` |
+| Pipeline overview | `guides/01-pipeline-overview.md` |
+| Quality standards | `guides/04-quality-standards.md` |
+| Design brief template | `docs/_templates/design-brief.template.md` |
+| Content brief template | `docs/_templates/content-brief.template.md` |
+| Page plans template | `docs/_templates/page-plans.template.md` |
+| Motion spec template | `docs/_templates/motion-spec.template.md` |
+
+## Core rules (never violate)
+
+1. **Design-first**: brief before code. No `creative-design` plan = no CSS.
+2. **Content-first**: copy before visual. `content-brief.md` is created first.
+3. **Unique identity**: every project has its own palette, typography, easing, atmosphere.
+4. **3D always**: Tier 1 minimum (atmospheric shader or particle field).
+5. **Animation variety**: each section uses a different technique.
+6. **Pegasuz chain**: View -> Store -> Service -> API. No shortcuts.
+7. **prefers-reduced-motion**: always respected.
+8. **Docs are truth**: code executes the docs, never improvises.
+
+## Structure
 
 ```
 maqueta/
   .claude/
-    agents/              7 agentes especializados
-    skills/              20+ skills de construcción + wizard
-    scheduled-tasks/     16 tasks para ejecución batch
-    memory/              MEMORY.md + current-state.md
-    settings.json        Hooks y configuración
+    agents/              7 specialized agents
+    skills/              20 construction + wizard skills
+    scheduled-tasks/     16 batch execution tasks
+    memory/              MEMORY.md + active-projects.md + lessons-learned.md
+    settings.json        Hooks and configuration
   docs/_templates/       4 templates: design-brief, content-brief, page-plans, motion-spec
-  prompts/               Biblioteca por fase: 00-discovery → 07-quality
-  inspiration/           Catálogo: sites/ patterns/ motion/ 3d/
-  guides/                Guías de proceso completas
-  _project-scaffold/     Estructura Vue 3 base
-  CLAUDE.md              Arquitectura locked + dispatch de skills
+  prompts/               24 prompts in 8 phases: 00-discovery -> 07-quality
+  inspiration/           21 files: sites(8) + patterns(6) + motion(4) + 3d(3)
+  guides/                9 guides + dispatch table
+  _project-scaffold/     Vue 3 base structure (copy to new project)
+  CLAUDE.md              Architecture locked + skill dispatch
+  PROCESS-LOG.md         Detailed audit history and decisions
 ```

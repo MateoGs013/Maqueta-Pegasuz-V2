@@ -33,6 +33,30 @@
 - **Tecnica:** Minimal dark UI, email-as-code aesthetic, monospace accents
 - **Implementar con:** Vue 3 code preview component + GSAP typewriter + dark mode tokens
 
+### Clerk
+- **URL:** https://clerk.com/
+- **Tecnica:** Auth-as-product showcase con componentes interactivos en el hero, dark + purple glow, live code demos
+- **Implementar con:** Vue 3 interactive demo component + GSAP scroll-triggered code reveals + CSS glow custom properties
+- **Relevancia:** Best-in-class para mostrar un SDK/API product — el hero ES el producto funcionando
+
+### Vercel
+- **URL:** https://vercel.com/
+- **Tecnica:** Infraestructura como identidad visual — grid lines, terminal aesthetic, deployment previews como UX
+- **Implementar con:** CSS grid lines decorativas + GSAP terminal typing animation + Vue 3 dynamic deployment preview
+- **Relevancia:** Define como un producto de infraestructura puede tener personalidad visual fuerte
+
+### Sites tipo "AI-Native SaaS Landing"
+- **Referencia:** Startups de AI que usan chat interface o prompt input como hero interactivo (estilo de sitios de AI writing tools, AI code assistants)
+- **Tecnica:** Chat/prompt input funcional como hero, streaming response animation, dark mode con neon accents, bento grid de features
+- **Implementar con:** Vue 3 streaming text composable + GSAP typewriter reveal + CSS gradient glow + bento grid layout
+- **Relevancia:** Pattern dominante en 2026 — el hero conversacional reemplaza al hero estatico en SaaS de AI
+
+### Sites tipo "Developer Experience Landing"
+- **Referencia:** SDKs y herramientas dev que muestran code snippets interactivos con syntax highlighting y output en vivo
+- **Tecnica:** Split screen (code | output), language tabs, copy button, animated output, terminal aesthetic
+- **Implementar con:** Vue 3 code block component + Shiki syntax highlight + GSAP stagger code lines + tab switcher
+- **Relevancia:** Para cualquier producto tech, mostrar el DX en la landing es conversion directa
+
 ---
 
 ## Que observar

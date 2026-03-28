@@ -28,6 +28,30 @@
 - **Tecnica:** Data-driven design con tipografia premium, mega-menu, neighborhood guides
 - **Implementar con:** Vue 3 dynamic components + GSAP counter animations + responsive grid
 
+### Sites tipo "Virtual Staging interactivo"
+- **Referencia:** Proptech startups que muestran furnished vs empty rooms con slider interactivo
+- **Tecnica:** Before/after slider con staging virtual, transicion suave entre estados, annotations interactivas
+- **Implementar con:** Vue 3 before/after component + GSAP Draggable + CSS clip-path + lazy loaded image pairs
+- **Relevancia:** Diferencia a la inmobiliaria de la competencia — la propiedad se vende desde el browser
+
+### Sites tipo "Architectural Walkthrough"
+- **Referencia:** Sitios de arquitectura premium que usan scroll-driven camera movement dentro de renders 3D
+- **Tecnica:** Secuencia de imagenes renderizadas que cambian con scroll, simulando caminar por la propiedad
+- **Implementar con:** GSAP ScrollTrigger + image sequence (canvas drawImage) + preload progressive
+- **Relevancia:** Reemplaza el tour virtual con una experiencia cinematica controlada por scroll
+
+### Sites tipo "Neighborhood as Experience"
+- **Referencia:** Inmobiliarias luxury que dedican secciones completas al barrio con mapa interactivo, puntos de interes, y lifestyle photography
+- **Tecnica:** Mapa custom (no Google Maps default), markers animados, hover cards con info del POI, photography editorial del barrio
+- **Implementar con:** Vue 3 custom map component (Mapbox GL JS) + GSAP marker animations + Pinia location store
+- **Relevancia:** No vender metros cuadrados — vender el estilo de vida del barrio
+
+### Sites tipo "Property Cinematic Landing"
+- **Referencia:** Propiedades individuales de ultra-lujo que tienen su propia landing page con storytelling visual
+- **Tecnica:** Fullscreen video hero, scroll-driven room tour, specs como typography art, appointment CTA sticky
+- **Implementar con:** Vue 3 lazy video + GSAP pinned sections + Three.js grain overlay + Lenis smooth scroll
+- **Relevancia:** Cada propiedad premium merece su propia experiencia digital, no solo una ficha
+
 ---
 
 ## Que observar en este rubro

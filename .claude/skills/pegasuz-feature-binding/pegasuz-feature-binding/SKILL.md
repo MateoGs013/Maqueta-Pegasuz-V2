@@ -298,6 +298,28 @@ function localizeField(entity, field, locale) {
 }
 ```
 
+### Consolidated Response Extraction Table
+
+Quick reference for store extraction per entity. Stores MUST use the correct extraction pattern — no defensive OR chains.
+
+| Entity | API Response Shape | Store Extraction | Pagination |
+|--------|-------------------|-----------------|------------|
+| Properties | Direct array | `items = data` | No |
+| Services | Direct array | `items = data` | No |
+| Categories | Direct array | `items = data` | No |
+| Tags | Direct array | `items = data` | No |
+| Menu | Direct array (nested categories → items) | `items = data` | No |
+| Media | Direct array | `items = data` | No |
+| Posts | `{ posts, pagination }` | `items = data.posts` / `pagination = data.pagination` | Yes |
+| Projects | `{ projects, pagination }` | `items = data.projects` / `pagination = data.pagination` | Yes |
+| Testimonials | `{ testimonials, pagination }` | `items = data.testimonials` / `pagination = data.pagination` | Yes |
+| Contacts | `{ contacts, pagination }` | `items = data.contacts` / `pagination = data.pagination` | Yes |
+| SiteContent | `{ tenant, version, contents }` | `contents = data.contents` | No |
+
+**Direct array entities** return the list as the top-level response. **Paginated entities** wrap the list in a named key alongside a `pagination` object. **SiteContent** is a special case consumed via `contentStore.get(key)` — not a feature store.
+
+---
+
 ### R5 — Service-Store-View Layering (No Shortcuts)
 
 Every feature binding MUST follow this file structure:

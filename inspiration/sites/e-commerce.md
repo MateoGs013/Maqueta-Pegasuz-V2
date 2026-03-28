@@ -30,6 +30,24 @@
 - **Tecnica:** Gen Z appeal, bold typography, UGC/Instagram integration
 - **Implementar con:** Vue 3 + GSAP text reveals + lazy image grid
 
+### Sites tipo "3D Product Configurator"
+- **Referencia:** Marcas DTC que permiten personalizar el producto en 3D (color, material, grabado) en tiempo real
+- **Tecnica:** GLTF model viewer con opciones de configuracion, material swap en vivo, camera angles presets, add-to-cart con config guardada
+- **Implementar con:** Three.js + GLTF loader + OrbitControls + Vue 3 reactive config + Pinia cart store
+- **Relevancia:** El configurador reemplaza la galeria de fotos — el user ve EXACTAMENTE lo que va a recibir
+
+### Sites tipo "Editorial Lookbook E-commerce"
+- **Referencia:** Marcas de moda premium donde el shopping es una experiencia editorial (cada coleccion es una historia visual)
+- **Tecnica:** Scroll-driven lookbook, photography editorial, productos inline con CTAs sutiles, transitions entre looks
+- **Implementar con:** GSAP ScrollTrigger pinned sections + Vue 3 product overlay component + Lenis + CSS grid editorial
+- **Relevancia:** Eleva el e-commerce de catalogo a experiencia de marca — el scroll ES el shopping
+
+### Sites tipo "Quick Commerce / Instant Gratification"
+- **Referencia:** Apps de delivery premium que llevan su UX al web — minimalismo extremo, micro-interactions de add-to-cart, progress feedback
+- **Tecnica:** Floating cart con counter animation, skeleton loading per product, optimistic UI updates, haptic-feeling micro-interactions
+- **Implementar con:** Vue 3 teleport cart + GSAP FLIP add-to-cart animation + Pinia optimistic store + CSS spring transitions
+- **Relevancia:** La velocidad percibida ES el diferenciador — cada interaccion debe sentirse instantanea
+
 ---
 
 ## Que observar

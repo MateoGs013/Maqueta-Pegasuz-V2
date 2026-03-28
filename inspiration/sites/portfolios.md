@@ -32,6 +32,24 @@
 - **Tecnica:** Video-first, cinematic transitions, fullscreen media
 - **Implementar con:** Vue 3 video lazy component + GSAP clip-path transitions + Lenis
 
+### Sites tipo "Generative Art Portfolio"
+- **Referencia:** Creative coders que usan su portfolio como canvas generativo — cada visita es unica, algoritmos visuales como identidad
+- **Tecnica:** Canvas generativo como background, parametros que cambian por hora/dia, interaccion mouse, outputs exportables
+- **Implementar con:** Three.js generative scene + GSAP timeline orchestration + seed-based randomization + Vue 3 overlay UI
+- **Relevancia:** El portfolio no muestra trabajo — el portfolio ES trabajo. Demuestra skill con cada pixel
+
+### Sites tipo "Project-as-Journey"
+- **Referencia:** Portfolios donde cada case study es un scroll-driven journey con chapters, transiciones cinematicas entre proyectos
+- **Tecnica:** Scroll-pinned chapters, data/results como animated counters, before/after comparisons, quote pull-outs
+- **Implementar con:** GSAP ScrollTrigger pinned timeline + SplitType chapter titles + Vue 3 dynamic case study view + FLIP transitions between projects
+- **Relevancia:** Transforma el case study de una pagina de informacion a una experiencia de storytelling
+
+### Sites tipo "Index-as-Interaction"
+- **Referencia:** Portfolios con lista de proyectos donde el hover en cada item revela una preview visual (imagen, video, o 3D) que sigue al cursor
+- **Tecnica:** Lista tipografica minimal, hover-triggered media preview anclado al cursor, transicion al detail con shared element
+- **Implementar con:** Vue 3 mousemove tracking + GSAP cursor-following preview + View Transitions API para detail navigation
+- **Relevancia:** Pattern de 2025-2026 que maximiza la densidad de contenido con interactividad bajo demanda
+
 ---
 
 ## Que observar

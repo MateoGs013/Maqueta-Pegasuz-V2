@@ -291,6 +291,17 @@ Ensure:
 - [ ] Error states implemented
 - [ ] Mobile layout confirmed
 - [ ] Accessibility basics confirmed (semantic HTML, aria, keyboard)
+- [ ] **Tenant isolation verified:**
+  - [ ] `x-client` header configured in axios instance (from `VITE_CLIENT_SLUG`)
+  - [ ] No hardcoded tenant slugs in source files
+  - [ ] `.env` contains both `VITE_API_URL` and `VITE_CLIENT_SLUG`
+  - [ ] `resolveImageUrl()` uses V3 canonical implementation (not simple prepend)
+  - [ ] No cross-tenant data leakage paths
+  - [ ] CMS bootstrap uses correct tenant context
+- [ ] **Store integrity verified:**
+  - [ ] Every feature store has `loading` and `error` refs (AP-16)
+  - [ ] Feature data comes from dedicated stores, NOT from `contentStore` (AP-17)
+  - [ ] Response extraction matches entity type (direct array vs paginated wrapper)
 
 Then flag output as ready for `pegasuz-validation-qa`.
 

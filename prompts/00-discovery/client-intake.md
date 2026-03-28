@@ -50,6 +50,64 @@ No asumas nada. Pregunta todo. El output de esta entrevista define todo lo que v
 
 ---
 
+## Ejemplos: buena vs mala respuesta
+
+### Pregunta: "Que hace exactamente?"
+
+**Mala:** "Somos una empresa de servicios profesionales que ofrece soluciones integrales."
+(Vago, no dice nada concreto. No se puede disenar a partir de esto.)
+
+**Buena:** "Somos un estudio de arquitectura en Buenos Aires especializado en reformas de departamentos chicos (sub-60m2). Transformamos monoambientes en espacios funcionales."
+(Especifico, tiene rubro, ubicacion, nicho, y diferenciador.)
+
+### Pregunta: "Que sensacion quiere transmitir?"
+
+**Mala:** "Profesional y moderno."
+(Demasiado generico, aplica a cualquier negocio.)
+
+**Buena:** "Quiero que se sienta como entrar a un showroom de diseno escandinavo: limpio, calido, con materiales nobles. Nada frio ni corporativo."
+(Evoca algo concreto que se puede traducir a decisiones de diseno.)
+
+---
+
+## Variaciones por industria
+
+La entrevista se adapta segun el rubro. Preguntas adicionales por industria:
+
+| Industria | Preguntas extra |
+|-----------|----------------|
+| Gastronomia | Hay carta digital? Sistema de reservas? Delivery propio o tercerizado? Horarios estacionales? |
+| Inmobiliaria | Listado de propiedades dinamico? Mapa interactivo? Filtros (precio, zona, tipo)? Tours virtuales? |
+| E-commerce | Catalogo de productos? Pasarela de pago? Inventario? Envios? Wishlist? |
+| Salud/Bienestar | Turnos online? HIPAA o regulaciones de privacidad? Testimonios de pacientes (consentimiento)? |
+| Fintech | Onboarding KYC? Dashboard de usuario? Graficos/data viz? Regulaciones financieras? |
+| Educacion | Plataforma de cursos? Progreso del alumno? Certificados? Contenido en video? |
+| Estudio creativo | Portfolio con filtros? Case studies detallados? Showreel de video? Clientes destacados? |
+| SaaS | Pricing tiers? Free trial? Dashboard? Integraciones? Docs/API? |
+
+---
+
+## Common errors
+
+- **No insistir cuando la respuesta es vaga.** Si el cliente dice "queremos algo moderno", repreguntar: "Moderno como Apple (minimal, blanco, producto protagonista) o moderno como Stripe (tech, gradientes, ilustraciones)?"
+- **Aceptar "no tenemos competidores" como respuesta.** Siempre hay competidores o sustitutos. Repreguntar: "A quien le compran tus clientes cuando no te eligen a vos?"
+- **No preguntar sobre el contenido existente.** Si el cliente no tiene textos ni fotos, eso cambia toda la planificacion. Averiguarlo temprano.
+- **Asumir que "todas las paginas" son Home/About/Services/Contact.** Cada negocio tiene necesidades diferentes. Un restaurante necesita Menu y Reservas. Un estudio necesita Portfolio y Case Studies.
+- **Saltar la pregunta de deadline.** Sin timeline, no se puede priorizar. Un sitio para "en 2 semanas" tiene scope muy diferente a uno para "cuando este listo".
+
+---
+
+## Pipeline connection
+
+```
+Output de este prompt -> Perfil del cliente (documento interno)
+  Alimenta directamente:
+    - competitive-analysis.md (URLs de competidores)
+    - brand-questionnaire.md (personalidad, estetica, anti-referencias)
+    - copy-framework.md (servicios, diferenciadores, publico)
+    - page-planning.md (paginas requeridas, funcionalidades)
+```
+
 ## Output esperado
 
 Un documento con todas las respuestas que se guarda como referencia interna.

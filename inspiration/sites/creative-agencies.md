@@ -42,6 +42,33 @@
 - **Tecnica:** Tipografia como protagonista, minimal B&W + accent, motion en cada letra
 - **Implementar con:** SplitType + GSAP stagger + variable fonts + CSS clamp() fluid type
 
+### Stuff by Kris Temmerman
+- **URL:** https://www.awwwards.com/sites/stuff-by-kris-temmerman
+- **Awwwards:** Site of the Day (Mar 2026)
+- **Tecnica:** Creative coding portfolio, generative art como identidad, canvas interactivos, algoritmos visuales
+- **Implementar con:** Three.js + GSAP orchestration + generative algorithms + custom canvas composable
+- **Relevancia:** Demuestra que el creative coding ES el diferenciador — no decoracion, sino core del brand
+
+### Aventura Dental Arts
+- **URL:** https://www.awwwards.com/sites/aventura-dental-arts
+- **Awwwards:** Site of the Day (Mar 2026)
+- **Tecnica:** Luxury services en rubro inesperado (dental), smooth scroll premium, 3D sutil, fotografia editorial
+- **Implementar con:** Lenis + GSAP scroll reveals + Three.js atmospheric shader + CSS grid editorial
+- **Relevancia:** Prueba que la estetica premium funciona en cualquier rubro si la ejecucion es impecable
+
+### Shed (Architecture Studio)
+- **URL:** https://www.awwwards.com/sites/shed
+- **Awwwards:** Site of the Day (Mar 2026)
+- **Tecnica:** Architecture showcase, minimal motion, whitespace extremo, fotografia como protagonista
+- **Implementar con:** CSS Grid con negative space intencional + GSAP reveals sutiles + lazy image loading
+- **Relevancia:** El restraint como herramienta creativa — menos motion, mas impacto por frame
+
+### Sites tipo "Annual Review interactivo"
+- **Referencia:** Sitios como Spotify Wrapped, agencias que publican su year-in-review como pieza interactiva
+- **Tecnica:** Scroll-driven narrative con datos, stats animados, timelines, hitos visuales, palette de celebracion
+- **Implementar con:** GSAP ScrollTrigger pinned sections + counter animations + SplitType + confetti/particle bursts
+- **Relevancia:** Pattern de alto impacto para contar la historia de un ano, ideal para agencias y startups
+
 ---
 
 ## Que observar en este rubro

@@ -39,6 +39,24 @@
 - **Tecnica:** Neon accent sobre dark base, glassmorphism cards, animated data viz, glowing UI
 - **Implementar con:** CSS glow effects + Three.js particle background + GSAP data viz animations
 
+### Sites tipo "Crypto/Web3 Dashboard Landing"
+- **Referencia:** Plataformas crypto que usan su dashboard como hero, con live data feeds, glassmorphism extreme, gradient mesh backgrounds
+- **Tecnica:** Live ticker data en el hero, glassmorphism layered cards, animated chart previews, neon palette sobre dark base
+- **Implementar con:** Vue 3 reactive data feed + CSS backdrop-filter glassmorphism + GSAP counter animations + Three.js gradient mesh shader
+- **Relevancia:** El extremo del dark premium — muestra como combinar data density con aesthetic sophistication
+
+### Sites tipo "Embedded Finance API"
+- **Referencia:** Fintech B2B que venden APIs/SDKs de pagos con documentation-as-marketing — code demos interactivos, API response previews
+- **Tecnica:** Split hero (code | visual result), interactive API playground, response JSON highlighting, flow diagrams animados
+- **Implementar con:** Vue 3 code preview + GSAP typewriter + SVG flow diagram animated + Pinia demo state store
+- **Relevancia:** Para fintech B2B, la documentacion ES la landing page — clarity como conversion
+
+### Sites tipo "Personal Finance Wellness"
+- **Referencia:** Apps de finanzas personales con estetica wellness/calm — colores suaves, rounded UI, data viz amigable, onboarding conversacional
+- **Tecnica:** Soft gradients, rounded everything, animated progress rings, friendly data viz (no wall street charts), confetti on milestones
+- **Implementar con:** CSS custom properties soft palette + SVG animated rings + GSAP playful micro-interactions + Vue 3 onboarding flow
+- **Relevancia:** Contrapunto al dark fintech — demuestra que finanzas pueden sentirse approachable y humanas
+
 ---
 
 ## Que observar en este rubro

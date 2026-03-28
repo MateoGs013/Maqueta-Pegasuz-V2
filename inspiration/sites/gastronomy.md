@@ -44,6 +44,24 @@
 - **Tecnica:** Food festival, grid editorial, photography-first, event listing interactivo
 - **Implementar con:** Vue 3 dynamic event grid + GSAP scroll reveals + CSS masonry grid
 
+### Sites tipo "Tasting Menu Digital"
+- **Referencia:** Restaurantes fine dining que presentan el tasting menu como scroll experience — cada plato es un chapter con foto, ingredientes, y narrative del chef
+- **Tecnica:** Pinned fullscreen food photography, scroll-driven course progression, ingredient annotations on hover, sommelier pairing notes
+- **Implementar con:** GSAP ScrollTrigger pinned sections + Vue 3 course component + SplitType dish names + parallax layers
+- **Relevancia:** El menu tasting como pieza de contenido premium — cada plato tiene su momento cinematico
+
+### Sites tipo "Craft Beverage Brand"
+- **Referencia:** Marcas de cerveza artesanal, vinos naturales, o spirits independientes con identidad visual fuerte — ilustraciones custom, paleta del producto, label art como UI
+- **Tecnica:** Color palette extraida del packaging, hand-drawn illustrations como UI elements, product 3D viewer, age gate con personalidad
+- **Implementar con:** CSS custom properties per-product palette + Three.js bottle/can viewer + GSAP entrance reveals + SVG illustrations inline
+- **Relevancia:** El packaging ES el diseno web — consistencia total entre fisico y digital
+
+### Sites tipo "Farm-to-Table Story"
+- **Referencia:** Restaurantes y food brands que cuentan la historia del origen — mapa de proveedores, timeline de cosecha, fotografia documental
+- **Tecnica:** Map interactivo de proveedores, timeline de estaciones, scroll-driven journey del ingrediente, documentary photography
+- **Implementar con:** Vue 3 map component (Mapbox GL) + GSAP scroll timeline + Lenis + lazy image sequences
+- **Relevancia:** Transparency como diferenciador premium — mostrar de donde viene cada ingrediente eleva el perceived value
+
 ---
 
 ## Que observar en este rubro
