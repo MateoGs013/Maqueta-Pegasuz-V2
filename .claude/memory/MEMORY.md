@@ -70,7 +70,7 @@
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 16 | `awwwards-design-critique` | DONE | Average 8.6/10 across 10 sites, improvements committed. See AWWWARDS-CRITIQUE-REPORT.md |
+| 16 | `awwwards-design-critique` | DONE | All 10 sites >= 9.0/10, avg 9.16. See AWWWARDS-CRITIQUE-REPORT.md |
 
 ## Git history
 

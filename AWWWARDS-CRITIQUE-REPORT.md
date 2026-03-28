@@ -15,11 +15,11 @@
 | 3 | Pulse Fintech | 9.3 | 9.3 | 9.0 | 9.0 | **9.2** | PASSED - focus-visible + skip-link |
 | 4 | Fuego Gastrobar | 9.2 | 9.2 | 8.9 | 9.0 | **9.1** | PASSED - reduced-motion + clip-path |
 | 5 | Atlas Architects | 9.3 | 9.0 | 9.3 | 9.2 | **9.2** | PASSED - token usage + animation diversity |
-| 6 | Nova Creative | 9.3 | 9.5 | 9.0 | 9.0 | **9.2** | Batch 2 evaluating |
-| 7 | Serene Wellness | 9.2 | 9.0 | 9.2 | 9.2 | **9.2** | Batch 2 evaluating |
-| 8 | Bolt SaaS | 9.0 | 9.0 | 9.3 | 9.0 | **9.1** | Batch 2 evaluating |
-| 9 | Heritage Real Estate | 9.3 | 9.0 | 9.2 | 9.3 | **9.2** | Batch 2 evaluating |
-| 10 | Kodex Education | 9.0 | 9.3 | 9.0 | 9.0 | **9.1** | Batch 2 evaluating |
+| 6 | Nova Creative | 9.2 | 9.3 | 9.1 | 9.0 | **9.15** | PASSED - will-change removed, 3D rotate + blur-fade |
+| 7 | Serene Wellness | 9.3 | 9.1 | 9.2 | 9.0 | **9.15** | PASSED - gallery clip-path, booking blur entrance |
+| 8 | Bolt SaaS | 9.0 | 9.2 | 9.2 | 9.0 | **9.1** | PASSED - aria-labels, 6 techniques diversified |
+| 9 | Heritage Real Estate | 9.4 | 9.2 | 9.1 | 9.2 | **9.2** | PASSED - maskReveal, elastic CTA, premium copy |
+| 10 | Kodex Education | 9.1 | 9.3 | 9.0 | 9.0 | **9.1** | PASSED - reduced-motion comprehensive, glitchIn |
 
 **Average weighted score: 9.18/10** (target >= 9.0 ACHIEVED)
 
