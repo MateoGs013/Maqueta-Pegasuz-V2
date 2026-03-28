@@ -55,6 +55,73 @@ Ningun placeholder {{}} debe quedar. Todo texto es final o near-final.
 
 ---
 
+## Ejemplos: buena vs mala copy
+
+### Hero headline para una clinica dental premium
+
+**Mala:** "Bienvenidos a Smile Clinic - Tu sonrisa, nuestra prioridad"
+(Generico. "Bienvenidos" esta prohibido. "Tu X, nuestra Y" es un template.)
+
+**Buena:** "Odontologia de precision para quienes no aceptan compromisos"
+(Especifico al posicionamiento premium. Habla al publico target. Tiene actitud.)
+
+### Descripcion de servicio
+
+**Mala:** "Ofrecemos soluciones integrales de diseno para su hogar."
+("Soluciones integrales" no dice nada. Que hacen exactamente?)
+
+**Buena:** "Reformamos departamentos de menos de 60m2 en Buenos Aires. Cada metro cuadrado cuenta: almacenamiento oculto, divisiones moviles, y luz natural como protagonista."
+(Que hacen, donde, para quien, y como se diferencian. En 2 oraciones.)
+
+### CTA
+
+**Mala:** "Contactenos" / "Enviar" / "Click aqui"
+
+**Buena:** "Agendar visita a tu departamento" / "Ver el antes y despues" / "Calcular presupuesto en 2 minutos"
+(Verbo de accion + contexto de que pasa al clickear.)
+
+---
+
+## Variaciones de voz por industria
+
+| Industria | Voz sugerida | Headline ejemplo | CTA ejemplo |
+|-----------|-------------|-----------------|-------------|
+| Gastronomia | Chef apasionado que cuenta la historia del plato | "Cada plato empieza en la huerta de San Pedro" | "Reservar una mesa" |
+| Inmobiliaria | Asesor de confianza que entiende tus suenos | "Tu proximo hogar existe. Nosotros lo encontramos." | "Explorar propiedades en Belgrano" |
+| Fintech | Ingeniero brillante que habla claro | "Tu plata trabaja. Vos no deberias." | "Simular mi rendimiento" |
+| Salud | Profesional empatico y directo | "Tratamientos basados en evidencia, no en moda" | "Agendar consulta sin cargo" |
+| Moda | Editor de moda con ojo critico | "Menos piezas. Mejor manufactura." | "Explorar la coleccion invierno" |
+| Educacion | Profesor entusiasmado con el tema | "Aprende a programar construyendo, no memorizando" | "Empezar el curso gratis" |
+| Legal | Abogado confiable sin jerga | "Protegemos tu patrimonio con estrategia, no burocracia" | "Solicitar evaluacion de caso" |
+
+---
+
+## Common errors
+
+- **Dejar placeholders {{}} en el output.** El content-brief es copy FINAL o near-final. Si dice {{SERVICIO_1}}, fallo.
+- **Copy generico que aplica a cualquier negocio.** Si puedes cambiar el nombre de la empresa y el copy sigue funcionando, no es especifico.
+- **Testimonios inventados sin verosimilitud.** Un testimonio de "J.P., CEO" no es creible. Usar nombres completos, empresas reales, y resultados medibles.
+- **CTAs pasivos.** "Mas informacion" no es un CTA. Es un link. Un CTA tiene verbo + resultado esperado.
+- **Voz inconsistente entre secciones.** Si el hero es poetico y el footer es corporate, hay una ruptura de personalidad.
+- **Copy demasiado largo para web.** Las oraciones de 3 lineas en una landing no se leen. Regla: si puedes decirlo en menos palabras, hacelo.
+- **No escribir microcopy.** Empty states, loading messages, 404, y form labels son parte del content-brief. Si se olvidan, el dev los inventa con "No data found".
+
+---
+
+## Pipeline connection
+
+```
+Input: client-intake.md (servicios, diferenciadores, publico)
+     + brand-questionnaire.md (personalidad, voz, anti-referencias)
+     + design-direction.md (tono visual para alinear)
+Output de este prompt -> docs/content-brief.md
+  Alimenta directamente:
+    - page-planning.md (copy exacto por seccion)
+    - cta-strategy.md (progresion de CTAs)
+    - section-narratives.md (contenido por seccion)
+    - Toda la implementacion frontend (texto real, no lorem ipsum)
+```
+
 ## Siguiente paso
 
 Ejecutar `02-content/tone-of-voice.md` si se necesita profundizar en voz.

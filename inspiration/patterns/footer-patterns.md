@@ -53,6 +53,28 @@
 
 ---
 
+## Patrones trending 2025-2026
+
+### 5. Reveal-on-Scroll Footer
+- Footer que se "revela" debajo del contenido con efecto de parallax o clip — la pagina se levanta revelando el footer ya en posicion
+- Efecto premium que da sensacion de profundidad
+- **Implementar con:** CSS `position: sticky` en el footer con `bottom: 0` + z-index layering, o GSAP ScrollTrigger clip-path en la seccion anterior
+- **Mejor para:** sites premium, agencias, portfolios
+
+### 6. Interactive CTA Footer con 3D
+- Footer donde el CTA principal tiene un elemento 3D o shader atmosferico de fondo
+- Transforma el "ultimo empujon" en una experiencia memorable
+- **Implementar con:** Three.js canvas behind CTA section + atmospheric shader + GSAP scroll-triggered reveal del 3D
+- **Mejor para:** tech, creative agencies, luxury brands
+
+### 7. Marquee Footer
+- Texto marquee (ticker horizontal) gigante como headline del footer, seguido de links y legal minimal
+- Reemplaza la CTA section con motion como gancho visual
+- **Implementar con:** GSAP horizontal infinite scroll + SplitType chars + CSS overflow hidden
+- **Mejor para:** agencies, portfolios, marcas con personalidad tipografica fuerte
+
+---
+
 ## Elementos de footer
 
 | Elemento | Obligatorio | Notas |

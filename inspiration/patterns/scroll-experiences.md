@@ -72,6 +72,38 @@
 }
 ```
 
+### 10. Scroll-Snapped Chapters (2026)
+- Pagina dividida en "chapters" que hacen snap al scroll — cada chapter ocupa un viewport completo
+- Combina bien con background transitions y content reveals per-chapter
+- Carga: baja (CSS only) a media (con GSAP per-chapter animations)
+- **Cuando:** storytelling, annual reviews, case studies, landing pages con secciones de igual importancia
+
+```css
+.chapter-container {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+}
+.chapter {
+  scroll-snap-align: start;
+  height: 100vh;
+}
+```
+
+### 11. Velocity-Reactive Scroll (2026)
+- Elementos cuya animacion reacciona a la velocidad del scroll (no solo la posicion)
+- Scroll rapido = elementos se deforman/stretcan, scroll lento = movimiento suave normal
+- Carga: media (requiere calcular delta entre frames)
+- **Cuando:** sites experimentales, portfolios creativos, hero backgrounds
+- **Implementar:** Lenis `onScroll` velocity + GSAP `quickTo` para interpolar + CSS transform skewY basado en velocity
+
+### 12. Scroll-Driven Data Visualization (2026)
+- Charts, graphs, o data points que se construyen progresivamente con el scroll
+- Cada step del scroll revela un data point o dibuja una linea del chart
+- Carga: media
+- **Cuando:** reports, case studies con metricas, editorial con data journalism
+- **Implementar:** GSAP ScrollTrigger scrub + SVG stroke-dashoffset animation + Vue 3 dynamic data binding
+
 ---
 
 ## Reglas de scroll

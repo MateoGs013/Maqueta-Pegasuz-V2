@@ -75,3 +75,17 @@
 ### Command Palette / Search-First
 - Ctrl+K pattern (Raycast/Linear inspired), busqueda global como nav primaria
 - **Implementar:** Vue 3 teleport modal + keyboard shortcut composable + fuzzy search
+
+### Breadcrumb-as-Context Nav
+- Breadcrumbs que no solo muestran donde estas sino que son dropdowns para navegar a siblings — reemplazan mega-menu en sites deep
+- **Implementar:** Vue 3 breadcrumb component + dropdown per-level + CSS `popover` attribute (Baseline 2024) + keyboard nav
+
+### Animated Section Indicators
+- Indicador lateral (dots o labels) que muestra en que seccion estas, con animacion de progreso entre secciones
+- Pattern popular en one-page sites y long-form content
+- **Implementar:** IntersectionObserver per section + GSAP progress bar animation + CSS fixed positioning + scroll-driven animation fallback
+
+### Gesture-Based Mobile Nav
+- En mobile, swipe horizontal para navegar entre paginas (tab-based) ademas del hamburger menu clasico
+- Se siente nativo, reduce friction para paginas principales
+- **Implementar:** Vue 3 touch composable (touchstart/touchmove/touchend) + GSAP x-translate + CSS scroll-snap como fallback

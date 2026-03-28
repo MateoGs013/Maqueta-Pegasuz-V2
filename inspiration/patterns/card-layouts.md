@@ -82,3 +82,31 @@
 ### Soft Brutalist Cards
 - Bordes gruesos, colores planos, drop shadows offset
 - **Implementar:** CSS border + box-shadow offset + transition transform
+
+### Animated Gradient Border Cards (2026)
+- Cards con borde que es un gradient animado (conic-gradient rotation) — efecto "glow trail" alrededor de la card
+- Combina con dark mode para maximo impacto visual
+- **Implementar:** CSS `@property` para animar conic-gradient angle + `border-image` o pseudo-element con mask + `animation`
+
+```css
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+.card-glow {
+  background: conic-gradient(from var(--angle), var(--accent), transparent, var(--accent));
+  animation: rotate-glow 3s linear infinite;
+}
+@keyframes rotate-glow { to { --angle: 360deg; } }
+```
+
+### Magnetic Hover Cards (2026)
+- Cards que siguen sutilmente al cursor (perspective tilt + translate) creando sensacion de profundidad
+- En mobile: gyroscope tilt como alternativa
+- **Implementar:** Vue 3 composable `useMagneticHover(el, strength)` + CSS `transform: perspective(800px) rotateX() rotateY() translate3d()`
+
+### Expandable Detail Cards (2026)
+- Cards que al click se expanden in-place a un detail view con FLIP animation
+- No cambia de pagina — la card se abre revelando mas contenido
+- **Implementar:** GSAP Flip plugin + Vue 3 Teleport (para z-index) + CSS Grid area expansion

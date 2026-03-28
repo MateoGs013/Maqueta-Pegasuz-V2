@@ -70,6 +70,67 @@ OUTPUT: tabla de tecnicas seleccionadas con specs de implementacion.
 
 ---
 
+## Ejemplos: buena vs mala atmosfera
+
+### Para un estudio de grabacion musical
+
+**Mala:** "Queremos que se sienta oscuro y moderno. Usar particulas y gradientes."
+(Sin especificidad. No dice donde, con que intensidad, ni que herramienta.)
+
+**Buena:**
+| Tecnica | Donde | Intensidad | Stack | Mobile fallback |
+|---------|-------|------------|-------|-----------------|
+| Film grain | Global overlay | opacity 0.03 | CSS pseudo + SVG noise | Mantener (es CSS puro, sin costo) |
+| Glow orbs | Hero bg (2 orbs: amber + violet) | Prominente | CSS radial-gradient animado con GSAP | Reducir a 1 orb estatico |
+| Scan lines | Section dividers | opacity 0.02 | CSS repeating-linear-gradient | Mantener |
+| Custom cursor | Global (desktop only) | Media | JS + CSS, blend-mode: difference | Desactivar en touch devices |
+| Mouse-reactive bg | Hero only | Sutil (parallax 0.02) | Canvas 2D | Imagen estatica |
+
+Referencia emocional: "estar en el control room de Abbey Road a las 2AM — intimidad, concentracion, equipo analogico iluminado por LEDs suaves."
+
+---
+
+## Combinaciones atmosfericas por rubro
+
+| Industria | Combo recomendado | Referencia emocional |
+|-----------|-------------------|---------------------|
+| Gastronomia fine dining | Film grain + vignette + glow calido | "Cenar a la luz de velas en un restaurante intimo" |
+| Fintech | Grid pattern + gradient mesh + animated gradient | "El dashboard de Mission Control de SpaceX" |
+| Inmobiliaria luxury | Light leaks + parallax layers + bokeh | "Recorrer un penthouse al atardecer con vista al mar" |
+| Moda | Noise texture + custom cursor + distortion on hover | "Una galeria de arte contemporaneo en Berlin" |
+| Salud/Bienestar | Animated gradient suave + floating particles lentas | "Un jardin zen japones con niebla matutina" |
+| Estudio creativo | Halftone + magnetic elements + mouse-reactive bg | "El estudio de un artista con herramientas por todos lados" |
+| E-commerce premium | Vignette + glow orbs + parallax layers | "Entrar a una boutique en la Rue du Faubourg" |
+| SaaS | Dot matrix + gradient mesh + reveal on scroll | "Un producto Apple recien sacado de la caja" |
+
+---
+
+## Common errors
+
+- **Acumular demasiadas tecnicas.** 3-5 es el rango. Mas de 5 compiten entre si y bajan la performance. Cada tecnica debe tener un proposito claro.
+- **Atmosfera que compite con el contenido.** Las particulas detras del hero headline deben COMPLEMENTAR el texto, no hacerlo ilegible. Testear legibilidad sobre la atmosfera.
+- **No definir fallbacks para mobile.** Muchas tecnicas (Canvas, Three.js, custom cursor) no funcionan o son pesadas en mobile. Cada tecnica necesita un plan B.
+- **prefers-reduced-motion sin cobertura.** TODOS los elementos atmosfericos animados deben desactivarse cuando el usuario tiene reduced-motion activado. No es opcional.
+- **Film grain a opacidad alta.** Grain a mas de 0.05 se ve como un defecto, no como un efecto estetico. Sutil es la clave.
+- **Ignorar el impacto en performance.** Un shader Three.js en el hero + particulas + mouse tracking + animaciones GSAP pueden bajar de 60fps. Medir frame time antes de agregar mas.
+- **Olvidar que la atmosfera debe ser consistente.** Si el hero tiene grain y glow, pero el resto del sitio es plano, hay una desconexion. Los elementos atmosfericos deben hilar todo el sitio.
+
+---
+
+## Pipeline connection
+
+```
+Input: design-direction.md (personalidad, tecnicas mapeadas)
+     + brand-questionnaire.md (referencia emocional)
+Output de este prompt -> Sistema atmosferico con specs de implementacion
+  Se integra en: docs/design-brief.md seccion 6
+  Alimenta:
+    - 3d-scope.md (contexto visual para el Tier de 3D)
+    - motion-personality.md (elementos ambientales animados)
+    - page-scaffold (que tecnicas se aplican en cada seccion)
+    - threejs-3d skill (implementacion del layer 3D)
+```
+
 ## Siguiente paso
 
 Integrar atmosfera en `docs/design-brief.md` seccion 6.

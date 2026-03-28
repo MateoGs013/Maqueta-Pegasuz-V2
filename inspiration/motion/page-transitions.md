@@ -158,3 +158,65 @@ Flip.from(state, {
 | View Transitions API first | Usar nativo cuando sea suficiente, GSAP para control total |
 | FLIP for layout changes | Nunca animar width/height directamente — siempre FLIP |
 | Progressive enhancement | Detectar soporte antes de usar APIs nuevas |
+
+---
+
+## Tecnicas adicionales 2026
+
+### 9. Cross-Document View Transitions
+- View Transitions API entre paginas diferentes (MPA, no solo SPA)
+- Chrome 126+, Edge 126+, Safari 18.2+ (Baseline early 2026)
+- Requiere `@view-transition { navigation: auto; }` en CSS
+- Ideal para proyectos que NO son SPA o para pre-rendered pages
+
+```css
+/* En ambas paginas */
+@view-transition { navigation: auto; }
+
+/* Elementos que hacen match entre paginas */
+.page-hero { view-transition-name: page-hero; }
+
+/* Custom animation */
+::view-transition-group(page-hero) {
+  animation-duration: 0.4s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+```
+
+### 10. Nested View Transitions (Vue 3 Pattern)
+- Combinar View Transitions API con Vue Router para transiciones per-route-level
+- Layout transitions (sidebar stays, content morphs) + page transitions (full page change)
+- Diferentes `view-transition-name` per component para granular control
+
+```js
+// Vue Router middleware para View Transitions
+router.beforeResolve(async (to, from) => {
+  if (!document.startViewTransition) return
+  // Set transition class based on route depth
+  const isDeeper = to.matched.length > from.matched.length
+  document.documentElement.dataset.transition = isDeeper ? 'slide-left' : 'slide-right'
+  const transition = document.startViewTransition(async () => {
+    // Router resolves here
+  })
+  await transition.finished
+  delete document.documentElement.dataset.transition
+})
+```
+
+### 11. Stagger-Out / Stagger-In Pattern
+- Al salir: elementos de la pagina salen en stagger (primero el contenido, luego headers, luego nav)
+- Al entrar: elementos de la nueva pagina entran en stagger inverso (nav primero, luego header, luego contenido)
+- Efecto cinematico de "desarmar y rearmar" la pagina
+
+```js
+// Leave
+const tl = gsap.timeline()
+tl.to('.content', { y: 30, opacity: 0, stagger: 0.05 })
+  .to('.header', { y: -20, opacity: 0 }, '-=0.2')
+  .to('.page', { opacity: 0 }, '-=0.1')
+// Enter (reverse order)
+const tlEnter = gsap.timeline()
+tlEnter.from('.page', { opacity: 0 })
+       .from('.header', { y: -20, opacity: 0 }, '-=0.1')
+       .from('.content', { y: 30, opacity: 0, stagger: 0.05 }, '-=0.2')
+```

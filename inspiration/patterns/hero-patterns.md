@@ -71,6 +71,24 @@
 - **Mejor para:** SaaS, fintech, modern brands
 - **Implementar:** CSS backdrop-filter + layered positioning + GSAP parallax layers
 
+### 12. AI Chat Hero (2026)
+- Input de prompt/chat como hero interactivo — el usuario escribe y recibe respuesta en vivo
+- Streaming text animation, cursor blinking, suggested prompts como chips
+- **Mejor para:** AI SaaS, developer tools, search products
+- **Implementar:** Vue 3 reactive input + GSAP typewriter streaming + CSS suggestion chips + dark mode
+
+### 13. Scroll-Constructed Hero (2026)
+- Hero que arranca vacio y se construye pieza por pieza mientras el user scrollea el primer viewport
+- Texto, imagen, CTA, y elementos decorativos aparecen en secuencia scrub
+- **Mejor para:** storytelling, agencies, product launches
+- **Implementar:** GSAP ScrollTrigger scrub timeline + SplitType + clip-path reveals + Lenis
+
+### 14. Data-Driven Dynamic Hero (2026)
+- Hero cuyos numeros, textos, o visuales cambian en tiempo real basado en data (hora del dia, ubicacion, stats live)
+- Personalizado para cada visitor — "Right now, 3,247 developers are deploying..."
+- **Mejor para:** SaaS con users activos, fintech con live data, plataformas con community
+- **Implementar:** Vue 3 reactive data composable + GSAP counter animations + CSS transitions para cambios
+
 ---
 
 ## Checklist de hero

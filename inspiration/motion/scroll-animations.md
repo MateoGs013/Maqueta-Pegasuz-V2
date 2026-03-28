@@ -76,6 +76,94 @@ sections.forEach((section, i) => {
 
 ---
 
+---
+
+## Tecnicas trending 2025-2026
+
+### 8. CSS Scroll-Driven Animations (sin JS)
+- `animation-timeline: scroll()` para animaciones basadas en scroll progress del contenedor
+- `animation-timeline: view()` para animaciones basadas en la visibilidad del elemento en el viewport
+- Chrome 115+, Firefox 131+, Safari 18+ (Baseline late 2024)
+- **Usar cuando:** progress bars, fade-ins, parallax simple, reveal on view
+
+```css
+/* Scroll progress animation */
+.progress-bar {
+  animation: fill-bar linear both;
+  animation-timeline: scroll();
+}
+@keyframes fill-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* View-based animation (fade in when element enters viewport) */
+.reveal {
+  animation: fade-up linear both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 100%;
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+```
+
+### 9. Scroll-Driven 3D Camera Control
+- Camera de una escena Three.js controlada por scroll progress
+- El usuario "vuela" por la escena scrolleando — position, rotation, y FOV ligados al progreso
+- **Implementar:** GSAP ScrollTrigger scrub + Three.js camera + lerp para smooth interpolation
+
+```js
+ScrollTrigger.create({
+  trigger: container,
+  start: 'top top', end: 'bottom bottom',
+  scrub: 2,
+  onUpdate: (self) => {
+    const t = self.progress
+    camera.position.lerpVectors(startPos, endPos, t)
+    camera.lookAt(target)
+  }
+})
+```
+
+### 10. Scroll Velocity Skew
+- Elementos que se deforman (skewY) basado en la velocidad del scroll
+- Scroll rapido = skew visible, scroll lento = forma normal
+- Efecto sutil pero premium que da sensacion de fisica real
+
+```js
+// Con Lenis
+lenis.on('scroll', ({ velocity }) => {
+  gsap.to('.skew-element', {
+    skewY: velocity * 0.5,
+    duration: 0.3,
+    ease: 'power2.out'
+  })
+})
+```
+
+### 11. Progressive Number Counter with Scroll
+- Numeros que no solo countan una vez sino que incrementan/decrementan proporcionalmente al scroll
+- El numero "acompana" al scroll — mas inmersivo que el counter clasico
+- **Implementar:** GSAP ScrollTrigger scrub + `textContent` interpolation
+
+---
+
+## CSS vs GSAP Decision for Scroll Animations
+
+| Animacion | CSS Scroll-Driven | GSAP ScrollTrigger | Recomendacion |
+|-----------|------------------|-------------------|---------------|
+| Progress bar | `animation-timeline: scroll()` | overkill | CSS |
+| Fade-in on view | `animation-timeline: view()` | overkill | CSS |
+| Parallax simple | `animation-timeline: scroll()` + transform | possible | CSS (zero JS) |
+| Complex stagger reveals | No viable | `stagger` + `scrollTrigger` | GSAP |
+| Pinned sections | No viable en CSS | `pin: true` | GSAP |
+| Horizontal scroll | No viable en CSS | `xPercent` + `pin` | GSAP |
+| 3D camera control | No viable en CSS | scrub + Three.js | GSAP |
+| Color transitions | Possible but limited | `onUpdate` + `gsap.to` | GSAP (mas control) |
+
+**Regla:** CSS scroll-driven para lo simple (progress, fades, parallax basico). GSAP para todo lo demas.
+
+---
+
 ## Performance tips
 
 | Tip | Razon |
@@ -85,3 +173,5 @@ sections.forEach((section, i) => {
 | Batch similar triggers | Menos listeners |
 | `invalidateOnRefresh: true` | Recalcular en resize |
 | `will-change` solo durante animacion | No preventivo |
+| CSS scroll-driven first | Zero JS overhead para animaciones simples |
+| `animation-range` preciso | Controlar exactamente cuando empieza/termina la animacion en view() |
