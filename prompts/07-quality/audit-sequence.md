@@ -69,6 +69,41 @@ No considerar el proyecto terminado hasta que 0 BLOCKING y 0 CRITICAL.
 
 ---
 
+## Ejemplo: buena vs mala ejecucion de auditoria
+
+### Resultado de a11y-audit
+
+**Mala:**
+```
+a11y: FAIL — some accessibility issues found.
+```
+(No dice cuales. No tiene severidad. No es actionable.)
+
+**Buena:**
+```
+a11y-audit results — 7 findings:
+
+CRITICAL:
+1. HomeView.vue — Hero image (<img>) sin alt attribute.
+   Fix: alt="Estudio de arquitectura Lumen — fachada del edificio principal"
+2. ContactView.vue — Form inputs sin <label> asociado.
+   Fix: agregar <label for="name"> y id="name" a cada input.
+
+WARNING:
+3. AppHeader.vue — Mobile hamburger button sin aria-label.
+   Fix: aria-label="Abrir menu de navegacion"
+4. ServicesView.vue — Heading jump: h1 -> h3 (falta h2).
+   Fix: cambiar h3 a h2 en la seccion de servicios.
+
+SUGGESTION:
+5. Global — No hay skip-to-content link.
+6. Global — Focus ring usa outline: none sin replacement visible.
+7. PortfolioView.vue — Image gallery sin role="list" ni aria-label.
+```
+(Cada finding tiene severidad, ubicacion exacta, descripcion, y fix.)
+
+---
+
 ## Errores comunes en el proceso de auditoria
 
 - **Ejecutar auditorias antes de que el sitio este funcional** - Si las paginas no cargan o tienen errores de consola, arreglar eso primero. Las auditorias asumen un sitio funcional.
@@ -77,6 +112,20 @@ No considerar el proyecto terminado hasta que 0 BLOCKING y 0 CRITICAL.
 - **Auditorias sin contexto del design-brief** - El css-review necesita saber que tokens se definieron. El responsive-review necesita saber que breakpoints se decidieron. Sin contexto, la auditoria es generica.
 - **Ignorar SUGGESTIONs sistematicamente** - Las sugerencias son el backlog de mejora continua. Si siempre se ignoran, la deuda tecnica se acumula.
 - **No documentar los fixes** - Cada fix debe documentarse brevemente para evitar regresiones y para informar proyectos futuros.
+- **Ejecutar auditorias en orden incorrecto** - pegasuz-validation-qa primero (verifica que la cadena de datos funciona), luego a11y y seo (verifican el HTML output), despues responsive y css (verifican visual), y perf al final (el mas lento).
+- **Arreglar un issue e introducir otro** - Si un fix de contraste cambia el color de un boton, verificar que el nuevo color funciona en hover, focus, y disabled states tambien.
+
+---
+
+## Issues frecuentes por industria
+
+| Industria | a11y issues frecuentes | SEO issues frecuentes | Perf issues frecuentes |
+|-----------|----------------------|---------------------|----------------------|
+| Gastronomia | Menu images sin alt, carta PDF sin texto alternativo | Falta JSON-LD Restaurant, horarios no estructurados | Imagenes de platos sin optimizar (fotos de 5MB) |
+| Inmobiliaria | Mapa sin keyboard nav, filtros sin aria-label | Falta JSON-LD RealEstateAgent/Place, cada propiedad sin canonical | Muchas imagenes de propiedades sin lazy loading |
+| E-commerce | Product images sin alt descriptivo, carrito sin aria-live | Falta JSON-LD Product con price/availability, reviews sin markup | Product images sin WebP/AVIF, JavaScript bundle enorme |
+| Fintech | Charts sin texto alternativo, datos tabulares sin scope | Falta JSON-LD FinancialService, FAQ sin markup | Heavy charts libraries sin lazy load |
+| SaaS | Pricing table sin scope headers, toggle sin aria-label | Falta JSON-LD SoftwareApplication, FAQ page sin markup | Demo embeds sin lazy loading |
 
 ## Tiempos estimados por auditoria
 

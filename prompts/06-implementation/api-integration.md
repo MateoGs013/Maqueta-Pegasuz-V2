@@ -66,6 +66,95 @@ REGLAS:
 
 ---
 
+## Ejemplo: buena vs mala integracion
+
+### Service para propiedades
+
+**Mala:**
+```js
+import axios from 'axios'
+export function getProperties() {
+  return axios.get('http://localhost:3000/api/properties', {
+    headers: { 'x-client': 'mi-cliente' }
+  })
+}
+```
+(axios importado directamente, URL hardcodeada, slug hardcodeado, sin error handling.)
+
+**Buena:**
+```js
+// src/services/propertyService.js
+import api from '@/config/api'
+
+export default {
+  getAll: (params) => api.get('/properties', { params }).then(r => r.data),
+  getBySlug: (slug) => api.get(`/properties/${slug}`).then(r => r.data),
+  getFeatured: () => api.get('/properties', { params: { featured: true } }).then(r => r.data),
+}
+```
+```js
+// src/config/api.js
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: { 'x-client': import.meta.env.VITE_CLIENT_SLUG }
+})
+
+export const resolveImageUrl = (path) => {
+  if (!path) return '/placeholder.jpg'
+  if (path.startsWith('http')) return path
+  return `${import.meta.env.VITE_API_URL}${path}`
+}
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    console.error(`[API] ${err.config?.method?.toUpperCase()} ${err.config?.url}`, err.response?.status)
+    return Promise.reject(err)
+  }
+)
+
+export default api
+```
+
+---
+
+## Extraction patterns por tipo de response
+
+| Response shape | Extraction en store | Ejemplo |
+|---------------|-------------------|---------|
+| `[{...}, {...}]` (direct array) | `this.items = data` | Properties, Services, Categories, Tags, Menu, Media |
+| `{ entities, pagination }` | `this.items = data.entities; this.pagination = data.pagination` | Posts (.posts), Projects (.projects), Testimonials (.testimonials) |
+| `{ tenant, version, contents }` | `this.contents = data.contents` | SiteContent |
+| Single object | `this.item = data` | getBySlug, getById |
+
+---
+
+## Common errors
+
+- **axios importado fuera de api.js.** Si un service importa axios directamente, pierde el baseURL, el x-client header, y los interceptors. SIEMPRE importar de @/config/api.
+- **Slug hardcodeado en el codigo.** `'mi-cliente'` en el header, en un service, o en un componente es un bug de multi-tenancy. SIEMPRE usar VITE_CLIENT_SLUG.
+- **URLs hardcodeadas.** `http://localhost:3000` en produccion es un bug. SIEMPRE usar VITE_API_URL.
+- **No verificar endpoints antes de implementar.** Hacer curl con x-client header ANTES de crear el service. Si el endpoint no existe o devuelve 404, no hay nada que integrar.
+- **resolveImageUrl no usado.** Imagenes del API vienen con paths relativos. Sin resolveImageUrl(), las imagenes no cargan. SIEMPRE usarla.
+- **Error handling ausente en services.** Si el service no re-throws el error, el store no puede setear `this.error`. El .then(r => r.data) ya maneja el happy path; los errores los maneja el store.
+- **Multiples axios instances.** Solo debe existir UNA instancia de axios en todo el proyecto, en src/config/api.js. No crear instancias adicionales.
+
+---
+
+## Pipeline connection
+
+```
+Input: client-intake.md (slug, API URL, features habilitadas)
+     + state-management.md (que stores necesitan que services)
+Output de este prompt -> api.js + services + .env configurados
+  Alimenta directamente:
+    - pegasuz-feature-binding skill (completar la cadena)
+    - pegasuz-validation-qa (verificar la cadena API->Service->Store->View)
+    - binding-auditor agent (verificacion automatizada)
+```
+
 ## Output esperado
 
 Configuracion API funcional que pasa la verificacion del `binding-auditor`.

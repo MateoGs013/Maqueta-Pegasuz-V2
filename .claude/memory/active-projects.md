@@ -23,7 +23,16 @@ Update Last Phase, Last Touch, and Notes. Move Status forward when appropriate.
 
 | Project | Slug | Rubro | Directory | Status | Last Phase | Last Touch | Notes |
 |---------|------|-------|-----------|--------|------------|------------|-------|
-| _(no projects yet)_ | | | | | | | |
+| Noctua Interiors | noctua-interiors | Interior design luxury | C:\Users\mateo\Desktop\noctua-interiors | building | Phase 5 | 2026-03-28 | Demo site - 5 views, 6 components, 4 docs |
+| Verde Organics | verde-organics | E-commerce cosmetics | C:\Users\mateo\Desktop\verde-organics | building | Phase 5 | 2026-03-28 | Demo site - 6 views, 6 components, 4 docs |
+| Pulse Fintech | pulse-fintech | Fintech/payments | C:\Users\mateo\Desktop\pulse-fintech | building | Phase 5 | 2026-03-28 | Demo site - 5 views, 4 components, 4 docs |
+| Fuego Gastrobar | fuego-gastrobar | Gastronomy | C:\Users\mateo\Desktop\fuego-gastrobar | building | Phase 5 | 2026-03-28 | Demo site - 5 views, 6 components, 4 docs |
+| Atlas Architects | atlas-architects | Architecture | C:\Users\mateo\Desktop\atlas-architects | building | Phase 5 | 2026-03-28 | Demo site - 5 views, 5 components, 4 docs |
+| Nova Creative | nova-creative | Creative agency | C:\Users\mateo\Desktop\nova-creative | building | Phase 5 | 2026-03-28 | Demo site - 6 views, 5 components, 4 docs |
+| Serene Wellness | serene-wellness | Spa/wellness | C:\Users\mateo\Desktop\serene-wellness | building | Phase 5 | 2026-03-28 | Demo site - 6 views, 6 components, 4 docs |
+| Bolt SaaS | bolt-saas | SaaS/project mgmt | C:\Users\mateo\Desktop\bolt-saas | building | Phase 5 | 2026-03-28 | Demo site - 6 views, 6 components, 4 docs |
+| Heritage Real Estate | heritage-realestate | Real estate premium | C:\Users\mateo\Desktop\heritage-realestate | building | Phase 5 | 2026-03-28 | Demo site - 6 views, 6 components, 4 docs |
+| Kodex Education | kodex-education | Ed-tech/courses | C:\Users\mateo\Desktop\kodex-education | building | Phase 5 | 2026-03-28 | Demo site - 6 views, 7 components, 4 docs |
 
 ## Status values
 
