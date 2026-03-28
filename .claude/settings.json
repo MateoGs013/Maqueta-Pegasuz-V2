@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -Command \"Write-Output ''; Write-Output '[CHECKLIST] Antes de cerrar:'; Write-Output '  - Loading + error states implementados?'; Write-Output '  - prefers-reduced-motion respetado?'; Write-Output '  - resolveImageUrl() en TODA imagen?'; Write-Output '  - Meta tags + JSON-LD en paginas nuevas?'; Write-Output '  - Zero Omission Rule: todos los campos del API mapeados?'; Write-Output '  - docs/ foundation docs completos (design-brief, content-brief, page-plans, motion-spec)?'\""
+            "command": "powershell.exe -NoProfile -Command \"Write-Output ''; Write-Output '[V3 CHECKLIST] Before closing:'; Write-Output '  - Loading + error states implemented?'; Write-Output '  - prefers-reduced-motion respected in EVERY animated component?'; Write-Output '  - GSAP cleanup (ctx?.revert()) in EVERY component?'; Write-Output '  - Lenis smooth scroll initialized?'; Write-Output '  - Custom cursor with 3+ states?'; Write-Output '  - Magnetic buttons on all CTAs?'; Write-Output '  - Page transitions implemented?'; Write-Output '  - Atmospheric canvas present?'; Write-Output '  - Motion variety: no consecutive sections share technique?'; Write-Output '  - Foundation docs complete (design-brief, content-brief, page-plans, motion-spec)?'; Write-Output '  - 12-point creative validation passed?'\""
           }
         ]
       }

@@ -1,57 +1,151 @@
-# CLAUDE.md — Pegasuz Maqueta V2
+# CLAUDE.md — Pegasuz Maqueta V3 (Creative Pipeline Rebuild)
 
-## Reglas cardinales (leer primero, cumplir siempre)
+## Philosophy
 
-1. **Design-first:** sin `creative-design` brief, no se escribe CSS ni se eligen colores
-2. **Content-first:** `docs/content-brief.md` se crea antes de cualquier visual
-3. **Identidad unica:** paleta, tipografia, easing y atmosfera propios por proyecto. Nunca reutilizar
-4. **3D obligatorio:** Tier 1 minimo (shader atmosferico o campo de particulas)
-5. **Variacion de animacion:** cada seccion usa tecnica diferente. Nunca el mismo fade-up en todas
-6. **Docs son ley:** no improvisar. Si el page-plan dice 9 secciones, implementar 9. Si el content-brief dice "Schedule a code review" como CTA, usar eso
+Every site this system produces is Awwwards-competitive. Not as aspiration — as hard requirement. Mediocrity does not pass. Generic does not ship.
 
----
-
-## Anti-patterns (bloquear ANTES de codear)
-
-**Frontend:** No axios fuera de `api.js`. No HTTP fuera de `services/`. No JSON.parse en views. No slugs hardcodeados (siempre `VITE_CLIENT_SLUG`). No stores sin loading/error. No OR chains en extraction. No static route imports. No CMS data para features. No paginas sin meta tags. No imagenes sin `resolveImageUrl()`. No animar width/height/top/left (solo transform y opacity).
-
-**Backend:** No `new PrismaClient()` directo. No hardcoded DB names. No raw SQL con interpolacion. No endpoints sin auth.
+**Three laws**:
+1. **Nothing is optional** — Lenis, custom cursor, page transitions, preloader, atmospheric canvas, section variety. ALL ship with EVERY project.
+2. **Quality gates block progress** — `creative-qa` runs between every step. Failures mean fix, not skip.
+3. **Docs are law** — If the recipe card says "blur-to-clear reveal with stagger 0.04s", that's what gets built. No improvisation.
 
 ---
 
-## Arquitectura (locked)
+## Cardinal Rules
 
-**Plataforma:** Pegasuz Core — SaaS multi-tenant. Node.js + Express + Prisma + MySQL. Cada cliente: propia DB + frontend Vue 3.
-
-**Backend chain:** `HTTP (x-client: <slug>) -> clientResolver -> prismaManager.getPrisma(db) -> Controller -> Service -> Prisma`
-
-**Frontend chain:** `View.vue -> Pinia Store -> Service (src/services/) -> api.js (src/config/api.js) -> API (x-client)`
-
-**Inviolable:** Tenant isolation dinamica. Cadena completa sin atajos. CMS content (`contentStore.get`) separado de feature data. Imagenes con `resolveImageUrl()`. Naming: routes kebab-case, DB snake_case, functions camelCase. Auth: `authenticate` + `authorize(...roles)`.
-
-**Features:** `properties, services, projects, blog, collections, categories, tags, media, messages, settings, analytics, translations, menu, content`. Verificar feature flags antes de bindear.
+1. **Design-first**: Without `creative-director` brief, no CSS, no colors, no code
+2. **Content-first**: `docs/content-brief.md` exists before any visual decisions
+3. **Unique identity**: Palette, typography, easing, atmosphere — unique per project. NEVER reuse
+4. **Atmosphere mandatory**: Every project ships with persistent WebGL/Canvas atmospheric layer
+5. **Motion variety enforced**: Each section uses a different motion technique. No same fade-up on all
+6. **Section recipes are law**: If page-plans says 10 fields per section, all 10 get implemented
+7. **12-point validation**: Creative concept must pass ALL 12 points before any code is written
 
 ---
 
-## Foundation docs (crear ANTES de codigo)
+## Anti-Patterns (HARD BLOCKS)
 
-Cada skill lee de `docs/`. Si un archivo no existe, crearlo antes de codear. Templates en `docs/_templates/`.
+### Creative
+- NO dark+orange palette (#0a0a0a + #ff6a00 or similar)
+- NO power3.out as default easing
+- NO 32px Y offset + 0.8s duration (the generic trinity)
+- NO same fade-up animation on all sections
+- NO centered-text-on-solid-color hero
+- NO hover: scale(1.05) as only card interaction
+- NO system cursor (custom cursor mandatory)
+- NO mobile = "same but flex-direction: column"
+- NO Inter/Poppins/Montserrat as primary font
+- NO spinner preloader (brand-themed required)
 
-**Orden obligatorio:**
-1. Leer SKILL.md de: creative-design, page-scaffold, gsap-motion, vue-component
-2. `docs/content-brief.md` — copy especifico (content-first). Nunca generico. CMS keys + fallbacks
-3. `docs/design-brief.md` — via `creative-design`. Tokens implementables (paleta, tipo, spacing, radii, atmosfera, responsive, technique mapping)
-4. `docs/page-plans.md` — secciones por pagina con proposito narrativo. Minimos: homepage 8-14, about/services 6-10, portfolio 5-8, case-study 6-10, contact 3-5. Cada seccion: proposito, layout, contenido, motion. Ritmo: alternar energeticas y contemplativas
-5. `docs/motion-spec.md` — coreografia completa para `gsap-motion` (hero timeline, scroll reveals, hover, transitions, scroll-linked, reduced-motion)
-6. RECIEN AHORA escribir codigo
-
-**Que doc consultar:** texto -> content-brief | colores/tipo/spacing/radii/responsive -> design-brief | secciones/layout -> page-plans | animaciones -> motion-spec
+### Technical
+- NO axios outside `api.js`
+- NO HTTP outside `services/`
+- NO JSON.parse in views
+- NO hardcoded slugs (use `VITE_CLIENT_SLUG`)
+- NO stores without loading/error states
+- NO static route imports (lazy loading required)
+- NO animate width/height/top/left (only transform + opacity)
+- NO pages without meta tags
+- NO images without `resolveImageUrl()`
 
 ---
 
-## Response extraction
+## Architecture (locked)
 
-| Entity | API response | Store extraction |
+**Platform**: Pegasuz Core — SaaS multi-tenant. Node.js + Express + Prisma + MySQL.
+
+**Backend chain**: `HTTP (x-client) → clientResolver → prismaManager → Controller → Service → Prisma`
+
+**Frontend chain**: `View.vue → Pinia Store → Service → api.js → API (x-client)`
+
+**Inviolable**: Tenant isolation. Complete chain, no shortcuts. CMS content separate from features. Images via `resolveImageUrl()`. Routes kebab-case, DB snake_case, functions camelCase.
+
+---
+
+## Foundation Docs (BEFORE code)
+
+Templates in `docs/_templates/`. ALL 4 docs completed before any code.
+
+| Order | Doc | Skill | Content |
+|-------|-----|-------|---------|
+| 1 | `docs/content-brief.md` | `creative-director` | All copy, CTAs, voice, typography-as-design notes |
+| 2 | `docs/design-brief.md` | `creative-director` | Visual tokens, palette, type, spacing, atmosphere, cursor, transitions |
+| 3 | `docs/page-plans.md` | `creative-director` | Section Recipe Cards (10 fields each), motion category map |
+| 4 | `docs/motion-spec.md` | `creative-director` | Easing, hero timeline, per-section techniques, cursor, preloader |
+
+**Which doc to consult**: text → content-brief | colors/type/spacing → design-brief | sections/layout → page-plans | animation → motion-spec
+
+---
+
+## Pipeline — New Project
+
+```
+User describes project
+    │
+    ▼
+[1] creative-director (discovery → concept → 12-point validation)
+    │ HARD GATE: 12-point creative validation
+    ▼
+[2] Foundation docs (4 files + section recipe cards)
+    │ creative-qa Gate 1: Concept Validation
+    ▼
+[3] atmosphere-layer (persistent canvas FIRST — foundation of atmosphere)
+    │ creative-qa Gate 2: Atmosphere Validation
+    ▼
+[4] section-builder (ONE section at a time, 7 layers each)
+    │ creative-qa Gate 3: Section Validation (per section)
+    ▼ (repeat for all sections)
+[5] motion-system (page-level: Lenis, cursor, transitions, preloader)
+    │ creative-qa Gate 4: Motion Validation
+    ▼
+[6] Final assembly (router, App.vue, global styles)
+    │ creative-qa Gate 5: Final Coherence
+    ▼
+[7] Audit chain: a11y → seo → responsive → css → perf
+```
+
+### Mandatory Baseline (ships with EVERY project)
+- Lenis smooth scroll
+- Custom cursor (3+ states)
+- Magnetic buttons on CTAs
+- Page transitions (exit + enter)
+- Brand preloader (not spinner)
+- Atmospheric canvas (WebGL/Canvas, mouse + scroll reactive)
+- Section-specific motion (each section different technique)
+- Hero entrance timeline (4+ steps)
+
+---
+
+## Skill Dispatch
+
+**Entry point**: "nuevo proyecto" / "new project" / "/new-project" → `creative-director`
+
+### Creative Pipeline (strict order)
+
+| Step | Skill | Output | Gate |
+|------|-------|--------|------|
+| 1 | `creative-director` | All 4 foundation docs | 12-point validation |
+| 2 | `atmosphere-layer` | Persistent WebGL/Canvas | Gate 2 |
+| 3 | `section-builder` (per section) | Section components | Gate 3 (each) |
+| 4 | `motion-system` | Lenis, cursor, transitions, preloader | Gate 4 |
+| 5 | `creative-qa` | Final coherence check | Gate 5 |
+| 6 | Audits (parallel) | CRITICAL/WARNING/SUGGESTION | — |
+
+### Pegasuz Pipeline (unchanged)
+
+`pegasuz-integrator` → `pegasuz-backend-development` → `pegasuz-feature-binding` → `pegasuz-frontend-normalization` → `pegasuz-frontend-executor` → `pegasuz-validation-qa` → `pegasuz-documentation-system`
+
+### Audits
+
+`a11y-audit` → `seo-audit` → `responsive-review` → `css-review` → `perf-check` → `project-review`
+
+Resolve CRITICAL before shipping.
+
+---
+
+## Response Extraction (Pegasuz)
+
+| Entity | API Response | Store Extraction |
 |--------|-------------|-----------------|
 | Properties, Services, Categories, Tags, Menu, Media | Direct array | `items = data` |
 | Posts | `{ posts, pagination }` | `items = data.posts` |
@@ -62,74 +156,51 @@ Cada skill lee de `docs/`. Si un archivo no existe, crearlo antes de codear. Tem
 
 ---
 
-## Pipelines
-
-### Nuevo cliente (onboarding via `pegasuz-integrator`)
-
-Phase 0: task breakdown -> Phase 1: provisionar (POST /api/core-admin/clients) -> Phase 2: feature flags -> Phase 3: verificar endpoints -> Phase 4: `pegasuz-frontend-normalization` -> Phase 5: `pegasuz-feature-binding` -> Phase 5a: foundation docs (los 4 archivos de arriba) -> Phase 5b: UI/UX leyendo de docs/ -> Phase 6: `pegasuz-validation-qa` -> Phase 7: `pegasuz-documentation-system`
-
-### Feature nuevo
-
-1. Verificar scope -> 2. Backend con `pegasuz-backend-development` si falta -> 3. Binding con `pegasuz-feature-binding` si falta -> 4. Plan con `creative-design` -> 5. UI siguiendo plan -> 6. `pegasuz-validation-qa` -> 7. Documentar
-
-### Pagina/componente
-
-1. Leer page-plans (crear si no existe) -> 2. Leer content-brief (escribir si falta) -> 3. HTML semantico respetando secciones -> 4. Datos via store -> 5. Tokens del design-brief -> 6. Estilos -> 7. Motion via motion-spec -> 8. SEO meta + JSON-LD -> 9. Checklist: loading, error, reduced-motion, responsive, a11y, zero omission
-
----
-
-## Skill dispatch
-
-**Entry point:** "nuevo/crear/iniciar proyecto" o "/new-project" -> `new-project` (wizard obligatorio antes de codear)
-
-**Frontend pipeline (orden estricto, cada paso depende del anterior):**
-
-| Paso | Skill | Output |
-|------|-------|--------|
-| 1 | `creative-design` | `docs/design-brief.md` |
-| 2 | `page-scaffold` | Paginas con N secciones |
-| 3 | `threejs-3d` | Escenas WebGL (atmosfera fundacional, no add-on) |
-| 4 | `vue-component` | Componentes reutilizables |
-| 5 | `gsap-motion` | Animaciones implementadas |
-| 6 | Auditorias (en paralelo) | CRITICAL/WARNING/SUGGESTION |
-
-**Backend/orquestacion:** `pegasuz-integrator` (onboarding) | `pegasuz-backend-development` (endpoints) | `pegasuz-feature-binding` (API->frontend) | `pegasuz-frontend-normalization` (scaffold) | `pegasuz-frontend-executor` (orquestar frontend e2e) | `pegasuz-validation-qa` (QA) | `pegasuz-documentation-system` (docs)
-
-**Auditorias (tambien via `vue-composable`, `find-code` y `project-review`):**
-`pegasuz-validation-qa` -> `a11y-audit` -> `seo-audit` -> `responsive-review` -> `css-review` -> `perf-check` -> `project-review` (health check global). Resolver CRITICAL antes de avanzar.
-
----
-
-## Estructura frontend
+## Frontend Structure
 
 ```
-Clientes/<slug>/
-  docs/                     <- 4 foundation docs
+Project/
+  docs/                          ← 4 foundation docs
   src/
-    config/api.js           <- Single axios + resolveImageUrl + x-client
+    config/api.js                ← axios + resolveImageUrl + x-client
     services/<entity>Service.js
-    stores/content.js       <- CMS bootstrap (get, getJSON)
-    stores/<entity>.js      <- Loading, error, pagination
-    views/<Entity>View.vue + <Entity>DetailView.vue
-    components/             <- UI reutilizable
-    composables/            <- Logica compartida (NO data loading)
-    router/index.js         <- Lazy loading, scrollBehavior
-    styles/                 <- Design tokens
-    App.vue + main.js       <- Pinia + CMS bootstrap before mount
-  .env                      <- VITE_API_URL + VITE_CLIENT_SLUG
+    stores/content.js            ← CMS bootstrap
+    stores/<entity>.js           ← loading, error, pagination
+    views/<Page>View.vue
+    components/
+      AtmosphereCanvas.vue       ← persistent WebGL/Canvas
+      AppCursor.vue              ← custom cursor (3+ states)
+      AppPreloader.vue           ← brand preloader
+      AppHeader.vue
+      AppFooter.vue
+      sections/                  ← per-section components
+    composables/
+      useLenis.js                ← smooth scroll
+      useMagnetic.js             ← magnetic buttons
+    router/index.js              ← lazy loading
+    styles/tokens.css            ← design tokens + cursor + transitions
+    App.vue                      ← Lenis + cursor + transitions + router-view
+    main.js
+  .env
 ```
 
 ---
 
-## Motion fallbacks (solo si NO hay motion-spec)
+## Motion Fallbacks (ONLY if no motion-spec exists)
 
-Easing: power3.out | Duration: 0.8s | Y offset: 32px | ScrollTrigger: once: true | Cleanup: clearProps: 'all' | Reduced motion: obligatorio
+These are EMERGENCY fallbacks, not defaults. Every project should have a motion-spec.
 
 ```js
+// Easing: brand easing from design-brief (NEVER power3.out by default)
+// Duration: from design-brief (NEVER 0.8s by default)
+// Y offset: from design-brief (NEVER 32px by default)
+// ScrollTrigger: once: true
+// Cleanup: gsap.context + onBeforeUnmount
+
 let ctx = null
 onMounted(() => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-  ctx = gsap.context(() => { /* animaciones */ }, rootEl)
+  ctx = gsap.context(() => { /* animations */ }, rootEl)
 })
 onBeforeUnmount(() => ctx?.revert())
 ```
