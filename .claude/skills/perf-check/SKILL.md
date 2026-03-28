@@ -6,6 +6,17 @@ description: Audit any frontend project for performance issues. Framework-agnost
 # Performance Audit — Frontend (Universal)
 
 Check any frontend project for performance issues affecting Core Web Vitals and user experience.
+n## Prerequisites
+
+- Frontend project with package.json and source files accessible
+- Runs post-construction -- after components, animations, and images are in place
+- No foundation docs required, but docs/design-brief.md 3D tier info helps assess WebGL performance
+
+## Relevant docs/ files
+
+- docs/design-brief.md -- 3D/WebGL tier (affects performance budget), image treatment strategy
+- package.json -- dependency audit for heavy libraries
+- Build config (vite.config.*, webpack.config.*) -- code splitting and optimization settings
 
 ## Phase 1: Discover project context
 

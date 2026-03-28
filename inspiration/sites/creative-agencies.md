@@ -1,7 +1,46 @@
 # Inspiration: Creative Agencies
 
 > Referencias de agencias creativas con presencia web premium.
-> Buscar en Awwwards, FWA, CSS Design Awards.
+> Fuentes: Awwwards, FWA, CSS Design Awards, Siteinspire.
+> Actualizado: Marzo 2026
+
+---
+
+## Referencias actuales (2025-2026)
+
+### Unseen Studio — 2025 Wrapped
+- **URL:** https://www.awwwards.com/sites/unseen-studio-2025-wrapped
+- **Awwwards:** Site of the Day (Mar 2026) + Developer Award
+- **Tecnica:** Annual review con motion-first narrative, scroll-driven storytelling, tipografia oversized
+- **Implementar con:** Vue 3 + GSAP ScrollTrigger pinned sections + SplitType char animations
+
+### Immersive Garden
+- **URL:** https://immersive-g.com/
+- **Awwwards:** Studio of the Year 2017, multiples SOTD
+- **Tecnica:** WebGL immersivo como core del brand, escenas 3D reactivas al mouse
+- **Implementar con:** Three.js custom scenes + GSAP page transitions + Lenis smooth scroll
+
+### Resn
+- **URL:** https://resn.co.nz/
+- **Awwwards:** Agency of the Year 2016
+- **Tecnica:** Interactividad extrema, storytelling no-lineal, WebGL backgrounds
+- **Implementar con:** Three.js shaders + GSAP Draggable + custom cursor composable
+
+### Darknode
+- **URL:** https://www.awwwards.com/sites/darknode
+- **Awwwards:** Site of the Day (Mar 2026)
+- **Tecnica:** Dark UI extremo, glitch aesthetics, particle fields, neon accents
+- **Implementar con:** Three.js particles + GSAP text scramble + dark CSS custom properties
+
+### Fello Agency
+- **URL:** https://www.awwwards.com/sites/fello-agency
+- **Tecnica:** Horizontal scroll gallery, split-screen layouts, magnetic buttons
+- **Implementar con:** GSAP horizontal scroll + magnetic hover composable + Vue transition groups
+
+### CERNE Studio
+- **URL:** https://www.awwwards.com/sites/cerne-studio
+- **Tecnica:** Tipografia como protagonista, minimal B&W + accent, motion en cada letra
+- **Implementar con:** SplitType + GSAP stagger + variable fonts + CSS clamp() fluid type
 
 ---
 
@@ -40,3 +79,4 @@
 - "design studio website"
 - "digital agency case studies"
 - "interactive portfolio"
+- "studio of the year"

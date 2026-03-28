@@ -6,6 +6,16 @@ description: Audit any frontend project for accessibility (a11y) issues followin
 # Accessibility Audit — WCAG 2.1 AA (Universal)
 
 Audit any frontend component or page for accessibility. Framework-agnostic.
+n## Prerequisites
+
+- Frontend project with source files accessible for reading
+- Runs post-construction -- after pages/components have been built
+- `docs/design-brief.md` color palette is useful for contrast checks
+
+## Relevant docs/ files
+
+- `docs/design-brief.md` -- color palette hex values for contrast ratio verification
+- `docs/motion-spec.md` -- check if prefers-reduced-motion handling is specified
 
 ## Phase 1: Discover project context
 

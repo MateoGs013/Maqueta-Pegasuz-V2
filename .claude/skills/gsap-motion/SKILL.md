@@ -4,10 +4,22 @@ description: Implement frontend animations that adapt to the project's stack and
 ---
 
 # Animation System — Award-Level Motion
+n## Prerequisites
+
+- Pages/components must already be scaffolded (HTML structure exists for animation targeting)
+- Design Brief strongly recommended -- docs/design-brief.md contains motion choreography
+- Motion Spec strongly recommended -- docs/motion-spec.md contains brand easing and timing
+- If neither exists, skill uses project aesthetic direction or CLAUDE.md emergency fallbacks
+
+## Relevant docs/ files
+
+- docs/motion-spec.md -- PRIMARY: brand easing, hero timeline, scroll reveal defaults, page transitions
+- docs/design-brief.md -- SECONDARY: motion choreography section within the design brief
+- docs/page-plans.md -- section purposes determine animation category selection
 
 Implement animations that create immersive experiences. Motion is not decoration — it's storytelling, rhythm, and brand identity.
 
-**If a Design Brief exists, its Motion Choreography section is the spec. Implement exactly what it describes.**
+**`docs/motion-spec.md` is the primary source of truth for all motion decisions.** If it exists, implement exactly what it describes. The Design Brief's Motion Choreography section is also relevant. If neither exists, request them before proceeding.
 
 ## Phase 1: Discover project context
 
@@ -18,10 +30,10 @@ Implement animations that create immersive experiences. Motion is not decoration
    - None → CSS transitions/animations only
 2. **Text splitting**: Check for `split-type`, `splitting` — these enable character/word/line animation
 3. **Smooth scroll**: Check for `lenis`, `@studio-freight/lenis`, `locomotive-scroll`
-4. **Motion docs**: Glob for `docs/motion*`, `docs/animation*`, `docs/design*`
+4. **Motion spec (PRIMARY)**: Read `docs/motion-spec.md` first — this is the source of truth for all motion values. Also check `docs/design-brief.md` for brand easing
 5. **Existing animations**: Grep for `gsap.from`, `gsap.to`, `ScrollTrigger`, `@keyframes` in `src/`
 6. **Reduced motion**: Check if project already respects `prefers-reduced-motion`
-7. **Design Brief**: If `creative-design` produced a brief, read the Motion Choreography section
+7. **Design Brief**: Also read `docs/design-brief.md` for the Motion Choreography section (complements motion-spec.md)
 
 ## Phase 2: Understand motion personality
 

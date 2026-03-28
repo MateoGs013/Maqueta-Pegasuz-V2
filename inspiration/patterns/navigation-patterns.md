@@ -59,3 +59,19 @@
 - Seccion grande con CTA antes del footer real
 - "Ready to start?" + formulario o boton
 - **Conversion:** services, agencies, SaaS
+
+---
+
+## Tendencias de navegacion 2025-2026
+
+### View Transitions Navigation
+- Transicion nativa del browser entre paginas (View Transitions API)
+- **Implementar:** `view-transition-name` CSS + `document.startViewTransition()` + Vue Router hooks
+
+### Scroll-Driven Nav State
+- Nav que cambia estado basado en CSS scroll-driven animations (sin JS)
+- **Implementar:** CSS `animation-timeline: scroll()` para opacity/color changes
+
+### Command Palette / Search-First
+- Ctrl+K pattern (Raycast/Linear inspired), busqueda global como nav primaria
+- **Implementar:** Vue 3 teleport modal + keyboard shortcut composable + fuzzy search

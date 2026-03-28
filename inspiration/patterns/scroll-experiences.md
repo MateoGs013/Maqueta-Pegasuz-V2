@@ -56,6 +56,24 @@
 
 ---
 
+### 9. CSS Scroll-Driven Animations (2025-2026 -- NO JS)
+- `animation-timeline: scroll()` para scroll progress, `animation-timeline: view()` para view progress
+- Carga: cero JS. Chrome 115+, Firefox (flag). Safari pendiente — usar polyfill o GSAP fallback.
+- **Cuando:** progress bars, fade-ins, parallax simple
+
+```css
+.progress-bar {
+  animation: grow-progress linear;
+  animation-timeline: scroll();
+}
+@keyframes grow-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+```
+
+---
+
 ## Reglas de scroll
 
 | Regla | Razon |
@@ -65,3 +83,4 @@
 | Reveals: once: true | Re-animating on scroll up es molesto |
 | Mobile: reducir/eliminar parallax | Performance y usabilidad |
 | prefers-reduced-motion: skip all | Respeto por accesibilidad |
+| CSS scroll-driven first | Usar CSS nativo cuando sea suficiente, GSAP para lo complejo |

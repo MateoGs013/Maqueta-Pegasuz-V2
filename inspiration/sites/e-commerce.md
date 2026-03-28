@@ -2,6 +2,33 @@
 
 > Referencias de e-commerce premium y experiencial.
 > No Amazon/MercadoLibre — sino marcas DTC con experiencia de compra unica.
+> Actualizado: Marzo 2026
+
+---
+
+## Referencias actuales (2025-2026)
+
+### Belle Oaks
+- **URL:** https://www.awwwards.com/sites/belle-oaks
+- **Awwwards:** Honorable Mention (Jan 2026)
+- **Tecnica:** Editorial photography, scroll-triggered reveals, muted earth palette
+- **Implementar con:** Vue 3 + GSAP clip-path reveals + Lenis + CSS grid editorial
+
+### Oura Ring
+- **URL:** https://ouraring.com/
+- **Tecnica:** Product 3D viewer, health data viz, dark premium, scroll-driven product story
+- **Implementar con:** Three.js GLTF product viewer + GSAP pinned scrolls + dark palette
+
+### BOMBON Royal Swedish Candy
+- **URL:** https://www.awwwards.com/sites/bombon-royal-swedish-candy
+- **Awwwards:** Honorable Mention (Oct 2025)
+- **Tecnica:** Color explosivo, animaciones playful, cart drawer con micro-interactions
+- **Implementar con:** Vue 3 cart drawer + GSAP playful stagger + FLIP add-to-cart
+
+### Adanola
+- **URL:** https://www.adanola.com/
+- **Tecnica:** Gen Z appeal, bold typography, UGC/Instagram integration
+- **Implementar con:** Vue 3 + GSAP text reveals + lazy image grid
 
 ---
 

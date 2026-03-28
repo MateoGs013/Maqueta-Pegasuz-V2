@@ -7,20 +7,27 @@ description: Scaffold a new page/view with routing and data integration, adaptin
 
 Scaffold pages that are complete, immersive experiences — not skeleton templates. Every page tells a story through its sections, motion, and content density.
 
-**This skill requires a Design Brief from `creative-design` as input.** If no brief exists, request one before proceeding.
+**This skill requires `docs/page-plans.md` (section architecture) and `docs/design-brief.md` (visual tokens) as primary inputs.** If either file is missing, create it before proceeding.
+
+## Prerequisites
+
+- Design Brief MUST exist -- docs/design-brief.md produced by creative-design skill. If missing, invoke creative-design first.
+- Content Brief recommended -- docs/content-brief.md for page copy.
+- Page Plans recommended -- docs/page-plans.md for section architecture.
+- Project must have Vue 3 + Vue Router installed
 
 ## Phase 1: Gather context
 
-### 1. Design Brief (MANDATORY)
+### 1. Page Plans + Design Brief (MANDATORY)
 
-Read the Design Brief produced by `creative-design`. Extract:
+Read `docs/page-plans.md` first — it defines WHAT each page contains (sections, purposes, narrative arc). Then read `docs/design-brief.md` — it defines HOW it looks and feels. Also read `docs/content-brief.md` for copy and `docs/motion-spec.md` for animation choreography. Extract:
 - Section architecture (the ordered list of sections with purpose, layout, motion)
 - Visual identity tokens (colors, typography, spacing)
 - Motion choreography (easing, durations, scroll behaviors)
 - Atmospheric system (grain, glows, backgrounds)
 - Responsive strategy
 
-If no Design Brief exists for this project/page, **stop and invoke `creative-design` first**.
+If `docs/page-plans.md` or `docs/design-brief.md` is missing, **stop and create them first** (page-plans via the wizard, design-brief via `creative-design`).
 
 ### 2. Project context
 
@@ -35,7 +42,7 @@ If no Design Brief exists for this project/page, **stop and invoke `creative-des
    - Common imports (composables, stores, layout wrappers)
    - Layout/shell patterns
    - Animation patterns already in use
-5. **Design docs**: Glob for `docs/brand*`, `docs/ui*`, `docs/motion*` — read if present.
+5. **Foundation docs**: Read `docs/design-brief.md`, `docs/content-brief.md`, `docs/page-plans.md`, `docs/motion-spec.md` — these are the source of truth for all decisions.
 6. **Available stack**: Check for GSAP, SplitType, Lenis, Three.js in `package.json`
 
 ## Phase 2: Plan the page narrative

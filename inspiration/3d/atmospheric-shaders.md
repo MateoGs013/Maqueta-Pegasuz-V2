@@ -75,12 +75,59 @@ void main() {
 }
 ```
 
+---
+
+## Shaders trending 2025-2026
+
+### 7. Raymarching SDF (Signed Distance Functions)
+- **Referencia:** https://tympanus.net/codrops/2024/07/15/how-to-create-a-liquid-raymarching-scene-using-three-js-shading-language/
+- Renderizado volumetrico en fragment shader sin geometria
+- Formas liquidas, metaballs, organic blobs
+- Puede usar Three.js Shader Language (TSL) para compilar a WebGPU/WebGL
+- **Complejidad:** alta (raymarching loop + SDF combinators)
+- **Best for:** tech, creative, experimental, hero backgrounds
+
+### 8. Dissolve/Disintegration Shader
+- **Referencia:** https://tympanus.net/codrops/2025/02/17/implementing-a-dissolve-effect-with-shaders-and-particles-in-three-js/
+- Objetos que se disuelven en particulas
+- Noise-driven threshold para edge detection
+- Emissive glow en el borde de disolucion
+- **Complejidad:** media-alta (noise + particles + glow)
+- **Best for:** transiciones dramaticas, loading states, hero reveals
+
+### 9. GPGPU Texture Simulation
+- **Referencia:** https://tympanus.net/codrops/2024/12/19/crafting-a-dreamy-particle-effect-with-three-js-and-gpgpu/
+- Simulacion de fisica en GPU via ping-pong FBO (Frame Buffer Object)
+- Positions y velocities almacenados en texturas
+- Curl noise para movimiento organico
+- **Complejidad:** alta (requires FBO setup + compute shaders)
+- **Best for:** particle fields complejos, fluid simulation, generative art
+
+### 10. Chromatic Aberration + Distortion
+- Efecto de lente con separacion RGB
+- Mouse-driven distortion en hover de imagenes
+- Lightweight pero high-impact visual
+- **Complejidad:** baja-media (post-processing shader)
+- **Best for:** portfolio image hovers, gallery transitions
+
+### 11. Three.js Shader Language (TSL)
+- **Referencia:** Three.js docs — WebGPURenderer + TSL nodes
+- Abstraccion de shaders que compila a WGSL (WebGPU) o GLSL (WebGL)
+- API funcional (no raw GLSL strings)
+- Future-proof: prepara para WebGPU sin perder WebGL fallback
+- **Complejidad:** media (nueva API, mejor DX que raw GLSL)
+- **Best for:** cualquier proyecto que quiera prepararse para WebGPU
+
+---
+
 ## Performance budget
 
 | Metrica | Target |
 |---------|--------|
 | Frame time | < 16ms (60fps) |
 | GPU memory | < 50MB |
-| Shader complexity | < 50 instructions |
+| Shader complexity | < 50 instructions (simple), < 200 (complex with fallback) |
 | Canvas size | Match viewport, max 2x pixel ratio |
 | Mobile | Half resolution, simplified shader |
+| WebGPU first | Usar TSL para auto-fallback WebGPU -> WebGL |
+| Raymarching max steps | 64 mobile, 128 desktop |

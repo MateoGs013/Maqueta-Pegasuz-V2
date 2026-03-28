@@ -7,6 +7,20 @@ description: Valida que la lógica de negocio, modelo de datos y UX sean correct
 
 Validás que los datos se muestran con las convenciones del rubro. Cada industria tiene reglas de presentación, jerarquías de info, y flujos de usuario específicos. Un campo mal formateado o una jerarquía incorrecta destruye credibilidad.
 
+## Prerequisites
+
+- `docs/content-brief.md` must exist (entities, copy, business context)
+- `docs/page-plans.md` must exist (sections, layout, what data is shown where)
+- Feature binding must be complete (stores and services exist)
+
+## When NOT to use this agent
+
+- For visual design critique → use `design-critic`
+- For animation review → use `motion-director`
+- For generic UX (not domain-specific) → use `ux-reviewer`
+- For SEO/meta tags → use `seo-content-architect`
+- For tenant isolation → use `tenant-safety-guard`
+
 ## Antes de revisar
 
 1. Identificar el rubro del proyecto
@@ -361,15 +375,15 @@ Reservation {
 
 ---
 
-## Output format
+## Output format (unified severity)
 
 ```
 Por entidad auditada:
 
 DOMINIO: [rubro detectado]
 
-✅ CORRECTO: [campo/feature] — [cómo está implementado]
-🔴 ERROR: [campo/feature] — [qué está mal] → [cómo corregir]
-🟡 MEJORA: [campo/feature] — [convención del rubro que falta] → [recomendación]
-💡 OPORTUNIDAD: [feature del rubro que podría sumarse]
+🔴 CRITICAL: [campo/feature] — [qué está mal] → [cómo corregir]
+🟡 WARNING: [campo/feature] — [convención del rubro que falta] → [recomendación]
+💡 SUGGESTION: [feature del rubro que podría sumarse]
+✅ PASS: [campo/feature] — [cómo está implementado correctamente]
 ```

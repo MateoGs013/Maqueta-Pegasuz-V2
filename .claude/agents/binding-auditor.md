@@ -43,7 +43,21 @@ Para CADA feature verificar:
 | Projects | `{ projects, pagination }` | `data.projects` | Sí |
 | Testimonials | `{ testimonials, pagination }` | `data.testimonials` | Sí |
 | Contacts | `{ contacts, pagination }` | `data.contacts` | Sí |
+| Menu | Direct array | `data` | No |
+| Media | Direct array | `data` | No |
 | SiteContent | `{ tenant, version, contents }` | `data.contents` | No |
+
+## Prerequisitos
+
+- El proyecto debe tener feature binding completado (services + stores existen)
+- `docs/page-plans.md` debe existir para validar qué campos se muestran en cada vista
+- Si no hay binding aún, usar `pegasuz-feature-binding` primero
+
+## Cuándo NO usar este agente
+
+- Para proyectos que no usan Pegasuz (no hay cadena View → Store → Service → API)
+- Para validar solo UI/visual (usar `design-critic` o `ux-reviewer` en su lugar)
+- Para validar solo SEO (usar `seo-content-architect`)
 
 ## Zero Omission Rule
 
@@ -60,14 +74,16 @@ Para cada campo del API response, documentar:
 - ¿Hay fallback para imagen null?
 - ¿El tenant path es correcto?
 
-## Output format
+## Output format (unified severity)
 
 ```
 RESUMEN: X features auditados, Y defectos encontrados
 
 DEFECTOS:
-🔴 [feature] [layer] — [descripción] → [fix]
-🟡 [feature] [layer] — [descripción] → [recomendación]
+🔴 CRITICAL: [feature] [layer] — [descripción] → [fix]
+🟡 WARNING: [feature] [layer] — [descripción] → [recomendación]
+💡 SUGGESTION: [feature] [layer] — [mejora posible]
+✅ PASS: [feature] [layer] — [verificado y correcto]
 
 FIELD COVERAGE:
 | Entidad | Campo | Store | List | Detail | Nota |

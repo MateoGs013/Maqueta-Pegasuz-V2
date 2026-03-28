@@ -63,3 +63,22 @@
 | Border glow | Borde con glow del accent color | Baja |
 | Tilt 3D | Card tilts hacia el mouse (perspective) | Media |
 | Content shift | Contenido se desplaza revelando CTA | Media |
+| Glassmorphism reveal | Frosted glass overlay on hover | Media |
+| View Transition morph | Card morpha a detail (View Transitions API) | Alta |
+| FLIP layout change | Card expande con FLIP animation | Media-Alta |
+
+---
+
+## Tendencias 2025-2026
+
+### Bento Grid (trending)
+- Tiles variados con corner radius exagerado, micro-interactions por tile
+- **Implementar:** CSS Grid template + GSAP per-tile animations
+
+### Glassmorphism Cards
+- backdrop-filter: blur(16px) + background rgba + border semi-transparente
+- **Implementar:** CSS backdrop-filter + border rgba + box-shadow difuso
+
+### Soft Brutalist Cards
+- Bordes gruesos, colores planos, drop shadows offset
+- **Implementar:** CSS border + box-shadow offset + transition transform

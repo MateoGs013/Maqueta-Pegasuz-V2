@@ -2,6 +2,35 @@
 
 > Referencias de portfolios personales y de estudio.
 > Disenadores, desarrolladores, fotografos, artistas.
+> Actualizado: Marzo 2026
+
+---
+
+## Referencias actuales (2025-2026)
+
+### Corentin Bernadou
+- **URL:** https://www.awwwards.com/sites/corentin-bernadou-portfolio
+- **Awwwards:** Site of the Day + Developer Award (Mar 2026)
+- **Tecnica:** 3D interactivo, custom cursor, page transitions fluidas, WebGL background
+- **Implementar con:** Three.js reactive scene + GSAP page transitions + custom cursor composable
+
+### Samsy (SMSY)
+- **URL:** https://samsy.ninja/
+- **Awwwards:** 50+ premios internacionales
+- **Tecnica:** 3D como core, computational design, motion generativo, WebGL experimental
+- **Implementar con:** Three.js custom scenes + GSAP orchestration + generative algorithms
+
+### Good Fella
+- **URL:** https://www.awwwards.com/sites/good-fella
+- **Awwwards:** Site of the Day (Mar 2026)
+- **Tecnica:** Minimal dark, hover-triggered previews, list-based nav, smooth scroll
+- **Implementar con:** GSAP hover timeline + Vue 3 dynamic image preview + Lenis
+
+### Gavin Schneider Productions
+- **URL:** https://www.awwwards.com/sites/gavin-schneider-productions
+- **Awwwards:** Site of the Day (Mar 2026) + Portfolio Honors
+- **Tecnica:** Video-first, cinematic transitions, fullscreen media
+- **Implementar con:** Vue 3 video lazy component + GSAP clip-path transitions + Lenis
 
 ---
 

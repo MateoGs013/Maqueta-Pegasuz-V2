@@ -13,6 +13,7 @@
   --color-bg-secondary: ;
   --color-bg-elevated: ;
   --color-bg-overlay: ;
+  --color-bg-inverse: ;
 
   /* Text */
   --color-text-primary: ;
@@ -24,6 +25,12 @@
   --color-accent-primary: ;
   --color-accent-hover: ;
   --color-accent-subtle: ;
+  --color-accent-secondary: ;
+
+  /* Borders & Dividers */
+  --color-border-default: ;
+  --color-border-subtle: ;
+  --color-border-strong: ;
 
   /* Semantic */
   --color-success: ;
@@ -33,6 +40,7 @@
   /* Atmospheric */
   --color-glow: ;
   --color-gradient-start: ;
+  --color-gradient-mid: ;
   --color-gradient-end: ;
 
   /* ─── Typography ─── */
@@ -101,6 +109,12 @@
   --shadow-lg: ;
   --shadow-glow: ;
 
+  /* ─── Borders ─── */
+  --border-width-thin: 1px;
+  --border-width-medium: 2px;
+  --border-width-thick: 3px;
+  --border-style: solid;
+
   /* ─── Effects ─── */
   --grain-opacity: 0;
   --blur-backdrop: ;
@@ -109,6 +123,15 @@
   --transition-fast: 150ms ease;
   --transition-base: 300ms ease;
   --transition-slow: 500ms ease;
+  --transition-easing: cubic-bezier(0.33, 1, 0.68, 1); /* power3.out equivalent */
+
+  /* ─── Z-index ─── */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
 }
 
 /* ─── Reset ─── */

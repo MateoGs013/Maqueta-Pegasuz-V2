@@ -2,6 +2,27 @@
 
 > Referencias de sitios editoriales, revistas digitales, blogs premium.
 > The New York Times, Bloomberg, It's Nice That, Dezeen.
+> Actualizado: Marzo 2026
+
+---
+
+## Referencias actuales (2025-2026)
+
+### It's Nice That
+- **URL:** https://www.itsnicethat.com/
+- **Tecnica:** Magazine grid asimetrico, category pills con color, serif/sans pairing
+- **Implementar con:** CSS Grid template-areas + Vue 3 dynamic card + GSAP stagger reveals
+
+### Dezeen
+- **URL:** https://www.dezeen.com/
+- **Tecnica:** Clean grid, featured article hero, typography-first hierarchy, high-contrast B&W
+- **Implementar con:** CSS Grid auto-fill + Vue 3 article card variants + reading progress bar
+
+### FC Porto Memorial
+- **URL:** https://www.awwwards.com/sites/fc-porto-memorial
+- **Awwwards:** Site of the Day (Mar 2026)
+- **Tecnica:** Storytelling editorial, scroll-driven narrative, parallax photography
+- **Implementar con:** GSAP ScrollTrigger pinned sections + parallax layers + SplitType headers
 
 ---
 

@@ -7,6 +7,20 @@ description: Verifica SEO técnico y calidad del contenido. Cada página necesit
 
 Auditás SEO técnico y calidad de contenido. No solo que los tags estén — que sean buenos.
 
+## Prerequisites
+
+- `docs/content-brief.md` must exist (SEO copy, titles, descriptions)
+- Pages must be implemented to audit their meta tags
+- Router must be configured to verify navigation and canonicals
+
+## When NOT to use this agent
+
+- For visual design quality → use `design-critic`
+- For motion/animation → use `motion-director`
+- For UX flow/conversion → use `ux-reviewer`
+- For data binding → use `binding-auditor`
+- For performance (bundle, images) → use `perf-check` skill
+
 ## Antes de auditar
 
 Leer `docs/content-brief.md` sección "SEO copy" — el title y description de cada página deben coincidir con lo definido allí.
@@ -55,13 +69,15 @@ Leer `docs/content-brief.md` sección "SEO copy" — el title y description de c
 - ¿Las descriptions tienen propuesta de valor? (no solo describe la página)
 - ¿Los alt de imágenes son descriptivos? (no "imagen" o vacíos)
 
-## Output format
+## Output format (unified severity)
 
 ```
 Por página:
 | Página | title ✓/✗ | desc ✓/✗ | OG ✓/✗ | JSON-LD ✓/✗ | H1 ✓/✗ | Estado |
 
 ISSUES:
-🔴 [página] — [descripción del problema] → [fix concreto]
-🟡 [página] — [descripción] → [recomendación]
+🔴 CRITICAL: [página] — [descripción del problema] → [fix concreto]
+🟡 WARNING: [página] — [descripción] → [recomendación]
+💡 SUGGESTION: [página] — [mejora posible]
+✅ PASS: [página] — [todo correcto]
 ```

@@ -7,6 +7,19 @@ description: Verifica el aislamiento multi-tenant en proyectos Pegasuz. Un leak 
 
 Verificás que ningún cambio comprometa el aislamiento entre tenants. Stop inmediato ante cualquier red flag.
 
+## Prerequisites
+
+- Project must be a Pegasuz multi-tenant project
+- `src/config/api.js` must exist (to verify x-client header)
+- `.env` must exist (to verify VITE_CLIENT_SLUG)
+
+## When NOT to use this agent
+
+- For non-Pegasuz projects (standalone Vue apps without multi-tenant architecture)
+- For visual/design review → use `design-critic`
+- For UX flow review → use `ux-reviewer`
+- For SEO → use `seo-content-architect`
+
 ## Frontend
 
 ### Configuración
@@ -48,11 +61,11 @@ Verificás que ningún cambio comprometa el aislamiento entre tenants. Stop inme
 🚨 Image URL sin tenant path → usar resolveImageUrl() con tenant
 ```
 
-## Output format
+## Output format (unified severity)
 
 ```
-🚨 CRÍTICO: [descripción exacta + archivo + línea + cómo arreglar]
-🔴 VIOLACIÓN: [aislamiento comprometido]
-🟡 WARNING: [riesgo potencial]
-🟢 OK: [componente verificado y seguro]
+🔴 CRITICAL: [descripción exacta + archivo + línea + cómo arreglar — tenant isolation broken]
+🟡 WARNING: [riesgo potencial de leak entre tenants]
+💡 SUGGESTION: [hardening recomendado]
+✅ PASS: [componente verificado y seguro]
 ```

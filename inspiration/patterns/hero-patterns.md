@@ -55,6 +55,22 @@
 - Pin + scrub timeline
 - **Mejor para:** storytelling, case studies, portfolios
 
+### 9. Bento Hero (2025-2026)
+- Grid estilo bento con multiples tiles animadas
+- Micro-interactions dentro de cada tile
+- **Mejor para:** SaaS, tech products
+- **Implementar:** CSS Grid template-areas + GSAP stagger tiles
+
+### 10. Interactive Calculator/Tool Hero (2025-2026)
+- Herramienta funcional ES el hero, engagement instantaneo
+- **Mejor para:** fintech, pricing tools, SaaS
+- **Implementar:** Vue 3 reactive component + GSAP number animations
+
+### 11. Glassmorphism Layered Hero (2025-2026)
+- Capas translucidas con backdrop-filter, depth sin 3D
+- **Mejor para:** SaaS, fintech, modern brands
+- **Implementar:** CSS backdrop-filter + layered positioning + GSAP parallax layers
+
 ---
 
 ## Checklist de hero

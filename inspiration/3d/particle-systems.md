@@ -63,6 +63,41 @@
 | Connection distance | 100-200px | Solo si constellation style |
 | Mouse influence radius | 100-300px | Solo si interactivo |
 
+---
+
+## Sistemas de particulas trending 2025-2026
+
+### 8. GPGPU Curl Noise Particles
+- **Referencia:** https://tympanus.net/codrops/2024/12/19/crafting-a-dreamy-particle-effect-with-three-js-and-gpgpu/
+- Particulas simuladas enteramente en GPU via ping-pong FBO
+- Curl noise para movimiento fluido sin colisiones
+- 10k-100k particulas a 60fps
+- **Complejidad:** alta | **Carga:** media (GPU-bound, no CPU)
+- **Best for:** hero backgrounds premium, generative art, immersive experiences
+
+### 9. Dissolve Particle Burst
+- **Referencia:** https://tympanus.net/codrops/2025/02/17/implementing-a-dissolve-effect-with-shaders-and-particles-in-three-js/
+- Geometria que se desintegra en particulas
+- Noise threshold controla donde se disuelve
+- Emissive glow en bordes de disolucion
+- **Complejidad:** alta | **Carga:** media-alta
+- **Best for:** transiciones, loading reveals, hero animations
+
+### 10. Instanced Mesh Particles
+- InstancedMesh de Three.js para miles de objetos con geometria
+- Cada particula puede ser un cubo, esfera, o custom shape
+- Matrix4 per-instance para posicion/rotacion/escala
+- **Complejidad:** media | **Carga:** media
+- **Best for:** cuando las particulas necesitan ser 3D objects, no solo puntos
+
+### 11. Audio-Reactive Particles
+- Particulas que reaccionan a audio via Web Audio API AnalyserNode
+- Frequency data mapea a size, color, velocity
+- **Complejidad:** media-alta | **Carga:** media
+- **Best for:** musica, audio brands, experiencias interactivas
+
+---
+
 ## Performance
 
 | Count | Desktop FPS | Mobile FPS | Recommendation |
@@ -72,3 +107,4 @@
 | 1000 | 60 | 30-45 | Reduce on mobile |
 | 5000 | 50-60 | < 30 | Desktop only, GPU particles |
 | 10000+ | 30-50 | Skip | Need instanced mesh or GPU compute |
+| 50000+ (GPGPU) | 60 | Skip | FBO ping-pong, desktop only |

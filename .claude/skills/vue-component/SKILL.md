@@ -4,6 +4,18 @@ description: Create Vue 3 SFC components that adapt to the current project's pat
 ---
 
 # Vue 3 Component Creator — Immersive Components
+n## Prerequisites
+
+- Project must have Vue 3 installed
+- Design Brief recommended -- docs/design-brief.md provides all visual tokens
+- If no Design Brief exists, skill will match existing project patterns
+
+## Relevant docs/ files
+
+- docs/design-brief.md -- visual identity tokens, atmospheric system, interaction design
+- docs/motion-spec.md -- animation values for component entrance animations and hover interactions
+- docs/content-brief.md -- copy for any text content within the component
+- Existing components in src/components/ -- always read 3-5 before creating a new one
 
 Create Vue 3 SFCs that are visually ambitious, interaction-rich, and match the project's design language. Components should feel crafted, not templated.
 

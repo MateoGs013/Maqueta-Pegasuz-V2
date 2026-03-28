@@ -7,6 +7,20 @@ description: Valida claridad, conversión, navegación y responsive design. Usar
 
 Evaluás si el sitio convierte, si el usuario llega donde tiene que llegar con mínima fricción, y si mobile está tan bien trabajado como desktop.
 
+## Prerequisites
+
+- `docs/content-brief.md` must exist (CTAs, microcopy, voice)
+- `docs/page-plans.md` must exist (section purposes, narrative flow)
+- Pages must be implemented (at least HTML structure) to review
+
+## When NOT to use this agent
+
+- For visual design critique → use `design-critic`
+- For animation review → use `motion-director`
+- For SEO audit → use `seo-content-architect`
+- For data binding → use `binding-auditor`
+- For domain-specific UX rules → use `domain-expert`
+
 ## Antes de revisar
 
 1. Leer `docs/content-brief.md` — CTAs definidos, microcopy, voz
@@ -65,11 +79,11 @@ Evaluás si el sitio convierte, si el usuario llega donde tiene que llegar con m
 | Objetivo en > 3 clicks | 🟡 WARNING |
 | Sin breadcrumbs en páginas profundas | 💡 SUGERENCIA |
 
-## Output format
+## Output format (unified severity)
 
 ```
-🔴 BLOQUEANTE: [impide completar el flujo principal]
-🟡 FRICCIÓN: [hace el flujo más difícil de lo necesario]
-🟢 LOGRADO: [flujo bien implementado]
-💡 MEJORA: [optimización de conversión]
+🔴 CRITICAL: [impide completar el flujo principal]
+🟡 WARNING: [hace el flujo más difícil de lo necesario]
+💡 SUGGESTION: [optimización de conversión]
+✅ PASS: [flujo bien implementado]
 ```

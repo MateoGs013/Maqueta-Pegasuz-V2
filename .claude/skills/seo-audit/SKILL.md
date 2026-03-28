@@ -6,6 +6,17 @@ description: Audit and implement SEO for any frontend project covering meta tags
 # SEO Audit - Technical and On-Page
 
 Audit any frontend project for SEO issues and generate implementation fixes for meta tags, structured data, and technical SEO.
+n## Prerequisites
+
+- Frontend project with source files and index.html accessible
+- Runs post-construction -- after pages have been built with content
+- For Pegasuz clients: `docs/content-brief.md` provides the copy for meta tags
+
+## Relevant docs/ files
+
+- `docs/content-brief.md` -- headline, description, and page-specific copy for meta tag content
+- `docs/page-plans.md` -- list of all pages that should have unique meta tags
+- `src/router/index.js` -- all routes that need SEO coverage
 
 ## Phase 1: Discover project context
 

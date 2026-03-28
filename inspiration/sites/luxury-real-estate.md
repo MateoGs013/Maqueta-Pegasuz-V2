@@ -2,6 +2,31 @@
 
 > Referencias de real estate de alta gama.
 > Nivel: Sotheby's International Realty, Compass, The Agency, Knight Frank.
+> Actualizado: Marzo 2026
+
+---
+
+## Referencias actuales (2025-2026)
+
+### Sotheby's International Realty
+- **URL:** https://www.sothebysrealty.com/
+- **Tecnica:** Cinematic storytelling, full-screen 4K photography, video tours, minimal UI
+- **Implementar con:** Vue 3 fullscreen hero + lazy video + GSAP parallax + Three.js grain overlay
+
+### Compass
+- **URL:** https://www.compass.com/
+- **Tecnica:** B&W minimalista, 3 tipografias (Tiempos + Harmonia + Pressura), mapa interactivo
+- **Implementar con:** Vue 3 map integration + Pinia search store + GSAP micro-interactions
+
+### The Agency
+- **URL:** https://www.theagencyre.com/
+- **Tecnica:** Photography-first, property cards con hover cinematico, video backgrounds
+- **Implementar con:** Vue 3 lazy images + GSAP scroll reveals + CSS aspect-ratio containers
+
+### Knight Frank
+- **URL:** https://www.knightfrank.com/
+- **Tecnica:** Data-driven design con tipografia premium, mega-menu, neighborhood guides
+- **Implementar con:** Vue 3 dynamic components + GSAP counter animations + responsive grid
 
 ---
 

@@ -1,7 +1,37 @@
 # Inspiration: SaaS Products
 
 > Referencias de productos SaaS con landing pages excepcionales.
-> Linear, Vercel, Raycast, Clerk, Resend.
+> Linear, Vercel, Raycast, Clerk, Resend, Stripe, Mercury.
+> Actualizado: Marzo 2026
+
+---
+
+## Referencias actuales (2025-2026)
+
+### Linear
+- **URL:** https://linear.app/
+- **Tecnica:** Narrative hero, dark mode, gradient mesh, scroll-triggered demos
+- **Implementar con:** Vue 3 dark theme + CSS gradient mesh + GSAP ScrollTrigger demos
+
+### Stripe
+- **URL:** https://stripe.com/
+- **Tecnica:** Vibrant mesh gradients, animated code blocks, interactive demos, bento grid
+- **Implementar con:** Three.js gradient mesh shader + GSAP stagger + Vue 3 code highlight + bento CSS grid
+
+### Raycast
+- **URL:** https://www.raycast.com/
+- **Tecnica:** Gradient overlays, crisp typography, minimalist copy, video demos inline
+- **Implementar con:** CSS radial gradients + GSAP scroll-linked opacity + Vue 3 video lazy component
+
+### Mercury
+- **URL:** https://mercury.com/
+- **Tecnica:** Startup aesthetic, clean sans-serif, subtle animations, dashboard previews
+- **Implementar con:** Vue 3 + GSAP counter stats + CSS grid dashboard mockup
+
+### Resend
+- **URL:** https://resend.com/
+- **Tecnica:** Minimal dark UI, email-as-code aesthetic, monospace accents
+- **Implementar con:** Vue 3 code preview component + GSAP typewriter + dark mode tokens
 
 ---
 

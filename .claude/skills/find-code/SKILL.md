@@ -6,6 +6,16 @@ description: Find code patterns, components, functions, styles, routes, and any 
 # Find Code — Universal Frontend Navigator
 
 Quickly locate any code, pattern, component, or definition in the current project.
+n## Prerequisites
+
+- Must have access to the project source directory
+- No foundation docs required -- this skill is purely exploratory
+
+## Relevant docs/ files
+
+- `docs/page-plans.md` -- helps understand page/section structure when searching for components
+- `docs/design-brief.md` -- helps identify token names and CSS custom properties to search for
+- `src/router/index.js` -- key file for tracing route-to-component mappings
 
 ## Phase 1: Discover project structure
 

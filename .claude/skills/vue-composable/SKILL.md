@@ -6,6 +6,17 @@ description: Create Vue 3 composables (use* functions) that adapt to the current
 # Vue 3 Composable Creator — Adaptive
 
 Create composables that match the current project's conventions.
+n## Prerequisites
+
+- Project must have `package.json` with Vue 3 installed
+- If the project has Pinia stores, understand the boundary: composables handle UI logic, Pinia stores handle app state
+- No foundation docs required for utility composables
+
+## Relevant docs/ files
+
+- `docs/design-brief.md` -- if composable involves animation, read the motion choreography section
+- `docs/motion-spec.md` -- if composable involves GSAP, read for brand easing and timing values
+- Existing composables in `src/composables/` -- always read 2-3 before creating a new one
 
 ## Phase 1: Discover project context
 

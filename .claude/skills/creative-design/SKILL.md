@@ -4,6 +4,20 @@ description: Design and build creative, high-end frontend experiences by analyzi
 ---
 
 # Creative Design — Immersive Experience Architect
+n## Prerequisites
+
+- This skill runs FIRST in the frontend pipeline -- no upstream dependencies
+- User must provide at least one of: inspiration URL(s), aesthetic description, or business type
+- For Pegasuz clients: docs/content-brief.md should exist first (content-first principle)
+
+## Relevant docs/ files (consumed and produced)
+
+Consumes (if they exist):
+- docs/content-brief.md -- understanding the copy helps inform visual decisions
+- docs/_templates/design-brief.template.md -- template for output format
+
+Produces:
+- docs/design-brief.md -- the primary output with all visual decisions
 
 This skill is the **design brain** of the entire frontend pipeline. It produces a concrete, actionable Design Brief that all other skills consume. No CSS gets written, no color gets chosen, no animation gets choreographed without this skill running first.
 

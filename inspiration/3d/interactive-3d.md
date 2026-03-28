@@ -56,6 +56,40 @@
 | GLTF model (Tier 3) | 500KB-5MB | SIEMPRE lazy load + progress |
 | Complex scene (Tier 4) | 1MB+ | Lazy load + skeleton + progress |
 
+---
+
+## Elementos trending 2025-2026
+
+### 7. Liquid Raymarching Scene (Tier 3-4)
+- Escena 3D construida enteramente en fragment shader via raymarching
+- Formas liquidas/organicas con SDF blending
+- Puede ser interactiva con mouse uniforms
+- **Stack:** Three.js + custom fragment shader (o TSL) + mouse uniforms
+- **Referencia:** https://tympanus.net/codrops/2024/07/15/how-to-create-a-liquid-raymarching-scene-using-three-js-shading-language/
+- **Best for:** hero immersivo, landing pages experimentales
+
+### 8. WebGPU-Ready Scenes (Tier 2-3)
+- Escenas preparadas para WebGPU via Three.js WebGPURenderer
+- TSL (Three.js Shader Language) para shader portability
+- Automatic fallback a WebGL si WebGPU no esta disponible
+- **Stack:** Three.js r160+ + WebGPURenderer + TSL nodes
+- **Best for:** future-proofing cualquier escena 3D
+
+### 9. Image Distortion on Hover (Tier 2)
+- Imagenes que se distorsionan con shader en hover
+- Chromatic aberration, wave distortion, pixel displacement
+- Lightweight y alto impacto visual
+- **Stack:** Three.js + custom fragment shader + mousemove events
+- **Best for:** portfolio image grids, gallery hovers, product showcases
+
+### 10. Generative Typography 3D (Tier 3)
+- Texto extruido o generado proceduralmente en 3D
+- Puede ser interactivo (explode, morph, float)
+- **Stack:** Three.js + TextGeometry o troika-three-text + GSAP
+- **Best for:** hero typography, brand statements, creative agencies
+
+---
+
 ## Fallbacks obligatorios
 
 | Situacion | Fallback |
@@ -66,3 +100,4 @@
 | Mobile (si Tier 3+) | Simplified version o image |
 | Loading GLTF | Skeleton / progress bar |
 | Error loading | Graceful CSS fallback |
+| No WebGPU | Automatic WebGL fallback via TSL |

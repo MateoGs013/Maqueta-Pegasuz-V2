@@ -6,6 +6,17 @@ description: Review responsive design implementation across breakpoints for any 
 # Responsive Review — Multi-Breakpoint Audit (Universal)
 
 Check that components and pages respond correctly across all viewports.
+n## Prerequisites
+
+- Frontend project with styled components accessible for reading
+- Runs post-construction -- after pages have been built with layout and styles
+- Best when docs/design-brief.md defines breakpoints and responsive strategy
+
+## Relevant docs/ files
+
+- docs/design-brief.md -- breakpoints, responsive strategy, what changes per breakpoint
+- docs/page-plans.md -- section architecture to verify all sections adapt correctly
+- docs/motion-spec.md -- mobile motion reduction rules
 
 ## Phase 1: Discover project context
 

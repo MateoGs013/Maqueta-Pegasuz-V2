@@ -4,6 +4,18 @@ description: Create 3D scenes, objects, and visual effects using Three.js or its
 ---
 
 # Three.js / 3D — Adaptive
+n## Prerequisites
+
+- Project must have a frontend framework set up (Vue, React, or vanilla)
+- Three.js does not need to be pre-installed -- skill will recommend installation if missing
+- Design Brief recommended -- docs/design-brief.md 3D/WebGL Scope section defines what to build
+- Pages should be scaffolded first so the 3D canvas integrates into the correct location
+
+## Relevant docs/ files
+
+- docs/design-brief.md -- 3D/WebGL Scope: tier, placement, technique, scroll integration, mobile fallback
+- docs/motion-spec.md -- scroll-linked behaviors that 3D elements should respond to
+- package.json -- check existing 3D dependencies
 
 Create 3D scenes and effects that adapt to the project's framework, aesthetic, and performance constraints.
 

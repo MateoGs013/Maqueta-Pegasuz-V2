@@ -4,6 +4,12 @@
 
 ---
 
+## Entry point — Proyecto nuevo
+
+| Necesito... | Skill | Trigger |
+|-------------|-------|---------|
+| Crear un proyecto desde cero | `new-project` | "nuevo proyecto", "crear proyecto", "/new-project" |
+
 ## Skills de construccion
 
 | Necesito... | Skill | Trigger |
@@ -41,13 +47,15 @@
 ## Pipeline de construccion (orden obligatorio)
 
 ```
-1. creative-design     -> Design Brief
-2. page-scaffold       -> Estructura de paginas
-3. threejs-3d          -> Elementos 3D (SIEMPRE)
-4. vue-component       -> Componentes
-5. gsap-motion         -> Animaciones
+1. creative-design     -> Design Brief (docs/design-brief.md)
+2. page-scaffold       -> Estructura de paginas (desde docs/page-plans.md)
+3. threejs-3d          -> Elementos 3D (SIEMPRE — Tier 1 minimo, antes de components)
+4. vue-component       -> Componentes reutilizables
+5. gsap-motion         -> Animaciones (desde docs/motion-spec.md)
 6. Cadena de calidad   -> a11y -> seo -> responsive -> css -> perf
 ```
+
+**Nota:** `threejs-3d` va ANTES de `vue-component` porque el canvas 3D es atmosfera fundacional, no un add-on final. Los componentes se estilizan sabiendo que el canvas ya existe.
 
 ## Pipeline de calidad (orden recomendado)
 

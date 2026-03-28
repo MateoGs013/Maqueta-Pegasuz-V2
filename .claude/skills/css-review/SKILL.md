@@ -6,6 +6,17 @@ description: Review and audit CSS/styles against the current project's design ru
 # CSS Review — Adaptive Style Audit
 
 Audit CSS and visual implementation against the project's own rules and conventions.
+n## Prerequisites
+
+- Frontend project with styled components accessible for reading
+- Runs post-construction -- after design tokens have been applied
+- For best results, a docs/design-brief.md should exist with defined tokens
+
+## Relevant docs/ files
+
+- docs/design-brief.md -- primary source of truth for all visual tokens
+- docs/motion-spec.md -- easing values and durations to validate transition consistency
+- src/styles/ or CSS custom properties in root -- existing token definitions
 
 ## Phase 1: Discover project context
 

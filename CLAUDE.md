@@ -1,49 +1,44 @@
 # CLAUDE.md
 
+## Regla principal
+
+Cada cliente Pegasuz es un producto con identidad propia. La arquitectura es compartida, la estetica es unica.
+
+- **Design-first:** brief antes de codigo. Sin plan de `creative-design`, no se escribe CSS ni se eligen colores.
+- **Content-first:** copy antes de visual. `docs/content-brief.md` se crea primero.
+- **Identidad unica:** cada proyecto tiene su propia paleta, tipografia, easing, atmosfera. Nunca reutilizar valores de otro proyecto.
+- **3D/WebGL siempre:** Tier 1 minimo (shader atmosferico o campo de particulas).
+- **Variacion de animacion:** cada seccion usa tecnica diferente. Nunca el mismo fade-up en todas.
+
+---
+
 ## Plataforma
 
-Pegasuz Core - plataforma SaaS multi-tenant. Backend centralizado (Node.js + Express + Prisma + MySQL) sirviendo multiples clientes, cada uno con su propia base de datos y frontend Vue 3.
+Pegasuz Core — SaaS multi-tenant. Backend Node.js + Express + Prisma + MySQL. Cada cliente tiene su propia DB y frontend Vue 3.
 
 ---
 
-## Arquitectura backend (locked)
+## Arquitectura (locked)
 
+### Backend
 ```
-HTTP Request (header: x-client: <slug>)
-  -> clientResolver middleware
-  -> prismaManager.getPrisma(database_name)
-  -> req.client + req.prisma (tenant-scoped)
-  -> Controller -> Service -> Prisma (tenant DB)
+HTTP Request (x-client: <slug>) -> clientResolver -> prismaManager.getPrisma(db) -> Controller -> Service -> Prisma
 ```
 
-**Reglas inviolables:**
-- Tenant isolation en cada cambio
-- Dynamic Prisma connection (nunca new PrismaClient() directo)
-- No npm packages sin justificacion
+### Frontend
+```
+View.vue -> Pinia Store -> Service (src/services/) -> api.js (src/config/api.js) -> Pegasuz Core API (x-client)
+```
+
+### Reglas inviolables
+- **Tenant isolation** en cada cambio. Dynamic Prisma connection (nunca `new PrismaClient()` directo)
+- **Cadena completa:** View -> Store -> Service -> API. Sin atajos
+- No axios imports fuera de `src/config/api.js`. No HTTP calls fuera de `src/services/`
+- No JSON.parse en views/components. No hardcoded slugs (siempre `VITE_CLIENT_SLUG`)
+- CMS content (`contentStore.get`) separado de feature data (feature stores)
+- Imagenes siempre con `resolveImageUrl()`
 - Naming: routes kebab-case, DB snake_case, functions camelCase
-- Auth: authenticate + authorize(...roles) en rutas protegidas
-- Documentar todo en /Documentation/
-
----
-
-## Arquitectura frontend por cliente (locked)
-
-```
-View.vue
-  -> Pinia Store
-      -> Service (src/services/<entity>Service.js)
-          -> api.js (src/config/api.js - single axios instance)
-              -> Pegasuz Core API (header: x-client: <slug>)
-```
-
-**Reglas inviolables:**
-- View -> Store -> Service -> API. Sin atajos.
-- No axios imports fuera de src/config/api.js
-- No HTTP calls fuera de src/services/
-- No JSON.parse en views o components
-- No hardcoded slugs (siempre VITE_CLIENT_SLUG)
-- CMS content (contentStore.get) separado de feature data (feature stores)
-- Imagenes siempre con resolveImageUrl()
+- Auth: `authenticate` + `authorize(...roles)` en rutas protegidas
 
 ---
 
@@ -201,35 +196,39 @@ Seguir el pipeline del `pegasuz-integrator` en orden estricto:
 
 ---
 
-## Feature binding - response extraction
+## Feature binding — response extraction
 
 | Entity | API Wrapper | Store Extraction |
 |--------|------------|-----------------|
-| Properties | Direct array | items = data |
-| Services | Direct array | items = data |
-| Categories | Direct array | items = data |
-| Tags | Direct array | items = data |
-| Posts | { posts, pagination } | items = data.posts |
-| Projects | { projects, pagination } | items = data.projects |
-| Testimonials | { testimonials, pagination } | items = data.testimonials |
-| Contacts | { contacts, pagination } | items = data.contacts |
-| SiteContent | { tenant, version, contents } | contents = data.contents |
+| Properties | Direct array | `items = data` |
+| Services | Direct array | `items = data` |
+| Categories | Direct array | `items = data` |
+| Tags | Direct array | `items = data` |
+| Menu | Direct array | `items = data` |
+| Media | Direct array | `items = data` |
+| Posts | `{ posts, pagination }` | `items = data.posts` |
+| Projects | `{ projects, pagination }` | `items = data.projects` |
+| Testimonials | `{ testimonials, pagination }` | `items = data.testimonials` |
+| Contacts | `{ contacts, pagination }` | `items = data.contacts` |
+| SiteContent | `{ tenant, version, contents }` | `contents = data.contents` |
 
 ---
 
-## Reglas de motion (defaults - el cliente puede customizar)
+## Motion — emergency fallbacks
 
-| Regla | Valor default |
-|-------|--------------|
-| Easing entrances | power3.out |
-| Duration reveals | 0.7 - 0.9s |
-| Y offset scroll reveal | 32px |
+Estos valores se usan SOLO si `docs/motion-spec.md` no existe o no define valores para un campo. El motion-spec del proyecto es la fuente de verdad. Cada proyecto define su propia personalidad de motion en el design-brief.
+
+| Fallback | Valor |
+|----------|-------|
+| Easing | power3.out |
+| Duration | 0.8s |
+| Y offset | 32px |
 | ScrollTrigger | once: true |
 | Cleanup | clearProps: 'all' |
-| Vue cleanup | onBeforeUnmount(() => ctx?.revert()) |
 | Reduced motion | prefers-reduced-motion guard obligatorio |
 
 ```js
+// Patron obligatorio en todo componente con animaciones
 let ctx = null
 onMounted(() => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -240,32 +239,11 @@ onBeforeUnmount(() => ctx?.revert())
 
 ---
 
-## Anti-patterns - bloquear activamente
+## Anti-patterns — bloquear activamente
 
-### Frontend
+**Frontend:** No axios fuera de `api.js`. No HTTP fuera de `services/`. No JSON.parse en views. No slugs hardcodeados. No stores sin loading/error. No OR chains en extraction. No static route imports. No CMS data para features. No paginas sin meta tags. No imagenes sin `resolveImageUrl()`. No animar width/height/top/left (solo transform y opacity).
 
-| Anti-pattern | Corregir con |
-|-------------|-------------|
-| Axios import en store o view | Service layer |
-| JSON.parse en views | Parsear en store o service |
-| API config fuera de src/config/ | Mover a src/config/api.js |
-| Slug hardcodeado | VITE_CLIENT_SLUG |
-| Stores sin loading/error | Siempre incluir ambos |
-| OR chains en response extraction | Extraer segun wrapper documentado |
-| Static route imports | Lazy loading: () => import() |
-| CMS data para feature entities | contentStore = labels, feature store = data |
-| Pagina sin meta tags | Siempre incluir SEO basico |
-| Imagenes sin resolveImageUrl | Siempre resolver URLs |
-
-### Backend
-
-| Anti-pattern | Corregir con |
-|-------------|-------------|
-| new PrismaClient() directo | prismaManager.getPrisma() |
-| Hardcoded database names | Dynamic resolution via clientResolver |
-| Raw SQL con interpolacion | Prisma query API |
-| Endpoints sin auth | authenticate + authorize |
-| npm packages sin justificar | Usar el stack existente |
+**Backend:** No `new PrismaClient()` directo. No hardcoded DB names. No raw SQL con interpolacion. No endpoints sin auth. No npm packages sin justificar.
 
 ---
 
@@ -298,34 +276,18 @@ onBeforeUnmount(() => ctx?.revert())
 
 ### Construccion frontend — pipeline estricto
 
-La construccion frontend sigue un orden obligatorio. Cada paso depende del anterior.
+Orden obligatorio. Cada paso depende del anterior. Sin brief, no hay construccion.
 
-```
-1. creative-design     → Produce Design Brief (guardado en docs/design-brief.md)
-2. page-scaffold       → Crea la estructura narrativa (secciones, layout) desde el brief
-3. threejs-3d          → Implementa 3D/WebGL (SIEMPRE — Tier 1 minimo)
-4. vue-component       → Construye componentes reutilizables con tokens del brief
-5. gsap-motion         → Implementa la motion choreography del brief
-6. Cadena de calidad   → a11y → seo → responsive → css → perf (corregir CRITICAL antes de avanzar)
-```
+| Paso | Skill | Input | Output |
+|------|-------|-------|--------|
+| 1 | `creative-design` | Estetica, rubro, inspiracion | Design Brief (`docs/design-brief.md`) |
+| 2 | `page-scaffold` | `docs/page-plans.md` + tokens + atmosphere | Paginas con N secciones |
+| 3 | `threejs-3d` | Technique mapping + 3D scope | Escenas WebGL (Tier 1 minimo) |
+| 4 | `vue-component` | Tokens + interaction patterns | Componentes reutilizables |
+| 5 | `gsap-motion` | `docs/motion-spec.md` + brand easing | Animaciones implementadas |
+| 6 | Auditorias | — | CRITICAL/WARNING/SUGGESTION |
 
-**Reglas del pipeline:**
-- No se puede ejecutar el paso N sin haber completado el paso N-1
-- `creative-design` siempre primero. Sin brief, no hay construccion.
-- `threejs-3d` siempre se ejecuta (Tier 1 minimo). 3D NO es opcional.
-- El brief se guarda en archivo (`docs/design-brief.md`) para que todas las skills lo lean
-- Cada skill recibe las secciones relevantes del brief como input
-- Las auditorias corren en paralelo pero todos los CRITICAL deben resolverse
-- Cada proyecto DEBE tener identidad visual unica. Nunca repetir la misma paleta/easing/atmosfera.
-
-| Paso | Skill | Input del brief | Output |
-|------|-------|-----------------|--------|
-| 1 | `creative-design` | Estetica, rubro, URL inspiracion | Design Brief completo |
-| 2 | `page-scaffold` | Section architecture + tokens + atmosphere | Pagina con N secciones |
-| 3 | `vue-component` | Tokens + interaction patterns + atmosphere | Componentes reutilizables |
-| 4 | `gsap-motion` | Motion choreography + brand easing | Animaciones implementadas |
-| 5 | `threejs-3d` | Technique mapping + 3D scope | Escenas WebGL |
-| 6 | Auditorias | — | Findings con CRITICAL/WARNING/SUGGESTION |
+**Reglas:** `creative-design` siempre primero. `threejs-3d` siempre se ejecuta (3D NO es opcional) y va ANTES de `vue-component` (el canvas 3D es atmosfera fundacional, no add-on final). Cada skill lee de `docs/`. Auditorias en paralelo, resolver CRITICAL antes de avanzar. Identidad visual unica por proyecto.
 
 ### Auditoria
 
@@ -381,16 +343,3 @@ Clientes/<slug>/
   .env                      <- VITE_API_URL + VITE_CLIENT_SLUG
 ```
 
----
-
-## Regla principal
-
-Cada cliente Pegasuz es un producto con identidad propia. La arquitectura es compartida, la estetica es unica. Construir con la solidez del sistema y la libertad creativa que el cliente necesita.
-
-**Design-first, siempre.** No escribir CSS, no elegir colores, no definir spacing, no animar sin antes tener un plan de `creative-design`. El plan es el brief. El codigo es la ejecucion del brief.
-
-**Identidad unica, siempre.** Cada proyecto tiene su propia paleta, tipografia, easing, atmosfera y personalidad de motion. Nunca reutilizar valores de otro proyecto. Nunca defaultear a dark + warm accent + power3.out + 32px + 0.8s + grain.
-
-**3D/WebGL, siempre.** Cada proyecto incluye al menos un elemento 3D (Tier 1: shader atmosferico o campo de particulas). 3D es una herramienta de inmersion primaria, no una decoracion opcional.
-
-**Variacion de animacion, siempre.** Cada seccion usa una tecnica de animacion diferente. Nunca el mismo fade-up en todas las secciones.

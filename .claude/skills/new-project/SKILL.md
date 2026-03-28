@@ -1,6 +1,28 @@
+---
+name: new-project
+description: Interactive wizard to start a new web project from scratch. Guides the user through discovery, visual identity, page architecture, content, and motion — then generates the 4 foundation docs (design-brief, content-brief, page-plans, motion-spec) and kicks off the construction pipeline. Use when the user wants to create, start, or initialize a new project. Triggers on "nuevo proyecto", "new project", "crear proyecto", "iniciar proyecto", "start project", "empezar proyecto", "/new-project".
+---
+
 # SKILL: new-project
 
+## Prerequisites
+
+- No existing project required -- this skill creates projects from scratch
+- User must be available for interactive conversation (multi-turn wizard)
+- If Pegasuz client, backend should be provisioned first via pegasuz-integrator
+
+## Relevant docs/ files (created by this skill)
+
+This skill PRODUCES the foundation docs -- it does not consume them:
+- docs/content-brief.md -- created in Phase 7
+- docs/design-brief.md -- created in Phase 7
+- docs/page-plans.md -- created in Phase 7
+- docs/motion-spec.md -- created in Phase 7
+
+Templates read from: docs/_templates/
+
 ## Trigger
+nSe activa placeholder
 Se activa cuando el usuario escribe cualquiera de estas frases (exactas o aproximadas):
 - "iniciar un nuevo proyecto"
 - "nuevo proyecto"
