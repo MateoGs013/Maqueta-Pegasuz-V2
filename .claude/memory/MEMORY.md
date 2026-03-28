@@ -70,7 +70,7 @@
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 16 | `awwwards-design-critique` | IN PROGRESS | Critique agents running, applying improvements to all 10 sites |
+| 16 | `awwwards-design-critique` | DONE | Average 8.6/10 across 10 sites, improvements committed. See AWWWARDS-CRITIQUE-REPORT.md |
 
 ## Git history
 
