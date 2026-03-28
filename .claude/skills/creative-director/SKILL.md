@@ -113,6 +113,25 @@ If no URLs provided, select 3-5 reference techniques from the Reference Library 
 
 Design a unified creative vision. This is NOT a list of tokens — it's a NARRATIVE about how the site will FEEL.
 
+### 3.0 Aesthetic Direction — Commit Fully to ONE
+
+**RULE**: Pick ONE aesthetic direction and commit fully. Half-measures produce forgettable output. Blending two directions weakens both.
+
+| Direction | Character | Typography | Motion | Avoid |
+|---|---|---|---|---|
+| **Brutally Minimal** | whitespace as material, stark contrast | large mono/serif, lots of air | surgical reveals, nothing decorative | glassmorphism, gradients |
+| **Maximalist** | layered, bold overlaps, controlled noise | mixed scales/weights, colliding text | orchestrated chaos, many layers | empty space |
+| **Retro-Futuristic** | CRT glows, scan lines, terminal | Space Mono, monospace, uppercase | glitch, flicker, scan | smooth gradients |
+| **Organic/Natural** | flowing curves, earth tones, textures | humanist serif, warm | slow, breathing, no snappy | sharp geometry |
+| **Luxury/Refined** | restraint IS the statement | Instrument Serif italic, tight leading | slow cinematic, nothing bouncy | loud colors |
+| **Editorial/Magazine** | strong hierarchy, asymmetric tension | mixed display + serif body, pull quotes | measured, confident | playfulness |
+| **Brutalist/Raw** | exposed structure, system fonts, honesty | system-ui, monospace, utilitarian | none/minimal, CSS only | polish |
+| **Art Deco/Geometric** | gold/muted accents, precise symmetry, ornament | geometric sans, high contrast | structured, rhythmic | organic |
+| **Industrial/Utilitarian** | exposed grids, specs-sheet aesthetic | mono, condensed, labels | data-driven, no curves | decoration |
+| **Playful/Toy-like** | rounded, bright, bouncy energy | rounded sans, fun weights | spring physics, squish | seriousness |
+
+**Ask the user** which direction resonates most. If they don't know, suggest based on industry + mood words. Then LOCK IT IN — every decision from here follows that direction.
+
 ### 3.1 Concept Statement
 Write a 2-3 sentence creative concept that captures the essence. Examples:
 - "A slow-burn cinematic experience where each scroll reveals a new chapter. Deep navy canvas with liquid gold accents that flow like the river through the property. Typography is monumental — display text at 8vw creates architectural moments."
@@ -148,11 +167,19 @@ Design a palette with INTENTION. Not just "pick 5 colors" — design a color SYS
 - #ffffff + #2563eb (white + blue) — third most common
 - Any variation within 15% hue of the above
 
+**HSL format preferred** over hex — enables systematic lightness/saturation variations:
+```css
+/* HSL: hue saturation% lightness% — easier to derive hover/muted/glow variants */
+--color-canvas: 260 87% 3%;   /* hsl() — NOT #070212 — the HSL form is explicit */
+--color-signal: 121 95% 76%;  /* vivid green at this specific saturation */
+/* Then use: hsl(var(--color-signal))  or  hsl(var(--color-signal) / 0.2) for alpha */
+```
+
 **Palette structure**:
 ```css
 :root {
   /* Canvas — the dominant background presence */
-  --color-canvas: {{HEX}};         /* not just "black" or "white" — a TINTED base */
+  --color-canvas: {{H S% L%}};         /* HSL preferred — tinted base, never pure black/white */
   --color-surface: {{HEX}};        /* elevated surfaces */
   --color-surface-alt: {{HEX}};    /* secondary surface for contrast */
 
@@ -215,6 +242,27 @@ Distinctive font sources to consider:
   --tracking-label: 0.08em;  /* labels are typically wider-tracked */
   --transform-label: uppercase; /* or none */
 }
+```
+
+**Letter-spacing as typographic signal** — different tracking communicates text type:
+```css
+/* Each of these communicates a different role at a glance */
+--tracking-display:  -0.04em;  /* display headlines: confident, dense, architectural */
+--tracking-heading:  -0.01em;  /* subheadings: tight but not cramped */
+--tracking-body:      0.01em;  /* body text: barely open, comfortable reading */
+--tracking-label:     0.04em;  /* badges/labels: breathing room, reads as UI */
+--tracking-tag:       0.08em;  /* uppercase category tags: clearly decorative spacing */
+```
+
+**Shadow hierarchy** — vary shadow by elevation, never identical across all elements:
+```css
+/* Slop: same shadow on card, button, modal — creates flatness */
+/* Award-level: shadows communicate spatial relationships */
+--shadow-sm:   0 1px 3px hsl(var(--color-canvas) / 0.4);            /* buttons, inputs */
+--shadow-md:   0 4px 16px hsl(var(--color-canvas) / 0.35);          /* cards */
+--shadow-lg:   0 8px 32px hsl(var(--color-canvas) / 0.3);           /* modals, drawers */
+--shadow-glow: 0 0 40px hsl(var(--color-signal) / 0.25);            /* accent glow */
+--shadow-deep: 0 20px 60px hsl(var(--color-canvas) / 0.5);          /* hero media */
 ```
 
 **Typography-as-design specifications** (MANDATORY for at least 3 sections):

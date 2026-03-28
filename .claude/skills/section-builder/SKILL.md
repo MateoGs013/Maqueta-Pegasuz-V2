@@ -826,6 +826,81 @@ Each layout is a complete CSS Grid/Flexbox pattern ready to use.
 }
 ```
 
+**L21 — navbar-glass-pill**: Fixed navbar with centered glass navigation pill (from APEX pattern)
+```css
+/* The anatomy: logo-left | glass-pill-center | cta-right */
+.nav-glass {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg) var(--container-padding);
+}
+.nav-glass__logo {
+  width: 48px; height: 48px;  /* exact — not fluid */
+  flex-shrink: 0;
+}
+/* The glass pill: contains all nav links */
+.nav-glass__pill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+  padding: var(--space-sm) var(--space-xl);
+  border-radius: 9999px;    /* pill — always full radius */
+  position: absolute;
+  left: 50%; transform: translateX(-50%);  /* truly centered regardless of logo/cta size */
+}
+/* Apply .glass-light to .nav-glass__pill for the frosted effect */
+.nav-glass__cta {
+  /* Solid contrast button — NOT glass — the one hard element */
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-ink);
+  color: var(--color-canvas);
+  border-radius: var(--radius-full);
+  display: flex; align-items: center; gap: var(--space-sm);
+  font-weight: 600;
+  /* The ArrowUpRight icon signals external/action — always include */
+}
+```
+
+**L22 — logo-marquee-trust**: Trust section with text + scrolling glass logo pills
+```css
+/* Structure: "Relied on by X brands / globally" LEFT + infinite marquee RIGHT */
+.trust-bar {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-2xl);
+  align-items: center;
+  padding: var(--space-2xl) var(--container-padding);
+  overflow: hidden;
+}
+.trust-bar__label {
+  font-size: var(--text-small);
+  color: var(--color-ink-muted);
+  line-height: 1.4;
+}
+.trust-bar__track {
+  display: flex;
+  gap: var(--space-lg);
+  animation: marquee 20s linear infinite;
+  width: max-content;
+}
+.trust-bar__track:hover { animation-play-state: paused; }
+/* Each logo uses glass-light with pill radius */
+.trust-bar__logo {
+  display: flex; align-items: center; gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  font-size: var(--text-small);
+  font-weight: 500;
+}
+/* Apply .glass-light to .trust-bar__logo */
+/* Duplicate the track for seamless loop: <div track> items items </div> */
+```
+
 **L20 — mosaic**: CSS Grid with named areas for editorial layouts
 ```css
 .layout-mosaic {
@@ -1162,7 +1237,59 @@ function gradientFollow(el) {
 }
 ```
 
-**I16 — Liquid Glass panels** (glassmorphism with gradient border)
+**I16 — Overlay vignette gradient** (APEX technique — fades hero into bg color top/bottom)
+```css
+/* Applied as absolute overlay on top of video/image backgrounds */
+/* Makes the section blend seamlessly with surrounding page color */
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* The key: fade FROM canvas color → transparent → back to canvas color */
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--color-canvas)) 0%,
+    transparent 15%,
+    transparent 85%,
+    hsl(var(--color-canvas)) 100%
+  );
+  z-index: 1;  /* above bg, below content */
+}
+
+/* Subtle video overlay — NOT 60% dark — just 5% to tint without hiding */
+.hero-video-overlay {
+  position: absolute;
+  inset: 0;
+  background: hsl(var(--color-canvas) / 0.05);  /* barely-there tint */
+  z-index: 1;
+}
+```
+
+**Video background with poster preloading** (hero quality detail):
+```html
+<!-- In <head>: preload poster for instant display before video loads -->
+<link rel="preload" as="image" href="/images/hero-poster.jpg">
+
+<!-- In component template -->
+<video
+  class="hero__video"
+  src="/videos/hero-bg.mp4"
+  poster="/images/hero-poster.jpg"
+  autoplay muted loop playsinline
+  aria-hidden="true"
+></video>
+```
+```css
+.hero__video {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+```
+
+**I17 — Liquid Glass panels** (glassmorphism with gradient border)
 Two variants: light (subtle shimmer) and strong (heavy frost). Use for badges, cards, hero overlays.
 ```css
 /* Light glass — subtle, luminosity-blended */

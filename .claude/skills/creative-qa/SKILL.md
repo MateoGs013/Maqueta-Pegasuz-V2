@@ -22,6 +22,24 @@ You are the quality gate. You run BETWEEN pipeline steps — not after everythin
 
 ---
 
+## The 7 Deadly Sins of AI Design (Instant Red Flag)
+
+Before running any gate, scan for these. If ANY are present, BLOCK immediately.
+
+| Sin | What it looks like | Why it kills quality |
+|---|---|---|
+| **1. Purple gradient on white** | Hero: `#6c63ff` or similar on `#ffffff` | Most overused AI color combo — signals generic output |
+| **2. Inter + anything as primary** | `font-family: Inter` for display text | Default AI font — signals no typographic intent |
+| **3. Centered hero + stock illustration** | Text center, image right, 100% symmetric | Predictable, forgettable, zero personality |
+| **4. Blue CTA button** | `background: #2563eb` or `#3b82f6` on buttons | Safe, unmemorable — every Tailwind default site |
+| **5. Perfect 12-column symmetry everywhere** | Every section: 2-3 equal columns, centered | Too balanced — lacks tension and personality |
+| **6. Identical card shadows** | Same `box-shadow` value on all cards/elements | Flat — shadows should communicate elevation hierarchy |
+| **7. Cookie-cutter pricing table** | Three equal columns, centered checkmarks, "Most Popular" badge | Zero visual personality — every SaaS template |
+
+**If ANY sin is detected** → BLOCK. Name the sin, name the file/section, specify the fix.
+
+---
+
 ## When to Run
 
 | Pipeline step completed | Run this gate |
