@@ -2,6 +2,35 @@
 
 > Problemas comunes y como resolverlos.
 > Organizado por area para ir directo al problema.
+> **Tip:** Usar Ctrl+F para buscar el error o sintoma exacto.
+
+---
+
+## Quick diagnostic
+
+Cuando algo no funciona y no sabes por donde empezar:
+
+```
+PASO 1: Abrir DevTools > Console
+  -> Errores de JavaScript? Arreglar primero.
+  -> El error dice exactamente que falta.
+
+PASO 2: Abrir DevTools > Network
+  -> Requests fallando? Verificar URL, headers, status code.
+  -> Filtrar por "XHR" para ver solo API calls.
+
+PASO 3: Verificar .env
+  -> Variables correctas? API accesible?
+  -> VITE_API_URL y VITE_CLIENT_SLUG presentes?
+
+PASO 4: npm run build
+  -> Compila limpio? Si no, el error dice exactamente que falta.
+  -> Vite es mas estricto en build que en dev.
+
+PASO 5: Ejecutar la auditoria relevante:
+  -> "Ejecutar [a11y|seo|responsive|css|perf]-audit"
+  -> El reporte te dice exactamente que arreglar.
+```
 
 ---
 
@@ -53,6 +82,23 @@ cat .env
 # Verificar que VITE_API_URL y VITE_CLIENT_SLUG existen
 ```
 
+### Hot-reload no funciona
+
+**Sintoma:** Cambios en el codigo no se reflejan en el browser.
+
+```bash
+# 1. Vite HMR desconectado
+# Verificar que no hay errores de WebSocket en la consola del browser
+# Reiniciar el server: Ctrl+C, npm run dev
+
+# 2. Archivo fuera del src/
+# Vite solo hace HMR para archivos dentro de src/ y los que importa
+# Si editaste un archivo en docs/ o public/, no hay HMR
+
+# 3. Windows: path con caracteres especiales
+# Mover el proyecto a un path sin espacios ni acentos
+```
+
 ---
 
 ## API & Pegasuz
@@ -63,6 +109,7 @@ cat .env
 
 ```bash
 # 1. CORS error
+# "Access to XMLHttpRequest has been blocked by CORS policy"
 # El backend no tiene el origin del frontend habilitado
 # Verificar que el backend permite localhost:5173
 
@@ -102,7 +149,7 @@ CORRECTO (para Properties):
 
 **Referencia rapida de extraction:**
 ```
-Direct array:  Properties, Services, Categories, Tags
+Direct array:  Properties, Services, Categories, Tags, Menu, Media
                -> this.items = data
 
 Wrapped:       Posts (data.posts), Projects (data.projects),
@@ -112,6 +159,8 @@ Wrapped:       Posts (data.posts), Projects (data.projects),
 CMS:           SiteContent
                -> this.contents = data.contents
 ```
+
+> Ver [03-pegasuz-integration](03-pegasuz-integration.md#phase-5-feature-binding) para la tabla completa.
 
 ### Las imagenes no cargan
 
@@ -131,6 +180,41 @@ grep -rn ":src=\"" src/ --include="*.vue" | grep -v "resolveImageUrl"
 # 2. La URL base esta mal
 # Verificar que VITE_API_URL apunta al host correcto
 # resolveImageUrl usa VITE_API_URL como base
+cat .env | grep VITE_API_URL
+```
+
+### "Tenant not found" o "Client not found"
+
+**Sintoma:** El API responde con error de tenant.
+
+```bash
+# 1. El slug esta mal escrito
+cat .env | grep VITE_CLIENT_SLUG
+# Comparar con el slug registrado en la base de datos de Pegasuz Core
+
+# 2. El cliente no fue provisionado
+# Verificar en Pegasuz Core:
+curl http://localhost:3000/api/core-admin/clients \
+  -H "Authorization: Bearer <admin-token>"
+# Buscar el slug en la respuesta
+
+# 3. El clientResolver no esta configurado
+# Verificar que el middleware lee el header x-client correctamente
+```
+
+### Zero Omission Rule: campos faltantes
+
+**Sintoma:** `pegasuz-validation-qa` reporta campos no mapeados.
+
+```
+Causa: Un campo del API no esta siendo consumido en el frontend.
+
+Soluciones:
+1. Mapearlo en el store y renderizarlo en la vista
+
+2. Si deliberadamente no se usa, documentar la exclusion en el store:
+   // Campo 'internal_notes' excluido: solo visible para admin
+   // Campo 'sort_order' excluido: usado internamente para ordenamiento
 ```
 
 ---
@@ -147,11 +231,12 @@ grep -rn ":src=\"" src/ --include="*.vue" | grep -v "resolveImageUrl"
 
 # 2. Store no cargo datos
 # Verificar que onMounted() llama a store.fetchAll()
+grep -rn "onMounted" src/views/ --include="*.vue"
 
 # 3. Loading state atrapado
 # El template muestra v-if="store.loading" pero la request fallo silenciosamente
 # Verificar que el store tiene error handling:
-grep -n "catch\|error" src/stores/*.js
+grep -rn "catch\|error" src/stores/*.js
 
 # 4. Componente no registrado
 # El componente se importo pero no se usa en el template
@@ -163,8 +248,8 @@ grep -n "catch\|error" src/stores/*.js
 **Sintoma:** Navegacion funciona con clicks pero da 404 al refrescar la pagina.
 
 ```bash
-# Esto pasa porque el server no sabe que es una SPA
-# Solucion para Vite dev server (ya viene configurado):
+# Esto pasa porque el server no sabe que es una SPA.
+# En dev con Vite ya viene configurado.
 # En produccion, configurar el servidor web:
 
 # Nginx:
@@ -172,8 +257,18 @@ grep -n "catch\|error" src/stores/*.js
 #   try_files $uri $uri/ /index.html;
 # }
 
+# Apache (.htaccess):
+# <IfModule mod_rewrite.c>
+#   RewriteEngine On
+#   RewriteBase /
+#   RewriteRule ^index\.html$ - [L]
+#   RewriteCond %{REQUEST_FILENAME} !-f
+#   RewriteCond %{REQUEST_FILENAME} !-d
+#   RewriteRule . /index.html [L]
+# </IfModule>
+
 # Verificar que el router usa history mode (no hash):
-grep -n "createWebHistory\|createWebHashHistory" src/router/index.js
+grep -rn "createWebHistory\|createWebHashHistory" src/router/index.js
 # Debe usar createWebHistory, NO createWebHashHistory
 ```
 
@@ -181,16 +276,13 @@ grep -n "createWebHistory\|createWebHashHistory" src/router/index.js
 
 **Sintoma:** Navegar entre `/properties/1` y `/properties/2` no actualiza el contenido.
 
-```
-Causa: Vue reutiliza el componente si la ruta solo cambia el param.
-Solucion: Usar key en el router-view o watch en el param.
-```
+**Causa:** Vue reutiliza el componente si la ruta solo cambia el param.
 
 ```vue
-<!-- Opcion 1: Key en router-view -->
+<!-- Opcion 1: Key en router-view (mas simple) -->
 <router-view :key="$route.fullPath" />
 
-<!-- Opcion 2: Watch en el componente -->
+<!-- Opcion 2: Watch en el componente (mas control) -->
 <script setup>
 import { watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -200,6 +292,27 @@ watch(() => route.params.id, (newId) => {
   store.fetchById(newId)
 })
 </script>
+```
+
+### Router: lazy loading no funciona
+
+**Sintoma:** Todo el JS se carga en el bundle inicial.
+
+```js
+// INCORRECTO: import estatico (todo se bundlea junto)
+import HomeView from '@/views/HomeView.vue'
+import AboutView from '@/views/AboutView.vue'
+
+const routes = [
+  { path: '/', component: HomeView },
+  { path: '/about', component: AboutView }
+]
+
+// CORRECTO: lazy loading (cada ruta es un chunk separado)
+const routes = [
+  { path: '/', component: () => import('@/views/HomeView.vue') },
+  { path: '/about', component: () => import('@/views/AboutView.vue') }
+]
 ```
 
 ---
@@ -233,13 +346,17 @@ grep -rn "registerPlugin" src/ --include="*.vue"
 
 **Sintoma:** Warnings de ScrollTrigger o animaciones que persisten despues de navegar.
 
-```
-Causa: No se hizo cleanup en onBeforeUnmount.
-Solucion: Siempre usar gsap.context() y revert().
-```
+**Causa:** No se hizo cleanup en onBeforeUnmount.
 
 ```js
-// PATRON CORRECTO (obligatorio):
+// PATRON CORRECTO (obligatorio en cada componente con GSAP):
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
+
+const rootEl = ref(null)
 let ctx = null
 
 onMounted(() => {
@@ -261,17 +378,50 @@ onBeforeUnmount(() => ctx?.revert())
 
 ```bash
 # 1. El trigger element no existe en el DOM al momento de crear el ScrollTrigger
-# Solucion: usar nextTick() o crear dentro de onMounted
+# Solucion: crear dentro de onMounted, o usar nextTick()
 
 # 2. El scroller no es el default (window)
-# Si usas Lenis o un scroll container custom, configurar scroller:
+# Si usas Lenis o un scroll container custom, configurar:
 # ScrollTrigger.scrollerProxy() o ScrollTrigger.defaults({ scroller: ... })
 
 # 3. El elemento tiene height: 0 o display: none
 # ScrollTrigger necesita que el elemento tenga dimensiones reales
 
 # 4. Lenis no esta sincronizado con ScrollTrigger
-# Verificar que Lenis hace ScrollTrigger.update() en cada frame
+# Verificar que Lenis hace ScrollTrigger.update() en cada frame:
+```
+
+```js
+// Sincronizar Lenis con ScrollTrigger:
+const lenis = new Lenis()
+
+lenis.on('scroll', ScrollTrigger.update)
+
+gsap.ticker.add((time) => {
+  lenis.raf(time * 1000)
+})
+gsap.ticker.lagSmoothing(0)
+```
+
+### Animacion "parpadea" al cargar
+
+**Sintoma:** Los elementos se ven un instante antes de animarse.
+
+```css
+/* Solucion: ocultar con CSS hasta que GSAP tome control */
+.gsap-reveal {
+  visibility: hidden;
+}
+```
+
+```js
+// En el gsap.context, GSAP setea visibility: visible automaticamente
+// con gsap.from() / gsap.set() / etc.
+gsap.from('.gsap-reveal', {
+  y: 32,
+  opacity: 0,
+  // GSAP auto-sets visibility: visible
+})
 ```
 
 ---
@@ -292,6 +442,7 @@ onBeforeUnmount(() => ctx?.revert())
 
 # 3. No hay luces en la escena
 # Si usas MeshStandardMaterial, necesitas al menos una luz
+# MeshBasicMaterial no necesita luces
 
 # 4. Los objetos estan fuera del frustum
 # Verificar que las posiciones de los objetos estan dentro del rango de la camara
@@ -304,19 +455,24 @@ onBeforeUnmount(() => ctx?.revert())
 
 **Sintoma:** La escena 3D lagea en dispositivos moviles.
 
-```
-Soluciones:
-1. Reducir geometria en mobile (menos particulas, meshes simples)
-2. Usar pixelRatio limitado: renderer.setPixelRatio(Math.min(2, devicePixelRatio))
-3. Desactivar sombras en mobile
-4. Usar LOD (Level of Detail) para objetos complejos
-5. O directamente desactivar 3D en mobile y usar fallback CSS
+```js
+// Soluciones progresivas:
 
-Ejemplo de deteccion mobile:
+// 1. Limitar pixel ratio
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio))
+
+// 2. Reducir geometria en mobile
 const isMobile = window.innerWidth < 768
+const particleCount = isMobile ? 500 : 5000
+
+// 3. Desactivar sombras en mobile
+renderer.shadowMap.enabled = !isMobile
+
+// 4. O directamente desactivar 3D en mobile y usar fallback CSS
 if (isMobile) {
   // Mostrar fallback CSS en vez de 3D
-  // O reducir complejidad significativamente
+  canvasContainer.style.display = 'none'
+  cssFallback.style.display = 'block'
 }
 ```
 
@@ -325,9 +481,9 @@ if (isMobile) {
 **Sintoma:** El uso de memoria crece al navegar entre paginas.
 
 ```js
-// OBLIGATORIO en el cleanup:
+// OBLIGATORIO en el cleanup de cada componente Three.js:
 onBeforeUnmount(() => {
-  // Dispose geometrias
+  // 1. Dispose geometrias y materiales
   scene.traverse((child) => {
     if (child.geometry) child.geometry.dispose()
     if (child.material) {
@@ -339,12 +495,15 @@ onBeforeUnmount(() => {
     }
   })
 
-  // Dispose renderer
+  // 2. Dispose renderer
   renderer.dispose()
   renderer.forceContextLoss()
 
-  // Limpiar la escena
+  // 3. Limpiar la escena
   scene.clear()
+
+  // 4. Cancelar animation frame
+  cancelAnimationFrame(animationId)
 })
 ```
 
@@ -376,78 +535,75 @@ grep "color-accent-primary" src/styles/tokens.css
 
 ```bash
 # 1. Falta overflow hidden en el contenedor
-# Agregar: overflow-x: hidden en body o app root
+# Agregar en App.vue o body:
+# overflow-x: hidden;
 
 # 2. Texto o imagenes no escalan
-# Verificar clamp() en tipografia y max-width en imagenes
+# Verificar clamp() en tipografia:
+grep "clamp" src/styles/tokens.css
+# Verificar max-width en imagenes:
+# img { max-width: 100%; height: auto; }
 
 # 3. Grid/flex no es responsive
 # Verificar media queries o auto-fit/auto-fill en grids
 
 # 4. Padding/margin fijo en px
 # Cambiar a tokens responsive o usar clamp()
-
-# Verificar responsive:
-# Prompt: "Ejecutar responsive-review"
 ```
 
----
+### Fuentes no cargan
 
-## Pegasuz-specific
-
-### "Tenant not found" o "Client not found"
-
-**Sintoma:** El API responde con error de tenant.
+**Sintoma:** Se ve la fuente fallback (serif/sans-serif) en vez de la elegida.
 
 ```bash
-# 1. El slug esta mal escrito
-cat .env | grep VITE_CLIENT_SLUG
-# Comparar con el slug registrado en la base de datos de Pegasuz Core
+# 1. Google Fonts: verificar que el link esta en index.html
+grep "fonts.googleapis" index.html
+# Debe existir un <link> con preconnect y el font stylesheet
 
-# 2. El cliente no fue provisionado
-# Verificar en Pegasuz Core:
-curl http://localhost:3000/api/core-admin/clients \
-  -H "Authorization: Bearer <admin-token>"
-# Buscar el slug en la respuesta
+# 2. Self-hosted: verificar que los archivos estan en public/ o src/assets/
+ls public/fonts/ src/assets/fonts/ 2>/dev/null
 
-# 3. El clientResolver no esta configurado
-# Verificar que el middleware lee el header x-client correctamente
-```
+# 3. @font-face: verificar la declaracion
+grep -rn "@font-face" src/ --include="*.css"
+# El path del src: url() debe ser correcto
 
-### Zero Omission Rule: campos faltantes
-
-**Sintoma:** `pegasuz-validation-qa` reporta campos no mapeados.
-
-```
-Causa: Un campo del API no esta siendo consumido en el frontend.
-Soluciones:
-1. Mapearlo en el store y renderizarlo en la vista
-2. Si deliberadamente no se usa, documentar la exclusion en el store:
-   // Campo 'internal_notes' excluido: solo visible para admin
+# 4. Preload para evitar FOUT:
+# <link rel="preload" href="/fonts/display.woff2" as="font" type="font/woff2" crossorigin>
 ```
 
 ---
 
-## Quick diagnostic
+## Foundation Docs
 
-Cuando algo no funciona y no sabes por donde empezar:
+### No se donde empezar con los docs
 
 ```
-1. Abrir DevTools > Console
-   -> Errores de JavaScript? Arreglar primero.
+Siempre empezar por content-brief.md (content-first):
 
-2. Abrir DevTools > Network
-   -> Requests fallando? Verificar URL, headers, status code.
+1. Abrir docs/_templates/content-brief.template.md
+2. Copiar a docs/content-brief.md
+3. Llenar seccion por seccion con copy REAL del cliente
+4. Si no hay copy del cliente, inventar copy REALISTA (no lorem ipsum)
+5. Recien despues pasar a design-brief.md
+```
 
-3. Verificar .env
-   -> Variables correctas? API accesible?
+> Ver [00-project-init](00-project-init.md#paso-3-foundation-docs-docs) para el proceso detallado.
 
-4. npm run build
-   -> Compila limpio? Si no, el error dice exactamente que falta.
+### Los docs tienen placeholders que no se como llenar
 
-5. Ejecutar la auditoria relevante:
-   "Ejecutar [a11y|seo|responsive|css|perf]-audit"
-   -> El reporte te dice exactamente que arreglar.
+```
+Template dice:           Como llenarlo:
+────────────             ──────────────
+"{{PROJECT_NAME}}"       Nombre real del proyecto ("Restaurante Nonna")
+"{{HERO_HEADLINE}}"      Headline real ("La tradicion italiana, reinventada")
+"{{ACCENT_COLOR}}"       Color hex real (#c4a35a)
+"{{FONT_DISPLAY}}"       Font real ('Cormorant Garamond')
+
+Si no sabes que poner, ejecutar el prompt correspondiente:
+  content-brief: prompts/02-content/copy-framework.md
+  design-brief:  prompts/01-identity/design-direction.md
+  page-plans:    prompts/03-architecture/page-planning.md
+  motion-spec:   prompts/04-motion/motion-personality.md
 ```
 
 ---
@@ -466,5 +622,18 @@ Cuando algo no funciona y no sabes por donde empezar:
 | `Canvas black` | WebGL no soportado o camara mal | Verificar WebGL + camera position |
 | `var(--token) no funciona` | tokens.css no importado | Importar en main.js |
 | `Build fails, dev works` | Import sin uso o var no definida | Limpiar imports, verificar vars |
-| Imagenes rotas | Falta resolveImageUrl | Envolver URL con resolveImageUrl() |
+| Imagenes rotas | Falta resolveImageUrl | Envolver URL con `resolveImageUrl()` |
 | Mismo fade-up en todo | No se siguio motion-spec | Diversificar tecnicas por seccion |
+| Fuente no carga | Link o @font-face incorrecto | Verificar index.html o CSS |
+| Memory leak en navegacion | Falta dispose/revert | Agregar cleanup en onBeforeUnmount |
+| Datos no actualizan al cambiar ruta | Vue reutiliza componente | Agregar `:key="$route.fullPath"` |
+
+---
+
+## Relacion con otras guias
+
+- [00-project-init](00-project-init.md) -- Problemas al iniciar un proyecto
+- [03-pegasuz-integration](03-pegasuz-integration.md) -- Arquitectura y anti-patterns Pegasuz
+- [04-quality-standards](04-quality-standards.md) -- Auditorias que detectan estos problemas
+- [05-delivery-checklist](05-delivery-checklist.md) -- Checklist que verifica que todo funcione
+- [skill-dispatch-table](skill-dispatch-table.md) -- Skills para ejecutar auditorias

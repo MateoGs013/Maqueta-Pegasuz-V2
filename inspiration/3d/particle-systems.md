@@ -108,3 +108,39 @@
 | 5000 | 50-60 | < 30 | Desktop only, GPU particles |
 | 10000+ | 30-50 | Skip | Need instanced mesh or GPU compute |
 | 50000+ (GPGPU) | 60 | Skip | FBO ping-pong, desktop only |
+
+---
+
+## Sistemas trending 2026
+
+### 12. Particle Morphing (shape-to-shape)
+- Particulas que transicionan entre formas (logo -> texto -> abstract -> logo)
+- Cada particula tiene posiciones target per-shape, interpoladas con easing
+- Trigger puede ser scroll, click, o timer
+- **Complejidad:** media-alta | **Carga:** media
+- **Best for:** hero entrances, brand reveals, section transitions
+- **Implementar:** Precalcular positions per shape (logo/text via canvas getImageData) + BufferGeometry + GSAP tween de attribute positions
+
+### 13. Flow Field Particles
+- Particulas que siguen un campo vectorial (flow field) generado por noise
+- Crea trazos visuales tipo "viento" o "corriente" — efecto organico y vivo
+- Se puede combinar con mouse como attractor/repulsor
+- **Complejidad:** media | **Carga:** media
+- **Best for:** backgrounds organicos, hero sections, weather/nature themes
+- **Implementar:** Perlin/simplex noise grid + particle velocity from noise angle + trail rendering (line segments)
+
+### 14. Confetti / Celebration Particles
+- Burst de particulas con gravedad, rotacion random, y colores del brand
+- Trigger: on milestone, on success, on CTA click
+- Short-lived (2-3s) y auto-cleanup
+- **Complejidad:** baja | **Carga:** baja (100-300 particulas max)
+- **Best for:** gamification, success states, celebrations, onboarding
+- **Implementar:** Three.js InstancedMesh + gravity simulation + GSAP timeline for burst + auto-dispose
+
+### 15. Depth-of-Field Particle Layers
+- Multiples capas de particulas a diferentes profundidades con blur variable
+- Las particulas cercanas son grandes y blurry, las lejanas son pequenas y sharp (o vice versa)
+- Crea sensacion fotografica de profundidad de campo
+- **Complejidad:** media | **Carga:** media
+- **Best for:** cinematico, luxury, nocturno, fotografico
+- **Implementar:** 3 capas de BufferGeometry a diferentes z-depths + point material con size attenuation + post-processing bokeh pass (opcional)

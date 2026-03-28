@@ -131,3 +131,36 @@ void main() {
 | Mobile | Half resolution, simplified shader |
 | WebGPU first | Usar TSL para auto-fallback WebGPU -> WebGL |
 | Raymarching max steps | 64 mobile, 128 desktop |
+| prefers-reduced-motion | Static gradient image fallback, no animation |
+
+---
+
+## Shaders trending 2026
+
+### 12. Moebius / Toon Post-Processing
+- Post-processing shader que aplica estetica de comic/ilustracion a la escena 3D
+- Outline detection (Sobel/Laplacian), halftone patterns, limited color palette
+- Da a escenas 3D un look hand-drawn que se diferencia del realismo standard
+- **Complejidad:** media (post-processing pass con depth + normal buffers)
+- **Best for:** brands con identidad ilustrada, games, creative agencies, portfolios artisticos
+
+### 13. Noise-Driven Color Cycling
+- Shader atmosferico donde los colores del brand ciclan suavemente controlados por noise
+- Mas sofisticado que gradientes lineales — los colores se mezclan de forma organica y nunca repiten el mismo patron
+- Variante: colores que responden a hora del dia (dawn palette -> day -> dusk -> night)
+- **Complejidad:** baja (noise function + color mixing + time uniform)
+- **Best for:** cualquier proyecto, background sutil con identidad
+
+### 14. Frosted Glass Shader (no CSS)
+- Shader que simula vidrio esmerilado con refraccion real (no backdrop-filter CSS)
+- Distorsiona lo que esta detras del plano, con blur variable y IOR (index of refraction)
+- Permite frosted glass sobre escenas 3D (donde CSS backdrop-filter no funciona)
+- **Complejidad:** media (render-to-texture + refraction shader)
+- **Best for:** UI overlays sobre escenas 3D, glassmorphism premium, hero sections
+
+### 15. Particle-Driven Typography Shader
+- Texto renderizado como campo de particulas que se ensamblan/desensamblan
+- Cada letra es un cluster de particulas que converge desde chaos a forma legible
+- Mouse interaction dispersa las particulas temporalmente
+- **Complejidad:** alta (text-to-texture + GPGPU particle sim + mouse repulsion)
+- **Best for:** hero statements, brand reveals, loading sequences

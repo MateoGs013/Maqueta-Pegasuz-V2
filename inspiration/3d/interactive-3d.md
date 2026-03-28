@@ -101,3 +101,35 @@
 | Loading GLTF | Skeleton / progress bar |
 | Error loading | Graceful CSS fallback |
 | No WebGPU | Automatic WebGL fallback via TSL |
+
+---
+
+## Elementos trending 2026
+
+### 11. Scroll-Driven Product Disassembly (Tier 3-4)
+- Producto 3D que se desensambla pieza por pieza con scroll
+- Cada componente vuela a su posicion exploided revelando el interior
+- Ideal para mostrar "como esta hecho" o features internas
+- **Stack:** Three.js + GLTF (con parts separados) + GSAP ScrollTrigger scrub per-part
+- **Best for:** tech products, hardware, automotive, architecture (exploded axonometric)
+
+### 12. Environment-Mapped Scenes (Tier 2-3)
+- Escenas 3D con environment mapping HDR que refleja un entorno realista
+- Los objetos reflejan luz de un environment cubemap, dando realismo sin luz compleja
+- Lightweight comparado con PBR completo pero visualmente premium
+- **Stack:** Three.js + RGBELoader + PMREMGenerator + MeshStandardMaterial con envMap
+- **Best for:** product showcases, jewelry, automotive, luxury goods
+
+### 13. Kinetic Typography 3D (Tier 3)
+- Texto 3D extruido que reacciona a mouse, scroll, o audio
+- Cada letra puede rotar, escalar, o moverse independientemente
+- Combina bien con particle trails o glow post-processing
+- **Stack:** Three.js + TextGeometry (o troika-three-text para mejor perf) + GSAP per-char + post-processing bloom
+- **Best for:** hero sections, music/entertainment, creative agencies, event pages
+
+### 14. Procedural Terrain / Landscape (Tier 3)
+- Terreno generado proceduralmente con noise que puede reaccionar a mouse o scroll
+- Low-poly aesthetic o wireframe para look tech/abstract
+- Puede funcionar como fondo atmosferico o como elemento interactivo central
+- **Stack:** Three.js PlaneGeometry + vertex displacement con noise + wireframe material + GSAP uniforms
+- **Best for:** tech companies, environmental brands, abstract hero backgrounds

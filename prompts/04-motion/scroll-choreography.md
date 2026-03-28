@@ -57,6 +57,69 @@ PERFORMANCE:
 
 ---
 
+## Ejemplo: buena vs mala coreografia
+
+### Hero scroll-out para un portfolio de fotografia
+
+**Mala:**
+```
+0-100vh: Hero con parallax
+100vh-200vh: Portfolio grid aparece
+```
+(Demasiado vago. Parallax de que? A que velocidad? Que pasa exactamente?)
+
+**Buena:**
+```
+0-100vh: Hero section
+  - Hero image: parallax speed 0.5 (se mueve a mitad de velocidad del scroll)
+  - Hero headline: parallax speed 0.8 (casi fijo, crea profundidad vs imagen)
+  - Vignette overlay: opacity 0 -> 0.6 al scrollear (oscurece para transicion)
+  - Scale: hero image scale 1 -> 1.15 (zoom sutil)
+
+100vh-150vh: Transition zone (pinned)
+  - Hero bg-color morphs from transparent to #0f0f0f
+  - Headline opacity 1 -> 0 (desaparece antes del portfolio)
+  - "Trabajos seleccionados" text: opacity 0 -> 1, y:40 -> 0
+
+150vh-500vh: Portfolio masonry
+  - Cards reveal: stagger 0.1 per card, y:60 -> 0, opacity 0 -> 1
+  - Images: parallax speed 0.3 dentro de cada card (efecto de ventana)
+  - Background: fixed gradient, no se mueve con scroll
+
+MOBILE ADAPTACION:
+  - Parallax eliminado (performance)
+  - Pin eliminado (confuso en touch)
+  - Transition zone: simple fade, no pin
+  - Cards: reveal sin stagger (todas a la vez cuando entran en viewport)
+```
+
+---
+
+## Common errors
+
+- **Parallax en mobile.** La mayoria de los dispositivos mobile tienen scroll performance inferior. Parallax causa jank visible. Desactivar o reducir drasticamente.
+- **Demasiadas secciones pinned.** Cada pin rompe la expectativa de scroll normal. 1-2 pins por pagina es el maximo. Mas genera confusion.
+- **will-change permanente.** will-change: transform solo debe aplicarse DURANTE la animacion, no como estilo estatico. Aplicarlo permanentemente consume memoria de GPU.
+- **No usar requestAnimationFrame para scroll listeners.** Un scroll listener sin throttle genera cientos de eventos por segundo. Siempre throttle con rAF.
+- **Scrub animations sin rango definido.** Si una animacion scrubbed no tiene start/end claros, el progreso es impredecible. Definir viewport range exacto.
+- **Color transitions bruscas.** Si el bg cambia de blanco a negro entre secciones sin transicion, hay un flash visual. Usar zona de transicion con gradiente o morph.
+- **Scroll indicators que no desaparecen.** El "scroll down" arrow del hero debe desaparecer despues del primer scroll. Si sigue visible en la seccion 3, es ruido.
+
+---
+
+## Pipeline connection
+
+```
+Input: motion-personality.md (personalidad, easing)
+     + page-plans.md (secciones y su orden)
+Output de este prompt -> Mapa de scroll detallado
+  Se integra en: docs/motion-spec.md seccion 7
+  Alimenta:
+    - gsap-motion skill (ScrollTrigger implementation)
+    - responsive-review (mobile scroll adaptations)
+    - perf-check (scroll performance budget)
+```
+
 ## Output esperado
 
 Mapa de scroll que se integra en `docs/motion-spec.md` seccion 7.

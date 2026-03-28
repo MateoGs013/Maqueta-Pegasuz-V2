@@ -6,6 +6,28 @@
 
 ---
 
+## Executive Summary
+
+2026 consolida la web como medio creativo maduro. Las tendencias clave para proyectos Pegasuz:
+
+1. **CSS nativo absorbe JS** — Scroll-driven animations, View Transitions API, @starting-style, y container queries son Baseline. Usar CSS primero, GSAP para lo complejo. Menos JS = mejor performance = mejor UX.
+
+2. **Motion es identidad, no decoracion** — Cada marca necesita su propio easing, timing, y choreography. El motion-spec ya no es opcional, es tan fundamental como la paleta de colores.
+
+3. **3D es expectativa base** — WebGPU madura via Three.js TSL, GPGPU particles escalan a 100k+, raymarching SDF crea formas organicas sin geometria. Todo proyecto premium necesita Tier 1 minimo.
+
+4. **AI redefine la interaccion** — Chat-as-hero, streaming responses, personalizacion dinamica. Los sitios pasivos se sienten anticuados.
+
+5. **Dark mode es default** — En tech, fintech, y creativos, dark mode es la norma. Light mode es la alternativa.
+
+6. **Tipografia reemplaza imagenes** — Variable fonts + fluid clamp() + char-by-char GSAP animations. El texto ES el visual.
+
+7. **Performance como etica** — Sustainability-conscious design: menos JS, mas CSS nativo, lazy everything, reduced motion como primera clase.
+
+**Stack decision para 2026:** CSS scroll-driven para lo simple, GSAP para orchestration compleja, Three.js TSL para 3D portable, View Transitions API para page transitions. Progressive enhancement siempre.
+
+---
+
 ## 1. Broken/Free Grid Layouts
 
 El grid rigido esta muerto. 2026 ofrece libertad total en como se usan las grids.
@@ -158,6 +180,46 @@ El scroll como vehiculo de storytelling, no solo navegacion.
 | Scroll-driven 3D scene | -- | -- | -- | GSAP ScrollTrigger + Three.js |
 | Hover distortion | -- | -- | -- | Mouse events + Three.js shader |
 | Char-by-char text reveal | -- | SplitType + stagger | -- | -- |
+
+---
+
+## 11. Micro-interactions as brand signature
+
+Cada boton, cada hover, cada transicion es una oportunidad de branding.
+
+- **Spring physics en CSS** — `linear()` easing function (Baseline 2024) permite spring-like bounces sin JS
+- **Haptic-feeling feedback** — scale + shadow + color change simultaneos en hover/click
+- **Sound design en web** — sutiles audio cues en interacciones clave (opt-in, no autoplay)
+- **Custom cursors con personalidad** — el cursor cambia forma, color, y tamano segun el contexto
+
+**Implementar con:** CSS `linear()` easing + GSAP quickTo para magnetic elements + Web Audio API para sound cues + Vue 3 global cursor component
+
+---
+
+## 12. Spatial design y depth layering
+
+Profundidad visual sin necesidad de WebGL.
+
+- **CSS layers con parallax** — multiples capas con z-index + scroll-driven transform para pseudo-3D
+- **Glassmorphism como herramienta de depth** — no decorativo, sino funcional para separar layers
+- **Overlap intencional** — elementos que se superponen creando jerarquia visual
+- **Scale como distancia** — elementos mas pequenos = mas lejanos, sin 3D real
+
+**Implementar con:** CSS transform: translate3d() + scroll-driven parallax + backdrop-filter layers + z-index system
+
+---
+
+## 13. Inclusive by default
+
+Accesibilidad como feature, no como afterthought.
+
+- **prefers-reduced-motion** respetado universalmente — no solo desactivar animaciones, ofrecer alternativas
+- **prefers-contrast** — adaptar paleta para high contrast mode
+- **prefers-color-scheme** — dark/light como preferencia del user, no del brand
+- **Focus visible styling** — keyboard navigation con estilos bonitos, no solo funcionales
+- **Semantic HTML first** — aria como complemento, no como muleta
+
+**Implementar con:** CSS media queries para preferences + Vue 3 composable `useAccessibilityPreferences()` + semantic HTML + `focus-visible` styling
 
 ---
 
