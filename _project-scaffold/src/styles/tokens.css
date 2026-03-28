@@ -1,0 +1,182 @@
+/*
+ * Design Tokens
+ *
+ * IMPORTANT: Fill these values from docs/design-brief.md
+ * Do NOT use hardcoded values in components.
+ * Always reference tokens: var(--color-accent-primary)
+ */
+
+:root {
+  /* ─── Colors ─── */
+  /* Backgrounds */
+  --color-bg-primary: ;
+  --color-bg-secondary: ;
+  --color-bg-elevated: ;
+  --color-bg-overlay: ;
+
+  /* Text */
+  --color-text-primary: ;
+  --color-text-secondary: ;
+  --color-text-muted: ;
+  --color-text-inverse: ;
+
+  /* Accent */
+  --color-accent-primary: ;
+  --color-accent-hover: ;
+  --color-accent-subtle: ;
+
+  /* Semantic */
+  --color-success: ;
+  --color-warning: ;
+  --color-error: ;
+
+  /* Atmospheric */
+  --color-glow: ;
+  --color-gradient-start: ;
+  --color-gradient-end: ;
+
+  /* ─── Typography ─── */
+  --font-display: '', serif;
+  --font-body: '', sans-serif;
+  --font-mono: '', monospace;
+
+  /* Fluid scale */
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1rem + 0.6vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  --text-3xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
+  --text-4xl: clamp(2.5rem, 1.8rem + 3.5vw, 4rem);
+  --text-hero: clamp(3rem, 2rem + 5vw, 6rem);
+
+  /* Weights */
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Tracking */
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
+
+  /* Leading */
+  --leading-tight: 1.1;
+  --leading-snug: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* ─── Spacing ─── */
+  --space-unit: 8px;
+  --space-xs: calc(var(--space-unit) * 0.5);
+  --space-sm: var(--space-unit);
+  --space-md: calc(var(--space-unit) * 2);
+  --space-lg: calc(var(--space-unit) * 3);
+  --space-xl: calc(var(--space-unit) * 4);
+  --space-2xl: calc(var(--space-unit) * 6);
+  --space-3xl: calc(var(--space-unit) * 8);
+  --space-4xl: calc(var(--space-unit) * 12);
+  --space-section: calc(var(--space-unit) * 16);
+
+  /* ─── Layout ─── */
+  --container-max: 1280px;
+  --container-narrow: 960px;
+  --container-wide: 1440px;
+  --container-padding: var(--space-lg);
+
+  /* ─── Radii ─── */
+  --radius-sm: ;
+  --radius-md: ;
+  --radius-lg: ;
+  --radius-xl: ;
+  --radius-full: 9999px;
+
+  /* ─── Shadows ─── */
+  --shadow-sm: ;
+  --shadow-md: ;
+  --shadow-lg: ;
+  --shadow-glow: ;
+
+  /* ─── Effects ─── */
+  --grain-opacity: 0;
+  --blur-backdrop: ;
+
+  /* ─── Transitions ─── */
+  --transition-fast: 150ms ease;
+  --transition-base: 300ms ease;
+  --transition-slow: 500ms ease;
+}
+
+/* ─── Reset ─── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+}
+
+img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+}
+
+/* ─── Utility ─── */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+.container--narrow {
+  max-width: var(--container-narrow);
+}
+
+.container--wide {
+  max-width: var(--container-wide);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

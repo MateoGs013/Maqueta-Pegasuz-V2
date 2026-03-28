@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "Read",
+      "WebFetch",
+      "WebSearch",
+      "mcp__*",
+      "Skill(*)"
+    ],
+    "defaultMode": "bypassPermissions",
+    "additionalDirectories": [
+      "C:\\Users\\mateo\\Desktop",
+      "C:\\Users\\mateo\\Desktop\\maqueta",
+      "C:\\Users\\mateo\\Desktop\\pegasuz"
+    ]
+  }
+}
