@@ -740,3 +740,40 @@ The entry point section already had new-project listed correctly.
 - **creative-design** — Correctly produces to docs/design-brief.md. No pipeline contradictions.
 - **threejs-3d** — Correctly references design brief, prefers-reduced-motion respected.
 - **vue-component** — Correctly reads brief for all visual decisions. No shortcuts.
+
+---
+
+## Fase 4: 10 Demo Sites Created (2026-03-28)
+
+### Summary
+
+10 complete Vue 3 projects created on Desktop, each with unique visual identity:
+
+| # | Project | Rubro | Palette | Typography | Motion | 3D | Views | Components |
+|---|---------|-------|---------|-----------|--------|-----|-------|------------|
+| 1 | noctua-interiors | Interior design luxury | Dark + gold | Cormorant Garamond + Inter | Luxury slow | Golden particles | 5 | 6 |
+| 2 | verde-organics | E-commerce cosmetics | Earth + forest green | DM Serif Display + DM Sans | Fluid organic | Nature shader | 6 | 6 |
+| 3 | pulse-fintech | Fintech payments | Deep blue + cyan | JetBrains Mono + Space Grotesk | Sharp electric | Data particle grid | 5 | 4 |
+| 4 | fuego-gastrobar | Gastronomy | Charcoal + fire red | Playfair Display + Source Sans 3 | Editorial measured | Smoke/fire | 5 | 6 |
+| 5 | atlas-architects | Architecture | White + black | Space Grotesk + Inter | Mechanical grid | Wireframe building | 5 | 5 |
+| 6 | nova-creative | Creative agency | Gradient violet-pink-orange | Space Grotesk + Inter | Sharp electric | Mouse-reactive particles | 6 | 5 |
+| 7 | serene-wellness | Spa/wellness | Beige + sage green | Cormorant + Outfit | Luxury slow | Water waves | 6 | 6 |
+| 8 | bolt-saas | SaaS project mgmt | Gray + electric yellow | System UI + Inter | Sharp snappy | Node constellation | 6 | 6 |
+| 9 | heritage-realestate | Real estate premium | Navy + gold | Libre Baskerville + Inter | Editorial measured | Orbital camera | 6 | 6 |
+| 10 | kodex-education | Ed-tech courses | Dark + terminal green | JetBrains Mono + Inter | Mechanical grid | Matrix code rain | 6 | 7 |
+
+Each site has: 4 foundation docs (content-brief, design-brief, page-plans, motion-spec), responsive views, GSAP animations, Three.js 3D component, router with lazy loading, git repo.
+
+### Validation
+
+- No palette repeated between projects
+- No typography combo repeated
+- No motion personality repeated
+- No 3D effect repeated
+- All sites have real copy (no lorem ipsum)
+
+---
+
+## Fase 5: Awwwards Design Critique (2026-03-28)
+
+Critique agents launched for all 10 sites. Evaluating against Awwwards criteria (Design 30%, Creativity 25%, Development 25%, Content 20%) with target score >= 9.0/10. Applying iterative improvements to reach target.

@@ -50,33 +50,38 @@
 | 8 | `pegasuz-skills-deep-review` | DONE (commit 9a1766e) | 10 gaps found and fixed across 5 skills (pipeline, extraction, tenant, normalization, QA) |
 | 9 | `guides-completeness-rewrite` | DONE (commit 9a1766e) | Guides rewritten as self-contained tutorials, `skill-dispatch-table.md` updated with `new-project` entry |
 | 10 | `claude-md-optimization` | DONE (commit 9a1766e) | CLAUDE.md contradictions fixed (threejs step, motion defaults, extraction table) |
-| 11 | `memory-system-improvement` | IN PROGRESS | This task -- improving memory files for cross-session context |
-| 12 | `inspiration-catalog-expansion` | DONE (commit 9a1766e) | Added fintech, gastronomy rubros + trends-2026.md |
+| 11 | `memory-system-improvement` | DONE (commit e3323a4) | MEMORY.md, active-projects, lessons-learned all improved |
+| 12 | `inspiration-catalog-expansion` | DONE (commit e3323a4) | Added fintech, gastronomy rubros + trends-2026.md, expanded all categories |
 
 ### Fase 3 -- New features (2 tasks)
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 13 | `create-project-review-skill` | PENDING | Skill for auditing existing projects |
-| 14 | `design-system-research` | DONE (in PROCESS-LOG, referenced but template file not on disk) | Research complete, output planned for `docs/_templates/design-system-base.template.md` but file not yet materialized |
+| 13 | `create-project-review-skill` | DONE (commit 158067f) | `.claude/skills/project-review/SKILL.md` created with health score system |
+| 14 | `design-system-research` | DONE (commit 158067f) | `docs/_templates/design-system-base.template.md` created with color scales, component patterns, animation tokens |
 
 ### Fase 4 -- Demo sites (1 task)
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 15 | `create-10-demo-sites` | PENDING | Requires all previous phases complete |
+| 15 | `create-10-demo-sites` | DONE (commit 3c5d6f4) | 10 unique Vue 3 projects created on Desktop, each with 4 docs, 5-6 views, 4-7 components, 3D, git |
 
 ### Fase 5 -- Critique (1 task)
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 16 | `awwwards-design-critique` | PENDING | Requires demo sites first |
+| 16 | `awwwards-design-critique` | IN PROGRESS | Critique agents running, applying improvements to all 10 sites |
 
-## Uncommitted changes (as of 2026-03-28)
+## Git history
 
-Working tree has staged changes from Fase 1 execution that modify:
-- `.claude/agents/binding-auditor.md`
-- `.claude/skills/new-project/SKILL.md`, `page-scaffold/SKILL.md`
+| Commit | Phase | Description |
+|--------|-------|-------------|
+| 9a1766e | Fase 1 | Audit and consistency pass: skills, agents, scaffold, templates |
+| 158067f | Fase 3 | project-review skill + design-system-base template |
+| e3323a4 | Fase 2 | Content improvements: prompts, guides, Pegasuz skills, memory, inspiration |
+| 5bdbf2d | Fase 2+ | Additional guide, prompt, inspiration improvements |
+| c99846c | Fase 2 final | Remaining prompt and inspiration improvements |
+| 3c5d6f4 | Fase 4 | 10 demo sites created + final prompt/guide improvements |
 - `CLAUDE.md`, `PROCESS-LOG.md`
 - `docs/_templates/` (all 4 templates)
 - `guides/skill-dispatch-table.md`
