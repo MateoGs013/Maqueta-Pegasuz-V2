@@ -1,6 +1,8 @@
 ---
 name: creative-director
-description: Designs the complete visual identity for a project. Produces 6 foundation docs (design-concept, design-tokens, design-decisions, content-brief, page-plans, motion-spec). Validates with 12-point gate. Invoke as Step 1 of the pipeline or when foundation docs need creation/revision.
+description: Designs the complete visual identity and produces 6 foundation docs — design-concept.md (concept + principles, zero values), design-tokens.md (CSS-ready tokens with descriptions), design-decisions.md (every token traced to a ref frame), content-brief.md (real copy), page-plans.md (recipe cards), motion-spec.md (choreography). Requires project brief + reference analysis from CEO. Self-validates with 12-point gate before reporting done. DO NOT invoke without a project brief.
+tools: Read, Glob, Grep, WebFetch, Write
+model: sonnet
 ---
 
 # Creative Director

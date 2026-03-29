@@ -20,7 +20,7 @@ user sign-off. See `/project` skill for the User Review Protocol details.
 | Console | Role | Receives | Produces |
 |---------|------|----------|----------|
 | Reference Analyst | Analyze captured screenshots | Screenshot paths + manifest | `docs/reference-analysis.md` |
-| Creative Director | Design visual identity | Brief + ref analysis (extracted) | 4 foundation docs |
+| Creative Director | Design visual identity | Brief + ref analysis (extracted) + ref frame paths | 6 foundation docs |
 | Atmosphere | Build WebGL/Canvas layer | Palette + atmosphere concept (extracted) | `AtmosphereCanvas.vue` |
 | Constructor | Build sections one by one | Recipe card + tokens + copy (extracted) | `S-{Name}.vue` |
 | Choreographer | Implement all motion | Motion spec + section list (extracted) | Composables + preloader |
