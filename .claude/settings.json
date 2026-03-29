@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"/src/\" && ! echo \"$FILE\" | grep -qE \"_project-scaffold\"; then DOCS_DIR=$(echo \"$FILE\" | sed \"s|/src/.*|/docs/|\"); MISSING=\"\"; [ ! -f \"${DOCS_DIR}design-brief.md\" ] && MISSING=\"$MISSING design-brief.md\"; [ ! -f \"${DOCS_DIR}content-brief.md\" ] && MISSING=\"$MISSING content-brief.md\"; [ ! -f \"${DOCS_DIR}page-plans.md\" ] && MISSING=\"$MISSING page-plans.md\"; [ ! -f \"${DOCS_DIR}motion-spec.md\" ] && MISSING=\"$MISSING motion-spec.md\"; if [ -n \"$MISSING\" ]; then echo \"\"; echo \"[PIPELINE GATE] Foundation docs missing:$MISSING\"; echo \"Run Creative Director (Step 1) before writing src/ code.\"; echo \"See .claude/pipeline.md for the required sequence.\"; fi; fi'"
+            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"/src/\" && ! echo \"$FILE\" | grep -qE \"_project-scaffold\"; then DOCS_DIR=$(echo \"$FILE\" | sed \"s|/src/.*|/docs/|\"); if [ ! -f \"${DOCS_DIR}tokens.md\" ] || [ ! -f \"${DOCS_DIR}sections.md\" ]; then echo \"\"; echo \"[V4 GATE] Design docs missing. Run Designer teammate first.\"; echo \"  Required: docs/tokens.md + docs/sections.md\"; fi; fi'"
           }
         ]
       }
@@ -17,17 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"\\.vue$\"; then ISSUES=\"\"; grep -q \"import axios\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - AXIOS direct import: use service layer\"; grep -qE \"JSON\\.parse\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - JSON.parse in component: move to store/service\"; grep -qE \"gsap\\.(to|from|fromTo).*?(width|height|top|left|right|bottom)[^T]\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - Animating layout property: use transform/opacity only\"; grep -qE \"will-change\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - will-change detected: remove preventive usage\"; if [ -n \"$ISSUES\" ]; then echo \"\"; echo \"[ANTI-PATTERN]\"; echo -e \"$ISSUES\"; fi; fi'"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'echo \"\"; echo \"[V3 CHECKLIST]\"; echo \"  - Foundation docs complete? (design-brief, content-brief, page-plans, motion-spec)\"; echo \"  - Motion variety? (no consecutive sections same technique)\"; echo \"  - prefers-reduced-motion respected?\"; echo \"  - All sections passed 7-layer validation?\"; echo \"  - Meta tags + OG on every page?\"; echo \"  - Images: alt + dimensions + lazy loading?\"'"
+            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"\\.vue$\"; then ISSUES=\"\"; grep -q \"import axios\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - AXIOS direct import: use service layer\"; grep -qE \"gsap\\.(to|from|fromTo).*?(width|height|top|left|right|bottom)[^T]\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - Animating layout property: use transform/opacity only\"; grep -qE \"will-change\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - will-change detected: remove preventive usage\"; if [ -n \"$ISSUES\" ]; then echo \"\"; echo \"[ANTI-PATTERN]\"; echo -e \"$ISSUES\"; fi; fi'"
           }
         ]
       }
