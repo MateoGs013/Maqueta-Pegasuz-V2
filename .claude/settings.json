@@ -1,21 +1,23 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"/src/\" && ! echo \"$FILE\" | grep -qE \"_project-scaffold\"; then DOCS_DIR=$(echo \"$FILE\" | sed \"s|/src/.*|/docs/|\"); MISSING=\"\"; [ ! -f \"${DOCS_DIR}design-brief.md\" ] && MISSING=\"$MISSING design-brief.md\"; [ ! -f \"${DOCS_DIR}content-brief.md\" ] && MISSING=\"$MISSING content-brief.md\"; [ ! -f \"${DOCS_DIR}page-plans.md\" ] && MISSING=\"$MISSING page-plans.md\"; [ ! -f \"${DOCS_DIR}motion-spec.md\" ] && MISSING=\"$MISSING motion-spec.md\"; if [ -n \"$MISSING\" ]; then echo \"\"; echo \"[PIPELINE GATE] Foundation docs missing:$MISSING\"; echo \"Run Creative Director (Step 1) before writing src/ code.\"; echo \"See .claude/pipeline.md for the required sequence.\"; fi; fi'"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -Command \"$f = $env:TOOL_INPUT_FILE_PATH; if ($f -match '\\.vue$') { $c = Get-Content $f -Raw -ErrorAction SilentlyContinue; $issues = @(); if ($c -match 'import axios') { $issues += 'AXIOS directo detectado - usar service layer (@/config/api)' }; if ($c -match 'import api from') { $issues += 'API import en view/component - usar store, no service directo' }; if ($c -match 'JSON\\.parse') { $issues += 'JSON.parse en view - mover a store o service' }; if ($c -match 'animate\\(.*width|animate\\(.*height|gsap\\.to.*width|gsap\\.to.*height') { $issues += 'GSAP animando layout properties - usar solo transform/opacity' }; if ($c -match 'x-client.*[a-z]+-[a-z]+') { $val = $Matches[0]; if ($val -notmatch 'VITE_CLIENT_SLUG') { $issues += \\\"Posible slug hardcodeado: $val - usar VITE_CLIENT_SLUG\\\" } }; if ($issues.Count -gt 0) { Write-Output ''; Write-Output '[PEGASUZ CHECK]'; $issues | ForEach-Object { Write-Output \\\"  x $_\\\" } } }\""
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell.exe -NoProfile -Command \"$f = $env:TOOL_INPUT_FILE_PATH; if ($f -match '\\.js$' -and $f -match 'stores') { $c = Get-Content $f -Raw -ErrorAction SilentlyContinue; $issues = @(); if ($c -match 'import api from') { $issues += 'Store importa API directo - debe importar desde service' }; if ($c -match 'api\\.get|api\\.post') { $issues += 'Store hace HTTP calls - delegar a service layer' }; if ($issues.Count -gt 0) { Write-Output ''; Write-Output '[BINDING CHECK]'; $issues | ForEach-Object { Write-Output \\\"  x $_\\\" } } }\""
+            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"\\.vue$\"; then ISSUES=\"\"; grep -q \"import axios\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - AXIOS direct import: use service layer\"; grep -qE \"JSON\\.parse\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - JSON.parse in component: move to store/service\"; grep -qE \"gsap\\.(to|from|fromTo).*?(width|height|top|left|right|bottom)[^T]\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - Animating layout property: use transform/opacity only\"; grep -qE \"will-change\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - will-change detected: remove preventive usage\"; if [ -n \"$ISSUES\" ]; then echo \"\"; echo \"[ANTI-PATTERN]\"; echo -e \"$ISSUES\"; fi; fi'"
           }
         ]
       }
@@ -25,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -Command \"Write-Output ''; Write-Output '[CHECKLIST] Antes de cerrar:'; Write-Output '  - Loading + error states implementados?'; Write-Output '  - prefers-reduced-motion respetado?'; Write-Output '  - resolveImageUrl() en TODA imagen?'; Write-Output '  - Meta tags + JSON-LD en paginas nuevas?'; Write-Output '  - Zero Omission Rule: todos los campos del API mapeados?'; Write-Output '  - docs/ foundation docs completos (design-brief, content-brief, page-plans, motion-spec)?'\""
+            "command": "bash -c 'echo \"\"; echo \"[V3 CHECKLIST]\"; echo \"  - Foundation docs complete? (design-brief, content-brief, page-plans, motion-spec)\"; echo \"  - Motion variety? (no consecutive sections same technique)\"; echo \"  - prefers-reduced-motion respected?\"; echo \"  - All sections passed 7-layer validation?\"; echo \"  - Meta tags + OG on every page?\"; echo \"  - Images: alt + dimensions + lazy loading?\"'"
           }
         ]
       }

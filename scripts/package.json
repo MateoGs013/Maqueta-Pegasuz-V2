@@ -1,0 +1,11 @@
+{
+  "name": "maqueta-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture": "node capture-refs.mjs"
+  },
+  "dependencies": {
+    "puppeteer": "^23.0.0"
+  }
+}

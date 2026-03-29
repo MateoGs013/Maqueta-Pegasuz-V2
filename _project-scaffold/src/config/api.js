@@ -1,37 +1,32 @@
+// Axios instance — only used by services/, never imported directly in views/components
+// For standalone projects without an API, this file can be removed
+
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL || '/api',
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
   }
 })
 
-// Inject tenant header
-api.interceptors.request.use(config => {
-  config.headers['x-client'] = import.meta.env.VITE_CLIENT_SLUG
-  return config
-})
-
-// Handle errors globally
-api.interceptors.response.use(
-  response => response,
-  error => {
-    console.error('[API Error]', error.response?.status, error.message)
-    return Promise.reject(error)
-  }
-)
+// Attach client slug for Pegasuz multi-tenant (if applicable)
+const slug = import.meta.env.VITE_CLIENT_SLUG
+if (slug) {
+  api.defaults.headers.common['x-client'] = slug
+}
 
 /**
- * Resolve image URL from tenant uploads
- * @param {string} path - Relative image path from API
- * @returns {string} Full URL to the image
+ * Resolve image URL from API path to full URL
+ * @param {string} path - Image path from API response
+ * @returns {string} Full image URL
  */
 export function resolveImageUrl(path) {
   if (!path) return ''
   if (path.startsWith('http')) return path
-  const baseUrl = import.meta.env.VITE_API_URL.replace('/api', '')
-  return `${baseUrl}/${path}`
+  const base = import.meta.env.VITE_API_URL || ''
+  return `${base.replace('/api', '')}${path}`
 }
 
 export default api
