@@ -105,28 +105,30 @@ Produces: `_ref-captures/{domain}/frame-NNN.png` + `manifest.json`
 
 ---
 
-## Step 3: Sections (Console: `constructor`, one call per section)
+## Step 3: Sections — STATIC BUILD PHASE (Console: `constructor`, one call per section)
+
+**All sections are built with hardcoded static data. No store imports. No API calls.**
+The creative visual experience is built first. API wiring happens after the user approves the static build (Step 5B).
 
 **Context contract — CEO extracts PER-SECTION and passes inline:**
 - IN: Recipe card for THIS section only (name, purpose, layout, motion technique, interaction, responsive notes)
-- IN: Content for THIS section only (headline, subtext, CTA — from content-brief)
-- IN: Design tokens (font families, palette, spacing base, easing, radii — from design-brief)
-- IN: Relevant library entry (the specific layout pattern, interaction pattern, motion category)
-- DO NOT pass: other sections' recipe cards, full content-brief, full motion-spec
-- OUT: `src/components/sections/S-{Name}.vue`
+- IN: Content for THIS section only (headline, subtext, CTA — exact text from content-brief)
+- IN: Design tokens (actual hex values, font family names, pixel sizes, cubic-bezier — from design-brief)
+- IN: Library code snippets (paste the specific layout pattern, motion category GSAP code, interaction CSS)
+- DO NOT pass: other sections' recipe cards, full docs, stores, services
 
 **Gate — 7-layer validation (QA console, per section):**
 1. Composition: semantic HTML, heading hierarchy
 2. Typography: tokens used, fluid type
 3. Depth: visual layers present
 4. Interaction: hover + focus + cursor states
-5. Motion: uses ASSIGNED technique (not generic)
+5. Motion: uses ASSIGNED technique (not generic fade-up)
 6. Atmosphere: visual depth or canvas connection
 7. Responsive: works at 375, 768, 1280, 1440px
 
 **On FAIL:** CEO passes specific layer failures to Constructor. Rebuild. Do not advance.
 
-**User Review (per section):** CEO screenshots section in page context (desktop + mobile). User approves or requests changes. Changes are applied, then re-screenshot. Next section starts only after approval.
+**User Review (per section, MANDATORY):** CEO takes screenshot (desktop + mobile), calls AskUserQuestion. STOPS until user responds. Changes applied → re-screenshot → re-ask. Next section starts ONLY after user responds "Approved."
 
 ---
 
@@ -154,28 +156,31 @@ Produces: `_ref-captures/{domain}/frame-NNN.png` + `manifest.json`
 
 ---
 
-## Step 5: Integration + Final Audit
+## Step 5A: Static Integration + Final Audit (CEO)
 
-**CEO does integration directly:**
+CEO assembles the static site:
 1. Update router with lazy-loaded routes
 2. Update App.vue with AtmosphereCanvas, AppPreloader, transition wrapper
 3. Update HomeView.vue with section components in order
 4. Create additional page views
-5. Connect stores/services if needed
+5. Add SEO meta to every page
+6. All content remains hardcoded
 
-**Final audit (QA console):**
-All 7 categories must PASS:
-1. Accessibility (WCAG 2.1 AA)
-2. SEO (meta + OG + JSON-LD per page)
-3. Responsive (no overflow, touch targets >= 44px)
-4. CSS (tokens, no magic numbers)
-5. Performance (lazy images, code splitting)
-6. Motion (variety + reduced-motion)
-7. Content (no placeholders)
+**Final audit (QA console):** a11y + SEO + responsive + CSS + performance + motion + content
+**User Review:** CEO screenshots all pages (desktop + mobile). AskUserQuestion. Loop until approved.
 
-**On FAIL:** CEO fixes critical issues directly, re-audits. Loop until PASS.
+---
 
-**User Review (final):** CEO screenshots all pages (desktop + mobile). User approves or requests changes. Project is NOT done until user says "Approved."
+## Step 5B: API Wiring (CEO, only if Backend ≠ none)
+
+After static build is approved, connect to the API:
+1. Create `src/config/api.js` — single axios instance
+2. Create `src/services/{resource}.js` per data type
+3. Create `src/stores/{resource}.js` with Pinia (loading, error, data)
+4. Replace hardcoded template content with reactive store values
+5. Add loading and error states to each section that uses API data
+
+Visual behavior must not change between static and API-wired state.
 
 ---
 
@@ -188,16 +193,17 @@ All 7 categories must PASS:
 
 ## Concurrency Rules
 
-- Steps are strictly sequential: 0 → 0.5 → 1 → 2 → 3 → 4 → 5 → 6
-- Within Step 3, sections are sequential (one at a time)
+- Steps are strictly sequential: 0 → 0.5 → 1 → 2 → 3 → 4 → 5A → 5B → 6
+- Within Step 3, sections are sequential (one at a time, review after each)
 - Max 2 concurrent agents (builder + QA is OK)
 - NEVER 3+ agents (causes API 500 — learned from AXON)
 - On API errors: reduce to 1 agent, retry
 
 ## CEO Context Management Rules
 
-1. **Extract, don't delegate reading.** CEO reads docs, extracts relevant parts, passes inline.
+1. **Extract, don't delegate reading.** CEO reads docs, extracts relevant parts, passes inline. Actual CSS-ready values: hex codes, font names, pixel sizes, cubic-bezier strings.
 2. **One task per console.** Never ask a console to do two things.
 3. **Review before forwarding.** Read console output before passing downstream.
-4. **Pass failures explicitly.** "Typography check failed: H2 uses 24px instead of var(--text-2xl)" — not "QA failed."
+4. **Pass failures explicitly.** "Layer 2 failed: H2 uses 24px instead of var(--text-2xl)" — not "QA failed."
 5. **Track progress.** TodoWrite after every completed task.
+6. **Static first.** Creative build is frozen before any API connection. Never mix creative work with API wiring.
