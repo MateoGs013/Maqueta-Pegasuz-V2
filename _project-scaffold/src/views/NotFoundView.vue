@@ -1,60 +1,50 @@
 <script setup>
 import { useRouter } from 'vue-router'
-
 const router = useRouter()
-
-function goHome() {
-  router.push({ name: 'home' })
-}
 </script>
 
 <template>
-  <div class="not-found container" aria-labelledby="not-found-heading">
-    <h1 id="not-found-heading">404</h1>
-    <p>The page you are looking for does not exist.</p>
-    <button class="btn-back" @click="goHome">Back to Home</button>
-  </div>
+  <main class="not-found">
+    <h1>404</h1>
+    <p>Page not found</p>
+    <button @click="router.push('/')">Back to home</button>
+  </main>
 </template>
 
 <style scoped>
 .not-found {
-  min-height: 80vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
+  gap: var(--space-4);
   text-align: center;
-  gap: var(--space-lg);
 }
 
 .not-found h1 {
   font-family: var(--font-display);
-  font-size: var(--text-hero);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-tight);
-  color: var(--color-accent-primary);
+  font-size: var(--text-6xl);
+  color: var(--accent-primary);
 }
 
 .not-found p {
   font-size: var(--text-lg);
-  color: var(--color-text-secondary);
+  color: var(--text-muted);
 }
 
-.btn-back {
-  padding: var(--space-sm) var(--space-xl);
-  background: var(--color-accent-primary);
-  color: var(--color-text-inverse);
-  border-radius: var(--radius-md, 8px);
-  font-weight: var(--weight-medium);
-  transition: var(--transition-base);
+.not-found button {
+  padding: var(--space-3) var(--space-6);
+  background: var(--accent-primary);
+  color: var(--canvas);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: opacity var(--duration-fast) var(--ease-brand);
 }
 
-.btn-back:hover {
-  background: var(--color-accent-hover);
-}
-
-.btn-back:focus-visible {
-  outline: 2px solid var(--color-accent-primary);
-  outline-offset: 2px;
+.not-found button:hover {
+  opacity: 0.85;
 }
 </style>

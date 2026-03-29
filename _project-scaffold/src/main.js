@@ -2,17 +2,9 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import { useContentStore } from './stores/content'
 import './styles/tokens.css'
 
 const app = createApp(App)
-const pinia = createPinia()
-
-app.use(pinia)
+app.use(createPinia())
 app.use(router)
-
-// Bootstrap CMS content before mounting
-const contentStore = useContentStore()
-contentStore.bootstrap().finally(() => {
-  app.mount('#app')
-})
+app.mount('#app')

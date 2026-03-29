@@ -29,6 +29,9 @@ desktop.ini
 *.log
 npm-debug.log*
 
+# Reference captures (temporary — deleted after build)
+_ref-captures/
+
 # Claude Code local session data
 .claude/todos/
 .claude/projects/

@@ -6,8 +6,6 @@ const routes = [
     name: 'home',
     component: () => import('@/views/HomeView.vue')
   },
-  // Add routes here following lazy loading pattern:
-  // { path: '/about', name: 'about', component: () => import('@/views/AboutView.vue') },
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',

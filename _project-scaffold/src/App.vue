@@ -1,71 +1,61 @@
 <script setup>
-import { onMounted, onBeforeUnmount } from 'vue'
-
-// Lenis smooth scroll (optional - remove if not needed)
-let lenis = null
-
-onMounted(async () => {
-  const { default: Lenis } = await import('lenis')
-  lenis = new Lenis({ lerp: 0.1, smoothWheel: true })
-
-  function raf(time) {
-    lenis.raf(time)
-    requestAnimationFrame(raf)
-  }
-  requestAnimationFrame(raf)
-})
-
-onBeforeUnmount(() => {
-  lenis?.destroy()
-})
+// AtmosphereCanvas and AppPreloader are added by the pipeline
+// Do not add them manually before Step 2 and Step 4 complete
 </script>
 
 <template>
-  <!-- Skip to content (a11y) -->
-  <a href="#main-content" class="skip-link">Skip to content</a>
-
-  <!-- Header component goes here -->
-  <!-- <AppHeader /> -->
-
-  <main id="main-content">
+  <div id="app-root">
+    <!-- AtmosphereCanvas goes here (Step 2) -->
+    <!-- AppPreloader goes here (Step 4) -->
     <router-view v-slot="{ Component }">
       <transition name="page" mode="out-in">
         <component :is="Component" />
       </transition>
     </router-view>
-  </main>
-
-  <!-- Footer component goes here -->
-  <!-- <AppFooter /> -->
+  </div>
 </template>
 
 <style>
-/* Page transition */
-.page-enter-active,
-.page-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.page-enter-from {
-  opacity: 0;
-  transform: translateY(12px);
-}
-.page-leave-to {
-  opacity: 0;
-  transform: translateY(-12px);
+/* Base reset — design tokens in tokens.css */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* Skip link (a11y) */
-.skip-link {
-  position: absolute;
-  top: -100%;
-  left: 0;
-  background: var(--color-accent-primary, #000);
-  color: var(--color-text-inverse, #fff);
-  padding: 8px 16px;
-  z-index: 9999;
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text);
+  background-color: var(--canvas);
+  line-height: 1.6;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
   text-decoration: none;
 }
-.skip-link:focus {
-  top: 0;
+
+/* Page transition (customized by Choreographer in Step 4) */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.3s ease;
+}
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
 }
 </style>
