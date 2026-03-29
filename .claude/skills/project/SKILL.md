@@ -179,7 +179,7 @@ DO NOT pass the user's brief — analyst sees only what it observes.
 Agent: creative-director
 ```
 
-**Context to pass inline (extract from references + brief — do not say "read the files"):**
+**Context to pass inline:**
 
 ```
 Project brief:
@@ -192,23 +192,33 @@ Project brief:
   Scheme: {dark/light}
   Constraints: {any}
 
-Reference analysis findings (from docs/reference-analysis.md):
-  Borrow list: {paste borrow list}
-  Color insights: {paste color table}
-  Layout patterns: {paste relevant patterns}
-  Motion patterns: {paste motion table}
-  Recommendations: {paste recommendations}
+Reference analysis findings (from docs/reference-analysis.md — paste key sections):
+  Borrow list: {paste}
+  Color insights: {paste}
+  Layout patterns: {paste}
+  Motion patterns: {paste}
+  Recommendations: {paste}
+
+Reference frames available at: _ref-captures/{domain}/frame-NNN.png
+(Creative Director should attribute decisions to specific frame numbers)
 
 Templates: read docs/_templates/ for output format
-Libraries: read docs/_libraries/ for pattern choices
-Produce: docs/design-brief.md, docs/content-brief.md, docs/page-plans.md, docs/motion-spec.md
+Libraries: read docs/_libraries/ for available pattern names
+Produce 6 docs:
+  docs/design-concept.md   ← creative direction, zero values
+  docs/design-tokens.md    ← all CSS tokens with descriptions
+  docs/design-decisions.md ← every token traced to a ref frame or principle
+  docs/content-brief.md    ← real copy for every section
+  docs/page-plans.md       ← recipe cards per section
+  docs/motion-spec.md      ← easing, durations, choreography
 ```
 
 ### Gate: QA validates 12 points
 
 ```
 Agent: qa
-Validate: docs/design-brief.md, docs/content-brief.md, docs/page-plans.md, docs/motion-spec.md
+Validate: docs/design-concept.md, docs/design-tokens.md, docs/design-decisions.md,
+          docs/content-brief.md, docs/page-plans.md, docs/motion-spec.md
 Run: 12-point validation from pipeline.md
 Report: PASS or FAIL with specifics
 ```
@@ -217,15 +227,20 @@ If FAIL → re-dispatch to creative-director with SPECIFIC failures → max 3 lo
 
 ### ⛔ User Review: Creative Direction
 
-After QA passes, present as formatted text (no screenshot needed):
+After QA passes, present as formatted text (extract from the new docs):
 
 ```
-1. Show: concept statement + palette (hex + name per color) + typography choices + section plan table + atmosphere concept
-2. AskUserQuestion:
-   Q: "Here's the visual identity I designed for {project name}. Does this match your vision?"
-   Options: "Approved — start building", "Needs changes", "Scrap it — redesign from scratch"
-3. If "Needs changes" → ask what + apply to docs + re-present
-4. If "Scrap it" → re-dispatch creative-director with new direction
+1. Read docs/design-concept.md → show concept statement + visual principles
+2. Read docs/design-tokens.md → show palette (hex + name + use case per color)
+                                 + typography choices (family + sample text)
+3. Read docs/page-plans.md → show section plan table (name + layout + motion + energy)
+4. Read docs/design-decisions.md → show 2-3 key decisions attributed to ref frames
+
+Ask: "Here's the visual identity I designed for {project name}. Does this match your vision?"
+Options: "Approved — start building", "Needs changes", "Scrap it — redesign from scratch"
+
+If "Needs changes" → ask what → apply to the relevant docs → re-present
+If "Scrap it" → re-dispatch creative-director with new direction
 ```
 
 **DO NOT proceed to Phase 2 until user explicitly approves.**
@@ -240,27 +255,26 @@ Copy `_project-scaffold/` to project directory. Run `npm install`.
 
 ### Step B: Design tokens
 
-Read `docs/design-brief.md`. Write ALL tokens to `src/styles/tokens.css`:
-- Every color with its hex value
-- Every font family (with @import if Google Fonts)
-- Every size, spacing, radius, easing
-- Do this yourself — no console needed.
+Read `docs/design-tokens.md`. The CSS output block at the bottom is copy-paste ready.
+Copy it directly to `src/styles/tokens.css`. No extraction needed — it's already formatted.
 
 ### Step C: Spawn Atmosphere console
 
-Read `docs/design-brief.md`. Extract ONLY the atmosphere section. Pass inline:
+Read `docs/design-tokens.md` → atmosphere section.
+Read `docs/design-decisions.md` → atmosphere decision entry.
+Pass inline:
 
 ```
 Agent: atmosphere
 Context (inline — do not tell it to read docs):
-  --canvas: {hex from design-brief}
+  --canvas: {hex from design-tokens.md}
   --surface: {hex}
   --accent-primary: {hex}
   --accent-secondary: {hex}
-  Atmosphere preset: {preset name from design-brief}
-  Mouse response: {exact description from design-brief}
-  Scroll response: {exact description from design-brief}
-  Mobile fallback CSS: {exact CSS from design-brief}
+  Atmosphere preset: {--atmosphere-preset value}
+  Mouse response: {description from design-tokens.md atmosphere section}
+  Scroll response: {description}
+  Mobile fallback CSS: {--atmosphere-mobile-fallback full CSS string}
   Write to: src/components/AtmosphereCanvas.vue
 ```
 
@@ -297,18 +311,25 @@ For EACH section, run this full sequence. Do not batch. Do not skip any step.
 
 Before spawning Constructor, extract these values yourself:
 
-From `docs/design-brief.md`:
+From `docs/design-tokens.md` (semantic tokens section):
 ```
-Font display:    {family name, e.g., "Clash Display"}
-Font body:       {family name, e.g., "Satoshi"}
---canvas:        {hex}
---surface:       {hex}
---text:          {hex}
---accent-primary:{hex}
---accent-secondary: {hex}
-Spacing base:    {e.g., 8px}
---ease:          {cubic-bezier value}
-Brand easing:    {character description}
+Font display:      {family name — e.g., "Clash Display"} → --font-display
+Font body:         {family name — e.g., "Satoshi"} → --font-body
+--canvas:          {hex} — {description: "Use for..."}
+--surface:         {hex} — {description}
+--text:            {hex} — {description}
+--accent-primary:  {hex} — {description}
+--accent-secondary:{hex} — {description}
+--ease:            {cubic-bezier} — "{character}"
+--duration-fast:   {N}ms · --duration-medium: {N}ms · --duration-slow: {N}ms
+Spacing base:      {N}px
+```
+
+From `docs/design-decisions.md` (find the entry for this section's dominant design choice):
+```
+Key decision: {paste the decision entry relevant to this section's visual approach}
+Reference: {frame path that informed it}
+Intent: {the "why" — pass this so Constructor understands the creative reason}
 ```
 
 From `docs/page-plans.md`, THIS section's recipe card:
