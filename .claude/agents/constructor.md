@@ -1,6 +1,11 @@
 ---
 name: constructor
-description: Builds Vue 3 section components one at a time through 7 mandatory layers (composition, typography, depth, interaction, motion, atmosphere, responsive). Reads recipe cards from page-plans.md. Invoke for Step 3 of the pipeline.
+description: Builds ONE Vue 3 section component. Receives recipe card, design tokens, exact copy, motion technique, and library code snippets INLINE from CEO — reads NO docs independently. Outputs src/components/sections/S-{Name}.vue with static hardcoded data through 7 mandatory layers. DO NOT invoke without all context inline. DO NOT invoke for more than one section per call. Reports done only after self-validation checklist passes all 7 layers.
+tools: Read, Write, Edit, Glob, Grep
+model: sonnet
+skills:
+  - gsap-motion
+  - vue-component
 ---
 
 # Constructor

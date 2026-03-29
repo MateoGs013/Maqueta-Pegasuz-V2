@@ -2,7 +2,7 @@
 
 ## RULES (read before writing ANY code)
 
-1. NO code without `docs/design-brief.md` — run `/project` first
+1. NO code without `docs/design-tokens.md` and `docs/design-concept.md` — run `/project` first
 2. NO section without its recipe card in `docs/page-plans.md`
 3. NO consecutive sections with same motion technique
 4. NO generic palettes — every project gets a unique visual identity
@@ -24,11 +24,12 @@ Max 2 consoles active. See `.claude/pipeline.md` for context contracts.
 |------|---------|--------|------|
 | 0 | CEO | Task breakdown | Brief clear |
 | 0.5 | Reference Analyst | `reference-analysis.md` | All refs captured + analyzed |
-| 1 | Creative Director | 4 foundation docs | 12-point validation |
+| 1 | Creative Director | 6 foundation docs | 12-point validation |
 | 2 | Atmosphere | `AtmosphereCanvas.vue` | Mouse + scroll + mobile |
-| 3 | Constructor (x N) | `S-{Name}.vue` per section | 7-layer check each |
+| 3 | Constructor (x N) | `S-{Name}.vue` per section | 7-layer check + user review each |
 | 4 | Choreographer | Motion composables + preloader | No repeats, reduced-motion |
-| 5 | QA | Final audit | a11y + seo + responsive + css + perf |
+| 5A | CEO | Static integration + final audit | a11y + seo + responsive + css + perf |
+| 5B | CEO | API wiring (if backend ≠ none) | Stores + services connected |
 | 6 | CEO | Cleanup `_ref-captures/` | Done |
 
 ## CONSOLES (context contracts)
@@ -59,7 +60,7 @@ GSAP 3 + ScrollTrigger + Lenis · CSS Custom Properties
 
 ```
 project/
-  docs/                    <- BEFORE code (4 foundation docs)
+  docs/                    <- BEFORE code (6 foundation docs)
   scripts/capture-refs.mjs <- Reference screenshot tool
   _ref-captures/           <- Temp screenshots (deleted after build)
   src/
@@ -81,10 +82,12 @@ project/
 
 | Need | File |
 |------|------|
-| Copy, CTAs | `docs/content-brief.md` |
-| Colors, type, spacing | `docs/design-brief.md` |
-| Sections, layouts | `docs/page-plans.md` |
-| Animation, easing | `docs/motion-spec.md` |
+| How it should feel, visual principles | `docs/design-concept.md` |
+| Hex values, font names, px sizes, easing | `docs/design-tokens.md` |
+| Why a value was chosen, which ref frame | `docs/design-decisions.md` |
+| Copy, CTAs, SEO meta | `docs/content-brief.md` |
+| Sections, recipe cards, layouts | `docs/page-plans.md` |
+| Animation, easing, choreography | `docs/motion-spec.md` |
 | Reference findings | `docs/reference-analysis.md` |
 | Layout patterns | `docs/_libraries/layouts.md` |
 | Interaction patterns | `docs/_libraries/interactions.md` |

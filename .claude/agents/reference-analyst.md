@@ -1,6 +1,8 @@
 ---
 name: reference-analyst
-description: Deep-analyzes reference websites by reading captured screenshots frame by frame. Extracts color palettes, typography, layouts, motion patterns, section rhythm, and overall aesthetic. Produces docs/reference-analysis.md that feeds the Creative Director. Invoke after running scripts/capture-refs.mjs.
+description: Analyzes captured reference screenshots frame by frame — receives screenshot paths and manifest from CEO. Produces docs/reference-analysis.md with palette insights, typography patterns, layout patterns, motion patterns, borrow/avoid lists. DO NOT invoke without screenshots at _ref-captures/{domain}/. DO NOT pass the project brief — analyst sees only what it observes, no bias.
+tools: Read, Glob, Grep, WebFetch, Write
+model: sonnet
 ---
 
 # Reference Analyst

@@ -20,7 +20,7 @@ user sign-off. See `/project` skill for the User Review Protocol details.
 | Console | Role | Receives | Produces |
 |---------|------|----------|----------|
 | Reference Analyst | Analyze captured screenshots | Screenshot paths + manifest | `docs/reference-analysis.md` |
-| Creative Director | Design visual identity | Brief + ref analysis (extracted) | 4 foundation docs |
+| Creative Director | Design visual identity | Brief + ref analysis (extracted) + ref frame paths | 6 foundation docs |
 | Atmosphere | Build WebGL/Canvas layer | Palette + atmosphere concept (extracted) | `AtmosphereCanvas.vue` |
 | Constructor | Build sections one by one | Recipe card + tokens + copy (extracted) | `S-{Name}.vue` |
 | Choreographer | Implement all motion | Motion spec + section list (extracted) | Composables + preloader |
@@ -61,36 +61,43 @@ Produces: `_ref-captures/{domain}/frame-NNN.png` + `manifest.json`
 **Context contract:**
 - IN: User brief (project type, pages, mood, constraints)
 - IN: Key findings from `docs/reference-analysis.md` (CEO extracts and pastes inline: borrow list, color insights, layout patterns, motion patterns, recommendations)
+- IN: Reference frame paths (`_ref-captures/{domain}/frame-NNN.png`) so decisions can be attributed to specific frames
 - IN: Template formats from `docs/_templates/`
 - IN: Pattern libraries from `docs/_libraries/`
-- OUT: `docs/design-brief.md`, `docs/content-brief.md`, `docs/page-plans.md`, `docs/motion-spec.md`
+- OUT: 6 foundation docs:
+  - `docs/design-concept.md` — creative direction, zero values
+  - `docs/design-tokens.md` — all CSS-ready tokens with descriptions
+  - `docs/design-decisions.md` — every token traced to a ref frame or principle
+  - `docs/content-brief.md` — real copy for all sections
+  - `docs/page-plans.md` — recipe cards per section
+  - `docs/motion-spec.md` — easing, durations, choreography
 
 **Gate — 12-point validation (QA console):**
-1. Palette: 5+ colors with contrast >= 4.5:1
-2. Typography: display + body + accent defined
-3. Spacing: consistent base-unit scale
-4. Recipe cards: every section has layout + motion + interaction + data
-5. Motion variety: no consecutive sections share category
-6. Content: zero lorem ipsum, zero placeholder text
-7. CTAs: all are action verb phrases
-8. Motion coverage: reveals + transitions + hover + scroll-linked
-9. Reduced motion: alternatives defined
-10. Atmosphere: preset + mouse + scroll behavior defined
-11. Responsive: strategy per breakpoint
-12. Brand easing: cubic-bezier + character description
+1. design-concept.md: concept statement + 3+ visual principles + anti-principles
+2. design-decisions.md: entry for each major color, font, easing, layout choice — with reference attribution
+3. Palette: 6+ colors with hex values, descriptions, and contrast ratios in design-tokens.md
+4. Typography: actual Google Fonts family names + import URLs + full px scale
+5. Motion tokens: --ease (cubic-bezier), --duration-fast/medium/slow/crawl
+6. Recipe cards: every section has layout + motion + interaction + energy + data-source + responsive
+7. Motion variety: no consecutive sections share category
+8. Content: zero lorem ipsum, zero placeholder text, all CTAs are verb phrases
+9. Motion coverage: reveals + transitions + hover + scroll-linked + preloader
+10. Reduced motion: specific fallback for each animation type
+11. Atmosphere: preset + mouse behavior + scroll behavior + mobile CSS fallback value
+12. Section counts: homepage ≥ 8, other pages ≥ 5
 
 **On FAIL:** CEO passes specific failures to Creative Director to fix. Max 3 loops.
 
-**User Review:** CEO presents palette, typography, section plan to user. User approves or requests changes. Changes update the docs, then re-present. No building until user approves the design system.
+**User Review:** CEO presents concept + palette (from design-concept + design-tokens) + section plan (from page-plans) to user. User approves or requests changes. No building until user approves.
 
 ---
 
 ## Step 2: Atmosphere (Console: `atmosphere`)
 
-**Context contract — CEO extracts from design-brief and passes inline:**
+**Context contract — CEO extracts from design-tokens.md and passes inline:**
 - IN: Palette hex values (`--canvas`, `--surface`, `--accent-primary`, `--accent-secondary`)
-- IN: Atmosphere concept (preset, mouse behavior, scroll behavior)
-- IN: Mobile fallback description
+- IN: Atmosphere token values from design-tokens.md (preset, mouse radius, opacity, colors)
+- IN: Mobile fallback CSS value (full CSS string from `--atmosphere-mobile-fallback`)
 - DO NOT pass: typography, spacing, content, page plans (irrelevant to this console)
 - OUT: `src/components/AtmosphereCanvas.vue`
 
@@ -111,10 +118,11 @@ Produces: `_ref-captures/{domain}/frame-NNN.png` + `manifest.json`
 The creative visual experience is built first. API wiring happens after the user approves the static build (Step 5B).
 
 **Context contract — CEO extracts PER-SECTION and passes inline:**
-- IN: Recipe card for THIS section only (name, purpose, layout, motion technique, interaction, responsive notes)
-- IN: Content for THIS section only (headline, subtext, CTA — exact text from content-brief)
-- IN: Design tokens (actual hex values, font family names, pixel sizes, cubic-bezier — from design-brief)
-- IN: Library code snippets (paste the specific layout pattern, motion category GSAP code, interaction CSS)
+- IN: Recipe card for THIS section only (from page-plans.md)
+- IN: Content for THIS section only — exact text, verbatim (from content-brief.md)
+- IN: Token values with descriptions (from design-tokens.md — actual hex, font names, px, cubic-bezier)
+- IN: Relevant design decision (from design-decisions.md — the "why" behind key values for this section)
+- IN: Library code snippets (paste specific layout pattern, motion GSAP code, interaction CSS from _libraries/)
 - DO NOT pass: other sections' recipe cards, full docs, stores, services
 
 **Gate — 7-layer validation (QA console, per section):**

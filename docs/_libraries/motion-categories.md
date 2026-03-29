@@ -229,6 +229,116 @@ section.addEventListener('mousemove', (e) => {
 
 ---
 
+## 10. Kinetic Typography
+
+Text that responds to scroll, hover, or cursor proximity using SplitText (free since GSAP 3.13).
+
+```js
+import { gsap } from 'gsap'
+import { SplitText } from 'gsap/SplitText'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(SplitText, ScrollTrigger)
+
+// Line mask reveal (cinematic — no wrapper divs needed)
+const split = new SplitText(headingEl, {
+  type: 'lines',
+  mask: 'lines',         // wraps lines in clip container automatically
+  autoSplit: true        // re-splits on resize/font-load
+})
+
+const tl = gsap.timeline({
+  scrollTrigger: { trigger: headingEl, start: 'top 80%', once: true }
+})
+tl.from(split.lines, {
+  yPercent: 110,
+  duration: 0.9,
+  stagger: 0.08,
+  ease: 'power3.out'
+})
+```
+
+**Variations:**
+- Line mask reveal (lines slide up from hidden container — most cinematic)
+- Word-by-word stagger with y offset
+- Character scramble (random chars → real text with `ScrambleTextPlugin`)
+- Variable font axis animation (if variable font: animate `font-weight` or `font-stretch` on scroll)
+- Hover letter scatter (chars repel from cursor with magnetic)
+
+```js
+// Variable font axis animation (only if font is a variable font)
+gsap.to(headingEl, {
+  fontVariationSettings: '"wght" 900',
+  duration: 0.4,
+  ease: 'power2.out',
+  scrollTrigger: { trigger: headingEl, start: 'top 80%', once: true }
+})
+```
+
+**Best for:** Hero headlines, manifesto sections, pull quotes, section titles that need to command attention.
+
+---
+
+## 11. CSS Scroll-Driven (Native — no JS)
+
+CSS-native scroll animations using `animation-timeline`. Baseline Newly Available (all browsers 2025 including Safari 26). Zero JS, zero bundle weight. Reserve GSAP for complex choreography.
+
+```css
+/* Section entry reveal — no JS needed */
+.s-section__content {
+  animation: reveal-up linear both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 40%;
+}
+
+@keyframes reveal-up {
+  from { opacity: 0; translate: 0 40px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+/* Sticky header opacity on scroll */
+.site-header {
+  animation: header-fade linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0px 100px;
+}
+
+@keyframes header-fade {
+  from { background-color: transparent; }
+  to   { background-color: var(--canvas); }
+}
+
+/* Reading progress bar */
+.progress-bar {
+  transform-origin: left;
+  animation: progress-grow linear;
+  animation-timeline: scroll(root block);
+  scaleX: 0; /* set in keyframes */
+}
+
+@keyframes progress-grow {
+  from { scaleX: 0; }
+  to   { scaleX: 1; }
+}
+```
+
+**IMPORTANT: Always gate with @supports:**
+```css
+@supports (animation-timeline: scroll()) {
+  .s-section__content {
+    animation: reveal-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+}
+```
+
+**Best for:** Simple section reveals, sticky element state changes, reading progress indicators, parallax background positions, decorative element rotations.
+
+**When to use GSAP instead:** Complex multi-step timelines, text splitting, physics-based motion, anything requiring JS callbacks or state changes.
+
+---
+
 ## Variety Enforcement
 
 When assigning techniques to sections, use this checklist:
@@ -236,6 +346,7 @@ When assigning techniques to sections, use this checklist:
 2. Verify: no two adjacent sections share a category number
 3. If violated, swap one of the conflicting sections to a different category
 4. Aim for at least 5 different categories across the homepage
+5. Use CSS Scroll-Driven (11) for simple reveals — reserve GSAP categories for sections that need complexity
 
 ## Reduced Motion Fallback
 
@@ -244,3 +355,4 @@ For ALL categories, when `prefers-reduced-motion: reduce`:
 - Elements appear at full opacity instantly
 - No scroll-linked effects
 - Simple crossfade (0.2s) if any transition is needed
+- For CSS Scroll-Driven: wrap in `@media (prefers-reduced-motion: no-preference)` block
