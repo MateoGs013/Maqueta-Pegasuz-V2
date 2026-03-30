@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Reference Capture Script v3
+ * Reference Capture Script v3.1
  * Complete 4-pass analysis: Scroll → Hover → Click → Responsive
+ * Auto-discovers internal pages from navigation links.
  *
  * Captures desktop + mobile screenshots per section boundary,
  * extracts design tokens, tech stack, CSS custom properties,
@@ -9,10 +10,18 @@
  * detects spacing systems, and writes a rich manifest.
  *
  * Usage:
- *   Single URL:  node capture-refs.mjs <url> [output-dir]
- *   Batch mode:  node capture-refs.mjs --batch <url1> <url2> ... [--out <dir>]
+ *   Single URL:           node capture-refs.mjs <url> [output-dir]
+ *   Batch mode:           node capture-refs.mjs --batch <url1> <url2> ... [--out <dir>]
+ *   Disable discovery:    node capture-refs.mjs --no-discover <url> [output-dir]
+ *   Set max pages:        node capture-refs.mjs --max-pages 3 <url> [output-dir]
  *
- * Output: _ref-captures/{domain}/
+ * Auto-discovery: when given a homepage URL, extracts nav links and captures
+ * internal pages automatically. Each page gets its own directory:
+ *   _ref-captures/{domain}/          — homepage
+ *   _ref-captures/{domain}--about/   — /about
+ *   _ref-captures/{domain}--work/    — /work
+ *
+ * Output per page:
  *   desktop/frame-NNN.png        — per-section desktop screenshots
  *   mobile/frame-NNN.png         — per-section mobile screenshots
  *   interactions/hover-NNN.png   — hover state captures
@@ -32,25 +41,42 @@ const args = process.argv.slice(2)
 
 if (args.length === 0) {
   console.error(`Usage:
-  Single:  node capture-refs.mjs <url> [output-dir]
-  Batch:   node capture-refs.mjs --batch <url1> <url2> ... [--out <dir>]`)
+  Single:    node capture-refs.mjs <url> [output-dir]
+  Batch:     node capture-refs.mjs --batch <url1> <url2> ... [--out <dir>]
+  No crawl:  node capture-refs.mjs --no-discover <url> [output-dir]
+  Max pages: node capture-refs.mjs --max-pages 3 <url> [output-dir]`)
   process.exit(1)
 }
 
 let urls = []
 let outputBase = '_ref-captures'
+let autoDiscover = true
+let maxInternalPages = 5
 
-if (args[0] === '--batch') {
-  const outIdx = args.indexOf('--out')
-  if (outIdx !== -1) {
-    outputBase = args[outIdx + 1]
-    urls = args.slice(1, outIdx)
+// Extract flags
+const flagArgs = []
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--no-discover') {
+    autoDiscover = false
+  } else if (args[i] === '--max-pages' && args[i + 1]) {
+    maxInternalPages = parseInt(args[i + 1]) || 5
+    i++ // skip next arg
   } else {
-    urls = args.slice(1)
+    flagArgs.push(args[i])
+  }
+}
+
+if (flagArgs[0] === '--batch') {
+  const outIdx = flagArgs.indexOf('--out')
+  if (outIdx !== -1) {
+    outputBase = flagArgs[outIdx + 1]
+    urls = flagArgs.slice(1, outIdx)
+  } else {
+    urls = flagArgs.slice(1)
   }
 } else {
-  urls = [args[0]]
-  if (args[1]) outputBase = args[1]
+  urls = [flagArgs[0]]
+  if (flagArgs[1]) outputBase = flagArgs[1]
 }
 
 // ── Viewport configs ─────────────────────────────────────────
@@ -117,7 +143,9 @@ function clusterColors(hexColors, threshold = 30) {
 // ═══════════════════════════════════════════════════════════════
 async function captureReference(url, outputBase) {
   const domain = new URL(url).hostname.replace(/\./g, '-')
-  const dir = join(outputBase, domain)
+  const slug = urlToSlug(url)
+  const dirName = domain + slug
+  const dir = join(outputBase, dirName)
   const desktopDir = join(dir, 'desktop')
   const mobileDir = join(dir, 'mobile')
   const interactionsDir = join(dir, 'interactions')
@@ -125,7 +153,8 @@ async function captureReference(url, outputBase) {
   mkdirSync(mobileDir, { recursive: true })
   mkdirSync(interactionsDir, { recursive: true })
 
-  console.log(`\n[capture] ═══ ${url} ═══`)
+  const pageLabel = slug ? slug.replace('--', '/') : '(home)'
+  console.log(`\n[capture] ═══ ${url} [${pageLabel}] ═══`)
 
   const browser = await puppeteer.launch({
     headless: 'new',
@@ -250,9 +279,11 @@ async function captureReference(url, outputBase) {
     }
 
     const manifest = {
-      version: 3,
+      version: 3.1,
       url,
       domain,
+      pagePath: new URL(url).pathname,
+      dirName: dirName,
       capturedAt: new Date().toISOString(),
 
       viewports: VIEWPORTS,
@@ -1355,11 +1386,126 @@ async function extractCSSCustomProperties(page) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// AUTO-DISCOVERY — Extract internal pages from nav links
+// ═══════════════════════════════════════════════════════════════
+async function discoverInternalPages(url, maxPages) {
+  const origin = new URL(url).origin
+  console.log(`[discover] Scanning nav links at ${url}...`)
+
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  })
+
+  try {
+    const page = await browser.newPage()
+    await page.setViewport(VIEWPORTS.desktop)
+    await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 })
+    await new Promise(r => setTimeout(r, 2000))
+    await dismissCookieBanner(page)
+
+    const links = await page.evaluate((originStr) => {
+      const navLinks = []
+      // Collect from nav, header, and footer
+      const containers = document.querySelectorAll('nav, header, [role="navigation"]')
+      const seen = new Set()
+
+      for (const container of containers) {
+        const anchors = container.querySelectorAll('a[href]')
+        for (const a of anchors) {
+          let href = a.getAttribute('href')
+          if (!href) continue
+
+          // Resolve relative URLs
+          try {
+            const resolved = new URL(href, originStr).href
+            href = resolved
+          } catch { continue }
+
+          // Filter: same origin only, no anchors, no files, no external
+          if (!href.startsWith(originStr)) continue
+          if (href === originStr || href === originStr + '/') continue // skip homepage
+          if (href.includes('#') && href.split('#')[0] === originStr) continue // skip anchor-only
+          if (/\.(pdf|jpg|png|gif|svg|zip|mp4|webm)$/i.test(href)) continue // skip files
+
+          // Normalize: remove trailing slash, remove query params for dedup
+          const normalized = href.split('?')[0].split('#')[0].replace(/\/$/, '')
+          if (seen.has(normalized)) continue
+          seen.add(normalized)
+
+          const text = a.textContent?.trim().substring(0, 40) || ''
+          // Skip empty text or very generic links
+          if (!text || text.length < 2) continue
+
+          navLinks.push({
+            url: normalized,
+            text,
+            pathname: new URL(normalized).pathname
+          })
+        }
+      }
+
+      return navLinks
+    }, origin)
+
+    // Sort by pathname depth (shallower first) and cap
+    const sorted = links
+      .sort((a, b) => {
+        const depthA = a.pathname.split('/').filter(Boolean).length
+        const depthB = b.pathname.split('/').filter(Boolean).length
+        return depthA - depthB
+      })
+      .slice(0, maxPages)
+
+    console.log(`[discover] Found ${links.length} internal links, using top ${sorted.length}:`)
+    for (const link of sorted) {
+      console.log(`[discover]   ${link.pathname} — "${link.text}"`)
+    }
+
+    return sorted
+  } finally {
+    await browser.close()
+  }
+}
+
+/** Convert a URL path into a directory suffix: /about → --about, /work/case-1 → --work-case-1 */
+function urlToSlug(url) {
+  const pathname = new URL(url).pathname
+  const slug = pathname.replace(/^\//, '').replace(/\/$/, '').replace(/\//g, '-')
+  return slug ? `--${slug}` : ''
+}
+
+// ═══════════════════════════════════════════════════════════════
 // ENTRY POINT
 // ═══════════════════════════════════════════════════════════════
-const results = []
+
+// Phase 1: Expand URLs via auto-discovery
+let expandedUrls = []
 
 for (const u of urls) {
+  expandedUrls.push(u) // always include the original URL
+
+  if (autoDiscover) {
+    try {
+      const internalPages = await discoverInternalPages(u, maxInternalPages)
+      for (const page of internalPages) {
+        expandedUrls.push(page.url)
+      }
+    } catch (err) {
+      console.error(`[discover] ✗ Discovery failed for ${u}: ${err.message} — capturing homepage only`)
+    }
+  }
+}
+
+// Deduplicate (in case batch URLs overlap with discovered pages)
+expandedUrls = [...new Set(expandedUrls)]
+
+console.log(`\n[capture] ═══ Capturing ${expandedUrls.length} page(s) ═══\n`)
+
+// Phase 2: Capture each page
+const results = []
+
+for (const u of expandedUrls) {
   try {
     const result = await captureReference(u, outputBase)
     results.push({ url: u, status: 'ok', manifest: result })
@@ -1369,14 +1515,41 @@ for (const u of urls) {
   }
 }
 
+// Phase 3: Write site-level index (groups pages by domain)
+const byDomain = {}
+for (const r of results) {
+  if (r.status !== 'ok') continue
+  const domain = r.manifest.domain
+  if (!byDomain[domain]) byDomain[domain] = []
+  byDomain[domain].push({
+    pagePath: r.manifest.pagePath,
+    dirName: r.manifest.dirName,
+    url: r.url,
+    sections: r.manifest.desktop.frames,
+    interactions: r.manifest.interactions.hoverStates.length +
+                  r.manifest.interactions.clickStates.length +
+                  r.manifest.interactions.scrollDiffs.length
+  })
+}
+
+for (const [domain, pages] of Object.entries(byDomain)) {
+  const indexPath = join(outputBase, `${domain}--index.json`)
+  writeFileSync(indexPath, JSON.stringify({
+    domain,
+    capturedAt: new Date().toISOString(),
+    totalPages: pages.length,
+    pages
+  }, null, 2))
+  console.log(`[capture] Site index: ${indexPath} (${pages.length} pages)`)
+}
+
 // Summary
 console.log('\n[capture] ═══ Summary ═══')
 for (const r of results) {
   if (r.status === 'ok') {
     const m = r.manifest
     const intCount = m.interactions.hoverStates.length + m.interactions.clickStates.length + m.interactions.scrollDiffs.length
-    console.log(`  ✓ ${r.url}`)
-    console.log(`    ${m.desktop.frames} desktop + ${m.mobile.frames} mobile frames | ${intCount} interactions captured`)
+    console.log(`  ✓ ${m.pagePath.padEnd(20)} ${m.desktop.frames} desktop + ${m.mobile.frames} mobile | ${intCount} interactions`)
   } else {
     console.log(`  ✗ ${r.url} — ${r.error}`)
   }
