@@ -20,18 +20,28 @@ Read the Design Philosophy in CLAUDE.md — especially the anti-patterns and qua
 
 ## Implementation techniques
 
-### Text animations (char/word split)
+### Text animations (SplitText.create — modern API)
 ```js
-// Wrap chars in inline-block spans for transform animation
-// Parent has overflow:hidden to clip the y-translate entry
-gsap.from(".char", {
-  y: "110%",
-  rotateX: -80,        // subtle 3D rotation
-  opacity: 0,
-  stagger: 0.03,       // 30ms per char from cinematic description
-  duration: 0.9,
-  ease: "power4.out",
-  scrollTrigger: { trigger: el, start: "top 80%" }
+import { SplitText } from 'gsap/SplitText'
+gsap.registerPlugin(SplitText)
+
+// SplitText.create() with mask + autoSplit + aria (replaces manual span wrapping)
+SplitText.create(headlineEl, {
+  type: 'chars',
+  mask: 'chars',       // built-in overflow:clip wrapper — no manual parent divs
+  autoSplit: true,      // re-splits on font-load + resize
+  aria: 'auto',         // a11y: screen readers see original text
+  onSplit(self) {
+    return gsap.from(self.chars, {
+      y: '110%',
+      rotateX: -80,
+      autoAlpha: 0,       // autoAlpha > opacity — also sets visibility:hidden at 0
+      stagger: 0.03,
+      duration: 0.9,
+      ease: 'power4.out',
+      scrollTrigger: { trigger: headlineEl, start: 'top 80%', once: true }
+    })
+  }
 })
 ```
 
@@ -70,14 +80,15 @@ gsap.fromTo(image,
 ```js
 // On mouseenter/mousemove: element follows cursor within radius
 // On mouseleave: spring back with elastic ease
+// Strength 0.3 is the standard multiplier — consistent across all implementations
 button.addEventListener('mousemove', (e) => {
   const rect = button.getBoundingClientRect()
   const x = (e.clientX - rect.left - rect.width / 2) * 0.3
   const y = (e.clientY - rect.top - rect.height / 2) * 0.3
-  gsap.to(button, { x, y, duration: 0.3, ease: "power2.out" })
+  gsap.to(button, { x, y, duration: 0.3, ease: 'power2.out' })
 })
 button.addEventListener('mouseleave', () => {
-  gsap.to(button, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" })
+  gsap.to(button, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1, 0.3)' })
 })
 ```
 
@@ -113,17 +124,29 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
 
 const sectionRef = ref(null)
-let ctx = null
+let mm = null
 
 onMounted(() => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-  ctx = gsap.context(() => {
+  // gsap.matchMedia() handles responsive + reduced-motion in one structure
+  // It auto-reverts animations when conditions change (resize, a11y toggle)
+  mm = gsap.matchMedia()
+  mm.add({
+    isDesktop: '(min-width: 1280px)',
+    isTablet: '(min-width: 768px) and (max-width: 1279px)',
+    isMobile: '(max-width: 767px)',
+    reduceMotion: '(prefers-reduced-motion: reduce)'
+  }, (context) => {
+    const { isDesktop, isTablet, isMobile, reduceMotion } = context.conditions
+    if (reduceMotion) return  // skip all animation setup
+
     // Implement the CINEMATIC DESCRIPTION from docs/sections.md
     // Use exact timing, easing, stagger values specified
-  }, sectionRef.value)
+    // Use autoAlpha instead of opacity (also sets visibility:hidden at 0)
+    // Use isDesktop/isTablet/isMobile for responsive animation differences
+  }, sectionRef.value)  // 3rd arg = scope for selectors
 })
 
-onBeforeUnmount(() => ctx?.revert())
+onBeforeUnmount(() => mm?.revert())
 </script>
 
 <template>
@@ -166,7 +189,9 @@ onBeforeUnmount(() => ctx?.revert())
 - [ ] Asymmetric or intentional composition — not centered-everything
 - [ ] Hover + `focus-visible` + magnetic on interactive elements
 - [ ] Motion: CINEMATIC DESCRIPTION implemented with exact values from docs/sections.md
-- [ ] `gsap.context()` + cleanup · `prefers-reduced-motion` check
+- [ ] `gsap.matchMedia()` + `mm.revert()` cleanup (replaces manual reduced-motion check)
+- [ ] `autoAlpha` used instead of `opacity` for all fade animations
+- [ ] `SplitText.create()` with `autoSplit: true`, `mask`, `aria: 'auto'` for text reveals
 - [ ] Responsive: 375px → 768px → 1280px → 1440px
 - [ ] Touch targets >= 44px
 - [ ] **STATIC ONLY**: zero store/API imports

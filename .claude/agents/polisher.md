@@ -32,24 +32,36 @@ Read the Design Philosophy in CLAUDE.md — enforce the anti-slop rules aggressi
 
 #### src/composables/useCursor.js
 ```js
+// Uses gsap.quickTo() — reuses single tween per property instead of creating
+// new tweens on every mousemove. Critical for 60fps cursor performance.
+//
 // Two elements: dot (8px) + follower (40px)
-// Dot: mix-blend-mode: difference, white, immediate position
-// Follower: gsap.quickTo for x,y with duration 0.6, power3.out
-// Magnetic: [data-magnetic] elements pull cursor within radius
-//   On mousemove: translate element by (offset * 0.3), clamped 15px
+// Dot: gsap.quickTo(dot, 'x', { duration: 0.1, ease: 'power2.out' })
+//       gsap.quickTo(dot, 'y', { duration: 0.1, ease: 'power2.out' })
+// Follower: gsap.quickTo(ring, 'x', { duration: 0.4, ease: 'power3.out' })
+//            gsap.quickTo(ring, 'y', { duration: 0.4, ease: 'power3.out' })
+// Mix-blend-mode: difference (white dot)
+// Magnetic: [data-magnetic] elements pull cursor within radius (strength: 0.3)
+//   On mousemove: translate element by (offset * 0.3)
 //   On mouseleave: elastic.out(1, 0.3) spring back
 // Scale follower 1.5x on interactive element hover
 // Hide native cursor: * { cursor: none } on non-touch only
 // State: [data-cursor="pointer|text|hidden"]
+//
+// Wrap setup in gsap.matchMedia() to skip on touch and reduced-motion:
+// mm.add({ noTouch: '(hover: hover)', noReduce: '(prefers-reduced-motion: no-preference)' }, ...)
 ```
 
 #### src/composables/useMotion.js
 ```js
 // Coordinated scroll reveals using ScrollTrigger
-// Respect cinematic descriptions from docs/sections.md
+// Use gsap.matchMedia() for responsive + reduced-motion (replaces manual checks)
 // Use specific easing from docs/tokens.md (never default)
 // Support pinned sections with scrubbed timelines — always scrub: 0.5, never scrub: true
-// All animations via gsap.context() with cleanup
+// Use ScrollTrigger.batch() for grid/list items instead of individual triggers
+// Use autoAlpha instead of opacity for all fade animations
+// Use SplitText.create() with autoSplit + mask + aria for text reveals
+// Cleanup: mm.revert() on unmount (matchMedia reverts all contexts it created)
 ```
 
 #### src/composables/useSpline.js (only if docs/tokens.md specifies a Spline scene)

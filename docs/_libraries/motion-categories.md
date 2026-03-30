@@ -34,9 +34,33 @@ Multiple elements animate in sequence with a stagger delay.
 
 ```js
 gsap.from(items, {
-  y: 40, opacity: 0,
+  y: 40, autoAlpha: 0,   // autoAlpha: sets visibility:hidden at 0 (better than opacity alone)
   duration: 0.6,
   stagger: 0.08,
+  ease: 'power3.out',
+  scrollTrigger: { trigger: container, start: 'top 80%', once: true }
+})
+```
+
+**ScrollTrigger.batch()** — coordinates reveals when multiple elements enter viewport at different times:
+```js
+// Better than individual ScrollTriggers for grid items
+ScrollTrigger.batch('.grid-item', {
+  interval: 0.1,    // group callbacks within 100ms window
+  batchMax: 4,       // max 4 per batch
+  onEnter: (batch) => gsap.to(batch, {
+    autoAlpha: 1, y: 0, stagger: 0.1, overwrite: true
+  })
+})
+```
+
+**distribute()** — advanced stagger with eased distribution:
+```js
+gsap.from(items, {
+  y: gsap.utils.distribute({ base: 20, amount: 60, from: 'center', ease: 'power1.inOut' }),
+  autoAlpha: 0,
+  duration: 0.6,
+  stagger: { each: 0.06, from: 'center' },
   ease: 'power3.out',
   scrollTrigger: { trigger: container, start: 'top 80%', once: true }
 })
@@ -47,6 +71,7 @@ gsap.from(items, {
 - Left-to-right stagger
 - Center-out stagger (`stagger: { from: 'center' }`)
 - Random stagger (`stagger: { from: 'random' }`)
+- Grid-aware via `distribute()` with `grid` and `axis`
 
 **Best for:** Grid items, lists, cards, feature blocks.
 
@@ -105,23 +130,44 @@ tl.from(leftEl, { x: -60, opacity: 0, duration: 0.8, ease: 'power3.out' })
 ## 5. Text Split
 
 Text is split into characters, words, or lines and animated individually.
+SplitText is **free since GSAP 3.13** — use `SplitText.create()` (not `new SplitText()`).
 
 ```js
-// Split text into chars (use SplitText plugin or manual span wrapping)
-gsap.from(chars, {
-  y: '100%', opacity: 0,
-  duration: 0.5,
-  stagger: 0.02,
-  ease: 'power3.out',
-  scrollTrigger: { trigger: textEl, start: 'top 85%', once: true }
+import { SplitText } from 'gsap/SplitText'
+gsap.registerPlugin(SplitText)
+
+// Modern API: SplitText.create() with autoSplit + onSplit + mask + aria
+SplitText.create(headingEl, {
+  type: 'words, chars',
+  mask: 'chars',         // built-in overflow:clip wrapper — no manual divs needed
+  autoSplit: true,        // re-splits on font-load + resize automatically
+  aria: 'auto',           // adds aria-label on parent, aria-hidden on children
+  onSplit(self) {
+    // Return the animation — GSAP auto-cleans on re-split
+    return gsap.from(self.chars, {
+      y: '100%',
+      autoAlpha: 0,
+      duration: 0.5,
+      stagger: 0.02,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: headingEl, start: 'top 85%', once: true }
+    })
+  }
 })
 ```
 
+**Key SplitText options:**
+- `mask: "lines"|"words"|"chars"` — overflow:clip wrapper (replaces manual parent + overflow:hidden)
+- `autoSplit: true` — handles font loading and resize (critical for web fonts)
+- `aria: "auto"` — a11y built-in (screen readers see original text, not individual spans)
+- `propIndex: true` — adds `--char`, `--word` CSS variables for index-based styling
+- `onSplit(self)` — return animation for auto cleanup on re-split
+
 **Variations:**
-- Char-by-char reveal (typewriter)
+- Char-by-char reveal with mask (most cinematic)
 - Word-by-word with y offset
-- Line-by-line with clip-path
-- Scramble effect (random chars → real text)
+- Line-by-line with mask reveal
+- Scramble effect (random chars → real text with `ScrambleTextPlugin`)
 
 **Best for:** Headlines, hero text, manifesto sections, quotes.
 
@@ -246,21 +292,22 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(SplitText, ScrollTrigger)
 
-// Line mask reveal (cinematic — no wrapper divs needed)
-const split = new SplitText(headingEl, {
+// Line mask reveal — SplitText.create() is the modern API
+SplitText.create(headingEl, {
   type: 'lines',
-  mask: 'lines',         // wraps lines in clip container automatically
-  autoSplit: true        // re-splits on resize/font-load
-})
-
-const tl = gsap.timeline({
-  scrollTrigger: { trigger: headingEl, start: 'top 80%', once: true }
-})
-tl.from(split.lines, {
-  yPercent: 110,
-  duration: 0.9,
-  stagger: 0.08,
-  ease: 'power3.out'
+  mask: 'lines',         // overflow:clip wrapper — no manual divs needed
+  autoSplit: true,        // re-splits on resize/font-load automatically
+  aria: 'auto',           // a11y: screen readers see original text
+  onSplit(self) {
+    // Return animation for auto-cleanup on re-split
+    return gsap.from(self.lines, {
+      yPercent: 110,
+      duration: 0.9,
+      stagger: 0.08,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: headingEl, start: 'top 80%', once: true }
+    })
+  }
 })
 ```
 

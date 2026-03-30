@@ -68,9 +68,14 @@ Commit to a BOLD aesthetic direction and execute it with precision. The key is i
 - Only `transform` + `opacity` for animations — never width/height/top/left
 - Parallax and scroll-linked animations: always `scrub: 0.5` — never `scrub: true`
 - Spline scenes: dynamic import, `shallowRef`, `dispose()` on unmount, fallback image always present
-- `prefers-reduced-motion` always respected
+- `prefers-reduced-motion` via `gsap.matchMedia()` — not manual `window.matchMedia` checks
+- `autoAlpha` instead of `opacity` for all fade animations (also sets `visibility: hidden` at 0)
+- `SplitText.create()` with `autoSplit: true`, `mask`, `aria: 'auto'` for text reveals
+- `gsap.quickTo()` for mouse followers — never create new tweens on each mousemove
+- `ScrollTrigger.batch()` for grid/list items — not individual triggers per element
 - No consecutive sections with the same motion technique
 - `var(--token)` for everything: colors, fonts, spacing, easing. No magic numbers.
+- Register GSAP plugins once in `main.js` — never inside components
 - Lazy route imports with `scrollBehavior` in router
 - Images: `alt` + `width` + `height` + `loading="lazy"`
 - No `axios` outside `src/config/api.js` · No HTTP outside `src/services/`
@@ -78,13 +83,24 @@ Commit to a BOLD aesthetic direction and execute it with precision. The key is i
 - Semantic HTML with correct heading hierarchy
 - `focus-visible` on all interactive elements
 
+## GSAP Anti-Patterns (from greensock/gsap-skills official)
+- Never put ScrollTrigger on child tweens inside a timeline — put it on the timeline itself
+- Never use `scrub` and `toggleActions` together on the same ScrollTrigger
+- Never nest `gsap.context()` inside `gsap.matchMedia()` — matchMedia creates its own context
+- Never forget `immediateRender: false` when stacking multiple `from()`/`fromTo()` on the same property
+- Never create ScrollTriggers in random order without `refreshPriority`
+- Never leave `markers: true` in production
+- Never skip `clearProps: 'all'` when CSS classes should take over after animation
+- Call `ScrollTrigger.refresh()` after Vue `nextTick` when content changes dynamically
+
 ## Quality Checklist (per section)
 - [ ] Semantic HTML, heading hierarchy, `aria-label`
 - [ ] `var(--token)` everywhere, fluid type with `clamp()`
 - [ ] Visual depth: minimum 2 layers (content + atmosphere). Overlap, shadow, gradient, blur, grain.
 - [ ] Hover + `focus-visible` + magnetic effects on interactive elements
 - [ ] Assigned motion technique with specific easing + timing + stagger values
-- [ ] `gsap.context()` + `.revert()` cleanup
+- [ ] `gsap.matchMedia()` + `mm.revert()` cleanup (not manual `gsap.context`)
+- [ ] `autoAlpha` for fades, `SplitText.create()` with `mask` + `aria` for text
 - [ ] Responsive: 375px, 768px, 1280px, 1440px
 - [ ] Grain/noise texture overlay on dark sections (2-4% opacity)
 - [ ] No default easing anywhere — all cubic-bezier or GSAP named ease
