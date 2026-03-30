@@ -122,10 +122,15 @@ Teammates read files directly from disk — you do NOT extract/paste context inl
    - Brand: "Desde cero" / "Tengo colores/fonts"
    - Backend: "Estático" / "Conecta a API"
 3. Compile identity card → show to user → confirm.
-4. If reference URLs provided, capture screenshots:
+4. If reference URLs provided, capture with 4-pass sweep (scroll + hover + click + responsive):
    ```bash
+   # Single URL:
    cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs "{url}" "../_ref-captures"
+   # Batch (multiple URLs):
+   cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --batch "{url1}" "{url2}" --out "../_ref-captures"
    ```
+   Produces per domain: `desktop/` + `mobile/` frames, `interactions/` (hover/click/scroll screenshots), `manifest.json` v3 with clustered palette, tech stack, CSS custom properties, interaction diffs, spacing system, layout patterns.
+   Optionally spawn the `reference-analyst` subagent (`.claude/agents/reference-analyst.md`) for structured analysis → `docs/reference-analysis.md`.
 
 ### Phase 1: Design — SPAWN DESIGNER TEAMMATE
 
