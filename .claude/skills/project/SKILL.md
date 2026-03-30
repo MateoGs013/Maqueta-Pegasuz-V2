@@ -150,9 +150,9 @@ Only after confirmation, create the task breakdown with TodoWrite.
 
 **Only if the user provided inspiration URLs.** Skip if no URLs.
 
-### Step A: Capture (v2 — desktop + mobile, section-aware)
+### Step A: Capture (v3.1 — 4-pass sweep + auto-discovery)
 
-**Single URL:**
+**Single URL (auto-discovers internal pages, max 5):**
 ```bash
 cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs "{url}" "../_ref-captures"
 ```
@@ -162,26 +162,40 @@ cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs "{url}" 
 cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --batch "{url1}" "{url2}" "{url3}" --out "../_ref-captures"
 ```
 
-**Produces per domain in `_ref-captures/{domain}/`:**
+**Limit pages / disable discovery:**
+```bash
+cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --max-pages 3 "{url}" "../_ref-captures"
+cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --no-discover "{url}" "../_ref-captures"
+```
+
+**Auto-discovery:** Extracts nav/header links from homepage, captures internal pages.
+Each page gets its own directory + a site-level index:
+- `_ref-captures/{domain}/` — homepage
+- `_ref-captures/{domain}--about/` — /about page
+- `_ref-captures/{domain}--index.json` — site map of all captured pages
+
+**Produces per page in `_ref-captures/{domain}[--slug]/`:**
 - `desktop/frame-NNN.png` — per-section desktop (1440px)
 - `mobile/frame-NNN.png` — per-section mobile (375px)
 - `interactions/scroll-desktop-NNN.png` — scroll-triggered animation captures
 - `interactions/hover-NNN.png` — hover state captures
 - `interactions/click-NNN-before.png` / `click-NNN-after.png` — click state captures
 - `full-page-desktop.png` + `full-page-mobile.png`
-- `manifest.json` (v3) — 4-pass sweep: clustered palette, fonts, headings, tech stack, CSS custom properties, section boundaries, media inventory, nav pattern, **interaction data** (scroll diffs, header behavior, hover/click states with CSS diffs), spacing system, layout patterns
+- `manifest.json` (v3.1) — 4-pass sweep: clustered palette, fonts, headings, tech stack, CSS custom properties, section boundaries, media inventory, nav pattern, **interaction data** (scroll diffs, header behavior, hover/click states with CSS diffs), spacing system, layout patterns
 
 ### Step B: Spawn Reference Analyst
 
 ```
 Agent: reference-analyst
 Context:
-  - Paths to _ref-captures/{domain}/ (desktop + mobile + interactions screenshots)
-  - Path to manifest.json (v3 with 4-pass sweep data: scroll diffs, hover states, click states, spacing, layouts)
+  - Site index: _ref-captures/{domain}--index.json (lists all captured pages)
+  - Paths to _ref-captures/{domain}[--slug]/ (desktop + mobile + interactions screenshots per page)
+  - Path to manifest.json per page (v3.1 with 4-pass sweep data: scroll diffs, hover states, click states, spacing, layouts)
   - Original URL: {url} (analyst may use WebFetch to read page source)
   - docs/_libraries/layouts.md, docs/_libraries/interactions.md, docs/_libraries/motion-categories.md
 Produce: docs/reference-analysis.md
 DO NOT pass the user's brief — analyst sees only what it observes, no bias.
+Note: When multiple pages captured, analyst should compare cross-page patterns.
 ```
 
 ### Step C: QA validates reference analysis
@@ -196,6 +210,10 @@ Check:
   4. Responsive analysis present (desktop vs mobile)
   5. Tech stack documented
   6. Patterns mapped to library names
+  7. Interaction analysis present (scroll diffs, hover states, click states from manifest)
+  8. Header behavior documented
+  9. Spacing system reported
+  10. Multi-page patterns noted (if multiple pages captured per domain)
 Report: PASS or FAIL with specifics
 ```
 
@@ -228,9 +246,10 @@ Reference analysis (FULL — paste entire docs/reference-analysis.md):
   responsive comparison, tech stack context, and all borrow/avoid items.
 
 Reference frames available at:
-  Desktop: _ref-captures/{domain}/desktop/frame-NNN.png
-  Mobile:  _ref-captures/{domain}/mobile/frame-NNN.png
-(Creative Director should attribute decisions to specific frame numbers)
+  Site index: _ref-captures/{domain}--index.json (lists all captured pages)
+  Homepage:  _ref-captures/{domain}/desktop/frame-NNN.png + mobile/frame-NNN.png
+  Internal:  _ref-captures/{domain}--{slug}/desktop/frame-NNN.png + mobile/frame-NNN.png
+(Creative Director should attribute decisions to specific frame numbers and pages)
 
 Templates: read docs/_templates/ for output format
 Libraries: read docs/_libraries/ for available pattern names

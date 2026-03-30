@@ -42,24 +42,37 @@ CEO gathers from the user:
 
 ### A: Capture (CEO runs directly)
 
-**Single URL:**
+**Single URL (auto-discovers internal pages, max 5):**
 ```bash
-cd scripts && npm install --silent && node capture-refs.mjs "{url}" "../_ref-captures"
+cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs "{url}" "../_ref-captures"
 ```
 
 **Multiple URLs (batch mode):**
 ```bash
-cd scripts && npm install --silent && node capture-refs.mjs --batch "{url1}" "{url2}" "{url3}" --out "../_ref-captures"
+cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --batch "{url1}" "{url2}" "{url3}" --out "../_ref-captures"
 ```
 
-**Produces per domain in `_ref-captures/{domain}/`:**
+**Limit internal pages / disable discovery:**
+```bash
+cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --max-pages 3 "{url}" "../_ref-captures"
+cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --no-discover "{url}" "../_ref-captures"
+```
+
+**Auto-discovery:** The script extracts nav/header links from the homepage and captures
+internal pages automatically (max 5 by default). Each page gets its own directory:
+- `_ref-captures/{domain}/` — homepage
+- `_ref-captures/{domain}--about/` — /about page
+- `_ref-captures/{domain}--work/` — /work page
+- `_ref-captures/{domain}--index.json` — site-level index mapping all captured pages
+
+**Produces per page in `_ref-captures/{domain}[--slug]/`:**
 - `desktop/frame-NNN.png` — per-section desktop screenshots (1440px)
 - `mobile/frame-NNN.png` — per-section mobile screenshots (375px)
 - `interactions/scroll-desktop-NNN.png` — scroll-triggered animation captures
 - `interactions/hover-NNN.png` — hover state captures
 - `interactions/click-NNN-before.png` / `click-NNN-after.png` — click state before/after
 - `full-page-desktop.png` + `full-page-mobile.png`
-- `manifest.json` — rich metadata (v3, 4-pass sweep):
+- `manifest.json` — rich metadata (v3.1, 4-pass sweep):
   - Clustered hex palette (text + bg, max 8 dominant colors each)
   - Exact font families + heading typography (size, weight, letter-spacing, line-height, text-transform, color)
   - Section boundaries with tag, class, id, scroll position, height
@@ -78,10 +91,17 @@ cd scripts && npm install --silent && node capture-refs.mjs --batch "{url1}" "{u
 
 ### B: Analyze (Console: `reference-analyst`)
 **Context contract:**
-- IN: paths to `_ref-captures/{domain}/` — all screenshots (desktop + mobile + interactions) + manifest v3
+- IN: `_ref-captures/{domain}--index.json` — site-level index listing all captured pages per domain
+- IN: paths to `_ref-captures/{domain}[--slug]/` — all screenshots (desktop + mobile + interactions) + manifest v3.1 per page
 - IN: The original URL (analyst may use WebFetch to read page source for font links, meta tags, and additional library detection)
 - IN: `docs/_libraries/layouts.md`, `docs/_libraries/interactions.md`, `docs/_libraries/motion-categories.md` (for pattern mapping via reverse-lookup guide)
 - OUT: `docs/reference-analysis.md`
+
+**Multi-page awareness:** When multiple pages are captured per domain, the analyst should:
+1. Read the `{domain}--index.json` to understand which pages were captured
+2. Analyze each page's manifest and screenshots (homepage gets deepest analysis)
+3. Note page-specific patterns (e.g., "About page uses L-Zigzag" vs "Home uses L-Hero-Full")
+4. Identify cross-page consistency (shared nav, footer, tokens, motion approach)
 
 **Gate (QA validates — same as every other step):**
 1. All sections filled (colors, typography, layouts, motion, interactions, spacing, rhythm, responsive, borrow/avoid, recommendations)
