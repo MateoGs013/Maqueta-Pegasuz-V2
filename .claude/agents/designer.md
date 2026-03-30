@@ -51,12 +51,13 @@ NEVER use "ease" or "ease-in-out". Always cubic-bezier with character:
 - Stagger defaults: 30ms chars, 100ms words, 180ms elements
 
 ### Atmosphere
-- Background technique: gradient mesh, noise field, WebGL, or animated gradient — never flat solid
+- Background technique: gradient mesh, noise field, WebGL canvas, animated gradient, **Spline 3D scene** — never flat solid
+- If using Spline: specify the scene concept (abstract geometry, product, particles, etc.), interaction behavior, and self-host URL. Always define a static image fallback.
 - Grain overlay: opacity value (2-4%), animation speed (steps(6), 0.5s)
 - Vignette: radial-gradient spec for depth
 - Mouse response: parallax amount, radius of influence
 - Scroll response: how atmosphere shifts with scroll
-- Mobile fallback: full CSS string
+- Mobile fallback: full CSS string (Spline disabled on mobile by default — fallback image required)
 
 ### Cursor
 - Dot: size, color, mix-blend-mode (difference recommended)
@@ -117,7 +118,7 @@ For each section, ALL fields required:
 - [ ] Palette: 8+ colors, rich near-blacks, warm whites, bold accents, contrast ratios
 - [ ] Typography: distinctive fonts (NOT Inter/Roboto/Arial), full scale, per-style spacing
 - [ ] Easing: all cubic-bezier with character — zero "ease" or "ease-in-out"
-- [ ] Atmosphere: grain + depth technique + cursor spec — no flat backgrounds
+- [ ] Atmosphere: grain + depth technique (gradient mesh / WebGL / Spline) + cursor spec — no flat backgrounds
 - [ ] CSS output block complete and copy-paste ready
 - [ ] Homepage >= 8 sections, other pages >= 5
 - [ ] No consecutive sections share motion category

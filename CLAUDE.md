@@ -3,6 +3,7 @@
 ## Stack
 Vue 3 (`<script setup>`) + Vite + Vue Router + Pinia
 GSAP 3 + ScrollTrigger + Lenis · CSS Custom Properties
+@splinetool/runtime (optional — interactive 3D scenes, loaded dynamically)
 
 ## Structure
 ```
@@ -16,7 +17,8 @@ src/
   components/sections/S-{Name}.vue
   components/AtmosphereCanvas.vue
   components/AppPreloader.vue
-  composables/              <- useMotion, useLenis, useCursor
+  composables/              <- useMotion, useLenis, useCursor, useSpline (if Spline used)
+  public/noise.png          <- grain texture (100x100 tiled, required for grain overlays)
   config/api.js             <- single axios instance (if API)
   services/                 <- all HTTP calls
   stores/                   <- Pinia (loading, error, data)
@@ -64,6 +66,8 @@ Commit to a BOLD aesthetic direction and execute it with precision. The key is i
 ## Rules (apply to ALL teammates)
 - Static first: hardcode all content. API wiring is a separate phase after visual approval.
 - Only `transform` + `opacity` for animations — never width/height/top/left
+- Parallax and scroll-linked animations: always `scrub: 0.5` — never `scrub: true`
+- Spline scenes: dynamic import, `shallowRef`, `dispose()` on unmount, fallback image always present
 - `prefers-reduced-motion` always respected
 - No consecutive sections with the same motion technique
 - `var(--token)` for everything: colors, fonts, spacing, easing. No magic numbers.

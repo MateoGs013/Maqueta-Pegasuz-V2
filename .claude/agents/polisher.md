@@ -48,8 +48,54 @@ Read the Design Philosophy in CLAUDE.md — enforce the anti-slop rules aggressi
 // Coordinated scroll reveals using ScrollTrigger
 // Respect cinematic descriptions from docs/sections.md
 // Use specific easing from docs/tokens.md (never default)
-// Support pinned sections with scrubbed timelines
+// Support pinned sections with scrubbed timelines — always scrub: 0.5, never scrub: true
 // All animations via gsap.context() with cleanup
+```
+
+#### src/composables/useSpline.js (only if docs/tokens.md specifies a Spline scene)
+```js
+import { ref, onMounted, onBeforeUnmount, shallowRef } from 'vue'
+
+export function useSpline(canvasRef, containerRef, sceneUrl) {
+  const isLoading = ref(true)
+  const hasError = ref(false)
+  const app = shallowRef(null)  // shallowRef — never ref() on WebGL objects
+
+  onMounted(async () => {
+    const observer = new IntersectionObserver(async ([entry]) => {
+      if (!entry.isIntersecting) return
+      observer.disconnect()
+
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const gl = canvasRef.value?.getContext('webgl2') || canvasRef.value?.getContext('webgl')
+      if (!gl) { hasError.value = true; isLoading.value = false; return }
+
+      try {
+        const { Application } = await import('@splinetool/runtime')
+        const instance = new Application(canvasRef.value, { renderOnDemand: true })
+        await instance.load(sceneUrl)
+        if (prefersReduced) instance.stop()
+        app.value = instance
+      } catch (e) {
+        console.error('[useSpline]', e)
+        hasError.value = true
+      } finally {
+        isLoading.value = false
+      }
+    }, { rootMargin: '200px' })
+
+    if (containerRef.value) observer.observe(containerRef.value)
+  })
+
+  onBeforeUnmount(() => {
+    // dispose() frees the WebGL context — browser limit is ~16 per page
+    app.value?.stop()
+    app.value?.dispose()
+    app.value = null
+  })
+
+  return { app, isLoading, hasError }
+}
 ```
 
 #### src/components/AppPreloader.vue
@@ -119,11 +165,13 @@ Read the Design Philosophy in CLAUDE.md — enforce the anti-slop rules aggressi
 - [ ] Responsive: 375px, 768px, 1280px, 1440px
 - [ ] Performance: no will-change preventive, lazy images, no infinite loops
 - [ ] SEO: title + meta description + OG tags on every view
-- [ ] CSS: only var(--token), no magic numbers
+- [ ] CSS: only var(--token), no magic numbers, no CSS `ease` keyword — always cubic-bezier
 - [ ] Motion: prefers-reduced-motion in every animated component
+- [ ] Parallax/scrub: `scrub: 0.5` everywhere — never `scrub: true`
 - [ ] Router: lazy imports, scrollBehavior defined
 - [ ] Cleanup: gsap.context().revert() in every component
 - [ ] Images: alt + width + height + loading="lazy"
+- [ ] Spline (if used): dispose() on unmount, fallback image present, canvas aria-hidden, mobile fallback CSS visible
 
 ### Output
 - Fix issues directly — don't just report
@@ -132,8 +180,9 @@ Read the Design Philosophy in CLAUDE.md — enforce the anti-slop rules aggressi
 
 ## Rules
 - gsap.context() with .revert() cleanup — ALWAYS
-- prefers-reduced-motion — ALWAYS
+- prefers-reduced-motion — ALWAYS: `gsap.set(els, { opacity: 1, y: 0 }); return` — instant final state, no crossfade
 - Only transform + opacity — never layout properties
+- Parallax and scroll-linked: always `scrub: 0.5` — never `scrub: true`
 - No consecutive sections share motion technique
 - Do NOT create new sections or modify text content
 - Do NOT change palette or typography
