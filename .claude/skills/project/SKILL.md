@@ -165,16 +165,19 @@ cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --batch 
 **Produces per domain in `_ref-captures/{domain}/`:**
 - `desktop/frame-NNN.png` — per-section desktop (1440px)
 - `mobile/frame-NNN.png` — per-section mobile (375px)
+- `interactions/scroll-desktop-NNN.png` — scroll-triggered animation captures
+- `interactions/hover-NNN.png` — hover state captures
+- `interactions/click-NNN-before.png` / `click-NNN-after.png` — click state captures
 - `full-page-desktop.png` + `full-page-mobile.png`
-- `manifest.json` (v2) — clustered palette, fonts, headings, tech stack, CSS custom properties, section boundaries, media inventory, nav pattern
+- `manifest.json` (v3) — 4-pass sweep: clustered palette, fonts, headings, tech stack, CSS custom properties, section boundaries, media inventory, nav pattern, **interaction data** (scroll diffs, header behavior, hover/click states with CSS diffs), spacing system, layout patterns
 
 ### Step B: Spawn Reference Analyst
 
 ```
 Agent: reference-analyst
 Context:
-  - Paths to _ref-captures/{domain}/ (desktop + mobile screenshots)
-  - Path to manifest.json (v2 with rich metadata)
+  - Paths to _ref-captures/{domain}/ (desktop + mobile + interactions screenshots)
+  - Path to manifest.json (v3 with 4-pass sweep data: scroll diffs, hover states, click states, spacing, layouts)
   - Original URL: {url} (analyst may use WebFetch to read page source)
   - docs/_libraries/layouts.md, docs/_libraries/interactions.md, docs/_libraries/motion-categories.md
 Produce: docs/reference-analysis.md

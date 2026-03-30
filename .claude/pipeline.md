@@ -55,31 +55,44 @@ cd scripts && npm install --silent && node capture-refs.mjs --batch "{url1}" "{u
 **Produces per domain in `_ref-captures/{domain}/`:**
 - `desktop/frame-NNN.png` — per-section desktop screenshots (1440px)
 - `mobile/frame-NNN.png` — per-section mobile screenshots (375px)
-- `full-page-desktop.png` — full-page bird's eye
-- `full-page-mobile.png` — full-page mobile
-- `manifest.json` — rich metadata (v2):
+- `interactions/scroll-desktop-NNN.png` — scroll-triggered animation captures
+- `interactions/hover-NNN.png` — hover state captures
+- `interactions/click-NNN-before.png` / `click-NNN-after.png` — click state before/after
+- `full-page-desktop.png` + `full-page-mobile.png`
+- `manifest.json` — rich metadata (v3, 4-pass sweep):
   - Clustered hex palette (text + bg, max 8 dominant colors each)
-  - Exact font families + heading typography (size, weight, letter-spacing, line-height, text-transform)
-  - Section boundaries with tag, class, scroll position, height
-  - Tech stack detection (GSAP, Three.js, Lenis, Locomotive, Spline, framework, etc.)
-  - CSS custom properties from `:root` (the site's own token system)
-  - Media inventory (videos with autoplay/size/isBackground, canvases with WebGL detection, SVG/Lottie counts)
-  - Navigation pattern (link count, header position, header bg)
+  - Exact font families + heading typography (size, weight, letter-spacing, line-height, text-transform, color)
+  - Section boundaries with tag, class, id, scroll position, height
+  - Tech stack (libraries, smooth scroll, custom cursor, font sources, framework)
+  - CSS custom properties from `:root`
+  - Media inventory (videos, canvases + WebGL, SVG, Lottie, layered images, background images)
+  - **Interaction data:**
+    - `scrollDiffs` — elements that changed opacity/transform/clipPath on scroll, with before/after CSS values
+    - `headerBehavior` — type (static/sticky/transparent-to-solid/hide-on-scroll) with CSS diffs
+    - `hoverStates` — elements that changed on hover with before/after CSS diffs
+    - `clickStates` — tabs/accordions/modals with before/after screenshots and aria-expanded changes
+  - Spacing system (scale, base unit, section padding consistency)
+  - Layout patterns (grid/flex per section)
+  - Navigation (desktop links + mobile type: hamburger/bottom-nav/visible-links)
+  - Footer structure
 
 ### B: Analyze (Console: `reference-analyst`)
 **Context contract:**
-- IN: paths to `_ref-captures/{domain}/` screenshots (desktop + mobile) + manifest
+- IN: paths to `_ref-captures/{domain}/` — all screenshots (desktop + mobile + interactions) + manifest v3
 - IN: The original URL (analyst may use WebFetch to read page source for font links, meta tags, and additional library detection)
 - IN: `docs/_libraries/layouts.md`, `docs/_libraries/interactions.md`, `docs/_libraries/motion-categories.md` (for pattern mapping via reverse-lookup guide)
 - OUT: `docs/reference-analysis.md`
 
 **Gate (QA validates — same as every other step):**
-1. All sections filled (colors, typography, layouts, motion, rhythm, responsive, borrow/avoid, recommendations)
+1. All sections filled (colors, typography, layouts, motion, interactions, spacing, rhythm, responsive, borrow/avoid, recommendations)
 2. Every color/font claim references manifest data (not guessed from screenshots)
 3. Borrow list has 5+ items, each with confidence level (HIGH/MEDIUM/LOW) and frame reference
 4. Responsive analysis present (desktop vs mobile comparison)
 5. Tech stack documented from manifest
 6. Patterns mapped to library names (L-*, I-*, motion category names)
+7. Interaction analysis section present with scroll diffs, hover states, click states from manifest (all CONFIRMED behaviors documented)
+8. Header behavior documented with type and CSS changes
+9. Spacing system reported (base unit, scale, section padding)
 
 ---
 
