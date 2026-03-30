@@ -23,7 +23,7 @@ Max 2 consoles active. See `.claude/pipeline.md` for context contracts.
 | Step | Console | Output | Gate |
 |------|---------|--------|------|
 | 0 | CEO | Task breakdown | Brief clear |
-| 0.5 | Reference Analyst | `reference-analysis.md` | All refs captured + analyzed |
+| 0.5 | Reference Analyst | `reference-analysis.md` | QA: manifest-backed, 5+ borrows, responsive, tech stack |
 | 1 | Creative Director | 6 foundation docs | 12-point validation |
 | 2 | Atmosphere | `AtmosphereCanvas.vue` | Mouse + scroll + mobile |
 | 3 | Constructor (x N) | `S-{Name}.vue` per section | 7-layer check + user review each |
@@ -36,8 +36,8 @@ Max 2 consoles active. See `.claude/pipeline.md` for context contracts.
 
 | Console | Gets (extracted by CEO) | Does NOT get |
 |---------|------------------------|--------------|
-| Reference Analyst | Screenshot paths, manifest, libraries | Brief, mood, constraints |
-| Creative Director | Brief + ref analysis findings + templates | Raw screenshots |
+| Reference Analyst | Screenshot paths (desktop+mobile), manifest v2, original URL, libraries | Brief, mood, constraints |
+| Creative Director | Brief + full reference-analysis.md + ref frame paths + templates | N/A — gets complete analysis |
 | Atmosphere | Palette hex + atmosphere concept only | Typography, content, pages |
 | Constructor | 1 recipe card + 1 section's copy + tokens | Other sections, full docs |
 | Choreographer | Motion spec + section file list | Content, palette, layouts |

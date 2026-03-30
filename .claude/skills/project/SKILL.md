@@ -150,26 +150,53 @@ Only after confirmation, create the task breakdown with TodoWrite.
 
 **Only if the user provided inspiration URLs.** Skip if no URLs.
 
-### Step A: Capture screenshots
+### Step A: Capture (v2 — desktop + mobile, section-aware)
 
-For EACH reference URL:
+**Single URL:**
 ```bash
 cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs "{url}" "../_ref-captures"
 ```
 
-Produces `_ref-captures/{domain}/frame-NNN.png` + `manifest.json`
+**Multiple URLs (batch — preferred):**
+```bash
+cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --batch "{url1}" "{url2}" "{url3}" --out "../_ref-captures"
+```
+
+**Produces per domain in `_ref-captures/{domain}/`:**
+- `desktop/frame-NNN.png` — per-section desktop (1440px)
+- `mobile/frame-NNN.png` — per-section mobile (375px)
+- `full-page-desktop.png` + `full-page-mobile.png`
+- `manifest.json` (v2) — clustered palette, fonts, headings, tech stack, CSS custom properties, section boundaries, media inventory, nav pattern
 
 ### Step B: Spawn Reference Analyst
 
 ```
 Agent: reference-analyst
-Context: paths to _ref-captures/{domain}/ + manifest.json
-Also: docs/_libraries/layouts.md, docs/_libraries/interactions.md, docs/_libraries/motion-categories.md
+Context:
+  - Paths to _ref-captures/{domain}/ (desktop + mobile screenshots)
+  - Path to manifest.json (v2 with rich metadata)
+  - Original URL: {url} (analyst may use WebFetch to read page source)
+  - docs/_libraries/layouts.md, docs/_libraries/interactions.md, docs/_libraries/motion-categories.md
 Produce: docs/reference-analysis.md
-DO NOT pass the user's brief — analyst sees only what it observes.
+DO NOT pass the user's brief — analyst sees only what it observes, no bias.
 ```
 
-**Gate:** `docs/reference-analysis.md` exists with all sections filled.
+### Step C: QA validates reference analysis
+
+```
+Agent: qa
+Validate: docs/reference-analysis.md
+Check:
+  1. All sections filled (colors, typography, layouts, motion, rhythm, responsive, borrow/avoid, recommendations)
+  2. Color/font claims reference manifest data (not guessed from pixels)
+  3. Borrow list has 5+ items with confidence levels and frame references
+  4. Responsive analysis present (desktop vs mobile)
+  5. Tech stack documented
+  6. Patterns mapped to library names
+Report: PASS or FAIL with specifics
+```
+
+If FAIL → re-dispatch Reference Analyst with specific gaps. Max 2 loops.
 
 ---
 
@@ -192,14 +219,14 @@ Project brief:
   Scheme: {dark/light}
   Constraints: {any}
 
-Reference analysis findings (from docs/reference-analysis.md — paste key sections):
-  Borrow list: {paste}
-  Color insights: {paste}
-  Layout patterns: {paste}
-  Motion patterns: {paste}
-  Recommendations: {paste}
+Reference analysis (FULL — paste entire docs/reference-analysis.md):
+  {paste the complete file — do NOT excerpt or summarize}
+  The Creative Director needs the full analysis including confidence levels,
+  responsive comparison, tech stack context, and all borrow/avoid items.
 
-Reference frames available at: _ref-captures/{domain}/frame-NNN.png
+Reference frames available at:
+  Desktop: _ref-captures/{domain}/desktop/frame-NNN.png
+  Mobile:  _ref-captures/{domain}/mobile/frame-NNN.png
 (Creative Director should attribute decisions to specific frame numbers)
 
 Templates: read docs/_templates/ for output format

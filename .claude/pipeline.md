@@ -19,8 +19,8 @@ user sign-off. See `/project` skill for the User Review Protocol details.
 
 | Console | Role | Receives | Produces |
 |---------|------|----------|----------|
-| Reference Analyst | Analyze captured screenshots | Screenshot paths + manifest | `docs/reference-analysis.md` |
-| Creative Director | Design visual identity | Brief + ref analysis (extracted) + ref frame paths | 6 foundation docs |
+| Reference Analyst | Analyze captured screenshots + metadata | Screenshot paths (desktop + mobile) + manifest + original URL | `docs/reference-analysis.md` |
+| Creative Director | Design visual identity | Brief + full reference-analysis.md + ref frame paths | 6 foundation docs |
 | Atmosphere | Build WebGL/Canvas layer | Palette + atmosphere concept (extracted) | `AtmosphereCanvas.vue` |
 | Constructor | Build sections one by one | Recipe card + tokens + copy (extracted) | `S-{Name}.vue` |
 | Choreographer | Implement all motion | Motion spec + section list (extracted) | Composables + preloader |
@@ -41,18 +41,45 @@ CEO gathers from the user:
 ## Step 0.5: Reference Analysis (if URLs provided)
 
 ### A: Capture (CEO runs directly)
+
+**Single URL:**
 ```bash
 cd scripts && npm install --silent && node capture-refs.mjs "{url}" "../_ref-captures"
 ```
-Produces: `_ref-captures/{domain}/frame-NNN.png` + `manifest.json`
+
+**Multiple URLs (batch mode):**
+```bash
+cd scripts && npm install --silent && node capture-refs.mjs --batch "{url1}" "{url2}" "{url3}" --out "../_ref-captures"
+```
+
+**Produces per domain in `_ref-captures/{domain}/`:**
+- `desktop/frame-NNN.png` — per-section desktop screenshots (1440px)
+- `mobile/frame-NNN.png` — per-section mobile screenshots (375px)
+- `full-page-desktop.png` — full-page bird's eye
+- `full-page-mobile.png` — full-page mobile
+- `manifest.json` — rich metadata (v2):
+  - Clustered hex palette (text + bg, max 8 dominant colors each)
+  - Exact font families + heading typography (size, weight, letter-spacing, line-height, text-transform)
+  - Section boundaries with tag, class, scroll position, height
+  - Tech stack detection (GSAP, Three.js, Lenis, Locomotive, Spline, framework, etc.)
+  - CSS custom properties from `:root` (the site's own token system)
+  - Media inventory (videos with autoplay/size/isBackground, canvases with WebGL detection, SVG/Lottie counts)
+  - Navigation pattern (link count, header position, header bg)
 
 ### B: Analyze (Console: `reference-analyst`)
 **Context contract:**
-- IN: paths to `_ref-captures/{domain}/` screenshots + manifest
-- IN: `docs/_libraries/layouts.md`, `docs/_libraries/interactions.md`, `docs/_libraries/motion-categories.md` (for pattern mapping)
+- IN: paths to `_ref-captures/{domain}/` screenshots (desktop + mobile) + manifest
+- IN: The original URL (analyst may use WebFetch to read page source for font links, meta tags, and additional library detection)
+- IN: `docs/_libraries/layouts.md`, `docs/_libraries/interactions.md`, `docs/_libraries/motion-categories.md` (for pattern mapping via reverse-lookup guide)
 - OUT: `docs/reference-analysis.md`
 
-**Gate:** Analysis file exists with all sections (colors, type, layouts, motion, rhythm, borrow/avoid lists).
+**Gate (QA validates — same as every other step):**
+1. All sections filled (colors, typography, layouts, motion, rhythm, responsive, borrow/avoid, recommendations)
+2. Every color/font claim references manifest data (not guessed from screenshots)
+3. Borrow list has 5+ items, each with confidence level (HIGH/MEDIUM/LOW) and frame reference
+4. Responsive analysis present (desktop vs mobile comparison)
+5. Tech stack documented from manifest
+6. Patterns mapped to library names (L-*, I-*, motion category names)
 
 ---
 
@@ -60,8 +87,8 @@ Produces: `_ref-captures/{domain}/frame-NNN.png` + `manifest.json`
 
 **Context contract:**
 - IN: User brief (project type, pages, mood, constraints)
-- IN: Key findings from `docs/reference-analysis.md` (CEO extracts and pastes inline: borrow list, color insights, layout patterns, motion patterns, recommendations)
-- IN: Reference frame paths (`_ref-captures/{domain}/frame-NNN.png`) so decisions can be attributed to specific frames
+- IN: **Full `docs/reference-analysis.md`** — CEO passes the ENTIRE file, not excerpts. The Creative Director needs complete context (palette, typography, layouts, motion, responsive analysis, tech stack, borrow/avoid lists, confidence levels) to make informed design decisions.
+- IN: Reference frame paths (`_ref-captures/{domain}/desktop/frame-NNN.png` + `mobile/frame-NNN.png`) so decisions can be attributed to specific frames
 - IN: Template formats from `docs/_templates/`
 - IN: Pattern libraries from `docs/_libraries/`
 - OUT: 6 foundation docs:
