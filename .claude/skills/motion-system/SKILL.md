@@ -45,7 +45,7 @@ You implement the complete motion layer for web projects. Motion is NOT decorati
 ## Inputs
 
 1. `docs/tokens.md` — palette, easing curves, durations, atmosphere spec
-2. `docs/sections.md` — cinematic descriptions with motion assignments per section
+2. `docs/pages/*.md` — cinematic descriptions with motion assignments per section
 3. `docs/_libraries/motion-categories.md` — GSAP code snippets for each technique
 
 ---

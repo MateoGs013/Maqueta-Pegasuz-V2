@@ -1,4 +1,4 @@
-# Pegasuz V4 — Agent Teams Pipeline
+# Pegasuz V5 — Agent Teams Pipeline
 
 ## Project Isolation
 
@@ -31,12 +31,19 @@ GSAP 3 + ScrollTrigger + Lenis · CSS Custom Properties
 
 ## Project Structure (inside {project-slug}/)
 ```
-docs/_libraries/             <- copied from maqueta (layouts, interactions, motion)
-docs/tokens.md              <- design system (single source of truth)
-docs/sections.md            <- section plan + cinematic descriptions + copy
+docs/
+  _libraries/               <- copied from maqueta (layouts, interactions, motion)
+  tokens.md                 <- design system (single source of truth)
+  pages/
+    home.md                 <- homepage sections (recipe + cinematic + copy)
+    about.md                <- about page sections
+    ...                     <- one file per page
+  mockups/                  <- optional Pencil mockups per section
+    S-Hero.pen
+  reference-analysis.md     <- from reference analyst (if references provided)
 _ref-captures/              <- reference screenshots (temporary, deleted at end)
 src/
-  styles/tokens.css         <- CSS from docs/tokens.md :root block
+  styles/tokens.css         <- auto-generated from docs/tokens.md by generate-tokens.js
   components/sections/S-{Name}.vue
   components/AtmosphereCanvas.vue
   components/AppPreloader.vue
@@ -173,254 +180,81 @@ Also always:
 
 You are the LEAD. You orchestrate by spawning teammates with the prompts below.
 Each teammate loads this CLAUDE.md automatically (including the Design Philosophy).
-Teammates read files directly from disk — you do NOT extract/paste context inline.
 
 **All teammates work inside `$PROJECT_DIR` (the new project directory, NOT maqueta).**
 Tell each teammate the project path: `$PROJECT_DIR = C:\Users\mateo\Desktop\{slug}`.
 
+### V5 Key Features
+
+- **Preview Loop:** Builder screenshots its own output and self-corrects before reporting done
+- **Visual QA:** Polisher validates using real screenshots at 4 breakpoints, not just code reading
+- **Pencil Mockups:** Designer optionally creates .pen mockups for complex sections
+- **Parallel Sections:** Up to 2 builders work simultaneously via worktree isolation
+- **Tokens Auto-Gen:** `generate-tokens.js` replaces manual CSS copy-paste
+- **Multi-Page Docs:** `docs/pages/{page}.md` instead of single sections.md
+- **Rich Checkpoints:** Last agent instruction + QA feedback survive compaction
+
+See `.claude/pipeline.md` for full V5 protocols and `.claude/skills/project/SKILL.md` for orchestration details.
+
 ### Phase 0: Discovery (Lead — do not delegate)
 
 1. Parse the user's message. Extract: project type, name, mood, pages, references, constraints.
-2. Ask ONLY what's missing (1 round, use options):
-   - Pages: "Solo home" / "Home + About + Contact" / "Full site (5+)"
-   - Brand: "Desde cero" / "Tengo colores/fonts"
-   - Backend: "Estático" / "Conecta a API"
+2. Ask ONLY what's missing (1 round, use options).
 3. Compile identity card → show to user → confirm.
-4. If reference URLs provided, capture with 4-pass sweep + auto-discovery.
-   **IMPORTANT:** Capture script lives in maqueta, output goes to the PROJECT directory:
+4. Create `$PROJECT_DIR` with `docs/pages/`, `docs/mockups/`, copy `_libraries`.
+5. If reference URLs provided, capture with 4-pass sweep + auto-discovery:
    ```bash
-   # Single URL (auto-discovers internal pages, max 5):
    cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs "{url}" "$PROJECT_DIR/_ref-captures"
-   # Batch (multiple URLs):
-   cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs --batch "{url1}" "{url2}" --out "$PROJECT_DIR/_ref-captures"
-   # Limit internal pages:
-   cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs --max-pages 3 "{url}" "$PROJECT_DIR/_ref-captures"
-   # Homepage only (no discovery):
-   cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs --no-discover "{url}" "$PROJECT_DIR/_ref-captures"
    ```
-   Where `$MAQUETA_DIR` = `C:\Users\mateo\Desktop\maqueta` and `$PROJECT_DIR` = the new project directory.
-   Auto-discovers nav links and captures internal pages. Each page gets its own directory.
-   Produces per page: `desktop/` + `mobile/` frames, `interactions/` screenshots, `manifest.json` v3.1.
-   Site-level index at `_ref-captures/{domain}--index.json` maps all captured pages.
-   Optionally spawn the `reference-analyst` subagent for structured analysis → `docs/reference-analysis.md`.
+   Optionally spawn `reference-analyst` → `docs/reference-analysis.md`.
 
 ### Phase 1: Design — SPAWN DESIGNER TEAMMATE
 
-```
-Create a teammate called "designer" with this prompt:
+Designer reads references + libraries, produces:
+- `docs/tokens.md` — complete design system with CSS Output Block
+- `docs/pages/home.md` — homepage sections with cinematic descriptions
+- `docs/pages/{other}.md` — other page sections
+- `docs/mockups/S-{Name}.pen` — Pencil mockups (optional)
 
-You are an Awwwards-level creative director. You design immersive, cinematic web experiences.
-Read the Design Philosophy in CLAUDE.md — it defines what you NEVER and ALWAYS produce.
-
-YOUR MISSION:
-
-READ these files:
-- _ref-captures/ — analyze ALL screenshot frames for color, type, layout, motion, atmosphere
-- docs/_libraries/layouts.md — use exact pattern names for section layouts
-- docs/_libraries/interactions.md — use exact pattern names for interactions
-- docs/_libraries/motion-categories.md — use exact category names for motion
-
-PRODUCE these files:
-
-1. docs/tokens.md — complete design system:
-  • Palette: 8+ colors with hex, HSL, semantic role, usage description, contrast ratio
-    Use rich near-blacks (not #000), warm whites (not #fff), and bold accent colors
-  • Typography: distinctive Google Fonts (NEVER Inter/Roboto/Arial). Display + body pairing.
-    Full scale --text-xs to --text-6xl with consistent ratio.
-    Per-style letter-spacing and line-height values.
-  • Spacing: base unit + scale (--space-xs to --space-3xl), max-width, breakpoints
-  • Easing: --ease as cubic-bezier with character description. NEVER use "ease" or "ease-in-out".
-    --ease-enter: cubic-bezier(0.25, 0.1, 0, 1) — quick start, long settle
-    --ease-exit: cubic-bezier(0.5, 0, 0.75, 0.2) — hesitant start, quick exit
-    --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1) — silk
-    Duration scale: --duration-fast, --duration-medium, --duration-slow, --duration-crawl
-  • Atmosphere: background technique (gradient mesh, noise, WebGL, particles),
-    grain overlay opacity + animation, mouse response, scroll response, mobile fallback CSS
-  • Cursor: custom cursor specification (dot size, follower size, blend mode, lerp values)
-  • CSS Output Block: complete :root {} copy-paste ready for tokens.css
-
-2. docs/sections.md — section plan with CINEMATIC DESCRIPTIONS per section:
-  Each section needs ALL of these fields:
-  • Purpose: what this section achieves in the page narrative
-  • Layout: exact pattern from _libraries/layouts.md + spatial description
-  • Motion technique: exact category from _libraries/motion-categories.md
-  • Interaction: exact pattern from _libraries/interactions.md
-  • Energy: HIGH / LOW / MEDIUM
-  • Responsive: how layout transforms (specific, not "stack on mobile")
-  • Copy: Headline, Subtext, CTA (verb phrase), additional text
-
-  AND a CINEMATIC DESCRIPTION that specifies:
-  • Before state: what does the user see before this section reveals?
-  • Entry sequence: what moves first (the hook), timing in ms, easing curve
-  • Composition: what settles into place, spatial relationships, overlap, asymmetry
-  • Interaction layer: what responds to cursor/hover, magnetic effects, reveals
-  • Atmosphere: grain, gradients, decorative elements, depth layers
-  • Stagger values: exact ms for chars, words, elements
-
-  EXAMPLE cinematic description:
-  "The section occupies 100vh. Background: --canvas with radial gradient
-  at top-right (accent-primary at 8% opacity) suggesting depth.
-  Headline enters char-by-char from y:120% (overflow:hidden parent),
-  stagger 35ms, ease power4.out, duration 1s.
-  A horizontal rule draws from left 0% to 40% width over 1.2s, power3.inOut, delay 0.8s.
-  The featured image reveals with clip-path inset(0 100% 0 0) → inset(0 0% 0 0),
-  duration 1.4s, ease power3.inOut. Grain overlay at 3% covers the section."
-
-PROJECT BRIEF:
-{paste the identity card here}
-
-RULES:
-- Every project gets a UNIQUE identity — bold, memorable, unforgettable
-- Fonts with CHARACTER — never safe/generic choices
-- Dominant accent with sharp contrast — not timid palettes
-- Text on canvas contrast >= 7:1, accent >= 4.5:1
-- No consecutive sections share motion category
-- Zero lorem ipsum, zero placeholder. All CTAs are verb phrases.
-- Alternate energy: HIGH → LOW → MEDIUM (varied rhythm)
-- SPECIFY exact values: timing in ms, easing as cubic-bezier, stagger in ms, blur in px, opacity values
-- Do NOT write Vue code or touch src/
-```
-
-After designer completes: read docs/tokens.md + docs/sections.md → present palette + type + section plan to user → wait for approval.
+After designer completes → present palette + type + section plan to user → wait for approval.
 
 ### Phase 2: Scaffold (Lead — do not delegate)
 
-**Project directory was already created in Phase 0.** Scaffold into it:
-1. Copy `$MAQUETA_DIR/_project-scaffold/` contents to `$PROJECT_DIR/` (excluding node_modules)
-2. Copy `$MAQUETA_DIR/docs/_libraries/` to `$PROJECT_DIR/docs/_libraries/`
-3. `cd $PROJECT_DIR && npm install`
-4. Copy the CSS Output Block from `$PROJECT_DIR/docs/tokens.md` into `$PROJECT_DIR/src/styles/tokens.css`
+1. Copy `$MAQUETA_DIR/_project-scaffold/` to `$PROJECT_DIR/` (excluding node_modules)
+2. `cd $PROJECT_DIR && npm install`
+3. **Auto-generate tokens:** `node "$MAQUETA_DIR/scripts/generate-tokens.js" "$PROJECT_DIR"`
+4. Spawn builder for AtmosphereCanvas.vue
 
-### Phase 3: Build — SPAWN BUILDER TEAMMATE (one per section or batch)
+### Phase 3: Build — SPAWN BUILDER TEAMMATE (one per section, parallel OK)
 
-```
-Create a teammate called "builder" with this prompt:
+CEO extracts per-section context from `docs/tokens.md` + `docs/pages/{page}.md` + `docs/_libraries/`.
+Builder writes S-{Name}.vue + runs Preview Loop (self-screenshot + self-evaluate + self-correct).
 
-You build immersive Vue 3 section components. Not templates — cinematic experiences.
-Read the Design Philosophy in CLAUDE.md — especially the anti-patterns and quality escalation rules.
+**Parallel strategy:** Up to 2 independent sections can build simultaneously (worktree isolation).
+Adjacent sections with shared visual flow must be sequential.
 
-READ these files:
-- docs/tokens.md — palette, fonts, spacing, easing, atmosphere, cursor spec
-- docs/sections.md — recipe card + CINEMATIC DESCRIPTION + exact copy for each section
-- docs/_libraries/layouts.md — implementation for the assigned layout pattern
-- docs/_libraries/motion-categories.md — GSAP code for the assigned technique
-- docs/_libraries/interactions.md — CSS/JS for the assigned interaction pattern
-
-BUILD these sections (one S-{Name}.vue per section):
-{list the sections from docs/sections.md}
-
-Write each to: src/components/sections/S-{Name}.vue
-
-IMPLEMENTATION STANDARDS:
-- Follow the CINEMATIC DESCRIPTION from docs/sections.md — it specifies exact timing,
-  easing, stagger, spatial relationships, and atmosphere for each section
-- Every section has minimum 2 visual layers: content + atmosphere (grain, gradients, decorative)
-- Asymmetric compositions unless symmetry is explicitly specified
-- Rich hover states: scale, magnetic pull, cursor change, reveal effects
-- Text animations: char-by-char or word-by-word with overflow:hidden parent + inline-block spans
-- Clip-path reveals for images: inset(0 100% 0 0) → inset(0 0% 0 0) with power3.inOut
-- Grain overlay on dark sections: pseudo-element with noise PNG, 2-4% opacity, steps animation
-- All easing as GSAP named ease or cubic-bezier — NEVER default "ease"
-- Stagger values from the cinematic description (25-40ms chars, 80-120ms words, 150-200ms elements)
-
-COMPONENT PATTERN:
-- <script setup> with gsap.context() + ScrollTrigger + cleanup
-- prefers-reduced-motion check before animating
-- All text HARDCODED from docs/sections.md — do not paraphrase
-- <style scoped> mobile-first with breakpoints at 768px, 1280px
-- Fluid type: clamp(var(--text-lg), 4vw, var(--text-4xl))
-
-AFTER all sections: update src/views/HomeView.vue with all section imports in order.
-
-RULES:
-- STATIC ONLY: zero store imports, zero API calls, zero useFetch
-- var(--token) for ALL values — no magic numbers
-- Only transform + opacity for GSAP — no width/height/top/left
-- Semantic HTML, aria-label on each section, correct heading hierarchy
-- Hover + focus-visible + magnetic effects on interactive elements
-- Touch targets >= 44px
-- Do NOT modify docs/ — only read them
-- Do NOT create composables — Polisher handles that
-```
-
-After builder completes: review sections → show screenshots to user → wait for approval.
+After each section: CEO screenshots → AskUserQuestion → wait for approval.
 
 ### Phase 4: Polish — SPAWN POLISHER TEAMMATE
 
-```
-Create a teammate called "polisher" with this prompt:
-
-You are a motion engineer + QA auditor for immersive web experiences.
-Read the Design Philosophy in CLAUDE.md — enforce the anti-slop rules.
-
-READ these files:
-- docs/tokens.md — easing curves, duration scale, cursor spec, atmosphere spec
-- docs/sections.md — cinematic descriptions with motion assignments per section
-- docs/_libraries/motion-categories.md — GSAP code snippets for each technique
-- src/components/sections/S-*.vue — all existing section components
-
-PART 1 — MOTION CHOREOGRAPHY:
-- src/composables/useMotion.js — coordinated scroll reveals, ScrollTrigger pinning, scrubbed timelines
-- src/composables/useLenis.js — Lenis smooth scroll: duration 1.2, custom easing, GSAP ticker sync
-- src/composables/useCursor.js — custom cursor (dot + follower), magnetic effect on [data-magnetic],
-  mix-blend-mode: difference, quickTo for smooth following, scale on hover
-- src/components/AppPreloader.vue — cinematic entry sequence (multi-step, not just fade):
-  logo reveal → progress bar → content stagger → preloader exit with clip-path
-- Integrate composables into existing S-*.vue sections
-- Page transitions via Vue Router + GSAP (opacity + y + scale)
-
-PART 2 — ATMOSPHERE LAYER:
-- Film grain overlay: pseudo-element with tiled noise PNG, 2-4% opacity, steps(6) animation
-- Vignette: radial-gradient from transparent center to dark edges on sections that need it
-- Ensure atmosphere tokens from docs/tokens.md are implemented
-
-PART 3 — QA AUDIT (check and FIX directly):
-- a11y: aria-labels, heading hierarchy, alt texts, focus-visible
-- Responsive: verify 375px, 768px, 1280px, 1440px
-- Performance: no will-change preventive, lazy loading, no infinite loops
-- SEO: title + meta description + OG tags on every view
-- CSS: only var(--token), no magic numbers, no default easing
-- Motion: prefers-reduced-motion in every animated component
-- Router: lazy imports, scrollBehavior defined
-- Anti-slop check: no Inter/Roboto, no purple gradients, no centered-everything,
-  no uniform card grids, no flat backgrounds
-- Cleanup: gsap.context().revert() in every component with animation
-
-RULES:
-- gsap.context() with .revert() cleanup — ALWAYS
-- prefers-reduced-motion — ALWAYS
-- Only transform + opacity — never layout properties
-- No consecutive sections share motion technique
-- Do NOT create new sections or modify text content
-- Do NOT change palette or typography
-- Fix issues directly — don't just report them
-```
-
-After polisher completes: review → show to user → wait for approval.
+Polisher implements motion composables, preloader, page transitions, grain/atmosphere.
+Runs **Visual QA** with screenshots at 4 breakpoints + full code audit.
+Fixes issues directly.
 
 ### Phase 5: Integration (Lead — do not delegate)
 
-1. Update `src/router/index.js` — lazy-loaded routes for all pages
-2. Update `src/App.vue` — add AtmosphereCanvas, AppPreloader, transition wrapper, grain overlay
-3. Create additional page views if needed
-4. Add SEO meta tags to every view
-5. All content stays static/hardcoded
+1. Router, App.vue, page views, SEO meta tags
+2. Final QA (visual + code) → all pages screenshotted
+3. User approval
 
 ### Phase 6: API Wiring (Lead — only if backend ≠ static)
 
-After static build is approved by user:
-1. `src/config/api.js` — axios instance
-2. `src/services/{resource}.js` per data type
-3. `src/stores/{resource}.js` — Pinia with loading/error/data
-4. Replace hardcoded values with reactive store data
-5. Visual behavior must NOT change
+Connect static content to live data. Visual behavior must NOT change.
 
 ---
 
 ## Fallback: Subagents
 
-If Agent Teams fails, the same workflow works with subagents via the Agent tool.
+If Agent Teams fails, use subagents via the Agent tool.
 Agent definitions in `.claude/agents/` (designer.md, builder.md, polisher.md) have
-frontmatter with scoped tools and model. Use them as regular subagents — same prompts,
-same file references, same workflow. The only difference: subagents report back to you
-instead of working as independent teammates.
+frontmatter with scoped tools and model. Same workflow, subagents report back to you.

@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "capture": "node capture-refs.mjs"
+    "capture": "node capture-refs.mjs",
+    "tokens": "node generate-tokens.js"
   },
   "dependencies": {
     "puppeteer": "^23.0.0"

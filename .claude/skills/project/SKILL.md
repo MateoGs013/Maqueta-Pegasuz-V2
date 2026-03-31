@@ -4,7 +4,7 @@ description: "CEO orchestrator: single entry point for creating web projects. Ga
 user_invocable: true
 ---
 
-# /project — CEO Orchestrator
+# /project — CEO Orchestrator (V5)
 
 You are the CEO. You don't build — you orchestrate. Your job is to:
 1. **Check for active pipeline** (read checkpoint first — see below)
@@ -14,10 +14,10 @@ You are the CEO. You don't build — you orchestrate. Your job is to:
 5. **Dispatch** each task to the right agent with ONLY the context it needs
 6. **Review** every output before passing it downstream
 7. **Enforce gates** — nothing advances without validation
-8. **Write checkpoint** after every phase completion
+8. **Write rich checkpoint** after every phase completion
 9. **Present every visual result to the user and wait for approval**
 
-Read `.claude/pipeline.md` for the full step definitions. This file defines HOW you operate.
+Read `.claude/pipeline.md` for the full step definitions and V5 protocols.
 
 ## FIRST ACTION — Always check for active pipeline
 
@@ -30,8 +30,7 @@ Read `.claude/pipeline.md` for the full step definitions. This file defines HOW 
 ```
 
 This is critical after context compaction. The checkpoint file is your ground truth.
-Trust the file over your memory of the conversation. If compaction happened, early
-conversation details may be gone — the checkpoint has everything you need to resume.
+Trust the file over your memory of the conversation.
 
 ## Project Isolation — CRITICAL
 
@@ -48,9 +47,38 @@ are the scaffold, libraries, capture script, and agent definitions.
 
 ---
 
+## V5 Key Protocols
+
+### Preview Loop (Builder Self-Correction)
+The builder screenshots its own output and self-corrects before reporting done.
+See pipeline.md "Preview Loop" for the full protocol. The CEO does NOT need to
+screenshot for the builder — the builder does it itself. The CEO still screenshots
+for the User Review step.
+
+### Visual QA
+QA uses real screenshots at 4 breakpoints (375, 768, 1280, 1440) to validate visual
+quality. Screenshots reveal problems that code reading misses. See pipeline.md "Visual QA Protocol".
+
+### Parallel Sections
+Up to 2 sections can build simultaneously using worktree isolation.
+See pipeline.md "Parallel Section Protocol". Fall back to sequential on API errors.
+
+### Multi-Page Documents
+Designer produces `docs/pages/{page}.md` instead of a single `sections.md`.
+Each page file contains all sections for that page. See pipeline.md "Multi-Page Document Structure".
+
+### Tokens Auto-Generation
+```bash
+node "$MAQUETA_DIR/scripts/generate-tokens.js" "$PROJECT_DIR"
+```
+Parses `docs/tokens.md` CSS Output Block → writes `src/styles/tokens.css`.
+No manual copy-paste. Re-run if tokens change.
+
+---
+
 ## User Review Protocol
 
-**AskUserQuestion IS the blocking mechanism.** When you call AskUserQuestion, the entire pipeline pauses until the user responds. This is the enforcement mechanism for visual reviews — not a note, not a suggestion. You MUST call AskUserQuestion after every visual milestone. No exceptions.
+**AskUserQuestion IS the blocking mechanism.** When you call AskUserQuestion, the entire pipeline pauses until the user responds. No exceptions.
 
 ### The Review Loop
 
@@ -168,7 +196,6 @@ Constraints:  {anything specific the user mentioned}
 ```
 
 **Show the Identity Card to the user for confirmation before proceeding.**
-"Here's what I understood. Confirm or correct anything before I start the pipeline."
 
 ### GATE: User confirms the Identity Card
 
@@ -181,8 +208,9 @@ Only after confirmation:
 PROJECT_DIR="C:\Users\mateo\Desktop\{slug}"
 MAQUETA_DIR="C:\Users\mateo\Desktop\maqueta"
 
-# Create project directory + docs folder
-mkdir -p "$PROJECT_DIR/docs"
+# Create project directory + docs structure
+mkdir -p "$PROJECT_DIR/docs/pages"
+mkdir -p "$PROJECT_DIR/docs/mockups"
 
 # Copy libraries (patterns the designer and builder reference)
 cp -r "$MAQUETA_DIR/docs/_libraries" "$PROJECT_DIR/docs/_libraries"
@@ -224,59 +252,29 @@ cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-re
 cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs --no-discover "{url}" "$PROJECT_DIR/_ref-captures"
 ```
 
-**Auto-discovery:** Extracts nav/header links from homepage, captures internal pages.
-Each page gets its own directory + a site-level index:
-- `$PROJECT_DIR/_ref-captures/{domain}/` — homepage
-- `$PROJECT_DIR/_ref-captures/{domain}--about/` — /about page
-- `$PROJECT_DIR/_ref-captures/{domain}--index.json` — site map of all captured pages
-
-**Produces per page in `$PROJECT_DIR/_ref-captures/{domain}[--slug]/`:**
-- `desktop/frame-NNN.png` — per-section desktop (1440px)
-- `mobile/frame-NNN.png` — per-section mobile (375px)
-- `interactions/scroll-desktop-NNN.png` — scroll-triggered animation captures
-- `interactions/hover-NNN.png` — hover state captures
-- `interactions/click-NNN-before.png` / `click-NNN-after.png` — click state captures
-- `full-page-desktop.png` + `full-page-mobile.png`
-- `manifest.json` (v3.1) — 4-pass sweep: clustered palette, fonts, headings, tech stack, CSS custom properties, section boundaries, media inventory, nav pattern, **interaction data** (scroll diffs, header behavior, hover/click states with CSS diffs), spacing system, layout patterns
+**Produces per page:**
+- `desktop/` + `mobile/` frames, `interactions/` screenshots, `manifest.json` v3.1
+- Site-level index at `_ref-captures/{domain}--index.json`
 
 ### Step B: Spawn Reference Analyst
 
 ```
 Agent: reference-analyst
 Context:
-  - PROJECT_DIR: $PROJECT_DIR (all paths below are relative to this)
-  - Site index: $PROJECT_DIR/_ref-captures/{domain}--index.json (lists all captured pages)
-  - Paths to $PROJECT_DIR/_ref-captures/{domain}[--slug]/ (desktop + mobile + interactions screenshots per page)
-  - Path to manifest.json per page (v3.1 with 4-pass sweep data)
-  - Original URL: {url} (analyst may use WebFetch to read page source)
+  - PROJECT_DIR: $PROJECT_DIR
+  - Site index: $PROJECT_DIR/_ref-captures/{domain}--index.json
+  - Paths to screenshots + manifests per page
+  - Original URL: {url}
   - $PROJECT_DIR/docs/_libraries/layouts.md, interactions.md, motion-categories.md
 Produce: $PROJECT_DIR/docs/reference-analysis.md
-DO NOT pass the user's brief — analyst sees only what it observes, no bias.
-Note: When multiple pages captured, analyst should compare cross-page patterns.
+DO NOT pass the user's brief — analyst sees only what it observes.
 ```
 
-### Step C: QA validates reference analysis
-
-```
-Agent: qa
-Validate: $PROJECT_DIR/docs/reference-analysis.md
-Check:
-  1. All sections filled (colors, typography, layouts, motion, rhythm, responsive, borrow/avoid, recommendations)
-  2. Color/font claims reference manifest data (not guessed from pixels)
-  3. Borrow list has 5+ items with confidence levels and frame references
-  4. Responsive analysis present (desktop vs mobile)
-  5. Tech stack documented
-  6. Patterns mapped to library names
-  7. Interaction analysis present (scroll diffs, hover states, click states from manifest)
-  8. Header behavior documented
-  9. Spacing system reported
-  10. Multi-page patterns noted (if multiple pages captured per domain)
-Report: PASS or FAIL with specifics
-```
+### Step C: QA validates reference analysis (9-point check)
 
 If FAIL → re-dispatch Reference Analyst with specific gaps. Max 2 loops.
 
-**📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 0.5 complete, reference domains captured, Next Action = Phase 1.
+**📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 0.5 complete, Next Action = Phase 1.
 
 ---
 
@@ -301,31 +299,26 @@ Project brief:
 
 Reference analysis (FULL — paste entire $PROJECT_DIR/docs/reference-analysis.md):
   {paste the complete file — do NOT excerpt or summarize}
-  The designer needs the full analysis including confidence levels,
-  responsive comparison, tech stack context, and all borrow/avoid items.
 
 Reference frames available at:
-  Site index: $PROJECT_DIR/_ref-captures/{domain}--index.json (lists all captured pages)
+  Site index: $PROJECT_DIR/_ref-captures/{domain}--index.json
   Homepage:  $PROJECT_DIR/_ref-captures/{domain}/desktop/frame-NNN.png
   Internal:  $PROJECT_DIR/_ref-captures/{domain}--{slug}/desktop/frame-NNN.png
-(designer should attribute decisions to specific frame numbers and pages)
 
 Libraries: read $PROJECT_DIR/docs/_libraries/ for available pattern names
-Produce 6 docs (all inside $PROJECT_DIR/docs/):
-  docs/design-concept.md   ← creative direction, zero values
-  docs/design-tokens.md    ← all CSS tokens with descriptions
-  docs/design-decisions.md ← every token traced to a ref frame or principle
-  docs/content-brief.md    ← real copy for every section
-  docs/page-plans.md       ← recipe cards per section
-  docs/motion-spec.md      ← easing, durations, choreography
+
+Produce (all inside $PROJECT_DIR/docs/):
+  docs/tokens.md              ← complete design system + CSS output block
+  docs/pages/home.md          ← homepage sections (recipe + cinematic + copy)
+  docs/pages/{other}.md       ← other page sections (one file per page)
+  docs/mockups/S-{Name}.pen   ← Pencil mockups for key sections (if Pencil MCP available)
 ```
 
 ### Gate: QA validates 12 points
 
 ```
-Agent: qa
-Validate: $PROJECT_DIR/docs/design-concept.md, design-tokens.md, design-decisions.md,
-          content-brief.md, page-plans.md, motion-spec.md
+Agent: qa (or CEO validates directly)
+Validate: $PROJECT_DIR/docs/tokens.md + $PROJECT_DIR/docs/pages/*.md
 Run: 12-point validation from pipeline.md
 Report: PASS or FAIL with specifics
 ```
@@ -334,25 +327,18 @@ If FAIL → re-dispatch to designer with SPECIFIC failures → max 3 loops.
 
 ### ⛔ User Review: Creative Direction
 
-After QA passes, present as formatted text (extract from the new docs):
+After QA passes, present as formatted text:
 
 ```
-1. Read $PROJECT_DIR/docs/design-concept.md → show concept statement + visual principles
-2. Read $PROJECT_DIR/docs/design-tokens.md → show palette (hex + name + use case per color)
-                                              + typography choices (family + sample text)
-3. Read $PROJECT_DIR/docs/page-plans.md → show section plan table (name + layout + motion + energy)
-4. Read $PROJECT_DIR/docs/design-decisions.md → show 2-3 key decisions attributed to ref frames
-
-Ask: "Here's the visual identity I designed for {project name}. Does this match your vision?"
-Options: "Approved — start building", "Needs changes", "Scrap it — redesign from scratch"
-
-If "Needs changes" → ask what → apply to the relevant docs → re-present
-If "Scrap it" → re-dispatch designer with new direction
+1. Read $PROJECT_DIR/docs/tokens.md → show concept + palette + typography
+2. Read $PROJECT_DIR/docs/pages/home.md → show section plan table
+3. Ask: "Here's the visual identity I designed for {project name}. Does this match your vision?"
+   Options: "Approved — start building", "Needs changes", "Scrap it — redesign from scratch"
 ```
 
 **DO NOT proceed to Phase 2 until user explicitly approves.**
 
-**📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 1 complete, list key tokens (palette, fonts, easing), section count, Next Action = Phase 2 scaffold.
+**📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 1 complete, list key tokens, section count, Next Action = Phase 2.
 
 ---
 
@@ -370,27 +356,32 @@ rsync -a --exclude='node_modules' "$MAQUETA_DIR/_project-scaffold/" "$PROJECT_DI
 cd "$PROJECT_DIR" && npm install
 ```
 
-### Step B: Design tokens
+### Step B: Generate tokens CSS (auto — no manual copy-paste)
 
-Read `$PROJECT_DIR/docs/design-tokens.md`. The CSS output block at the bottom is copy-paste ready.
-Copy it directly to `$PROJECT_DIR/src/styles/tokens.css`. No extraction needed — it's already formatted.
+```bash
+node "$MAQUETA_DIR/scripts/generate-tokens.js" "$PROJECT_DIR"
+```
+
+This reads `docs/tokens.md`, extracts the `:root {}` CSS block + Google Fonts imports,
+and writes `src/styles/tokens.css`. Verify the output:
+```bash
+head -20 "$PROJECT_DIR/src/styles/tokens.css"
+```
 
 ### Step C: Spawn builder for Atmosphere
 
-Read `$PROJECT_DIR/docs/design-tokens.md` → atmosphere section.
-Read `$PROJECT_DIR/docs/design-decisions.md` → atmosphere decision entry.
-Pass inline:
+Read `$PROJECT_DIR/docs/tokens.md` → atmosphere section. Pass inline:
 
 ```
 Agent: builder
 Context (inline — do not tell it to read docs):
   PROJECT_DIR: $PROJECT_DIR
-  --canvas: {hex from design-tokens.md}
+  --canvas: {hex from tokens.md}
   --surface: {hex}
   --accent-primary: {hex}
   --accent-secondary: {hex}
   Atmosphere preset: {--atmosphere-preset value}
-  Mouse response: {description from design-tokens.md atmosphere section}
+  Mouse response: {description from tokens.md atmosphere section}
   Scroll response: {description}
   Mobile fallback CSS: {--atmosphere-mobile-fallback full CSS string}
   Write to: $PROJECT_DIR/src/components/AtmosphereCanvas.vue
@@ -410,7 +401,7 @@ Context (inline — do not tell it to read docs):
 5. If "Needs changes" → apply → re-screenshot → re-ask → loop until approved
 ```
 
-**📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 2 complete, list files created (tokens.css, AtmosphereCanvas.vue), list all section names from page-plans as pending, Next Action = "Phase 3: Build S-{first section}".
+**📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 2 complete, list files created, all section names from pages/*.md as pending, Next Action = "Phase 3: Build S-{first section}".
 
 ---
 
@@ -418,12 +409,15 @@ Context (inline — do not tell it to read docs):
 
 **This entire phase builds with STATIC, HARDCODED data.**
 No store imports. No API calls. No `useFetch`. No `useRoute`. Pure Vue + GSAP.
-The goal is to build the full creative visual experience first.
-API wiring happens in Phase 5B — after the user approves the creative build.
 
-Read `$PROJECT_DIR/docs/page-plans.md`. Get the complete section list.
+Read `$PROJECT_DIR/docs/pages/home.md` (and other page files). Get the complete section list.
 
-For EACH section, run this full sequence. Do not batch. Do not skip any step.
+### Parallel Strategy
+
+Before starting, identify which sections can be built in parallel:
+- **Independent sections:** Different pages, or non-adjacent sections on the same page → CAN parallelize
+- **Sequential sections:** Adjacent sections with shared visual flow (hero→intro, etc.) → MUST be sequential
+- Max 2 builders at once. Fall back to 1 on API errors.
 
 ### Section Build Sequence (run for EACH section)
 
@@ -431,11 +425,11 @@ For EACH section, run this full sequence. Do not batch. Do not skip any step.
 
 Before spawning builder, extract these values yourself:
 
-From `$PROJECT_DIR/docs/design-tokens.md` (semantic tokens section):
+From `$PROJECT_DIR/docs/tokens.md`:
 ```
-Font display:      {family name — e.g., "Clash Display"} → --font-display
-Font body:         {family name — e.g., "Satoshi"} → --font-body
---canvas:          {hex} — {description: "Use for..."}
+Font display:      {family name} → --font-display
+Font body:         {family name} → --font-body
+--canvas:          {hex} — {description}
 --surface:         {hex} — {description}
 --text:            {hex} — {description}
 --accent-primary:  {hex} — {description}
@@ -445,37 +439,28 @@ Font body:         {family name — e.g., "Satoshi"} → --font-body
 Spacing base:      {N}px
 ```
 
-From `$PROJECT_DIR/docs/design-decisions.md` (find the entry for this section's dominant design choice):
-```
-Key decision: {paste the decision entry relevant to this section's visual approach}
-Reference: {frame path that informed it}
-Intent: {the "why" — pass this so builder understands the creative reason}
-```
-
-From `$PROJECT_DIR/docs/page-plans.md`, THIS section's recipe card:
+From `$PROJECT_DIR/docs/pages/{page}.md`, THIS section's recipe card + cinematic description + copy:
 ```
 Section: {name}
-Purpose: {purpose text}
-Layout: {layout pattern name + description}
-Motion: {motion category + 1-line description of what it does}
+Purpose: {purpose}
+Layout: {layout pattern}
+Motion: {motion category}
 Interaction: {interaction pattern}
-Energy: {HIGH/LOW}
+Energy: {HIGH/LOW/MEDIUM}
 Responsive: {mobile strategy}
+Headline: "{exact text}"
+Subtext: "{exact text}"
+CTA: "{exact text}"
+
+Cinematic Description:
+{paste the FULL cinematic description — spatial, before, entry, interaction, atmosphere, stagger}
 ```
 
-From `$PROJECT_DIR/docs/content-brief.md`, THIS section's copy:
-```
-Headline: "{exact text — copy verbatim}"
-Subtext: "{exact text — copy verbatim}"
-CTA: "{exact text — copy verbatim}" (if applicable)
-Supporting copy: {any additional text}
-```
-
-From `$PROJECT_DIR/docs/_libraries/`, the specific pattern for this section's assigned technique:
-- Read the layout pattern's implementation notes
-- Read the motion category's GSAP implementation code
-- Read the interaction pattern's CSS/JS approach
-- Copy the relevant excerpts
+From `$PROJECT_DIR/docs/_libraries/`, the specific patterns:
+- Layout pattern implementation notes
+- Motion category GSAP code
+- Interaction pattern CSS/JS
+- Copy relevant excerpts
 
 **STEP 2: Spawn builder with extracted context**
 
@@ -485,45 +470,41 @@ Context (ALL values passed inline — builder reads nothing itself):
 
   PROJECT_DIR: $PROJECT_DIR
   SECTION: {name}
-  Purpose: {purpose}
-  Energy: {HIGH/LOW}
+  PAGE: {page name}
   Write to: $PROJECT_DIR/src/components/sections/S-{Name}.vue
 
   RECIPE CARD:
-  Layout: {layout pattern name}
-  Layout implementation: {paste the relevant excerpt from _libraries/layouts.md}
-  Motion technique: {category name}
-  Motion implementation: {paste the GSAP code snippet from _libraries/motion-categories.md}
-  Interaction: {pattern name}
-  Interaction implementation: {paste excerpt from _libraries/interactions.md}
-  Responsive: {mobile strategy}
+  {paste recipe card}
 
-  EXACT COPY (use verbatim — do not rephrase):
-  Headline: "{text}"
-  Subtext: "{text}"
-  CTA: "{text}"
-  {any additional copy fields}
+  CINEMATIC DESCRIPTION:
+  {paste full cinematic description}
+
+  EXACT COPY (use verbatim):
+  {paste all copy fields}
 
   DESIGN TOKENS:
-  Font display: {family} (var(--font-display))
-  Font body: {family} (var(--font-body))
-  --canvas: {hex}
-  --surface: {hex}
-  --text: {hex}
-  --accent-primary: {hex}
-  Spacing base: {N}px
-  Brand easing: --ease: {cubic-bezier}
+  {paste extracted token values}
+
+  LIBRARY SNIPPETS:
+  Layout: {paste from layouts.md}
+  Motion: {paste from motion-categories.md}
+  Interaction: {paste from interactions.md}
+
+  MOCKUP REFERENCE (if exists):
+  {path to docs/mockups/S-{Name}.pen}
 
   STATIC DATA ONLY — do not import stores, services, or APIs.
-  All content is hardcoded in the template.
+
+  IMPORTANT: After writing the component, run the Preview Loop.
+  Screenshot your output, evaluate against the cinematic description, and self-correct.
 ```
 
-**STEP 3: QA validates the section (7-layer check)**
+**STEP 3: QA validates the section (7-layer visual-first check)**
 
 ```
-Agent: qa
+Agent: qa (or CEO validates)
 Section: S-{Name}.vue
-Validate: 7-layer check (composition, typography, depth, interaction, motion, atmosphere, responsive)
+Validate: Visual QA at 4 breakpoints + 7-layer code check
 Report: PASS or FAIL per layer with specific issues
 ```
 
@@ -531,64 +512,62 @@ If FAIL → pass specific failures to builder → rebuild → re-validate.
 
 **STEP 4: ⛔ MANDATORY USER REVIEW — runs after EVERY section, no exceptions**
 
-After QA passes:
 ```
 1. preview_start (if not running)
-2. Navigate to the page containing this section (preview_eval or direct URL)
+2. Navigate to the page containing this section
 3. preview_eval: window.location.reload()
 4. preview_screenshot → desktop
-5. preview_resize preset: "mobile"
-6. preview_screenshot → mobile
-7. preview_resize preset: "desktop"  ← restore
+5. preview_resize preset: "mobile" → preview_screenshot → restore desktop
 
-8. ⛔ CALL AskUserQuestion:
+6. ⛔ CALL AskUserQuestion:
    Q: "S-{Name} is ready. Desktop + mobile screenshots above. How does it look?"
    Options:
-     "Approved — next section"    → proceed to next section (or Phase 4 if last)
-     "Needs changes"              → ask "What should I change?"
-     "Scrap it — rebuild"         → ask new direction → re-dispatch
+     "Approved — next section"    → proceed
+     "Needs changes"              → ask what → apply → re-screenshot → loop
+     "Scrap it — rebuild"         → re-dispatch builder
 
-9. If "Needs changes":
-   a. Ask follow-up: "What specifically should I change?"
-   b. Apply changes directly to S-{Name}.vue OR re-dispatch builder with feedback
-   c. Re-screenshot (steps 3-7) → re-call AskUserQuestion → loop until "Approved"
+7. ONLY AFTER "Approved": start the next section.
 ```
 
-**ONLY AFTER "Approved" response: start the next section.**
-
-**📋 CHECKPOINT (after EVERY section):** Update `.pipeline-state.md` — mark this section as complete, update Next Action to next section name (or Phase 4 if last section).
+**📋 CHECKPOINT (after EVERY section):** Update `.pipeline-state.md` — mark section complete, include last agent instruction and QA feedback, update Next Action.
 
 ---
 
 ## Phase 4: Motion Choreography
 
-After ALL sections are approved, read `$PROJECT_DIR/docs/motion-spec.md`. Extract and pass inline:
+After ALL sections are approved, extract motion data and pass inline:
 
 ```
 Agent: polisher
 Context:
   PROJECT_DIR: $PROJECT_DIR
-  Brand easing: {cubic-bezier + character description}
-  Durations: fast {N}s, medium {N}s, slow {N}s
-  Per-section choreography table: {paste entire table}
-  Preloader spec: {paste preloader section}
-  Page transition spec: {paste transition section}
-  Hover states: {paste hover table}
-  Reduced motion spec: {paste reduced-motion section}
+  Brand easing: {cubic-bezier + character}
+  Durations: fast {N}ms, medium {N}ms, slow {N}ms
+  Per-section choreography: {section name → motion category for each section}
+  Preloader spec: {from tokens.md or pages/home.md}
+  Page transition spec: {from tokens.md}
+  Hover states: {from tokens.md cursor section}
+  Reduced motion spec: {what to do when prefers-reduced-motion}
   Existing sections: {list all S-*.vue with their assigned motion categories}
-  Write to: $PROJECT_DIR/src/composables/useMotion.js, useLenis.js, useCursor.js, useTransitions.js
-            $PROJECT_DIR/src/components/AppPreloader.vue
+  Write to: $PROJECT_DIR/src/composables/ + $PROJECT_DIR/src/components/AppPreloader.vue
+
+  IMPORTANT: Run Visual QA after implementing motion.
+  Screenshot at all breakpoints, verify animations trigger on scroll,
+  verify preloader sequence, verify page transitions.
 ```
 
-### Gate: QA validates motion
+### Gate: QA validates motion (visual + code)
+
+### ⛔ User Review: Choreography
 
 ```
-Agent: qa
-Validate: composables + AppPreloader
-Check: no consecutive techniques, prefers-reduced-motion, gsap.context() cleanup, no layout prop animations
+1. preview_start
+2. Reload page → screenshot sequence (preloader → hero → scroll down)
+3. Navigate between pages → screenshot transitions
+4. AskUserQuestion: "Here's the complete motion layer. How does it feel?"
 ```
 
-**📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 4 complete, composables created, Next Action = Phase 5A integration.
+**📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 4 complete, Next Action = Phase 5A.
 
 ---
 
@@ -599,17 +578,17 @@ CEO handles integration directly (no agent needed). All paths relative to `$PROJ
 1. Update `$PROJECT_DIR/src/router/index.js` — lazy-loaded routes for all pages
 2. Update `$PROJECT_DIR/src/App.vue` — add `<AtmosphereCanvas>`, `<AppPreloader>`, transition wrapper
 3. Update `$PROJECT_DIR/src/views/HomeView.vue` — import and place all section components in order
-4. Create any additional page views with their sections
+4. Create additional page views with their sections
 5. Add SEO meta tags to every page (title, description, OG tags)
 
 All content remains static/hardcoded at this point.
 
-### Gate: Final QA
+### Gate: Final QA (visual + code)
 
 ```
-Agent: qa
-Run: complete audit — a11y, SEO, responsive, CSS tokens, performance, motion variety, content completeness
-Read: all $PROJECT_DIR/src/ files + $PROJECT_DIR/docs/
+Agent: qa (or polisher with QA hat)
+Run: Visual screenshots of all pages at all breakpoints
+     + a11y, SEO, responsive, CSS tokens, performance, motion, content audit
 Report: PASS/FAIL per category with specific issues
 ```
 
@@ -618,36 +597,31 @@ Fix all critical issues. Re-audit. Loop until PASS.
 ### ⛔ User Review: Complete Static Site
 
 ```
-1. preview_start (if not running)
-2. Navigate to homepage → preview_eval: window.location.reload()
-3. preview_screenshot (desktop)
-4. preview_resize preset: "mobile" → preview_screenshot → preview_resize preset: "desktop"
-5. Navigate to each additional page → screenshot each page (desktop + mobile)
-
-6. AskUserQuestion:
-   Q: "Here's the complete site — all pages, desktop + mobile. Does it match the creative vision?"
+1. preview_start
+2. Navigate to homepage → screenshot desktop + mobile
+3. Navigate to each additional page → screenshot each
+4. AskUserQuestion:
+   Q: "Here's the complete site — all pages. Does it match the creative vision?"
    Options: "Approved — wire the API", "Needs changes", "Major revision"
-
-7. If "Needs changes" → apply → re-audit → re-screenshot → loop until approved
+5. Loop until approved
 ```
 
-**📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 5A complete, Next Action = Phase 5B (if API) or Phase 6 cleanup.
-
-**The site is not done until the user approves the static build.**
+**📋 CHECKPOINT:** Phase 5A complete, Next Action = Phase 5B (if API) or Phase 6.
 
 ---
 
 ## Phase 5B: API Wiring (only if Backend ≠ none)
 
-**This phase is mechanical, not creative.** The visual design is frozen. You are only connecting static content to live data.
+**This phase is mechanical, not creative.** The visual design is frozen.
 
 For each page/section that uses API data:
 
-1. Create the Pinia store in `$PROJECT_DIR/src/stores/`
-2. Create the service in `$PROJECT_DIR/src/services/`
-3. Replace hardcoded template values with reactive data from the store
-4. Add loading states and error states
-5. Ensure static fallback renders before data arrives (no empty flash)
+1. Create `src/config/api.js` — single axios instance
+2. Create `src/services/{resource}.js` per data type
+3. Create `src/stores/{resource}.js` — Pinia with loading/error/data
+4. Replace hardcoded template values with reactive data
+5. Add loading states and error states
+6. Ensure static fallback renders before data arrives
 
 Pattern:
 ```js
@@ -678,89 +652,44 @@ Visual behavior must not change between static and API-wired state.
 ## Phase 6: Cleanup
 
 1. Delete `$PROJECT_DIR/_ref-captures/` directory
-2. Report final status: project at `$PROJECT_DIR`, list of all files created, all pages, all sections
-3. Confirm maqueta is untouched (no files written to `$MAQUETA_DIR`)
+2. Report final status: project path, files created, pages, sections
+3. Confirm maqueta is untouched
 
 ---
 
-## Pipeline Checkpoint System — CRITICAL FOR CONTEXT SURVIVAL
+## Rich Checkpoint System — CRITICAL FOR CONTEXT SURVIVAL
 
 Context compaction WILL happen during long pipelines. TodoWrite does NOT survive compaction.
-The checkpoint file is the ONLY reliable way to resume after compaction or session restart.
+The checkpoint file is the ONLY reliable way to resume.
 
 ### Rule: Write checkpoint AFTER every phase completion
 
-After each phase completes (and user approves, if applicable), write/update:
-`$PROJECT_DIR/.pipeline-state.md`
-
-```markdown
-# Pipeline State
-
-## Project
-- Name: {project name}
-- Slug: {slug}
-- PROJECT_DIR: {absolute path}
-- MAQUETA_DIR: C:\Users\mateo\Desktop\maqueta
-
-## Current Phase
-{phase number and name — e.g., "Phase 3: Building sections (S-Features next)"}
-
-## Completed
-- [x] Phase 0: Discovery — identity card confirmed
-- [x] Phase 0.5: References — {domains} captured, analysis at docs/reference-analysis.md
-- [x] Phase 1: Creative Direction — 6 docs written, QA passed, user approved
-- [x] Phase 2: Scaffold + Atmosphere — scaffold copied, tokens.css written, atmosphere approved
-- [x] Phase 3.1: S-Hero — approved
-- [x] Phase 3.2: S-Intro — approved
-- [ ] Phase 3.3: S-Features — NEXT
-- [ ] Phase 3.4: S-Showcase — pending
-- [ ] Phase 4: Motion — pending
-- [ ] Phase 5A: Integration — pending
-- [ ] Phase 6: Cleanup — pending
-
-## Key Decisions (for resume context)
-- Palette: {canvas hex} + {accent hex}
-- Fonts: {display} + {body}
-- Easing: {cubic-bezier value}
-- Sections total: {N}
-- Backend: {static/API}
-
-## Files Created
-- docs/design-concept.md, design-tokens.md, design-decisions.md
-- docs/content-brief.md, page-plans.md, motion-spec.md
-- src/components/sections/S-Hero.vue, S-Intro.vue
-- src/styles/tokens.css
-- src/components/AtmosphereCanvas.vue
-
-## Next Action
-{Exact instruction for what to do next — specific enough to resume cold}
-Example: "Read recipe card for S-Features from $PROJECT_DIR/docs/page-plans.md.
-Extract tokens from design-tokens.md. Spawn builder agent."
-```
+After each phase completes (and user approves), write/update `$PROJECT_DIR/.pipeline-state.md`.
+Use the Rich Checkpoint Format from pipeline.md — includes:
+- Project identity
+- Current phase + completed phases
+- Key decisions (palette, fonts, easing)
+- **Last Agent Instruction** (exact prompt sent to last agent)
+- **Last QA Feedback** (exact failures if any)
+- **Pending Changes** (uncommitted work)
+- Files created
+- **Next Action** (exact cold-resume instruction)
 
 ### Rule: Read checkpoint FIRST on every turn
 
-**Before doing ANY work, check if a pipeline state file exists:**
-
-```
-1. Look for $PROJECT_DIR/.pipeline-state.md
-2. If it exists → read it → resume from "Next Action"
-3. If it doesn't exist → this is a fresh pipeline, start from Phase 0
-```
-
-This is especially critical after compaction — the checkpoint file is your ground truth,
-not your memory of the conversation. Trust the file over your recollection.
+Before doing ANY work: check for `$PROJECT_DIR/.pipeline-state.md`.
+If it exists → read it → resume from "Next Action".
+Trust the file over conversation memory.
 
 ### Rule: Update, don't append
 
-Each checkpoint REPLACES the previous one (Write tool, not append). Keep it concise.
-Only the current state matters, not the history.
+Each checkpoint REPLACES the previous one. Keep it concise — only current state matters.
 
 ---
 
 ## Context Management Rules
 
-1. **Extract, don't delegate reading.** CEO reads docs, extracts specific values, passes inline. Never "go read docs/design-brief.md" — paste the relevant values.
+1. **Extract, don't delegate reading.** CEO reads docs, extracts specific values, passes inline.
 
 2. **One task per agent.** One section = one builder call. Never batch.
 
@@ -768,27 +697,34 @@ Only the current state matters, not the history.
 
 4. **Pass failures explicitly.** "Layer 2 failed: H2 uses 24px instead of var(--text-2xl)" — not "QA failed."
 
-5. **Write checkpoint after every phase.** `$PROJECT_DIR/.pipeline-state.md` is the source of truth for pipeline progress. Update it after every phase completion, every user approval, every section built.
+5. **Write rich checkpoint after every phase.** Include last instruction + last QA feedback.
 
-6. **The review loop is real work.** Taking a screenshot, calling AskUserQuestion, and waiting for the user response is the most important step in the pipeline. Do not treat it as a formality.
+6. **The review loop is real work.** Screenshots + AskUserQuestion is the most important step.
 
-7. **After compaction: read checkpoint first.** If you sense context was compacted (early conversation feels fuzzy), immediately read `.pipeline-state.md` before doing anything else.
+7. **After compaction: read checkpoint first.** Trust the file over conversation memory.
+
+8. **Use generate-tokens.js.** Never manually copy-paste CSS from tokens.md.
+
+9. **Multi-page docs.** Read the specific page file. Pass only the relevant section to builder.
+
+10. **Parallel sections.** Use worktree isolation. Max 2 builders. Sequential for adjacent sections.
 
 ---
 
 ## Concurrency Rules
 
 - NEVER spawn 3+ agents simultaneously
-- Max 2 concurrent: builder + QA is acceptable
+- Max 2 concurrent: builder + QA, or 2 builders (with worktree isolation)
 - API errors → reduce to 1 agent, retry
-- Prefer sequential over parallel
+- Preview Loop runs INSIDE the builder — not a separate agent
 
 ## Error Recovery
 
 - API error on agent spawn → wait 5 seconds, retry once
-- Console produces incomplete output → re-spawn with explicit missing items
+- Agent produces incomplete output → re-spawn with explicit missing items
 - QA fails same check 3 times → escalate to user with AskUserQuestion
 - Capture script fails → ask user if they want to skip reference analysis
+- Preview Loop fails (MCP unavailable) → builder reports without visual verification, QA must screenshot instead
 
 ## What the CEO NEVER does
 
@@ -797,4 +733,5 @@ Only the current state matters, not the history.
 - Skip QA gates
 - Skip User Review steps
 - Connect to API before static build is approved
-- Spawn parallel heavy agents
+- Spawn parallel heavy agents (3+ simultaneous)
+- Manually copy-paste tokens CSS (use generate-tokens.js)

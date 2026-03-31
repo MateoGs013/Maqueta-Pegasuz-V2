@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"/src/\" && ! echo \"$FILE\" | grep -qE \"_project-scaffold\"; then DOCS_DIR=$(echo \"$FILE\" | sed \"s|/src/.*|/docs/|\"); if [ ! -f \"${DOCS_DIR}tokens.md\" ] || [ ! -f \"${DOCS_DIR}sections.md\" ]; then echo \"\"; echo \"[V4 GATE] Design docs missing. Run Designer teammate first.\"; echo \"  Required: docs/tokens.md + docs/sections.md\"; fi; fi'"
+            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"/src/\" && ! echo \"$FILE\" | grep -qE \"_project-scaffold\"; then DOCS_DIR=$(echo \"$FILE\" | sed \"s|/src/.*|/docs/|\"); if [ ! -f \"${DOCS_DIR}tokens.md\" ] || [ ! -d \"${DOCS_DIR}pages\" ]; then echo \"\"; echo \"[V5 GATE] Design docs missing. Run Designer teammate first.\"; echo \"  Required: docs/tokens.md + docs/pages/*.md\"; fi; fi'"
           }
         ]
       }

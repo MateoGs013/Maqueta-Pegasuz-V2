@@ -1,4 +1,4 @@
-# Pipeline V4 — Agent Architecture
+# Pipeline V5 — Agent Architecture
 
 ## Project Isolation
 
@@ -28,12 +28,205 @@ user sign-off. See `/project` skill for the User Review Protocol details.
 
 ## Agent Registry
 
-| Agent | Role | Receives | Produces |
-|-------|------|----------|----------|
-| `reference-analyst` | Analyze captured screenshots + metadata | Screenshot paths (desktop + mobile) + manifest + original URL | `docs/reference-analysis.md` |
-| `designer` | Design visual identity | Brief + full reference-analysis.md + ref frame paths | 6 foundation docs |
-| `builder` | Build sections one by one | Recipe card + tokens + copy (extracted) | `S-{Name}.vue` + `AtmosphereCanvas.vue` |
-| `polisher` | Implement motion + QA audit | Motion spec + section list (extracted) | Composables + preloader |
+| Agent | Role | Key Tools | Receives | Produces |
+|-------|------|-----------|----------|----------|
+| `reference-analyst` | Analyze captured screenshots + metadata | Read, Glob, WebFetch | Screenshot paths + manifest + URL | `docs/reference-analysis.md` |
+| `designer` | Design visual identity + mockups | Read, Glob, WebFetch, Pencil MCP | Brief + reference-analysis + ref frames | `docs/tokens.md` + `docs/pages/*.md` + `docs/mockups/*.pen` |
+| `builder` | Build sections with self-preview | Read, Write, Edit, Glob, Grep, Preview MCP | Recipe card + tokens + copy (extracted) | `S-{Name}.vue` + `AtmosphereCanvas.vue` |
+| `polisher` | Motion + visual QA audit | Read, Write, Edit, Glob, Grep, Preview MCP | Motion spec + section list (extracted) | Composables + preloader |
+
+---
+
+## V5 Protocols
+
+### Preview Loop (Builder Self-Correction)
+
+The builder doesn't code blind — it SEES its output and self-corrects before QA.
+
+```
+1. Builder writes S-{Name}.vue
+2. Builder starts dev server (if not running): preview_start
+3. Builder navigates to the page section: preview_eval (scroll to section)
+4. Builder screenshots desktop: preview_screenshot
+5. Builder screenshots mobile: preview_resize "mobile" → preview_screenshot → preview_resize "desktop"
+6. Builder EVALUATES against the cinematic description:
+   - Does the layout match the spatial composition? (grid fr, overlaps, breaks)
+   - Are there 3+ depth layers visible?
+   - Is the typography scale contrast dramatic enough?
+   - Does the composition have visible asymmetry?
+7. If NO on any check → Builder fixes → re-screenshots → re-evaluates (max 2 self-loops)
+8. If YES on all → Builder reports done
+```
+
+**The builder must explicitly state what it checked and what it fixed in each loop.**
+This protocol catches 80%+ of "basic" output before QA even runs.
+
+### Visual QA Protocol
+
+QA uses real screenshots — not code reading — to validate visual quality.
+
+```
+1. preview_start (if not running)
+2. For each breakpoint [375, 768, 1280, 1440]:
+   a. preview_resize to width
+   b. preview_screenshot
+   c. Evaluate screenshot against quality criteria:
+      - Depth: can you count 3+ visual layers?
+      - Asymmetry: is the layout visibly unbalanced (intentionally)?
+      - Scale contrast: is there dramatic size difference between elements?
+      - Overlap: does at least one element cross its container boundary?
+      - Atmosphere: is there grain, gradient, or decorative layer visible?
+      - Typography: are there 3+ distinct text sizes visible?
+3. preview_resize back to desktop
+4. Report: PASS/FAIL per breakpoint with visual evidence
+```
+
+**Visual QA > code QA.** A section can have perfect code and still look basic.
+The screenshot is the truth.
+
+### Pencil Mockup Protocol (Designer)
+
+After writing tokens.md and pages/*.md, the designer creates visual mockups
+using the Pencil MCP for key sections (hero + 2-3 complex sections minimum).
+
+```
+1. get_guidelines(topic="landing-page") — get design rules
+2. get_style_guide_tags → get_style_guide(tags) — get visual inspiration
+3. For each key section:
+   a. open_document("new") — create fresh .pen
+   b. batch_design — create the section mockup matching cinematic description
+   c. Export or save to docs/mockups/S-{Name}.pen
+4. Builder receives mockup path as visual reference alongside cinematic description
+```
+
+Mockups are optional — the pipeline works without Pencil MCP. When available,
+they eliminate ambiguity in the designer→builder handoff.
+
+### Parallel Section Protocol
+
+Sections that don't depend on each other can be built simultaneously
+using isolated git worktrees. Max 2 builders at once.
+
+```
+1. CEO identifies independent sections (e.g., S-Hero and S-Features don't depend on each other)
+2. CEO spawns 2 builders with isolation: "worktree"
+   - Builder A: writes S-Hero.vue in worktree branch
+   - Builder B: writes S-Features.vue in worktree branch
+3. Each builder runs its own Preview Loop independently
+4. CEO merges completed sections back to main branch
+5. QA runs on merged result
+```
+
+**Rules:**
+- Max 2 concurrent builders (API limit protection)
+- Sections on the same page that share visual flow (e.g., hero→intro transition) must be sequential
+- If API errors occur, fall back to sequential (1 builder at a time)
+- CEO resolves merge conflicts (usually none — different files)
+
+---
+
+## Multi-Page Document Structure
+
+V5 uses per-page files instead of a single sections.md:
+
+```
+docs/
+  tokens.md                    ← global design system (palette, type, spacing, easing, atmosphere, cursor)
+  pages/
+    home.md                    ← homepage sections (recipe + cinematic + copy per section)
+    about.md                   ← about page sections
+    services.md                ← services page sections
+    contact.md                 ← contact page sections
+  mockups/                     ← optional Pencil mockups per section
+    S-Hero.pen
+    S-Features.pen
+  reference-analysis.md        ← from reference analyst (if references provided)
+  _libraries/                  ← copied from maqueta (layouts, interactions, motion)
+```
+
+Each page file follows the same format:
+
+```markdown
+# {Page Name}
+
+## 1. Section Name
+- **Purpose:** what this section achieves
+- **Layout:** L-{Pattern} from _libraries/layouts.md
+- **Motion:** M-{Category} from _libraries/motion-categories.md
+- **Interaction:** I-{Pattern} from _libraries/interactions.md
+- **Energy:** HIGH / LOW / MEDIUM
+- **Responsive:** specific transformation
+- **Headline:** "exact text"
+- **Subtext:** "exact text"
+- **CTA:** "verb phrase"
+
+### Cinematic Description
+[Full cinematic description with spatial composition, entry sequence, etc.]
+```
+
+**Benefits:**
+- Smaller context per builder call (only the relevant page)
+- Router structure maps 1:1 to file structure
+- Easy to add/remove pages without touching other page specs
+
+---
+
+## Rich Checkpoint Format
+
+Context compaction WILL happen. The checkpoint must have enough detail to resume cold.
+
+```markdown
+# Pipeline State
+
+## Project
+- Name: {name}
+- Slug: {slug}
+- PROJECT_DIR: {absolute path}
+- MAQUETA_DIR: C:\Users\mateo\Desktop\maqueta
+
+## Current Phase
+{phase number and name}
+
+## Completed
+- [x] Phase 0: Discovery — identity card confirmed
+- [x] Phase 0.5: References — {domains} captured
+- [x] Phase 1: Creative Direction — user approved
+- [x] Phase 2: Scaffold — tokens.css generated, atmosphere approved
+- [x] Phase 3.1: S-Hero — approved
+- [x] Phase 3.2: S-Intro — approved (builder self-corrected overlap issue)
+- [ ] Phase 3.3: S-Features — IN PROGRESS
+- [ ] Phase 4: Motion — pending
+- [ ] Phase 5A: Integration — pending
+
+## Key Decisions
+- Palette: {canvas} + {accent} hexes
+- Fonts: {display} + {body}
+- Easing: {cubic-bezier}
+- Pages: {list}
+- Sections total: {N}
+- Backend: {static/API}
+
+## Last Agent Instruction
+{Exact prompt that was sent to the last agent — so CEO can re-dispatch if compacted mid-build}
+Example: "Build S-Features with L-Grid-Bento layout, M-Stagger-Cascade motion..."
+
+## Last QA Feedback
+{If QA failed, the exact failure details — so CEO knows what to fix on resume}
+Example: "Layer 3 FAIL: no depth layers visible. Layer 5 FAIL: motion is generic fade-up, not M-Stagger-Cascade."
+
+## Pending Changes
+{Any uncommitted files or in-progress work}
+Example: "S-Features.vue half-written — builder was applying QA fix for overlap when compacted"
+
+## Files Created
+- docs/tokens.md, docs/pages/home.md, docs/pages/about.md
+- src/styles/tokens.css
+- src/components/AtmosphereCanvas.vue
+- src/components/sections/S-Hero.vue, S-Intro.vue
+
+## Next Action
+{Exact instruction for cold resume — specific enough to act on without reading conversation}
+```
 
 ---
 
@@ -98,7 +291,7 @@ internal pages automatically (max 5 by default). Each page gets its own director
   - Navigation (desktop links + mobile type: hamburger/bottom-nav/visible-links)
   - Footer structure
 
-### B: Analyze (Console: `reference-analyst`)
+### B: Analyze (Agent: `reference-analyst`)
 **Context contract:**
 - IN: `_ref-captures/{domain}--index.json` — site-level index listing all captured pages per domain
 - IN: paths to `_ref-captures/{domain}[--slug]/` — all screenshots (desktop + mobile + interactions) + manifest v3.1 per page
@@ -112,7 +305,7 @@ internal pages automatically (max 5 by default). Each page gets its own director
 3. Note page-specific patterns (e.g., "About page uses L-Zigzag" vs "Home uses L-Hero-Full")
 4. Identify cross-page consistency (shared nav, footer, tokens, motion approach)
 
-**Gate (QA validates — same as every other step):**
+**Gate (QA validates):**
 1. All sections filled (colors, typography, layouts, motion, interactions, spacing, rhythm, responsive, borrow/avoid, recommendations)
 2. Every color/font claim references manifest data (not guessed from screenshots)
 3. Borrow list has 5+ items, each with confidence level (HIGH/MEDIUM/LOW) and frame reference
@@ -129,43 +322,48 @@ internal pages automatically (max 5 by default). Each page gets its own director
 
 **Context contract:**
 - IN: User brief (project type, pages, mood, constraints)
-- IN: **Full `docs/reference-analysis.md`** — CEO passes the ENTIRE file, not excerpts. The designer needs complete context (palette, typography, layouts, motion, responsive analysis, tech stack, borrow/avoid lists, confidence levels) to make informed design decisions.
-- IN: Reference frame paths (`_ref-captures/{domain}/desktop/frame-NNN.png` + `mobile/frame-NNN.png`) so decisions can be attributed to specific frames
+- IN: **Full `docs/reference-analysis.md`** — CEO passes the ENTIRE file, not excerpts
+- IN: Reference frame paths for attribution
 - IN: Template formats from `docs/_templates/`
 - IN: Pattern libraries from `docs/_libraries/`
-- OUT: 6 foundation docs:
-  - `docs/design-concept.md` — creative direction, zero values
-  - `docs/design-tokens.md` — all CSS-ready tokens with descriptions
-  - `docs/design-decisions.md` — every token traced to a ref frame or principle
-  - `docs/content-brief.md` — real copy for all sections
-  - `docs/page-plans.md` — recipe cards per section
-  - `docs/motion-spec.md` — easing, durations, choreography
+- OUT: Design documents:
+  - `docs/tokens.md` — complete design system (palette, typography, spacing, easing, atmosphere, cursor, CSS output block)
+  - `docs/pages/home.md` — homepage sections with recipe cards + cinematic descriptions + copy
+  - `docs/pages/{other}.md` — other page sections (one file per page)
+  - `docs/mockups/S-{Name}.pen` — Pencil mockups for key sections (optional, if Pencil MCP available)
 
 **Gate — 12-point validation (QA agent):**
-1. design-concept.md: concept statement + 3+ visual principles + anti-principles
-2. design-decisions.md: entry for each major color, font, easing, layout choice — with reference attribution
-3. Palette: 6+ colors with hex values, descriptions, and contrast ratios in design-tokens.md
-4. Typography: actual Google Fonts family names + import URLs + full px scale
-5. Motion tokens: --ease (cubic-bezier), --duration-fast/medium/slow/crawl
-6. Recipe cards: every section has layout + motion + interaction + energy + data-source + responsive
-7. Motion variety: no consecutive sections share category
-8. Content: zero lorem ipsum, zero placeholder text, all CTAs are verb phrases
-9. Motion coverage: reveals + transitions + hover + scroll-linked + preloader
-10. Reduced motion: specific fallback for each animation type
-11. Atmosphere: preset + mouse behavior + scroll behavior + mobile CSS fallback value
-12. Section counts: homepage ≥ 8, other pages ≥ 5
+1. tokens.md: concept direction + 3+ visual principles stated
+2. tokens.md: 8+ colors with hex, semantic role, contrast ratios
+3. tokens.md: distinctive Google Fonts (NOT Inter/Roboto/Arial) + full px scale + import URLs
+4. tokens.md: motion tokens — --ease (cubic-bezier), --duration-fast/medium/slow/crawl
+5. tokens.md: atmosphere preset + mouse/scroll behavior + mobile CSS fallback
+6. tokens.md: complete :root {} CSS output block
+7. pages/*.md: every section has ALL recipe card fields + full cinematic description
+8. pages/*.md: cinematic descriptions have spatial composition (grid fr, overlaps, z-layers, padding asymmetry)
+9. pages/*.md: every entry sequence has 3+ numbered stages with ms timing
+10. pages/*.md: no consecutive sections share motion category
+11. pages/*.md: zero lorem ipsum, zero placeholder, CTAs are verb phrases
+12. pages/*.md: homepage ≥ 8 sections, other pages ≥ 5
 
 **On FAIL:** CEO passes specific failures to designer to fix. Max 3 loops.
 
-**User Review:** CEO presents concept + palette (from design-concept + design-tokens) + section plan (from page-plans) to user. User approves or requests changes. No building until user approves.
+**User Review:** CEO presents concept + palette + section plan to user. User approves or requests changes.
 
 ---
 
 ## Step 2: Scaffold + Atmosphere (Agent: `builder`)
 
-**Scaffold:** CEO copies `$MAQUETA_DIR/_project-scaffold/` to `$PROJECT_DIR/`, copies `_libraries`, runs `npm install`, writes `tokens.css`.
+**Scaffold:** CEO copies `$MAQUETA_DIR/_project-scaffold/` to `$PROJECT_DIR/`, copies `_libraries`, runs `npm install`.
 
-**Atmosphere:** Builder creates `AtmosphereCanvas.vue` using atmosphere tokens from design-tokens.md.
+**Tokens CSS — auto-generated:**
+```bash
+node "$MAQUETA_DIR/scripts/generate-tokens.js" "$PROJECT_DIR"
+```
+This parses `docs/tokens.md`, extracts the `:root {}` CSS block + Google Fonts imports,
+and writes `src/styles/tokens.css`. No manual copy-paste needed.
+
+**Atmosphere:** Builder creates `AtmosphereCanvas.vue` using atmosphere tokens from tokens.md.
 - IN: Palette hex values (`--canvas`, `--surface`, `--accent-primary`, `--accent-secondary`)
 - IN: Atmosphere token values (preset, mouse radius, opacity, colors)
 - IN: Mobile fallback CSS value
@@ -182,37 +380,67 @@ internal pages automatically (max 5 by default). Each page gets its own director
 
 ---
 
-## Step 3: Sections — STATIC BUILD PHASE (Agent: `builder`, one call per section)
+## Step 3: Sections — STATIC BUILD PHASE (Agent: `builder`, with Preview Loop)
 
 **All sections are built with hardcoded static data. No store imports. No API calls.**
-The creative visual experience is built first. API wiring happens after the user approves the static build (Step 5B).
+The creative visual experience is built first. API wiring happens after the user approves (Step 5B).
 
 **Context contract — CEO extracts PER-SECTION and passes inline:**
-- IN: Recipe card for THIS section only (from page-plans.md)
-- IN: Content for THIS section only — exact text, verbatim (from content-brief.md)
-- IN: Token values with descriptions (from design-tokens.md — actual hex, font names, px, cubic-bezier)
-- IN: Relevant design decision (from design-decisions.md — the "why" behind key values for this section)
-- IN: Library code snippets (paste specific layout pattern, motion GSAP code, interaction CSS from _libraries/)
+- IN: Recipe card for THIS section only (from pages/{page}.md)
+- IN: Content for THIS section only — exact text, verbatim
+- IN: Token values with descriptions (from tokens.md — actual hex, font names, px, cubic-bezier)
+- IN: Library code snippets (layout pattern, motion GSAP code, interaction CSS from _libraries/)
+- IN: Mockup path (if Pencil mockup exists for this section)
 - DO NOT pass: other sections' recipe cards, full docs, stores, services
 
-**Gate — 7-layer validation (QA agent, per section):**
-1. Composition: semantic HTML, heading hierarchy
-2. Typography: tokens used, fluid type
-3. Depth: visual layers present
-4. Interaction: hover + focus + cursor states
-5. Motion: uses ASSIGNED technique (not generic fade-up)
-6. Atmosphere: visual depth or canvas connection
-7. Responsive: works at 375, 768, 1280, 1440px
+### Builder Flow (per section):
+
+```
+1. Builder reads context (tokens, recipe, copy, library snippets)
+2. Builder writes S-{Name}.vue
+3. ► PREVIEW LOOP: Builder screenshots its own output
+   a. preview_start (if needed)
+   b. Navigate to section → preview_screenshot (desktop)
+   c. preview_resize "mobile" → preview_screenshot → restore desktop
+   d. Evaluate against cinematic description:
+      ✓ Spatial composition matches? (grid fr, overlaps, container breaks)
+      ✓ 3+ depth layers visible?
+      ✓ Scale contrast dramatic?
+      ✓ Asymmetry visible?
+      ✓ Entry animation has 3+ stages? (check via preview_eval + timing)
+   e. If any check fails → fix → re-screenshot (max 2 self-correction loops)
+4. Builder reports done with self-evaluation summary
+```
+
+### Parallel build (when applicable):
+
+If 2+ sections are independent (no shared visual flow):
+```
+CEO spawns Builder A (isolation: "worktree") → S-Hero
+CEO spawns Builder B (isolation: "worktree") → S-Features
+Both run Preview Loop independently
+CEO merges worktrees on completion
+```
+Max 2 concurrent builders. Fall back to sequential on API errors.
+
+**Gate — 7-layer validation (QA agent, per section, VISUAL-FIRST):**
+1. Visual QA: screenshot at 375, 768, 1280, 1440px — evaluate depth, asymmetry, scale contrast
+2. Composition: semantic HTML, heading hierarchy
+3. Typography: tokens used, fluid type, 3+ distinct sizes
+4. Depth: 3+ visual layers visible in screenshot
+5. Interaction: hover + focus + cursor states coded
+6. Motion: uses ASSIGNED technique (not generic fade-up), 3+ entry stages
+7. Responsive: layout transforms correctly across breakpoints (verified by screenshots)
 
 **On FAIL:** CEO passes specific layer failures to builder. Rebuild. Do not advance.
 
-**User Review (per section, MANDATORY):** CEO takes screenshot (desktop + mobile), calls AskUserQuestion. STOPS until user responds. Changes applied → re-screenshot → re-ask. Next section starts ONLY after user responds "Approved."
+**User Review (per section, MANDATORY):** CEO takes screenshot (desktop + mobile), calls AskUserQuestion.
 
 ---
 
 ## Step 4: Motion Choreography (Agent: `polisher`)
 
-**Context contract — CEO extracts from motion-spec and passes inline:**
+**Context contract — CEO extracts from tokens.md and pages/*.md:**
 - IN: Brand easing (cubic-bezier + character)
 - IN: Duration table (fast, medium, slow)
 - IN: Per-section technique assignments (section name → category)
@@ -224,13 +452,13 @@ The creative visual experience is built first. API wiring happens after the user
 - DO NOT pass: palette, content, layout details
 - OUT: `src/composables/useMotion.js`, `useLenis.js`, `useCursor.js`, `useTransitions.js`, `src/components/AppPreloader.vue`
 
-**Gate (QA agent):**
+**Gate (QA agent — visual verification):**
 1. No consecutive sections share motion technique
 2. `prefers-reduced-motion` fully supported
 3. All animations use `gsap.context()` with cleanup
 4. No animation on width/height/top/left
-5. Page transitions work
-6. Preloader matches spec
+5. Page transitions work (verify with Preview: navigate between routes)
+6. Preloader matches spec (verify with Preview: reload page, screenshot sequence)
 
 ---
 
@@ -244,7 +472,11 @@ CEO assembles the static site:
 5. Add SEO meta to every page
 6. All content remains hardcoded
 
-**Final audit (QA agent):** a11y + SEO + responsive + CSS + performance + motion + content
+**Final audit (QA agent — full visual + code):**
+- Visual: screenshots of all pages at all breakpoints
+- a11y + SEO + responsive + CSS + performance + motion + content
+- Lighthouse performance check if available
+
 **User Review:** CEO screenshots all pages (desktop + mobile). AskUserQuestion. Loop until approved.
 
 ---
@@ -272,16 +504,20 @@ Visual behavior must not change between static and API-wired state.
 ## Concurrency Rules
 
 - Steps are strictly sequential: 0 → 0.5 → 1 → 2 → 3 → 4 → 5A → 5B → 6
-- Within Step 3, sections are sequential (one at a time, review after each)
-- Max 2 concurrent agents (builder + QA is OK)
-- NEVER 3+ agents (causes API 500 — learned from AXON)
+- Within Step 3: up to 2 sections can build in parallel (worktree isolation)
+- Sequential sections (where visual flow matters) must still be built in order
+- Max 2 concurrent agents (builder + QA is OK, 2 builders is OK)
+- NEVER 3+ agents simultaneously
 - On API errors: reduce to 1 agent, retry
+- Preview Loop runs inside the builder — not a separate agent
 
 ## CEO Context Management Rules
 
-1. **Extract, don't delegate reading.** CEO reads docs, extracts relevant parts, passes inline. Actual CSS-ready values: hex codes, font names, pixel sizes, cubic-bezier strings.
+1. **Extract, don't delegate reading.** CEO reads docs, extracts relevant parts, passes inline.
 2. **One task per agent.** Never ask an agent to do two things.
 3. **Review before forwarding.** Read agent output before passing downstream.
 4. **Pass failures explicitly.** "Layer 2 failed: H2 uses 24px instead of var(--text-2xl)" — not "QA failed."
-5. **Track progress.** TodoWrite after every completed task.
-6. **Static first.** Creative build is frozen before any API connection. Never mix creative work with API wiring.
+5. **Write checkpoint after every phase.** Rich format with last instruction + last QA feedback.
+6. **After compaction: read checkpoint first.** Trust the file over conversation memory.
+7. **Tokens auto-gen:** Always use `generate-tokens.js` instead of manual copy-paste.
+8. **Multi-page docs:** Read the specific page file, not all pages. Pass only the relevant section.
