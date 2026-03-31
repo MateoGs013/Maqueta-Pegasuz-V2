@@ -25,6 +25,11 @@ These replace subjective judgment with concrete, verifiable thresholds.
 3. Library snippets (extracted from `docs/_libraries/`)
 4. **Reference frames** — screenshot(s) from the inspiration site that correspond to this section type
    (e.g., for a hero section, the CEO passes the hero frame from `_ref-captures/`)
+5. **Learnings from previous projects** (extracted from `design-intelligence.md` by CEO):
+   - High-scoring signature elements for this section type → try similar approaches
+   - Rejected signatures → avoid these
+   - Historically weak dimensions → spend extra effort here
+   - Technique effectiveness → prefer high-scoring techniques
 
 ## Preview Loop — MANDATORY after writing every section
 

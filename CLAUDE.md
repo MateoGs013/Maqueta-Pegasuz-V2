@@ -136,8 +136,9 @@ Each teammate loads this CLAUDE.md automatically (including the Design Philosoph
 **All teammates work inside `$PROJECT_DIR` (the new project directory, NOT maqueta).**
 Tell each teammate the project path: `$PROJECT_DIR = C:\Users\mateo\Desktop\{slug}`.
 
-### V5.5 Key Features
+### V5.6 Key Features
 
+- **Design Learning System:** `.claude/memory/design-intelligence.md` — cross-project intelligence that improves with every build. Tracks font pairings, palettes, signatures, scores, revision patterns. Rules get promoted to permanent docs after 3 validations.
 - **Autonomous Mode:** Complete brief in one prompt → pipeline runs overnight with 0 user gates
 - **Decision Trees:** `docs/_libraries/design-decisions.md` replaces subjective judgment for fonts, colors, layout, motion
 - **Quality Benchmarks:** `docs/_libraries/quality-benchmarks.md` — measurable anti-AI detection + visual density scoring

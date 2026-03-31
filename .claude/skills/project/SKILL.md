@@ -160,6 +160,21 @@ unless a quality issue persists after auto-correction loops.
 The CEO builds the **Project Identity Card** from the user's message.
 Parse whatever the user already said. Only ask for what's MISSING.
 
+### FIRST: Read Design Intelligence
+
+Before anything else, read `$MAQUETA_DIR/.claude/memory/design-intelligence.md`.
+Extract relevant learnings for THIS project:
+
+```
+1. Read "Font Pairings — What Works/Failed" → note proven pairings for this mood
+2. Read "Color Palettes — What Works/Failed" → note proven combos, avoid failures
+3. Read "Common Revision Requests" → anticipate what user might want changed
+4. Read "Score Trends" → identify historically weak dimensions to emphasize
+5. Read "Rules Discovered" → apply any validated rules
+```
+
+Pass these learnings to the designer and builder in their context (see Phase 1 and Phase 3).
+
 ### Autonomous Mode Fast Path
 
 If the initial prompt has all required fields (name, type, mood, pages):
@@ -357,6 +372,12 @@ Libraries: read $PROJECT_DIR/docs/_libraries/ for available pattern names
 Decision trees: read $PROJECT_DIR/docs/_libraries/design-decisions.md for font, palette, scale, easing, atmosphere, section planning, motion category decisions
 Values reference: read $PROJECT_DIR/docs/_libraries/values-reference.md for specific durations, easing curves, spacing, hover values
 
+LEARNINGS FROM PREVIOUS PROJECTS (from design-intelligence.md):
+  Proven font pairings for {mood}: {list from memory}
+  Failed combinations to avoid: {list from memory}
+  Common user revision patterns: {list from memory}
+  {any other relevant learnings}
+
 Produce (all inside $PROJECT_DIR/docs/):
   docs/tokens.md              ← complete design system + CSS output block
   docs/pages/home.md          ← homepage sections (recipe + cinematic + copy)
@@ -414,6 +435,11 @@ fonts, section plan. Proceed to Phase 2.
 If Pencil MCP is unavailable, present text-only (steps 1-2 + 4 without mockup). Works either way.
 
 **In interactive mode: DO NOT proceed to Phase 2 until user explicitly approves.**
+
+**📝 LEARN:** After Phase 1 resolves (approved or changed), append to `$MAQUETA_DIR/.claude/memory/design-intelligence.md`:
+- Font Pairings table: add the chosen pairing + user reaction
+- Color Palettes table: add canvas + accent + user reaction
+- Common Revisions table: if user requested changes, record what was changed and why
 
 **📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 1 complete, list key tokens, section count, Next Action = Phase 2.
 
@@ -576,6 +602,12 @@ Context (ALL values passed inline — builder reads nothing itself):
     - Exact hover values, magnetic parameters, stagger timing
     - Duration ranges by context, easing curves
 
+  LEARNINGS FROM PREVIOUS PROJECTS (from design-intelligence.md):
+    High-scoring signatures: {list proven signature elements for this section type}
+    Rejected signatures: {list what didn't work}
+    Weakest dimension historically: {dimension} — spend extra effort here
+    Technique effectiveness: {list high-scoring techniques for this motion category}
+
   REFERENCE FRAMES (for visual comparison during Preview Loop):
   {Identify the reference frame that best matches this section type.
    For a hero → pass the hero frame from _ref-captures/{domain}/desktop/frame-001.png
@@ -639,6 +671,13 @@ Repeat STEP 1-3 for all remaining sections. No user review between sections.
 ```
 
 Builder self-scoring + CEO auto-QA maintain quality autonomously.
+
+**📝 LEARN:** After Phase 3 resolves, append to `$MAQUETA_DIR/.claude/memory/design-intelligence.md`:
+- Signature Elements: for each section, add name + description + approved/rejected
+- Section Patterns: add successful layout+motion combos with scores
+- Score Trends: add project avg score + weakest/strongest dimensions
+- Technique Effectiveness: update usage counts and avg scores
+- Common Revisions: if user requested changes, record what + why
 
 ---
 
@@ -774,11 +813,36 @@ Visual behavior must not change between static and API-wired state.
 
 ---
 
-## Phase 6: Cleanup
+## Phase 6: Retrospective + Cleanup
+
+### Step A: Project Retrospective (MANDATORY — do not skip)
+
+Write comprehensive learnings to `$MAQUETA_DIR/.claude/memory/design-intelligence.md`:
+
+```
+1. Ensure all Phase 1 + Phase 3 learnings were captured (may have been missed if autonomous)
+2. Pipeline Issues: append any delays, agent failures, process friction encountered
+3. Rules Discovered: append any new patterns found during this project
+4. Score Trends: final project summary with per-section scores
+5. Technique Effectiveness: final update with actual usage data
+```
+
+### Step B: Rule Promotion Check
+
+Read the "Rules Discovered" table in design-intelligence.md:
+- Any rule with 3+ project validations → promote to permanent documentation:
+  - Design rules → CLAUDE.md "Design Philosophy" section
+  - Agent rules → relevant agent .md file
+  - Decision tree updates → docs/_libraries/design-decisions.md
+  - Value updates → docs/_libraries/values-reference.md
+- Mark promoted rules in the table as "PROMOTED"
+
+### Step C: Cleanup
 
 1. Delete `$PROJECT_DIR/_ref-captures/` directory
-2. Report final status: project path, files created, pages, sections
-3. Confirm maqueta is untouched
+2. Delete `$PROJECT_DIR/docs/review/` directory (if exists — screenshots served their purpose)
+3. Report final status: project path, files created, pages, sections, avg score
+4. Confirm maqueta is untouched (except memory file updates)
 
 ---
 

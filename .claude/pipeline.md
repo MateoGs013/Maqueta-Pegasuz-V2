@@ -322,11 +322,68 @@ Example: "S-Features.vue half-written — builder was applying QA fix for overla
 
 ---
 
+## Design Learning System
+
+The pipeline learns from every project. Knowledge accumulates in
+`$MAQUETA_DIR/.claude/memory/design-intelligence.md` — a cross-project intelligence file.
+
+### Learning Loop
+
+```
+1. Phase 0: CEO reads design-intelligence.md → extracts relevant learnings for this project
+   - Proven font pairings for similar moods
+   - Failed color combinations to avoid
+   - Common revision patterns to anticipate
+   - Weakest Excellence Standard dimensions to emphasize
+
+2. Phase 1: CEO passes relevant learnings to designer inline:
+   "Proven pairings for dark cinematic: Clash Display + Satoshi (3 projects, always approved)"
+   "Avoid: purple gradients (rejected in 2 projects)"
+
+3. Phase 3: CEO passes to builder:
+   "High-scoring signatures: parallax counter (9/10 in axon), clip-path wipe combo (8/10)"
+   "Weakest dimension historically: Craft (avg 6/10) — spend extra effort"
+
+4. After EVERY user feedback → CEO appends to design-intelligence.md:
+   - What was approved vs changed (with specifics)
+   - New revision patterns detected
+   - Score data
+
+5. Phase 6: Full retrospective → CEO writes comprehensive learnings
+```
+
+### What Gets Learned
+
+| Category | When Captured | Who Uses It |
+|----------|--------------|-------------|
+| Font pairings (success/fail) | Phase 1 user review | Designer |
+| Color palettes (success/fail) | Phase 1 user review | Designer |
+| Signature elements (approved/rejected) | Phase 3 batch review | Builder |
+| Section patterns (layout + motion combos) | Phase 3 scores | Designer + Builder |
+| Common revision requests | Every user change | CEO (anticipation) |
+| Score trends per dimension | Phase 3 scores | Builder (focus areas) |
+| Technique effectiveness | Phase 3 scores | Builder |
+| Pipeline issues | Throughout | CEO |
+| Rules discovered | Retrospective | All agents (promoted to CLAUDE.md after 3 validations) |
+
+### Rule Promotion
+
+When a lesson is validated across 3+ projects, CEO promotes it:
+- Design rule → add to `CLAUDE.md` Design Philosophy
+- Agent-specific rule → add to the relevant agent `.md` file
+- Decision tree update → update `docs/_libraries/design-decisions.md`
+- Value update → update `docs/_libraries/values-reference.md`
+
+This creates a positive feedback loop: projects improve libraries → libraries improve projects.
+
+---
+
 ## Step 0: Gather Brief (CEO)
 
 CEO gathers from the user:
 - Project type, pages needed, inspiration URLs, mood, constraints
 - Creates task breakdown using TodoWrite
+- **Reads `$MAQUETA_DIR/.claude/memory/design-intelligence.md`** — extract relevant learnings
 
 **Gate:** Brief is clear. If ambiguous, CEO asks before proceeding.
 
@@ -624,10 +681,38 @@ Visual behavior must not change between static and API-wired state.
 
 ---
 
-## Step 6: Cleanup (CEO)
+## Step 6: Retrospective + Cleanup (CEO)
 
-1. Delete `_ref-captures/` directory
-2. Final report to user
+### A: Project Retrospective (MANDATORY)
+
+CEO writes learnings to `$MAQUETA_DIR/.claude/memory/design-intelligence.md`:
+
+```
+1. Font Pairings: append what was used, mood, user reaction
+2. Color Palettes: append canvas + accent, mood, user reaction
+3. Signature Elements: append each section's signature + whether approved/rejected
+4. Section Patterns: append successful layout+motion combos with scores
+5. Common Revisions: append EVERY change the user requested
+6. Score Trends: append project average + weakest/strongest dimensions
+7. Technique Effectiveness: increment usage count + update avg score per technique
+8. Pipeline Issues: append any delays, failures, or process friction
+9. Rules Discovered: append any new patterns found (will be promoted after 3 validations)
+```
+
+**Retrospective is not optional.** Without it, the next project doesn't benefit.
+
+### B: Rule Promotion Check
+
+After writing retrospective, CEO checks "Rules Discovered" table:
+- Any rule validated across 3+ projects → promote to permanent docs
+- Promotion targets: CLAUDE.md, agent files, or library files
+- Mark promoted rules in the table
+
+### C: Cleanup
+
+1. Delete `$PROJECT_DIR/_ref-captures/` directory
+2. Delete `$PROJECT_DIR/docs/review/` directory (screenshots served their purpose)
+3. Final report to user
 
 ---
 

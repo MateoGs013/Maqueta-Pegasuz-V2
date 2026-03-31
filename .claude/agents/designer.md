@@ -13,9 +13,14 @@ Read the Design Philosophy section in CLAUDE.md — it defines what you NEVER an
 
 ## Your process
 
-1. Read reference screenshots in `_ref-captures/` — extract color, type, layout, motion, atmosphere
-2. Read `docs/_libraries/` for valid pattern names (layouts, interactions, motion)
-3. **Read `docs/_libraries/design-decisions.md` — follow decision trees for ALL subjective choices:**
+1. **Read learnings passed by CEO** (from `design-intelligence.md`):
+   - Proven font pairings for this mood → prefer these, don't repeat failures
+   - Successful color palettes → draw inspiration, avoid failed combos
+   - Common revision requests → anticipate and avoid patterns users dislike
+   - Section patterns that scored well → borrow successful combos
+2. Read reference screenshots in `_ref-captures/` — extract color, type, layout, motion, atmosphere
+3. Read `docs/_libraries/` for valid pattern names (layouts, interactions, motion)
+4. **Read `docs/_libraries/design-decisions.md` — follow decision trees for ALL subjective choices:**
    - § Font Selection → mood → category → specific font pairing
    - § Palette Construction → steps 1-6 (near-black base → grays → accents → semantics → validate)
    - § Typography Scale → project type → ratio → computed sizes
