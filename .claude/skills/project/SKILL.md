@@ -512,10 +512,18 @@ Context (ALL values passed inline — builder reads nothing itself):
   Motion: {paste from motion-categories.md}
   Interaction: {paste from interactions.md}
 
+  REFERENCE FRAMES (for visual comparison during Preview Loop):
+  {Identify the reference frame that best matches this section type.
+   For a hero → pass the hero frame from _ref-captures/{domain}/desktop/frame-001.png
+   For features → find the features/grid section frame, etc.
+   Pass the frame PATH so the builder can Read the image during self-evaluation.
+   If no matching reference frame exists, note: "No reference frame for this section type."}
+
   STATIC DATA ONLY — do not import stores, services, or APIs.
 
   IMPORTANT: After writing the component, run the Preview Loop.
-  Screenshot your output, evaluate against the cinematic description, and self-correct.
+  Screenshot your output, evaluate against BOTH the cinematic description AND the reference frames.
+  If your output looks simpler or more generic than the reference, fix it before reporting done.
 ```
 
 **STEP 3: QA validates the section (7-layer visual-first check)**

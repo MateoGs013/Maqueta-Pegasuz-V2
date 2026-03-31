@@ -402,6 +402,9 @@ The creative visual experience is built first. API wiring happens after the user
 - IN: Content for THIS section only — exact text, verbatim
 - IN: Token values with descriptions (from tokens.md — actual hex, font names, px, cubic-bezier)
 - IN: Library code snippets (layout pattern, motion GSAP code, interaction CSS from _libraries/)
+- IN: Reference frame path — the captured screenshot that best matches this section type
+  (e.g., hero frame from `_ref-captures/{domain}/desktop/frame-001.png`)
+  Builder uses this during Preview Loop Pass B to compare visual quality
 - DO NOT pass: other sections' recipe cards, full docs, stores, services
 
 ### Builder Flow (per section):

@@ -10,13 +10,13 @@ model: opus
 You build immersive Vue 3 section components — not templates. Cinematic experiences.
 Read the Design Philosophy in CLAUDE.md — especially the anti-patterns and quality escalation rules.
 
-## What you read per section
+## What you receive per section
 
-1. `docs/pages/{page}.md` — recipe card + CINEMATIC DESCRIPTION + copy for THIS section
-2. `docs/tokens.md` — full design system: palette, fonts, spacing, easing, atmosphere, cursor
-3. `docs/_libraries/layouts.md` — the assigned layout pattern implementation
-4. `docs/_libraries/motion-categories.md` — the assigned GSAP technique code
-5. `docs/_libraries/interactions.md` — the assigned interaction pattern
+1. Recipe card + CINEMATIC DESCRIPTION + copy (extracted from `docs/pages/{page}.md`)
+2. Design tokens (extracted from `docs/tokens.md`)
+3. Library snippets (extracted from `docs/_libraries/`)
+4. **Reference frames** — screenshot(s) from the inspiration site that correspond to this section type
+   (e.g., for a hero section, the CEO passes the hero frame from `_ref-captures/`)
 
 ## Preview Loop — MANDATORY after writing every section
 
@@ -40,7 +40,9 @@ AFTER writing S-{Name}.vue:
    → preview_screenshot
    → preview_resize preset: "desktop"
 
-5. EVALUATE against the cinematic description — check ALL of these:
+5. EVALUATE — two passes:
+
+   PASS A: Compare against CINEMATIC DESCRIPTION (technical accuracy):
    □ Spatial composition: Does the grid match the fr values specified?
    □ Overlap: Is at least one element crossing its container boundary?
    □ Depth: Can you count 3+ visual layers in the screenshot?
@@ -49,7 +51,14 @@ AFTER writing S-{Name}.vue:
    □ Atmosphere: Is grain/gradient/decorative layer visible?
    □ Typography: Are there 3+ distinct text sizes?
 
-6. If ANY check fails:
+   PASS B: Compare against REFERENCE FRAMES (aesthetic quality):
+   □ Read the reference screenshot(s) provided by CEO
+   □ Visual density: Does my section have similar richness/complexity?
+   □ Craft level: Would my section look at home next to the reference?
+   □ Spatial sophistication: Does the reference have techniques I missed?
+   □ If my output looks simpler/flatter/more generic than the reference → FIX IT
+
+6. If ANY check fails (from either pass):
    → State exactly what failed and why
    → Fix the code
    → Re-screenshot
@@ -57,9 +66,10 @@ AFTER writing S-{Name}.vue:
    → Max 2 self-correction loops
 
 7. Report done with:
-   - What you checked
+   - What you checked (both passes)
    - What you fixed (if anything)
    - Confidence level (HIGH/MEDIUM/LOW) per check
+   - How your output compares to the reference (honest self-assessment)
 ```
 
 **This is not optional.** Every section goes through the Preview Loop before reporting done.
