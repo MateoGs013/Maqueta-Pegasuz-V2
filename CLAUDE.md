@@ -32,7 +32,7 @@ GSAP 3 + ScrollTrigger + Lenis · CSS Custom Properties
 ## Project Structure (inside {project-slug}/)
 ```
 docs/
-  _libraries/               <- copied from maqueta (layouts, interactions, motion)
+  _libraries/               <- copied from maqueta (layouts, interactions, motion, quality, decisions, values)
   tokens.md                 <- design system (single source of truth)
   pages/
     home.md                 <- homepage sections (recipe + cinematic + copy)
@@ -136,8 +136,12 @@ Each teammate loads this CLAUDE.md automatically (including the Design Philosoph
 **All teammates work inside `$PROJECT_DIR` (the new project directory, NOT maqueta).**
 Tell each teammate the project path: `$PROJECT_DIR = C:\Users\mateo\Desktop\{slug}`.
 
-### V5 Key Features
+### V5.5 Key Features
 
+- **Autonomous Mode:** Complete brief in one prompt → pipeline runs overnight with 0 user gates
+- **Decision Trees:** `docs/_libraries/design-decisions.md` replaces subjective judgment for fonts, colors, layout, motion
+- **Quality Benchmarks:** `docs/_libraries/quality-benchmarks.md` — measurable anti-AI detection + visual density scoring
+- **Values Reference:** `docs/_libraries/values-reference.md` — specific durations, easing, spacing, hover values
 - **Preview Loop:** Builder screenshots its own output and self-corrects before reporting done
 - **Visual QA:** Polisher validates using real screenshots at 4 breakpoints, not just code reading
 - **Pencil Mockup:** CEO creates hero mockup via Pencil MCP for Phase 1 User Review

@@ -19,10 +19,92 @@ that receive ONLY the context they need and produce specific outputs.
 **Context management is the CEO's #1 job.** Don't tell an agent "read the docs."
 Extract the relevant parts and pass them inline. This keeps agent context small and focused.
 
-**Every visual milestone requires user approval.** After QA passes, the CEO presents
-a preview (screenshot) to the user. The user approves, requests changes, or rejects.
-If changes are requested, the CEO applies them and re-presents. Nothing advances without
-user sign-off. See `/project` skill for the User Review Protocol details.
+**Agents reference `docs/_libraries/` for all decisions.** Subjective design choices
+(fonts, colors, motion, layout) are resolved via decision trees in `design-decisions.md`.
+Quality is verified against measurable benchmarks in `quality-benchmarks.md`.
+Specific values (durations, easing, spacing) are looked up from `values-reference.md`.
+
+---
+
+## Autonomous Mode
+
+When the user provides a complete brief in a single prompt (project type, name, mood,
+pages, and optionally references), the pipeline runs with **minimal user gates**.
+
+### How it works
+
+1. **Phase 0 (Discovery):** CEO extracts everything from the prompt. If all required
+   fields are present (name, type, mood, pages), skip the interactive interview.
+   Compile Identity Card and proceed immediately.
+
+2. **Phase 0.5 (References):** Runs normally (no user gate).
+
+3. **Phase 1 (Design):** Designer uses decision trees from `design-decisions.md` instead
+   of subjective judgment. CEO validates against 12-point gate. If passes → proceed
+   without user approval. The auto-validated creative direction uses library decision
+   trees, so it's systematically sound.
+
+4. **Phase 2 (Scaffold):** Runs normally (no user gate).
+
+5. **Phase 3 (Sections):** Builder self-evaluates with Preview Loop + Excellence Standard.
+   CEO auto-QA validates each section. After ALL sections pass:
+   - CEO assembles pages, takes full-page screenshots
+   - Instead of blocking for user review → write screenshots to `$PROJECT_DIR/docs/review/`
+   - Continue to Phase 4
+
+6. **Phase 4 (Motion):** Runs normally (auto-QA, no user gate).
+
+7. **Phase 5A (Integration):** CEO assembles and screenshots final site.
+   Screenshots saved to `$PROJECT_DIR/docs/review/final/`.
+   Write completion summary to `$PROJECT_DIR/.pipeline-state.md`.
+
+### When autonomous mode activates
+
+The CEO detects autonomous mode when:
+- The initial prompt contains ALL of: project name, type/description, mood, and pages
+- OR the user explicitly says "dejalo corriendo", "run overnight", "run autonomously"
+
+### Morning review folder
+
+All review screenshots are saved to `$PROJECT_DIR/docs/review/`:
+```
+docs/review/
+  creative-direction/      ← palette + section plan text summary
+  sections/                ← per-section desktop + mobile screenshots
+  full-page/               ← assembled page screenshots
+  final/                   ← post-polish screenshots at 4 breakpoints
+  REVIEW-SUMMARY.md        ← what was built, scores, decisions made, anything flagged
+```
+
+### Escalation: [NEEDS_REVIEW] flags
+
+If any step fails after maximum auto-correction loops:
+- Mark the item with `[NEEDS_REVIEW]` in `.pipeline-state.md`
+- Continue building the rest (don't block the entire pipeline)
+- The morning review summary lists all flagged items
+
+### Autonomous Quality Gate Thresholds
+
+| Check | Pass Threshold | Action on Fail |
+|-------|---------------|----------------|
+| Designer 12-point validation | All 12 pass | Re-dispatch, max 3 loops → flag |
+| Builder Excellence Standard | All dimensions pass + signature | Self-fix, max 3 loops → flag |
+| CEO Auto-QA (screenshots) | No blank/broken areas, 3+ layers visible, mobile designed | Re-dispatch, max 2 loops → flag |
+| Anti-AI pattern check | 0 patterns detected | Re-dispatch with specific pattern |
+| Visual density | ≥ minimum for section type | Re-dispatch with density target |
+| Polisher Visual QA | All 4 breakpoints pass | Polisher self-fixes |
+
+### Decision tree enforcement
+
+In autonomous mode, agents MUST use the library decision trees:
+- **Font selection:** `design-decisions.md` § Font Selection → mood → category → specific font
+- **Palette construction:** `design-decisions.md` § Palette Construction → steps 1-6
+- **Typography scale:** `design-decisions.md` § Typography Scale → project type → ratio → computed sizes
+- **Easing curves:** `design-decisions.md` § Easing Curve Selection → standard set + personality additions
+- **Atmosphere:** `design-decisions.md` § Atmosphere Technique Selection → decision tree
+- **Section planning:** `design-decisions.md` § Section Planning → sequence + energy rhythm
+- **Motion categories:** `design-decisions.md` § Motion Category Assignment → section type → compatible categories
+- **Spatial composition:** `design-decisions.md` § Spatial Composition Defaults → grid ratios, overlaps, padding
 
 ---
 
@@ -31,8 +113,8 @@ user sign-off. See `/project` skill for the User Review Protocol details.
 | Agent | Role | Key Tools | Receives | Produces |
 |-------|------|-----------|----------|----------|
 | `reference-analyst` | Analyze captured screenshots + metadata | Read, Glob, WebFetch | Screenshot paths + manifest + URL | `docs/reference-analysis.md` |
-| `designer` | Design visual identity | Read, Glob, WebFetch | Brief + reference-analysis + ref frames | `docs/tokens.md` + `docs/pages/*.md` |
-| `builder` | Build sections with self-preview | Read, Write, Edit, Glob, Grep, Preview MCP | Recipe card + tokens + copy (extracted) | `S-{Name}.vue` + `AtmosphereCanvas.vue` |
+| `designer` | Design visual identity | Read, Glob, WebFetch | Brief + reference-analysis + ref frames + decision trees | `docs/tokens.md` + `docs/pages/*.md` |
+| `builder` | Build sections with self-preview | Read, Write, Edit, Glob, Grep, Preview MCP | Recipe card + tokens + copy + quality benchmarks (extracted) | `S-{Name}.vue` + `AtmosphereCanvas.vue` |
 | `polisher` | Motion + visual QA audit | Read, Write, Edit, Glob, Grep, Preview MCP | Motion spec + section list (extracted) | Composables + preloader |
 
 ---
@@ -569,3 +651,6 @@ Visual behavior must not change between static and API-wired state.
 6. **After compaction: read checkpoint first.** Trust the file over conversation memory.
 7. **Tokens auto-gen:** Always use `generate-tokens.js` instead of manual copy-paste.
 8. **Multi-page docs:** Read the specific page file, not all pages. Pass only the relevant section.
+9. **Decision trees:** Tell designer/builder to reference `docs/_libraries/design-decisions.md` for all subjective choices.
+10. **Quality benchmarks:** Tell builder to verify against `docs/_libraries/quality-benchmarks.md` Anti-AI checklist + density scoring.
+11. **Value lookups:** Tell agents to reference `docs/_libraries/values-reference.md` for specific durations, easing, spacing, hover values.

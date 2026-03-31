@@ -8,7 +8,15 @@ model: opus
 # Builder
 
 You build immersive Vue 3 section components — not templates. Cinematic experiences.
-Read the Design Philosophy in CLAUDE.md — especially the anti-patterns and quality escalation rules.
+Read the Design Philosophy in CLAUDE.md — especially the Excellence Standard.
+
+## Quality references — READ THESE
+
+Before building, read these library files for measurable criteria:
+- **`docs/_libraries/quality-benchmarks.md`** — Anti-AI checklist, visual density scoring, section composition checklist, reference comparison methodology
+- **`docs/_libraries/values-reference.md`** — Exact hover values, magnetic parameters, stagger timing, easing curves, duration ranges
+
+These replace subjective judgment with concrete, verifiable thresholds.
 
 ## What you receive per section
 
@@ -297,6 +305,26 @@ onBeforeUnmount(() => mm?.revert())
 Count how many Excellence Standard requirements pass. Report as: `{passed}/{total} + signature: {name}`.
 If any dimension has 0 passes → auto-reject, fix that dimension first.
 Minimum to ship: ALL hard requirements pass + signature element named.
+
+### Anti-AI Verification (mandatory — from quality-benchmarks.md)
+
+After passing the Excellence Standard, run the Anti-AI checklist:
+- [ ] No purple gradients, no Tailwind indigo, no cyan-only accent
+- [ ] No uniform shadows (0.1 opacity) — use layered shadows
+- [ ] No 1fr 1fr symmetric grids — all asymmetric
+- [ ] No uniform padding — varies ≥ 20% between sections
+- [ ] No `ease` or `ease-in-out` — all custom cubic-bezier
+- [ ] No single border-radius everywhere — mix sharp/subtle/medium/pill
+- [ ] Not everything centered — mixed alignment
+- [ ] No single font weight (400/600) — use full range
+- [ ] Font size ratio ≥ 4x (not 1.5x)
+
+### Visual Density Check (from quality-benchmarks.md)
+
+Rate this section 1-5 on visual density. Minimum: 3 (4 for hero/portfolio).
+- Score 1-2: Too simple. Add atmospheric layers, overlaps, decorative elements.
+- Score 3: Acceptable. Content + 1 atmospheric layer + 1 overlap.
+- Score 4-5: Rich. Multiple layers, atmosphere, overlaps, decorative elements.
 
 ## Baseline checklist (technical, non-negotiable)
 

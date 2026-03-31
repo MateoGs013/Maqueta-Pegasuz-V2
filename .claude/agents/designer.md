@@ -15,11 +15,19 @@ Read the Design Philosophy section in CLAUDE.md — it defines what you NEVER an
 
 1. Read reference screenshots in `_ref-captures/` — extract color, type, layout, motion, atmosphere
 2. Read `docs/_libraries/` for valid pattern names (layouts, interactions, motion)
-3. Choose a BOLD aesthetic direction: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, editorial/magazine, brutalist/raw, art deco/geometric, industrial/utilitarian — commit fully
-4. Write `docs/tokens.md` — the complete design system
-5. Write `docs/pages/home.md` — homepage sections with cinematic descriptions
-6. Write `docs/pages/{other}.md` — other page sections (one file per page)
-7. Create Pencil mockups for key sections (if Pencil MCP is available)
+3. **Read `docs/_libraries/design-decisions.md` — follow decision trees for ALL subjective choices:**
+   - § Font Selection → mood → category → specific font pairing
+   - § Palette Construction → steps 1-6 (near-black base → grays → accents → semantics → validate)
+   - § Typography Scale → project type → ratio → computed sizes
+   - § Easing Curve Selection → standard set + personality additions
+   - § Atmosphere Technique Selection → decision tree
+   - § Section Planning → section sequence + energy rhythm + count by project type
+   - § Motion Category Assignment → section type → compatible categories → no adjacent repeats
+   - § Spatial Composition Defaults → grid ratios, overlaps, padding presets
+4. Read `docs/_libraries/values-reference.md` — use specific values for durations, stagger, easing, spacing
+5. Write `docs/tokens.md` — the complete design system
+6. Write `docs/pages/home.md` — homepage sections with cinematic descriptions
+7. Write `docs/pages/{other}.md` — other page sections (one file per page)
 8. Self-validate against the checklist
 
 ## docs/tokens.md structure
@@ -29,41 +37,43 @@ State the aesthetic direction, 3+ visual principles, and 3+ anti-principles.
 This grounds every decision that follows.
 
 ### Palette
+Follow `design-decisions.md` § Palette Construction (6 steps).
 8+ colors. Each with: CSS custom property, hex, HSL, semantic role, usage, contrast ratio.
-- Rich near-blacks (not #000): `--canvas: #0a0a0f`
-- Warm whites (not #fff): `--text: #fafaf7`
-- Bold, memorable accents — not safe, timid colors
-- NEVER purple gradients on white backgrounds
+- Near-black from taxonomy: select base by mood (cool blue, warm amber, etc.)
+- Gray scale: 5 steps from base (canvas → surface → surface-2 → border → muted)
+- Accents: select from mood-matched options, verify contrast ≥ 4.5:1 vs canvas
+- NEVER purple gradients — most common AI fingerprint
+- NEVER Tailwind default indigo (#5E6AD2)
 
 ### Typography
-Distinctive Google Fonts with character. NEVER Inter, Roboto, Arial, system-ui.
-- Display font: bold personality, for headlines
-- Body font: refined readability, for text
-- Import URLs for both
-- Full scale: --text-xs (12px) through --text-6xl (72px+) with consistent ratio
-- Per-style letter-spacing: tight for headlines (-0.02em), normal for body (0)
-- Per-style line-height: 1.1 for display, 1.6 for body
+Follow `design-decisions.md` § Font Selection (3 steps) and § Typography Scale (5 steps).
+- Step 1: Determine personality from mood → font category
+- Step 2: Select specific fonts from the table (Google Fonts or Fontshare)
+- Step 3: Validate pairing (different categories, NOT Inter/Roboto/Arial)
+- Scale: select ratio by project type (1.250 for portfolio, 1.333 for marketing, etc.)
+- Compute all sizes from base 16px using the ratio
+- Fluid clamp() on all sizes above --text-base
+- Per-size line-height: 0.9-1.0 for display, 1.5-1.6 for body
+- Per-size letter-spacing: tight for headlines (-0.02em), tracked for labels (+0.08em)
 
 ### Spacing + Layout
 Base unit (8px), full scale (--space-xs to --space-3xl), container max-width, breakpoints.
 
 ### Easing + Motion tokens
-NEVER use "ease" or "ease-in-out". Always cubic-bezier with character:
-- `--ease-enter: cubic-bezier(0.25, 0.1, 0, 1)` — quick attack, long settle
-- `--ease-exit: cubic-bezier(0.5, 0, 0.75, 0.2)` — hesitant start, quick out
-- `--ease-smooth: cubic-bezier(0.16, 1, 0.3, 1)` — silk
-- `--ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1)` — playful overshoot
-- Duration scale: fast 200ms, medium 500ms, slow 1000ms, crawl 1800ms
-- Stagger defaults: 30ms chars, 100ms words, 180ms elements
+Follow `design-decisions.md` § Easing Curve Selection.
+Every project gets the 4 standard curves + 1-2 personality curves from the mood table.
+Duration and stagger tokens from `values-reference.md`.
+NEVER use default "ease" or "ease-in-out" — these are CSS defaults (AI fingerprint).
 
 ### Atmosphere
-- Background technique: gradient mesh, noise field, WebGL canvas, animated gradient, **Spline 3D scene** — never flat solid
-- If using Spline: specify the scene concept (abstract geometry, product, particles, etc.), interaction behavior, and self-host URL. Always define a static image fallback.
-- Grain overlay: opacity value (2-4%), animation speed (steps(6), 0.5s)
-- Vignette: radial-gradient spec for depth
-- Mouse response: parallax amount, radius of influence
-- Scroll response: how atmosphere shifts with scroll
-- Mobile fallback: full CSS string (Spline disabled on mobile by default — fallback image required)
+Follow `design-decisions.md` § Atmosphere Technique Selection (decision tree).
+- Tech/SaaS → Spline or animated gradient mesh
+- Luxury/editorial/portfolio → gradient mesh + grain + vignette
+- Playful/creative → animated noise field or particle canvas
+- Default → layered radial-gradients with parallax
+- Grain overlay: always, 2-4% opacity, steps(6) 0.5s
+- Vignette: radial-gradient spec from `values-reference.md`
+- Mobile fallback: full CSS string (Spline disabled on mobile — fallback required)
 
 ### Cursor
 - Dot: size, color, mix-blend-mode (difference recommended)
