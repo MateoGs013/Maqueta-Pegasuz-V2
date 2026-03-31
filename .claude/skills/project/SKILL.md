@@ -107,15 +107,17 @@ STEP 4: ⛔ CALL AskUserQuestion NOW — do not proceed without this
 
 **After calling AskUserQuestion, your turn ENDS. You do no more work until the user responds.**
 
-### When to trigger User Review
+### When to trigger User Review (3 mandatory points)
 
-| After | What to show |
-|-------|-------------|
-| Phase 1 (Creative Direction) | Palette + typography + section plan as formatted text |
-| Phase 2 (Atmosphere) | Canvas on empty page, desktop only |
-| Phase 3 (each section) | Section in page context, desktop + mobile |
-| Phase 4 (Choreography) | Full page, desktop |
-| Phase 5A (Integration) | All pages, desktop + mobile |
+| After | What to show | Why |
+|-------|-------------|-----|
+| Phase 1 (Creative Direction) | Palette + typography + section plan + hero mockup | User must approve aesthetic direction before building |
+| Phase 3 (ALL sections built) | Complete page(s), desktop + mobile, with scores per section | User reviews the full page as a whole, not individual parts |
+| Phase 5A (Integration) | All pages with motion + preloader + transitions | Final sign-off before delivery |
+
+**Auto-QA handles the rest.** Atmosphere, individual sections, and motion choreography
+are validated by builder self-scoring + CEO auto-QA. No user review needed unless
+a quality issue persists after auto-correction loops.
 
 ---
 
@@ -411,16 +413,15 @@ Context (inline — do not tell it to read docs):
 
 ### Gate: QA validates atmosphere (5-point check)
 
-### ⛔ User Review: Atmosphere
+### Auto-QA: Atmosphere (no user review — user sees it in Phase 3 batch review)
 
 ```
-1. preview_start (if not running)
+1. preview_start
 2. preview_eval: window.location.reload()
 3. preview_screenshot (desktop)
-4. AskUserQuestion:
-   Q: "Here's the atmosphere layer for {project name}. How does it look?"
-   Options: "Approved", "Needs changes", "Scrap it — try a different preset"
-5. If "Needs changes" → apply → re-screenshot → re-ask → loop until approved
+4. CEO verifies: mouse response, scroll response, mobile fallback, cleanup, aria-hidden
+5. If issues → fix directly or re-dispatch builder
+6. Atmosphere will be visible in context when user reviews the full page in Phase 3
 ```
 
 **📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 2 complete, list files created, all section names from pages/*.md as pending, Next Action = "Phase 3: Build S-{first section}".
@@ -521,42 +522,50 @@ Context (ALL values passed inline — builder reads nothing itself):
 
   STATIC DATA ONLY — do not import stores, services, or APIs.
 
-  IMPORTANT: After writing the component, run the Preview Loop.
-  Screenshot your output, evaluate against BOTH the cinematic description AND the reference frames.
-  If your output looks simpler or more generic than the reference, fix it before reporting done.
+  IMPORTANT: After writing the component, run the Preview Loop:
+  1. Screenshot your output (desktop + mobile)
+  2. PASS A: Evaluate against the cinematic description (technical accuracy)
+  3. PASS B: Compare against the reference frame (aesthetic quality)
+  4. Score yourself on the Quality Rubric (5 dimensions, 0-2 each, total /10)
+  5. If score < 7 → fix the weakest dimension → re-screenshot → re-score (max 3 loops)
+  6. Report: score + breakdown + screenshots + self-assessment vs reference
 ```
 
-**STEP 3: QA validates the section (7-layer visual-first check)**
+**STEP 3: CEO Auto-QA Gate (replaces per-section user review)**
 
 ```
-Agent: qa (or CEO validates)
-Section: S-{Name}.vue
-Validate: Visual QA at 4 breakpoints + 7-layer code check
-Report: PASS or FAIL per layer with specific issues
+1. CEO reads builder's score + breakdown + screenshots
+2. Score >= 7 and screenshots look reasonable → section PASSES auto-QA
+3. Score < 7 or CEO spots issue → re-dispatch builder with specific feedback
+4. Max 2 CEO correction loops per section
+5. Section passes → APPROVED INTERNALLY (no user review yet)
 ```
 
-If FAIL → pass specific failures to builder → rebuild → re-validate.
+**STEP 4: Continue to next section**
 
-**STEP 4: ⛔ MANDATORY USER REVIEW — runs after EVERY section, no exceptions**
+Repeat STEP 1-3 for all remaining sections. No user review between sections.
+
+**📋 CHECKPOINT (after EVERY section):** Update `.pipeline-state.md` — mark section complete with score, update Next Action.
+
+### After ALL sections pass auto-QA: Batch User Review
 
 ```
-1. preview_start (if not running)
-2. Navigate to the page containing this section
-3. preview_eval: window.location.reload()
-4. preview_screenshot → desktop
-5. preview_resize preset: "mobile" → preview_screenshot → restore desktop
-
-6. ⛔ CALL AskUserQuestion:
-   Q: "S-{Name} is ready. Desktop + mobile screenshots above. How does it look?"
+1. Assemble all sections in HomeView.vue (and other page views)
+2. preview_start → navigate to each page
+3. Full-page screenshot: desktop + mobile per page
+4. ⛔ CALL AskUserQuestion:
+   Q: "All {N} sections are built (scores: S-Hero 8/10, S-Intro 7/10, ...).
+       Here's the complete page. How does it look?"
    Options:
-     "Approved — next section"    → proceed
-     "Needs changes"              → ask what → apply → re-screenshot → loop
-     "Scrap it — rebuild"         → re-dispatch builder
-
-7. ONLY AFTER "Approved": start the next section.
+     "Approved — move to polish"
+     "Needs changes on specific sections"
+     "Major revision needed"
+5. If "Needs changes" → user names which sections → CEO re-dispatches only those
+   → builder fixes → re-screenshot → re-ask
 ```
 
-**📋 CHECKPOINT (after EVERY section):** Update `.pipeline-state.md` — mark section complete, include last agent instruction and QA feedback, update Next Action.
+**This is the ONLY user review in Phase 3.** Builder self-scoring + CEO auto-QA
+maintain quality autonomously. The user reviews the complete page, not individual sections.
 
 ---
 
@@ -583,16 +592,18 @@ Context:
   verify preloader sequence, verify page transitions.
 ```
 
-### Gate: QA validates motion (visual + code)
-
-### ⛔ User Review: Choreography
+### Auto-QA: Motion (no user review — user sees it in Phase 5A final review)
 
 ```
 1. preview_start
-2. Reload page → screenshot sequence (preloader → hero → scroll down)
-3. Navigate between pages → screenshot transitions
-4. AskUserQuestion: "Here's the complete motion layer. How does it feel?"
+2. Reload page → verify preloader sequence triggers
+3. Scroll through page → verify scroll-linked animations
+4. Navigate between pages → verify transitions
+5. Screenshot at 4 breakpoints → verify responsive motion
+6. Polisher fixes issues directly. CEO verifies fixes.
 ```
+
+Motion is experienced in context during the Phase 5A final review.
 
 **📋 CHECKPOINT:** Update `.pipeline-state.md` — Phase 4 complete, Next Action = Phase 5A.
 

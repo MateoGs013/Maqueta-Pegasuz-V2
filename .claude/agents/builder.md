@@ -58,22 +58,47 @@ AFTER writing S-{Name}.vue:
    □ Spatial sophistication: Does the reference have techniques I missed?
    □ If my output looks simpler/flatter/more generic than the reference → FIX IT
 
-6. If ANY check fails (from either pass):
+6. SCORE — rate yourself honestly on the Quality Rubric (see below).
+   → Score < 7 → MANDATORY self-correction. Fix the weakest dimension. Re-screenshot. Re-score.
+   → Score 7-8 → Acceptable. Report done.
+   → Score 9-10 → Excellent. Report done.
+   → Max 3 self-correction loops. If still < 7 after 3 loops, report with score and explain what's blocking.
+
+7. If ANY check from Pass A/B fails:
    → State exactly what failed and why
    → Fix the code
    → Re-screenshot
-   → Re-evaluate
-   → Max 2 self-correction loops
+   → Re-evaluate + re-score
 
-7. Report done with:
+8. Report done with:
+   - Quality Score (total /10) + per-dimension breakdown
    - What you checked (both passes)
    - What you fixed (if anything)
-   - Confidence level (HIGH/MEDIUM/LOW) per check
    - How your output compares to the reference (honest self-assessment)
+   - Screenshot paths (desktop + mobile)
 ```
 
 **This is not optional.** Every section goes through the Preview Loop before reporting done.
 If Preview MCP is unavailable, state so and report without visual verification.
+
+## Quality Rubric — score EVERY section (0-10)
+
+Score each dimension 0-2. Sum = total score. **Minimum to ship: 7/10.**
+
+| Dimension | 0 (reject) | 1 (weak) | 2 (strong) |
+|-----------|-----------|----------|------------|
+| **Composition** | Centered/symmetric, no overlap, no container breaks | Some asymmetry but grid is safe (1fr/1fr), no spatial surprise | Intentional asymmetry (1.4fr/0.6fr+), visible overlap, element breaks container |
+| **Depth** | Flat — content on background, nothing else | 2 layers (content + grain or gradient) | 3+ layers with independent spatial behavior (parallax, z-index, blur) |
+| **Typography** | One size, one weight, centered | 2-3 sizes, some weight contrast | 4+ sizes, dramatic scale (72px/14px), mixed weights, letter-spacing variation |
+| **Motion** | Generic fade-up, one stage, default easing | 2 stages, custom easing, some variety | 3+ choreographed stages, scroll-linked elements, different easing per role |
+| **Craft** | No hover states, no focus, basic cursor | Hover color change + focus-visible | Magnetic buttons, reveal hovers, cursor reactions, backdrop-blur, micro-interactions |
+
+**Auto-reject triggers (score 0 on entire section regardless of total):**
+- Layout achievable with `text-align: center; max-width; margin: 0 auto`
+- All text centered
+- No z-index layering visible in screenshot
+- Identical padding top and bottom
+- Using `ease` or `ease-in-out` anywhere
 
 ## Implementation techniques
 

@@ -388,7 +388,8 @@ and writes `src/styles/tokens.css`. No manual copy-paste needed.
 4. `aria-hidden="true"` present
 5. Cleanup on unmount (no leaks)
 
-**User Review:** CEO screenshots canvas on empty page. User approves or requests changes.
+**Auto-QA:** CEO screenshots canvas, verifies 5 checks pass. No user review needed for atmosphere —
+it will be seen in context during the Phase 3 batch review.
 
 ---
 
@@ -410,21 +411,33 @@ The creative visual experience is built first. API wiring happens after the user
 ### Builder Flow (per section):
 
 ```
-1. Builder reads context (tokens, recipe, copy, library snippets)
+1. Builder reads context (tokens, recipe, copy, library snippets, reference frame)
 2. Builder writes S-{Name}.vue
 3. ► PREVIEW LOOP: Builder screenshots its own output
    a. preview_start (if needed)
    b. Navigate to section → preview_screenshot (desktop)
    c. preview_resize "mobile" → preview_screenshot → restore desktop
-   d. Evaluate against cinematic description:
-      ✓ Spatial composition matches? (grid fr, overlaps, container breaks)
-      ✓ 3+ depth layers visible?
-      ✓ Scale contrast dramatic?
-      ✓ Asymmetry visible?
-      ✓ Entry animation has 3+ stages? (check via preview_eval + timing)
-   e. If any check fails → fix → re-screenshot (max 2 self-correction loops)
-4. Builder reports done with self-evaluation summary
+   d. PASS A: Evaluate against cinematic description (technical accuracy)
+   e. PASS B: Compare against reference frame (aesthetic quality)
+   f. SCORE on Quality Rubric (5 dimensions, 0-2 each, total /10)
+4. Auto-correction:
+   Score < 7  → MANDATORY self-fix → re-screenshot → re-score (max 3 loops)
+   Score >= 7 → Report done with score + breakdown
+5. Builder returns: score, per-dimension breakdown, screenshots, self-assessment vs reference
 ```
+
+### Quality Rubric (Builder self-scores, CEO verifies)
+
+| Dimension | 0 (reject) | 1 (weak) | 2 (strong) |
+|-----------|-----------|----------|------------|
+| Composition | Centered/symmetric, no breaks | Some asymmetry, safe grid | Intentional asymmetry, overlap, container breaks |
+| Depth | Flat — content on bg | 2 layers | 3+ layers with independent spatial behavior |
+| Typography | One size, one weight | 2-3 sizes, some contrast | 4+ sizes, dramatic scale, mixed weights |
+| Motion | Generic fade-up, default easing | 2 stages, custom easing | 3+ stages, scroll-linked, different easing per role |
+| Craft | No hover, no focus | Basic hover + focus-visible | Magnetic, reveals, cursor reactions, micro-interactions |
+
+**Auto-reject (score 0 regardless):** centered-everything, `ease`/`ease-in-out` anywhere, no z-layering.
+**Minimum to ship: 7/10.** Builder self-corrects until it reaches 7 or exhausts 3 loops.
 
 ### Parallel build (when applicable):
 
@@ -432,23 +445,44 @@ If 2+ sections are independent (no shared visual flow):
 ```
 CEO spawns Builder A (isolation: "worktree") → S-Hero
 CEO spawns Builder B (isolation: "worktree") → S-Features
-Both run Preview Loop independently
+Both run Preview Loop + scoring independently
 CEO merges worktrees on completion
 ```
 Max 2 concurrent builders. Fall back to sequential on API errors.
 
-**Gate — 7-layer validation (QA agent, per section, VISUAL-FIRST):**
-1. Visual QA: screenshot at 375, 768, 1280, 1440px — evaluate depth, asymmetry, scale contrast
-2. Composition: semantic HTML, heading hierarchy
-3. Typography: tokens used, fluid type, 3+ distinct sizes
-4. Depth: 3+ visual layers visible in screenshot
-5. Interaction: hover + focus + cursor states coded
-6. Motion: uses ASSIGNED technique (not generic fade-up), 3+ entry stages
-7. Responsive: layout transforms correctly across breakpoints (verified by screenshots)
+### Auto-QA Gate (replaces per-section user review)
 
-**On FAIL:** CEO passes specific layer failures to builder. Rebuild. Do not advance.
+After builder reports done, CEO runs a quick QA check:
 
-**User Review (per section, MANDATORY):** CEO takes screenshot (desktop + mobile), calls AskUserQuestion.
+```
+1. CEO reads builder's score + screenshots
+2. If score >= 7 and screenshots look reasonable → section PASSES auto-QA
+3. If score < 7 or CEO spots an issue → re-dispatch builder with specific feedback
+4. Max 2 CEO-triggered correction loops per section
+5. After auto-QA pass → section is APPROVED INTERNALLY (no user review yet)
+```
+
+**Sections accumulate.** The user does NOT review individual sections.
+
+### Batch User Review (after ALL sections pass auto-QA)
+
+Once all sections are built and pass auto-QA:
+
+```
+1. CEO assembles all sections in HomeView.vue (and other page views)
+2. preview_start → navigate to each page
+3. Full-page screenshot: desktop + mobile per page
+4. ⛔ AskUserQuestion:
+   Q: "All {N} sections are built. Here's the complete page(s). How does it look?"
+   Options:
+     "Approved — move to polish"
+     "Needs changes on specific sections"     → user names sections → CEO re-dispatches
+     "Major revision needed"                  → CEO identifies scope → targeted rebuild
+5. If "Needs changes": CEO re-dispatches only the named sections → builder fixes → re-screenshot → re-ask
+```
+
+**This reduces Phase 3 from N reviews (one per section) to 1-2 reviews (full page).**
+The quality bar is maintained by the builder's self-scoring + CEO auto-QA gate.
 
 ---
 
