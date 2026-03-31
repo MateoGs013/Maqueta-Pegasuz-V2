@@ -38,8 +38,7 @@ docs/
     home.md                 <- homepage sections (recipe + cinematic + copy)
     about.md                <- about page sections
     ...                     <- one file per page
-  mockups/                  <- optional Pencil mockups per section
-    S-Hero.pen
+  mockups/                  <- CEO-generated hero mockup for user review (Pencil MCP)
   reference-analysis.md     <- from reference analyst (if references provided)
 _ref-captures/              <- reference screenshots (temporary, deleted at end)
 src/
@@ -188,7 +187,7 @@ Tell each teammate the project path: `$PROJECT_DIR = C:\Users\mateo\Desktop\{slu
 
 - **Preview Loop:** Builder screenshots its own output and self-corrects before reporting done
 - **Visual QA:** Polisher validates using real screenshots at 4 breakpoints, not just code reading
-- **Pencil Mockups:** Designer optionally creates .pen mockups for complex sections
+- **Pencil Mockup:** CEO creates hero mockup via Pencil MCP for Phase 1 User Review
 - **Parallel Sections:** Up to 2 builders work simultaneously via worktree isolation
 - **Tokens Auto-Gen:** `generate-tokens.js` replaces manual CSS copy-paste
 - **Multi-Page Docs:** `docs/pages/{page}.md` instead of single sections.md

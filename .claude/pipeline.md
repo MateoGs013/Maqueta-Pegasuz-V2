@@ -31,7 +31,7 @@ user sign-off. See `/project` skill for the User Review Protocol details.
 | Agent | Role | Key Tools | Receives | Produces |
 |-------|------|-----------|----------|----------|
 | `reference-analyst` | Analyze captured screenshots + metadata | Read, Glob, WebFetch | Screenshot paths + manifest + URL | `docs/reference-analysis.md` |
-| `designer` | Design visual identity + mockups | Read, Glob, WebFetch, Pencil MCP | Brief + reference-analysis + ref frames | `docs/tokens.md` + `docs/pages/*.md` + `docs/mockups/*.pen` |
+| `designer` | Design visual identity | Read, Glob, WebFetch | Brief + reference-analysis + ref frames | `docs/tokens.md` + `docs/pages/*.md` |
 | `builder` | Build sections with self-preview | Read, Write, Edit, Glob, Grep, Preview MCP | Recipe card + tokens + copy (extracted) | `S-{Name}.vue` + `AtmosphereCanvas.vue` |
 | `polisher` | Motion + visual QA audit | Read, Write, Edit, Glob, Grep, Preview MCP | Motion spec + section list (extracted) | Composables + preloader |
 
@@ -84,23 +84,35 @@ QA uses real screenshots — not code reading — to validate visual quality.
 **Visual QA > code QA.** A section can have perfect code and still look basic.
 The screenshot is the truth.
 
-### Pencil Mockup Protocol (Designer)
+### Pencil Mockup Protocol (CEO — Phase 1 User Review only)
 
-After writing tokens.md and pages/*.md, the designer creates visual mockups
-using the Pencil MCP for key sections (hero + 2-3 complex sections minimum).
+The CEO creates a hero section mockup using Pencil MCP to give the user a
+visual preview of the creative direction BEFORE any code is written.
 
 ```
-1. get_guidelines(topic="landing-page") — get design rules
-2. get_style_guide_tags → get_style_guide(tags) — get visual inspiration
-3. For each key section:
-   a. open_document("new") — create fresh .pen
-   b. batch_design — create the section mockup matching cinematic description
-   c. Export or save to docs/mockups/S-{Name}.pen
-4. Builder receives mockup path as visual reference alongside cinematic description
+After designer completes tokens.md + pages/*.md:
+
+1. CEO reads the hero section recipe + palette + typography from designer output
+2. CEO uses Pencil MCP to create a visual mockup:
+   a. get_guidelines(topic="landing-page")
+   b. get_style_guide_tags → pick relevant tags
+   c. get_style_guide(tags=[relevant]) — for layout inspiration
+   d. open_document("new")
+   e. batch_design — create hero mockup with:
+      - Exact palette colors from tokens.md
+      - Font families + scale from tokens.md
+      - Grid proportions from cinematic description (1.4fr/0.6fr, etc.)
+      - Key spatial relationships (overlaps, bleeds, asymmetry)
+   f. get_screenshot — capture as image for user review
+3. CEO presents to user: palette + typography + section plan + hero mockup screenshot
+4. User approves creative direction with visual confidence (not just hex codes)
 ```
 
-Mockups are optional — the pipeline works without Pencil MCP. When available,
-they eliminate ambiguity in the designer→builder handoff.
+**This is optional.** If Pencil MCP is unavailable, the CEO presents text-only
+(palette hex + font names + section plan table). The pipeline works either way.
+
+**Only the hero mockup.** One mockup for user approval, not mockups per section.
+The builder uses cinematic descriptions + Preview Loop — not mockups.
 
 ### Parallel Section Protocol
 
@@ -137,9 +149,7 @@ docs/
     about.md                   ← about page sections
     services.md                ← services page sections
     contact.md                 ← contact page sections
-  mockups/                     ← optional Pencil mockups per section
-    S-Hero.pen
-    S-Features.pen
+  mockups/                     ← CEO-generated hero mockup for Phase 1 User Review (Pencil MCP)
   reference-analysis.md        ← from reference analyst (if references provided)
   _libraries/                  ← copied from maqueta (layouts, interactions, motion)
 ```
@@ -330,7 +340,6 @@ internal pages automatically (max 5 by default). Each page gets its own director
   - `docs/tokens.md` — complete design system (palette, typography, spacing, easing, atmosphere, cursor, CSS output block)
   - `docs/pages/home.md` — homepage sections with recipe cards + cinematic descriptions + copy
   - `docs/pages/{other}.md` — other page sections (one file per page)
-  - `docs/mockups/S-{Name}.pen` — Pencil mockups for key sections (optional, if Pencil MCP available)
 
 **Gate — 12-point validation (QA agent):**
 1. tokens.md: concept direction + 3+ visual principles stated
@@ -348,7 +357,10 @@ internal pages automatically (max 5 by default). Each page gets its own director
 
 **On FAIL:** CEO passes specific failures to designer to fix. Max 3 loops.
 
-**User Review:** CEO presents concept + palette + section plan to user. User approves or requests changes.
+**User Review:** CEO presents concept + palette + section plan to user.
+If Pencil MCP is available, CEO also creates a hero mockup (see Pencil Mockup Protocol)
+to give the user a visual preview alongside the text summary.
+User approves or requests changes.
 
 ---
 
@@ -390,7 +402,6 @@ The creative visual experience is built first. API wiring happens after the user
 - IN: Content for THIS section only — exact text, verbatim
 - IN: Token values with descriptions (from tokens.md — actual hex, font names, px, cubic-bezier)
 - IN: Library code snippets (layout pattern, motion GSAP code, interaction CSS from _libraries/)
-- IN: Mockup path (if Pencil mockup exists for this section)
 - DO NOT pass: other sections' recipe cards, full docs, stores, services
 
 ### Builder Flow (per section):

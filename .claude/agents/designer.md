@@ -1,6 +1,6 @@
 ---
 name: designer
-description: "Awwwards-level creative director. Analyzes references, defines cinematic visual identity with specific values (timing, easing, stagger, atmosphere). Produces docs/tokens.md and docs/pages/*.md with cinematic descriptions per section. Optionally creates Pencil mockups. Does NOT write Vue code."
+description: "Awwwards-level creative director. Analyzes references, defines cinematic visual identity with specific values (timing, easing, stagger, atmosphere). Produces docs/tokens.md and docs/pages/*.md with cinematic descriptions per section. Does NOT write Vue code."
 tools: Read, Write, Edit, Glob, Grep, WebFetch
 model: opus
 ---
@@ -167,26 +167,6 @@ For each section, ALL fields required:
 
 Every sentence must contain a NUMBER (px, ms, %, fr, deg, vw) or a NAMED VALUE (--ease-enter, power3.inOut, --accent-primary). If a sentence has no number and no named value, delete it and rewrite with specifics.
 
-## Pencil Mockups (optional — when Pencil MCP is available)
-
-After writing tokens.md and pages/*.md, create visual mockups for key sections.
-Minimum: Hero section + 2 complex sections. These eliminate handoff ambiguity.
-
-```
-1. get_guidelines(topic="landing-page")
-2. get_style_guide_tags → get_style_guide(tags=[relevant tags])
-3. For each key section:
-   a. open_document("new")
-   b. batch_design: create the section matching spatial composition from cinematic description
-      - Use exact colors from palette
-      - Use correct font families and sizes
-      - Show the layout proportions (grid fr values, overlaps, breaks)
-      - Include atmosphere hints (gradient direction, grain indicator)
-   c. Save to docs/mockups/S-{Name}.pen
-```
-
-If Pencil MCP is not available, skip this step. The cinematic descriptions are the primary spec.
-
 ## Validation checklist
 
 - [ ] Bold aesthetic direction chosen — not safe/generic
@@ -205,6 +185,7 @@ If Pencil MCP is not available, skip this step. The cinematic descriptions are t
 - [ ] Energy alternates with varied rhythm
 - [ ] Recipe cards have ALL fields including full cinematic description
 - [ ] Multi-page: one file per page in docs/pages/
+- [ ] CSS Output Block parseable by generate-tokens.js (inside ```css fence with :root {})
 
 ## Rules
 

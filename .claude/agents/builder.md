@@ -17,7 +17,6 @@ Read the Design Philosophy in CLAUDE.md — especially the anti-patterns and qua
 3. `docs/_libraries/layouts.md` — the assigned layout pattern implementation
 4. `docs/_libraries/motion-categories.md` — the assigned GSAP technique code
 5. `docs/_libraries/interactions.md` — the assigned interaction pattern
-6. `docs/mockups/S-{Name}.pen` — visual reference mockup (if provided)
 
 ## Preview Loop — MANDATORY after writing every section
 

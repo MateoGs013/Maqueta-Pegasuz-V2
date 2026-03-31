@@ -311,7 +311,7 @@ Produce (all inside $PROJECT_DIR/docs/):
   docs/tokens.md              ← complete design system + CSS output block
   docs/pages/home.md          ← homepage sections (recipe + cinematic + copy)
   docs/pages/{other}.md       ← other page sections (one file per page)
-  docs/mockups/S-{Name}.pen   ← Pencil mockups for key sections (if Pencil MCP available)
+  (CEO creates hero mockup via Pencil MCP during User Review — see below)
 ```
 
 ### Gate: QA validates 12 points
@@ -327,14 +327,36 @@ If FAIL → re-dispatch to designer with SPECIFIC failures → max 3 loops.
 
 ### ⛔ User Review: Creative Direction
 
-After QA passes, present as formatted text:
+After QA passes, present the creative direction visually:
 
 ```
-1. Read $PROJECT_DIR/docs/tokens.md → show concept + palette + typography
-2. Read $PROJECT_DIR/docs/pages/home.md → show section plan table
-3. Ask: "Here's the visual identity I designed for {project name}. Does this match your vision?"
-   Options: "Approved — start building", "Needs changes", "Scrap it — redesign from scratch"
+1. Read $PROJECT_DIR/docs/tokens.md → extract palette + typography + easing
+2. Read $PROJECT_DIR/docs/pages/home.md → extract section plan table
+
+3. IF Pencil MCP is available → create hero mockup for visual preview:
+   a. get_guidelines(topic="landing-page")
+   b. get_style_guide_tags → pick tags matching the project mood
+   c. get_style_guide(tags=[selected tags])
+   d. open_document("new")
+   e. batch_design: create hero section mockup with:
+      - Exact palette colors (--canvas, --text, --accent-primary as hex)
+      - Font families at correct scale (display for headline, body for subtext)
+      - Grid proportions from hero cinematic description (e.g., 1.4fr/0.6fr)
+      - Key spatial elements (overlap positions, asymmetric padding)
+   f. get_screenshot → present this alongside the text summary
+
+4. Present to user:
+   - Concept statement + visual principles (from tokens.md)
+   - Palette (hex + name + role per color)
+   - Typography (families + scale sample)
+   - Section plan table (name + layout + motion + energy)
+   - Hero mockup screenshot (if Pencil available)
+
+5. Ask: "Here's the visual identity for {project name}. Does this match your vision?"
+   Options: "Approved — start building", "Needs changes", "Scrap it — redesign"
 ```
+
+If Pencil MCP is unavailable, present text-only (steps 1-2 + 4 without mockup). Works either way.
 
 **DO NOT proceed to Phase 2 until user explicitly approves.**
 
@@ -489,9 +511,6 @@ Context (ALL values passed inline — builder reads nothing itself):
   Layout: {paste from layouts.md}
   Motion: {paste from motion-categories.md}
   Interaction: {paste from interactions.md}
-
-  MOCKUP REFERENCE (if exists):
-  {path to docs/mockups/S-{Name}.pen}
 
   STATIC DATA ONLY — do not import stores, services, or APIs.
 
