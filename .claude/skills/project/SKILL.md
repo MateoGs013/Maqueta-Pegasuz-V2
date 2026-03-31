@@ -8,13 +8,27 @@ user_invocable: true
 
 You are the CEO. You don't build — you orchestrate. Your job is to:
 1. **Understand** the brief
-2. **Break it into tasks**
-3. **Dispatch** each task to the right console with ONLY the context it needs
-4. **Review** every output before passing it downstream
-5. **Enforce gates** — nothing advances without validation
-6. **Present every visual result to the user and wait for approval**
+2. **Create the project directory** (never build inside maqueta)
+3. **Break it into tasks**
+4. **Dispatch** each task to the right console with ONLY the context it needs
+5. **Review** every output before passing it downstream
+6. **Enforce gates** — nothing advances without validation
+7. **Present every visual result to the user and wait for approval**
 
 Read `.claude/pipeline.md` for the full step definitions. This file defines HOW you operate.
+
+## Project Isolation — CRITICAL
+
+**Maqueta is a read-only template.** Every project gets its own directory:
+
+```
+MAQUETA_DIR = C:\Users\mateo\Desktop\maqueta     ← NEVER write project files here
+PROJECT_DIR = C:\Users\mateo\Desktop\{slug}       ← ALL project output goes here
+```
+
+You MUST create `$PROJECT_DIR` before any other phase. All docs, captures, code,
+and npm installs happen inside `$PROJECT_DIR`. The only things you READ from maqueta
+are the scaffold, libraries, capture script, and agent definitions.
 
 ---
 
@@ -142,7 +156,30 @@ Constraints:  {anything specific the user mentioned}
 
 ### GATE: User confirms the Identity Card
 
-Only after confirmation, create the task breakdown with TodoWrite.
+Only after confirmation:
+
+### Step 5 — Create Project Directory
+
+```bash
+# Derive slug from project name: "Noctua Coffee" → "noctua-coffee"
+PROJECT_DIR="C:\Users\mateo\Desktop\{slug}"
+MAQUETA_DIR="C:\Users\mateo\Desktop\maqueta"
+
+# Create project directory + docs folder
+mkdir -p "$PROJECT_DIR/docs"
+
+# Copy libraries (patterns the designer and builder reference)
+cp -r "$MAQUETA_DIR/docs/_libraries" "$PROJECT_DIR/docs/_libraries"
+```
+
+**From this point forward, ALL file paths are relative to `$PROJECT_DIR`:**
+- `docs/` → `$PROJECT_DIR/docs/`
+- `_ref-captures/` → `$PROJECT_DIR/_ref-captures/`
+- `src/` → `$PROJECT_DIR/src/`
+
+Announce to user: "Project directory created at `Desktop/{slug}/`"
+
+Then create the task breakdown with TodoWrite.
 
 ---
 
@@ -152,29 +189,31 @@ Only after confirmation, create the task breakdown with TodoWrite.
 
 ### Step A: Capture (v3.1 — 4-pass sweep + auto-discovery)
 
+**Capture script runs from maqueta, output goes to PROJECT directory:**
+
 **Single URL (auto-discovers internal pages, max 5):**
 ```bash
-cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs "{url}" "../_ref-captures"
+cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs "{url}" "$PROJECT_DIR/_ref-captures"
 ```
 
 **Multiple URLs (batch — preferred):**
 ```bash
-cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --batch "{url1}" "{url2}" "{url3}" --out "../_ref-captures"
+cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs --batch "{url1}" "{url2}" "{url3}" --out "$PROJECT_DIR/_ref-captures"
 ```
 
 **Limit pages / disable discovery:**
 ```bash
-cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --max-pages 3 "{url}" "../_ref-captures"
-cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --no-discover "{url}" "../_ref-captures"
+cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs --max-pages 3 "{url}" "$PROJECT_DIR/_ref-captures"
+cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs --no-discover "{url}" "$PROJECT_DIR/_ref-captures"
 ```
 
 **Auto-discovery:** Extracts nav/header links from homepage, captures internal pages.
 Each page gets its own directory + a site-level index:
-- `_ref-captures/{domain}/` — homepage
-- `_ref-captures/{domain}--about/` — /about page
-- `_ref-captures/{domain}--index.json` — site map of all captured pages
+- `$PROJECT_DIR/_ref-captures/{domain}/` — homepage
+- `$PROJECT_DIR/_ref-captures/{domain}--about/` — /about page
+- `$PROJECT_DIR/_ref-captures/{domain}--index.json` — site map of all captured pages
 
-**Produces per page in `_ref-captures/{domain}[--slug]/`:**
+**Produces per page in `$PROJECT_DIR/_ref-captures/{domain}[--slug]/`:**
 - `desktop/frame-NNN.png` — per-section desktop (1440px)
 - `mobile/frame-NNN.png` — per-section mobile (375px)
 - `interactions/scroll-desktop-NNN.png` — scroll-triggered animation captures
@@ -188,12 +227,13 @@ Each page gets its own directory + a site-level index:
 ```
 Agent: reference-analyst
 Context:
-  - Site index: _ref-captures/{domain}--index.json (lists all captured pages)
-  - Paths to _ref-captures/{domain}[--slug]/ (desktop + mobile + interactions screenshots per page)
-  - Path to manifest.json per page (v3.1 with 4-pass sweep data: scroll diffs, hover states, click states, spacing, layouts)
+  - PROJECT_DIR: $PROJECT_DIR (all paths below are relative to this)
+  - Site index: $PROJECT_DIR/_ref-captures/{domain}--index.json (lists all captured pages)
+  - Paths to $PROJECT_DIR/_ref-captures/{domain}[--slug]/ (desktop + mobile + interactions screenshots per page)
+  - Path to manifest.json per page (v3.1 with 4-pass sweep data)
   - Original URL: {url} (analyst may use WebFetch to read page source)
-  - docs/_libraries/layouts.md, docs/_libraries/interactions.md, docs/_libraries/motion-categories.md
-Produce: docs/reference-analysis.md
+  - $PROJECT_DIR/docs/_libraries/layouts.md, interactions.md, motion-categories.md
+Produce: $PROJECT_DIR/docs/reference-analysis.md
 DO NOT pass the user's brief — analyst sees only what it observes, no bias.
 Note: When multiple pages captured, analyst should compare cross-page patterns.
 ```
@@ -202,7 +242,7 @@ Note: When multiple pages captured, analyst should compare cross-page patterns.
 
 ```
 Agent: qa
-Validate: docs/reference-analysis.md
+Validate: $PROJECT_DIR/docs/reference-analysis.md
 Check:
   1. All sections filled (colors, typography, layouts, motion, rhythm, responsive, borrow/avoid, recommendations)
   2. Color/font claims reference manifest data (not guessed from pixels)
@@ -240,20 +280,19 @@ Project brief:
   Scheme: {dark/light}
   Constraints: {any}
 
-Reference analysis (FULL — paste entire docs/reference-analysis.md):
+Reference analysis (FULL — paste entire $PROJECT_DIR/docs/reference-analysis.md):
   {paste the complete file — do NOT excerpt or summarize}
   The Creative Director needs the full analysis including confidence levels,
   responsive comparison, tech stack context, and all borrow/avoid items.
 
 Reference frames available at:
-  Site index: _ref-captures/{domain}--index.json (lists all captured pages)
-  Homepage:  _ref-captures/{domain}/desktop/frame-NNN.png + mobile/frame-NNN.png
-  Internal:  _ref-captures/{domain}--{slug}/desktop/frame-NNN.png + mobile/frame-NNN.png
+  Site index: $PROJECT_DIR/_ref-captures/{domain}--index.json (lists all captured pages)
+  Homepage:  $PROJECT_DIR/_ref-captures/{domain}/desktop/frame-NNN.png
+  Internal:  $PROJECT_DIR/_ref-captures/{domain}--{slug}/desktop/frame-NNN.png
 (Creative Director should attribute decisions to specific frame numbers and pages)
 
-Templates: read docs/_templates/ for output format
-Libraries: read docs/_libraries/ for available pattern names
-Produce 6 docs:
+Libraries: read $PROJECT_DIR/docs/_libraries/ for available pattern names
+Produce 6 docs (all inside $PROJECT_DIR/docs/):
   docs/design-concept.md   ← creative direction, zero values
   docs/design-tokens.md    ← all CSS tokens with descriptions
   docs/design-decisions.md ← every token traced to a ref frame or principle
@@ -266,8 +305,8 @@ Produce 6 docs:
 
 ```
 Agent: qa
-Validate: docs/design-concept.md, docs/design-tokens.md, docs/design-decisions.md,
-          docs/content-brief.md, docs/page-plans.md, docs/motion-spec.md
+Validate: $PROJECT_DIR/docs/design-concept.md, design-tokens.md, design-decisions.md,
+          content-brief.md, page-plans.md, motion-spec.md
 Run: 12-point validation from pipeline.md
 Report: PASS or FAIL with specifics
 ```
@@ -279,11 +318,11 @@ If FAIL → re-dispatch to creative-director with SPECIFIC failures → max 3 lo
 After QA passes, present as formatted text (extract from the new docs):
 
 ```
-1. Read docs/design-concept.md → show concept statement + visual principles
-2. Read docs/design-tokens.md → show palette (hex + name + use case per color)
-                                 + typography choices (family + sample text)
-3. Read docs/page-plans.md → show section plan table (name + layout + motion + energy)
-4. Read docs/design-decisions.md → show 2-3 key decisions attributed to ref frames
+1. Read $PROJECT_DIR/docs/design-concept.md → show concept statement + visual principles
+2. Read $PROJECT_DIR/docs/design-tokens.md → show palette (hex + name + use case per color)
+                                              + typography choices (family + sample text)
+3. Read $PROJECT_DIR/docs/page-plans.md → show section plan table (name + layout + motion + energy)
+4. Read $PROJECT_DIR/docs/design-decisions.md → show 2-3 key decisions attributed to ref frames
 
 Ask: "Here's the visual identity I designed for {project name}. Does this match your vision?"
 Options: "Approved — start building", "Needs changes", "Scrap it — redesign from scratch"
@@ -300,22 +339,31 @@ If "Scrap it" → re-dispatch creative-director with new direction
 
 ### Step A: Scaffold
 
-Copy `_project-scaffold/` to project directory. Run `npm install`.
+Copy scaffold from maqueta to the project directory:
+```bash
+# Copy scaffold (excluding node_modules)
+rsync -a --exclude='node_modules' "$MAQUETA_DIR/_project-scaffold/" "$PROJECT_DIR/" 2>/dev/null || \
+  cp -r "$MAQUETA_DIR/_project-scaffold/." "$PROJECT_DIR/" && rm -rf "$PROJECT_DIR/node_modules"
+
+# Install dependencies
+cd "$PROJECT_DIR" && npm install
+```
 
 ### Step B: Design tokens
 
-Read `docs/design-tokens.md`. The CSS output block at the bottom is copy-paste ready.
-Copy it directly to `src/styles/tokens.css`. No extraction needed — it's already formatted.
+Read `$PROJECT_DIR/docs/design-tokens.md`. The CSS output block at the bottom is copy-paste ready.
+Copy it directly to `$PROJECT_DIR/src/styles/tokens.css`. No extraction needed — it's already formatted.
 
 ### Step C: Spawn Atmosphere console
 
-Read `docs/design-tokens.md` → atmosphere section.
-Read `docs/design-decisions.md` → atmosphere decision entry.
+Read `$PROJECT_DIR/docs/design-tokens.md` → atmosphere section.
+Read `$PROJECT_DIR/docs/design-decisions.md` → atmosphere decision entry.
 Pass inline:
 
 ```
 Agent: atmosphere
 Context (inline — do not tell it to read docs):
+  PROJECT_DIR: $PROJECT_DIR
   --canvas: {hex from design-tokens.md}
   --surface: {hex}
   --accent-primary: {hex}
@@ -324,7 +372,7 @@ Context (inline — do not tell it to read docs):
   Mouse response: {description from design-tokens.md atmosphere section}
   Scroll response: {description}
   Mobile fallback CSS: {--atmosphere-mobile-fallback full CSS string}
-  Write to: src/components/AtmosphereCanvas.vue
+  Write to: $PROJECT_DIR/src/components/AtmosphereCanvas.vue
 ```
 
 ### Gate: QA validates atmosphere (5-point check)
@@ -350,7 +398,7 @@ No store imports. No API calls. No `useFetch`. No `useRoute`. Pure Vue + GSAP.
 The goal is to build the full creative visual experience first.
 API wiring happens in Phase 5B — after the user approves the creative build.
 
-Read `docs/page-plans.md`. Get the complete section list.
+Read `$PROJECT_DIR/docs/page-plans.md`. Get the complete section list.
 
 For EACH section, run this full sequence. Do not batch. Do not skip any step.
 
@@ -360,7 +408,7 @@ For EACH section, run this full sequence. Do not batch. Do not skip any step.
 
 Before spawning Constructor, extract these values yourself:
 
-From `docs/design-tokens.md` (semantic tokens section):
+From `$PROJECT_DIR/docs/design-tokens.md` (semantic tokens section):
 ```
 Font display:      {family name — e.g., "Clash Display"} → --font-display
 Font body:         {family name — e.g., "Satoshi"} → --font-body
@@ -374,14 +422,14 @@ Font body:         {family name — e.g., "Satoshi"} → --font-body
 Spacing base:      {N}px
 ```
 
-From `docs/design-decisions.md` (find the entry for this section's dominant design choice):
+From `$PROJECT_DIR/docs/design-decisions.md` (find the entry for this section's dominant design choice):
 ```
 Key decision: {paste the decision entry relevant to this section's visual approach}
 Reference: {frame path that informed it}
 Intent: {the "why" — pass this so Constructor understands the creative reason}
 ```
 
-From `docs/page-plans.md`, THIS section's recipe card:
+From `$PROJECT_DIR/docs/page-plans.md`, THIS section's recipe card:
 ```
 Section: {name}
 Purpose: {purpose text}
@@ -392,7 +440,7 @@ Energy: {HIGH/LOW}
 Responsive: {mobile strategy}
 ```
 
-From `docs/content-brief.md`, THIS section's copy:
+From `$PROJECT_DIR/docs/content-brief.md`, THIS section's copy:
 ```
 Headline: "{exact text — copy verbatim}"
 Subtext: "{exact text — copy verbatim}"
@@ -400,7 +448,7 @@ CTA: "{exact text — copy verbatim}" (if applicable)
 Supporting copy: {any additional text}
 ```
 
-From `docs/_libraries/`, the specific pattern for this section's assigned technique:
+From `$PROJECT_DIR/docs/_libraries/`, the specific pattern for this section's assigned technique:
 - Read the layout pattern's implementation notes
 - Read the motion category's GSAP implementation code
 - Read the interaction pattern's CSS/JS approach
@@ -412,10 +460,11 @@ From `docs/_libraries/`, the specific pattern for this section's assigned techni
 Agent: constructor
 Context (ALL values passed inline — Constructor reads nothing itself):
 
+  PROJECT_DIR: $PROJECT_DIR
   SECTION: {name}
   Purpose: {purpose}
   Energy: {HIGH/LOW}
-  Write to: src/components/sections/S-{Name}.vue
+  Write to: $PROJECT_DIR/src/components/sections/S-{Name}.vue
 
   RECIPE CARD:
   Layout: {layout pattern name}
@@ -488,11 +537,12 @@ After QA passes:
 
 ## Phase 4: Motion Choreography
 
-After ALL sections are approved, read `docs/motion-spec.md`. Extract and pass inline:
+After ALL sections are approved, read `$PROJECT_DIR/docs/motion-spec.md`. Extract and pass inline:
 
 ```
 Agent: choreographer
 Context:
+  PROJECT_DIR: $PROJECT_DIR
   Brand easing: {cubic-bezier + character description}
   Durations: fast {N}s, medium {N}s, slow {N}s
   Per-section choreography table: {paste entire table}
@@ -501,8 +551,8 @@ Context:
   Hover states: {paste hover table}
   Reduced motion spec: {paste reduced-motion section}
   Existing sections: {list all S-*.vue with their assigned motion categories}
-  Write to: src/composables/useMotion.js, useLenis.js, useCursor.js, useTransitions.js
-            src/components/AppPreloader.vue
+  Write to: $PROJECT_DIR/src/composables/useMotion.js, useLenis.js, useCursor.js, useTransitions.js
+            $PROJECT_DIR/src/components/AppPreloader.vue
 ```
 
 ### Gate: QA validates motion
@@ -517,11 +567,11 @@ Check: no consecutive techniques, prefers-reduced-motion, gsap.context() cleanup
 
 ## Phase 5A: Static Integration
 
-CEO handles integration directly (no console needed):
+CEO handles integration directly (no console needed). All paths relative to `$PROJECT_DIR`:
 
-1. Update `src/router/index.js` — lazy-loaded routes for all pages
-2. Update `src/App.vue` — add `<AtmosphereCanvas>`, `<AppPreloader>`, transition wrapper
-3. Update `src/views/HomeView.vue` — import and place all section components in order
+1. Update `$PROJECT_DIR/src/router/index.js` — lazy-loaded routes for all pages
+2. Update `$PROJECT_DIR/src/App.vue` — add `<AtmosphereCanvas>`, `<AppPreloader>`, transition wrapper
+3. Update `$PROJECT_DIR/src/views/HomeView.vue` — import and place all section components in order
 4. Create any additional page views with their sections
 5. Add SEO meta tags to every page (title, description, OG tags)
 
@@ -532,7 +582,7 @@ All content remains static/hardcoded at this point.
 ```
 Agent: qa
 Run: complete audit — a11y, SEO, responsive, CSS tokens, performance, motion variety, content completeness
-Read: all src/ files + docs/
+Read: all $PROJECT_DIR/src/ files + $PROJECT_DIR/docs/
 Report: PASS/FAIL per category with specific issues
 ```
 
@@ -564,8 +614,8 @@ Fix all critical issues. Re-audit. Loop until PASS.
 
 For each page/section that uses API data:
 
-1. Create the Pinia store in `src/stores/`
-2. Create the service in `src/services/`
+1. Create the Pinia store in `$PROJECT_DIR/src/stores/`
+2. Create the service in `$PROJECT_DIR/src/services/`
 3. Replace hardcoded template values with reactive data from the store
 4. Add loading states and error states
 5. Ensure static fallback renders before data arrives (no empty flash)
@@ -598,8 +648,9 @@ Visual behavior must not change between static and API-wired state.
 
 ## Phase 6: Cleanup
 
-1. Delete `_ref-captures/` directory
-2. Report final status: list of all files created, all pages, all sections
+1. Delete `$PROJECT_DIR/_ref-captures/` directory
+2. Report final status: project at `$PROJECT_DIR`, list of all files created, all pages, all sections
+3. Confirm maqueta is untouched (no files written to `$MAQUETA_DIR`)
 
 ---
 

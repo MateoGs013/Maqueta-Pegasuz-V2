@@ -1,5 +1,16 @@
 # Pipeline V3 — Console Architecture
 
+## Project Isolation
+
+Maqueta (`C:\Users\mateo\Desktop\maqueta`) is a **read-only template**.
+Every project is created in a new directory: `C:\Users\mateo\Desktop\{project-slug}/`.
+
+- `$MAQUETA_DIR` — template repo (scripts, scaffold, libraries, agents, skills)
+- `$PROJECT_DIR` — the active project being built (docs, captures, src, node_modules)
+
+The CEO creates `$PROJECT_DIR` in Phase 0 after the identity card is confirmed.
+All subsequent paths (docs, captures, src) are relative to `$PROJECT_DIR`.
+
 ## Architecture: CEO + 6 Consoles
 
 The CEO (`/project` skill) orchestrates everything. Consoles are specialized agents

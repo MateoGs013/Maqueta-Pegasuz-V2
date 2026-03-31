@@ -1,17 +1,40 @@
 # Pegasuz V4 — Agent Teams Pipeline
 
+## Project Isolation
+
+**Maqueta is an immutable template.** Never write project files inside maqueta.
+Every new project is created in its own directory on the Desktop:
+
+```
+Desktop/
+  maqueta/                   ← TEMPLATE (read-only during projects)
+    _project-scaffold/       ← Vue 3 starter (copied to new projects)
+    docs/_libraries/         ← pattern libraries (copied to new projects)
+    scripts/capture-refs.mjs ← reference capture tool (runs from here)
+    CLAUDE.md                ← rules + agent prompts
+    .claude/                 ← skills, agents, pipeline
+
+  {project-slug}/            ← NEW PROJECT (created by /project)
+    docs/                    ← design docs (generated) + _libraries (copied)
+    _ref-captures/           ← reference screenshots (temporary)
+    src/                     ← Vue 3 app (from scaffold)
+    package.json, vite.config.js, index.html
+```
+
+The `MAQUETA_DIR` is always `C:\Users\mateo\Desktop\maqueta`.
+The `PROJECT_DIR` is `C:\Users\mateo\Desktop\{project-slug}` (slug derived from project name).
+
 ## Stack
 Vue 3 (`<script setup>`) + Vite + Vue Router + Pinia
 GSAP 3 + ScrollTrigger + Lenis · CSS Custom Properties
 @splinetool/runtime (optional — interactive 3D scenes, loaded dynamically)
 
-## Structure
+## Project Structure (inside {project-slug}/)
 ```
+docs/_libraries/             <- copied from maqueta (layouts, interactions, motion)
 docs/tokens.md              <- design system (single source of truth)
 docs/sections.md            <- section plan + cinematic descriptions + copy
-docs/_libraries/             <- pattern reference (layouts, interactions, motion)
-_ref-captures/              <- reference screenshots (temporary)
-_project-scaffold/          <- project template (copied to root at scaffold phase)
+_ref-captures/              <- reference screenshots (temporary, deleted at end)
 src/
   styles/tokens.css         <- CSS from docs/tokens.md :root block
   components/sections/S-{Name}.vue
@@ -24,6 +47,7 @@ src/
   stores/                   <- Pinia (loading, error, data)
   views/                    <- lazy-loaded route pages
   router/index.js
+package.json, vite.config.js, index.html
 ```
 
 ## Design Philosophy — Anti-Slop
@@ -114,6 +138,9 @@ You are the LEAD. You orchestrate by spawning teammates with the prompts below.
 Each teammate loads this CLAUDE.md automatically (including the Design Philosophy).
 Teammates read files directly from disk — you do NOT extract/paste context inline.
 
+**All teammates work inside `$PROJECT_DIR` (the new project directory, NOT maqueta).**
+Tell each teammate the project path: `$PROJECT_DIR = C:\Users\mateo\Desktop\{slug}`.
+
 ### Phase 0: Discovery (Lead — do not delegate)
 
 1. Parse the user's message. Extract: project type, name, mood, pages, references, constraints.
@@ -122,22 +149,23 @@ Teammates read files directly from disk — you do NOT extract/paste context inl
    - Brand: "Desde cero" / "Tengo colores/fonts"
    - Backend: "Estático" / "Conecta a API"
 3. Compile identity card → show to user → confirm.
-4. If reference URLs provided, capture with 4-pass sweep + auto-discovery (scroll + hover + click + responsive):
+4. If reference URLs provided, capture with 4-pass sweep + auto-discovery.
+   **IMPORTANT:** Capture script lives in maqueta, output goes to the PROJECT directory:
    ```bash
    # Single URL (auto-discovers internal pages, max 5):
-   cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs "{url}" "../_ref-captures"
+   cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs "{url}" "$PROJECT_DIR/_ref-captures"
    # Batch (multiple URLs):
-   cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --batch "{url1}" "{url2}" --out "../_ref-captures"
+   cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs --batch "{url1}" "{url2}" --out "$PROJECT_DIR/_ref-captures"
    # Limit internal pages:
-   cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --max-pages 3 "{url}" "../_ref-captures"
+   cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs --max-pages 3 "{url}" "$PROJECT_DIR/_ref-captures"
    # Homepage only (no discovery):
-   cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --no-discover "{url}" "../_ref-captures"
+   cd "$MAQUETA_DIR/scripts" && npm install --silent 2>/dev/null && node capture-refs.mjs --no-discover "{url}" "$PROJECT_DIR/_ref-captures"
    ```
-   Auto-discovers nav links and captures internal pages. Each page gets its own directory:
-   `_ref-captures/{domain}/` (home), `_ref-captures/{domain}--about/` (/about), etc.
-   Produces per page: `desktop/` + `mobile/` frames, `interactions/` (hover/click/scroll screenshots), `manifest.json` v3.1 with clustered palette, tech stack, CSS custom properties, interaction diffs, spacing system, layout patterns.
+   Where `$MAQUETA_DIR` = `C:\Users\mateo\Desktop\maqueta` and `$PROJECT_DIR` = the new project directory.
+   Auto-discovers nav links and captures internal pages. Each page gets its own directory.
+   Produces per page: `desktop/` + `mobile/` frames, `interactions/` screenshots, `manifest.json` v3.1.
    Site-level index at `_ref-captures/{domain}--index.json` maps all captured pages.
-   Optionally spawn the `reference-analyst` subagent (`.claude/agents/reference-analyst.md`) for structured analysis → `docs/reference-analysis.md`.
+   Optionally spawn the `reference-analyst` subagent for structured analysis → `docs/reference-analysis.md`.
 
 ### Phase 1: Design — SPAWN DESIGNER TEAMMATE
 
@@ -220,9 +248,11 @@ After designer completes: read docs/tokens.md + docs/sections.md → present pal
 
 ### Phase 2: Scaffold (Lead — do not delegate)
 
-1. Copy `_project-scaffold/` contents to project root
-2. `npm install`
-3. Copy the CSS Output Block from `docs/tokens.md` into `src/styles/tokens.css`
+**Project directory was already created in Phase 0.** Scaffold into it:
+1. Copy `$MAQUETA_DIR/_project-scaffold/` contents to `$PROJECT_DIR/` (excluding node_modules)
+2. Copy `$MAQUETA_DIR/docs/_libraries/` to `$PROJECT_DIR/docs/_libraries/`
+3. `cd $PROJECT_DIR && npm install`
+4. Copy the CSS Output Block from `$PROJECT_DIR/docs/tokens.md` into `$PROJECT_DIR/src/styles/tokens.css`
 
 ### Phase 3: Build — SPAWN BUILDER TEAMMATE (one per section or batch)
 
