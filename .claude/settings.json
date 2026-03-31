@@ -1,5 +1,25 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'echo \"\"; echo \"═══ PIPELINE STATE RECOVERY (post-compaction) ═══\"; found=0; for f in /c/Users/mateo/Desktop/*/.pipeline-state.md; do if [ -f \"$f\" ]; then echo \"\"; cat \"$f\"; found=1; fi; done; if [ $found -eq 0 ]; then echo \"No active pipeline found.\"; fi; echo \"═══════════════════════════════════════════════\"'"
+          }
+        ]
+      },
+      {
+        "matcher": "resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'for f in /c/Users/mateo/Desktop/*/.pipeline-state.md; do if [ -f \"$f\" ]; then echo \"\"; echo \"═══ ACTIVE PIPELINE DETECTED ═══\"; cat \"$f\"; echo \"═══════════════════════════════\"; fi; done'"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Write",
