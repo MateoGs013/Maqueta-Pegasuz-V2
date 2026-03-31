@@ -1,4 +1,4 @@
-# Pipeline V3 — Console Architecture
+# Pipeline V4 — Agent Architecture
 
 ## Project Isolation
 
@@ -11,13 +11,13 @@ Every project is created in a new directory: `C:\Users\mateo\Desktop\{project-sl
 The CEO creates `$PROJECT_DIR` in Phase 0 after the identity card is confirmed.
 All subsequent paths (docs, captures, src) are relative to `$PROJECT_DIR`.
 
-## Architecture: CEO + 6 Consoles
+## Architecture: CEO + 4 Agents
 
-The CEO (`/project` skill) orchestrates everything. Consoles are specialized agents
+The CEO (`/project` skill) orchestrates everything. Agents are specialized subprocesses
 that receive ONLY the context they need and produce specific outputs.
 
-**Context management is the CEO's #1 job.** Don't tell a console "read the docs."
-Extract the relevant parts and pass them inline. This keeps console context small and focused.
+**Context management is the CEO's #1 job.** Don't tell an agent "read the docs."
+Extract the relevant parts and pass them inline. This keeps agent context small and focused.
 
 **Every visual milestone requires user approval.** After QA passes, the CEO presents
 a preview (screenshot) to the user. The user approves, requests changes, or rejects.
@@ -26,16 +26,14 @@ user sign-off. See `/project` skill for the User Review Protocol details.
 
 ---
 
-## Console Registry
+## Agent Registry
 
-| Console | Role | Receives | Produces |
-|---------|------|----------|----------|
-| Reference Analyst | Analyze captured screenshots + metadata | Screenshot paths (desktop + mobile) + manifest + original URL | `docs/reference-analysis.md` |
-| Creative Director | Design visual identity | Brief + full reference-analysis.md + ref frame paths | 6 foundation docs |
-| Atmosphere | Build WebGL/Canvas layer | Palette + atmosphere concept (extracted) | `AtmosphereCanvas.vue` |
-| Constructor | Build sections one by one | Recipe card + tokens + copy (extracted) | `S-{Name}.vue` |
-| Choreographer | Implement all motion | Motion spec + section list (extracted) | Composables + preloader |
-| QA | Validate between every step | Step outputs + relevant docs | PASS/FAIL report |
+| Agent | Role | Receives | Produces |
+|-------|------|----------|----------|
+| `reference-analyst` | Analyze captured screenshots + metadata | Screenshot paths (desktop + mobile) + manifest + original URL | `docs/reference-analysis.md` |
+| `designer` | Design visual identity | Brief + full reference-analysis.md + ref frame paths | 6 foundation docs |
+| `builder` | Build sections one by one | Recipe card + tokens + copy (extracted) | `S-{Name}.vue` + `AtmosphereCanvas.vue` |
+| `polisher` | Implement motion + QA audit | Motion spec + section list (extracted) | Composables + preloader |
 
 ---
 
@@ -127,11 +125,11 @@ internal pages automatically (max 5 by default). Each page gets its own director
 
 ---
 
-## Step 1: Creative Direction (Console: `creative-director`)
+## Step 1: Creative Direction (Agent: `designer`)
 
 **Context contract:**
 - IN: User brief (project type, pages, mood, constraints)
-- IN: **Full `docs/reference-analysis.md`** — CEO passes the ENTIRE file, not excerpts. The Creative Director needs complete context (palette, typography, layouts, motion, responsive analysis, tech stack, borrow/avoid lists, confidence levels) to make informed design decisions.
+- IN: **Full `docs/reference-analysis.md`** — CEO passes the ENTIRE file, not excerpts. The designer needs complete context (palette, typography, layouts, motion, responsive analysis, tech stack, borrow/avoid lists, confidence levels) to make informed design decisions.
 - IN: Reference frame paths (`_ref-captures/{domain}/desktop/frame-NNN.png` + `mobile/frame-NNN.png`) so decisions can be attributed to specific frames
 - IN: Template formats from `docs/_templates/`
 - IN: Pattern libraries from `docs/_libraries/`
@@ -143,7 +141,7 @@ internal pages automatically (max 5 by default). Each page gets its own director
   - `docs/page-plans.md` — recipe cards per section
   - `docs/motion-spec.md` — easing, durations, choreography
 
-**Gate — 12-point validation (QA console):**
+**Gate — 12-point validation (QA agent):**
 1. design-concept.md: concept statement + 3+ visual principles + anti-principles
 2. design-decisions.md: entry for each major color, font, easing, layout choice — with reference attribution
 3. Palette: 6+ colors with hex values, descriptions, and contrast ratios in design-tokens.md
@@ -157,22 +155,23 @@ internal pages automatically (max 5 by default). Each page gets its own director
 11. Atmosphere: preset + mouse behavior + scroll behavior + mobile CSS fallback value
 12. Section counts: homepage ≥ 8, other pages ≥ 5
 
-**On FAIL:** CEO passes specific failures to Creative Director to fix. Max 3 loops.
+**On FAIL:** CEO passes specific failures to designer to fix. Max 3 loops.
 
 **User Review:** CEO presents concept + palette (from design-concept + design-tokens) + section plan (from page-plans) to user. User approves or requests changes. No building until user approves.
 
 ---
 
-## Step 2: Atmosphere (Console: `atmosphere`)
+## Step 2: Scaffold + Atmosphere (Agent: `builder`)
 
-**Context contract — CEO extracts from design-tokens.md and passes inline:**
+**Scaffold:** CEO copies `$MAQUETA_DIR/_project-scaffold/` to `$PROJECT_DIR/`, copies `_libraries`, runs `npm install`, writes `tokens.css`.
+
+**Atmosphere:** Builder creates `AtmosphereCanvas.vue` using atmosphere tokens from design-tokens.md.
 - IN: Palette hex values (`--canvas`, `--surface`, `--accent-primary`, `--accent-secondary`)
-- IN: Atmosphere token values from design-tokens.md (preset, mouse radius, opacity, colors)
-- IN: Mobile fallback CSS value (full CSS string from `--atmosphere-mobile-fallback`)
-- DO NOT pass: typography, spacing, content, page plans (irrelevant to this console)
+- IN: Atmosphere token values (preset, mouse radius, opacity, colors)
+- IN: Mobile fallback CSS value
 - OUT: `src/components/AtmosphereCanvas.vue`
 
-**Gate (QA console):**
+**Gate:**
 1. Canvas responds to mouse position
 2. Canvas responds to scroll offset
 3. Mobile fallback renders visible (not `display:none`)
@@ -183,7 +182,7 @@ internal pages automatically (max 5 by default). Each page gets its own director
 
 ---
 
-## Step 3: Sections — STATIC BUILD PHASE (Console: `constructor`, one call per section)
+## Step 3: Sections — STATIC BUILD PHASE (Agent: `builder`, one call per section)
 
 **All sections are built with hardcoded static data. No store imports. No API calls.**
 The creative visual experience is built first. API wiring happens after the user approves the static build (Step 5B).
@@ -196,7 +195,7 @@ The creative visual experience is built first. API wiring happens after the user
 - IN: Library code snippets (paste specific layout pattern, motion GSAP code, interaction CSS from _libraries/)
 - DO NOT pass: other sections' recipe cards, full docs, stores, services
 
-**Gate — 7-layer validation (QA console, per section):**
+**Gate — 7-layer validation (QA agent, per section):**
 1. Composition: semantic HTML, heading hierarchy
 2. Typography: tokens used, fluid type
 3. Depth: visual layers present
@@ -205,13 +204,13 @@ The creative visual experience is built first. API wiring happens after the user
 6. Atmosphere: visual depth or canvas connection
 7. Responsive: works at 375, 768, 1280, 1440px
 
-**On FAIL:** CEO passes specific layer failures to Constructor. Rebuild. Do not advance.
+**On FAIL:** CEO passes specific layer failures to builder. Rebuild. Do not advance.
 
 **User Review (per section, MANDATORY):** CEO takes screenshot (desktop + mobile), calls AskUserQuestion. STOPS until user responds. Changes applied → re-screenshot → re-ask. Next section starts ONLY after user responds "Approved."
 
 ---
 
-## Step 4: Motion Choreography (Console: `choreographer`)
+## Step 4: Motion Choreography (Agent: `polisher`)
 
 **Context contract — CEO extracts from motion-spec and passes inline:**
 - IN: Brand easing (cubic-bezier + character)
@@ -225,7 +224,7 @@ The creative visual experience is built first. API wiring happens after the user
 - DO NOT pass: palette, content, layout details
 - OUT: `src/composables/useMotion.js`, `useLenis.js`, `useCursor.js`, `useTransitions.js`, `src/components/AppPreloader.vue`
 
-**Gate (QA console):**
+**Gate (QA agent):**
 1. No consecutive sections share motion technique
 2. `prefers-reduced-motion` fully supported
 3. All animations use `gsap.context()` with cleanup
@@ -245,7 +244,7 @@ CEO assembles the static site:
 5. Add SEO meta to every page
 6. All content remains hardcoded
 
-**Final audit (QA console):** a11y + SEO + responsive + CSS + performance + motion + content
+**Final audit (QA agent):** a11y + SEO + responsive + CSS + performance + motion + content
 **User Review:** CEO screenshots all pages (desktop + mobile). AskUserQuestion. Loop until approved.
 
 ---
@@ -281,8 +280,8 @@ Visual behavior must not change between static and API-wired state.
 ## CEO Context Management Rules
 
 1. **Extract, don't delegate reading.** CEO reads docs, extracts relevant parts, passes inline. Actual CSS-ready values: hex codes, font names, pixel sizes, cubic-bezier strings.
-2. **One task per console.** Never ask a console to do two things.
-3. **Review before forwarding.** Read console output before passing downstream.
+2. **One task per agent.** Never ask an agent to do two things.
+3. **Review before forwarding.** Read agent output before passing downstream.
 4. **Pass failures explicitly.** "Layer 2 failed: H2 uses 24px instead of var(--text-2xl)" — not "QA failed."
 5. **Track progress.** TodoWrite after every completed task.
 6. **Static first.** Creative build is frozen before any API connection. Never mix creative work with API wiring.

@@ -1,6 +1,6 @@
 ---
 name: project
-description: "CEO console: single entry point for creating web projects. Gathers brief, captures reference screenshots, dispatches to 6 specialized consoles with managed context, enforces gates. Triggers on 'new project', 'nuevo proyecto', 'crear proyecto', 'start project', '/project'."
+description: "CEO orchestrator: single entry point for creating web projects. Gathers brief, captures reference screenshots, dispatches to 4 specialized agents (designer, builder, polisher, reference-analyst), enforces gates. Triggers on 'new project', 'nuevo proyecto', 'crear proyecto', 'start project', '/project'."
 user_invocable: true
 ---
 
@@ -10,7 +10,7 @@ You are the CEO. You don't build — you orchestrate. Your job is to:
 1. **Understand** the brief
 2. **Create the project directory** (never build inside maqueta)
 3. **Break it into tasks**
-4. **Dispatch** each task to the right console with ONLY the context it needs
+4. **Dispatch** each task to the right agent with ONLY the context it needs
 5. **Review** every output before passing it downstream
 6. **Enforce gates** — nothing advances without validation
 7. **Present every visual result to the user and wait for approval**
@@ -75,7 +75,7 @@ STEP 4: ⛔ CALL AskUserQuestion NOW — do not proceed without this
 
 ---
 
-## Phase 0: Discovery Interview (MANDATORY before any console)
+## Phase 0: Discovery Interview (MANDATORY before any agent)
 
 The CEO runs an interactive discovery to build the **Project Identity Card**.
 Parse whatever the user already said. Only ask for what's MISSING.
@@ -264,7 +264,7 @@ If FAIL → re-dispatch Reference Analyst with specific gaps. Max 2 loops.
 ## Phase 1: Creative Direction
 
 ```
-Agent: creative-director
+Agent: designer
 ```
 
 **Context to pass inline:**
@@ -282,14 +282,14 @@ Project brief:
 
 Reference analysis (FULL — paste entire $PROJECT_DIR/docs/reference-analysis.md):
   {paste the complete file — do NOT excerpt or summarize}
-  The Creative Director needs the full analysis including confidence levels,
+  The designer needs the full analysis including confidence levels,
   responsive comparison, tech stack context, and all borrow/avoid items.
 
 Reference frames available at:
   Site index: $PROJECT_DIR/_ref-captures/{domain}--index.json (lists all captured pages)
   Homepage:  $PROJECT_DIR/_ref-captures/{domain}/desktop/frame-NNN.png
   Internal:  $PROJECT_DIR/_ref-captures/{domain}--{slug}/desktop/frame-NNN.png
-(Creative Director should attribute decisions to specific frame numbers and pages)
+(designer should attribute decisions to specific frame numbers and pages)
 
 Libraries: read $PROJECT_DIR/docs/_libraries/ for available pattern names
 Produce 6 docs (all inside $PROJECT_DIR/docs/):
@@ -311,7 +311,7 @@ Run: 12-point validation from pipeline.md
 Report: PASS or FAIL with specifics
 ```
 
-If FAIL → re-dispatch to creative-director with SPECIFIC failures → max 3 loops.
+If FAIL → re-dispatch to designer with SPECIFIC failures → max 3 loops.
 
 ### ⛔ User Review: Creative Direction
 
@@ -328,7 +328,7 @@ Ask: "Here's the visual identity I designed for {project name}. Does this match 
 Options: "Approved — start building", "Needs changes", "Scrap it — redesign from scratch"
 
 If "Needs changes" → ask what → apply to the relevant docs → re-present
-If "Scrap it" → re-dispatch creative-director with new direction
+If "Scrap it" → re-dispatch designer with new direction
 ```
 
 **DO NOT proceed to Phase 2 until user explicitly approves.**
@@ -354,14 +354,14 @@ cd "$PROJECT_DIR" && npm install
 Read `$PROJECT_DIR/docs/design-tokens.md`. The CSS output block at the bottom is copy-paste ready.
 Copy it directly to `$PROJECT_DIR/src/styles/tokens.css`. No extraction needed — it's already formatted.
 
-### Step C: Spawn Atmosphere console
+### Step C: Spawn builder for Atmosphere
 
 Read `$PROJECT_DIR/docs/design-tokens.md` → atmosphere section.
 Read `$PROJECT_DIR/docs/design-decisions.md` → atmosphere decision entry.
 Pass inline:
 
 ```
-Agent: atmosphere
+Agent: builder
 Context (inline — do not tell it to read docs):
   PROJECT_DIR: $PROJECT_DIR
   --canvas: {hex from design-tokens.md}
@@ -406,7 +406,7 @@ For EACH section, run this full sequence. Do not batch. Do not skip any step.
 
 **STEP 1: Extract context from docs**
 
-Before spawning Constructor, extract these values yourself:
+Before spawning builder, extract these values yourself:
 
 From `$PROJECT_DIR/docs/design-tokens.md` (semantic tokens section):
 ```
@@ -426,7 +426,7 @@ From `$PROJECT_DIR/docs/design-decisions.md` (find the entry for this section's 
 ```
 Key decision: {paste the decision entry relevant to this section's visual approach}
 Reference: {frame path that informed it}
-Intent: {the "why" — pass this so Constructor understands the creative reason}
+Intent: {the "why" — pass this so builder understands the creative reason}
 ```
 
 From `$PROJECT_DIR/docs/page-plans.md`, THIS section's recipe card:
@@ -454,11 +454,11 @@ From `$PROJECT_DIR/docs/_libraries/`, the specific pattern for this section's as
 - Read the interaction pattern's CSS/JS approach
 - Copy the relevant excerpts
 
-**STEP 2: Spawn Constructor with extracted context**
+**STEP 2: Spawn builder with extracted context**
 
 ```
-Agent: constructor
-Context (ALL values passed inline — Constructor reads nothing itself):
+Agent: builder
+Context (ALL values passed inline — builder reads nothing itself):
 
   PROJECT_DIR: $PROJECT_DIR
   SECTION: {name}
@@ -504,7 +504,7 @@ Validate: 7-layer check (composition, typography, depth, interaction, motion, at
 Report: PASS or FAIL per layer with specific issues
 ```
 
-If FAIL → pass specific failures to Constructor → rebuild → re-validate.
+If FAIL → pass specific failures to builder → rebuild → re-validate.
 
 **STEP 4: ⛔ MANDATORY USER REVIEW — runs after EVERY section, no exceptions**
 
@@ -527,7 +527,7 @@ After QA passes:
 
 9. If "Needs changes":
    a. Ask follow-up: "What specifically should I change?"
-   b. Apply changes directly to S-{Name}.vue OR re-dispatch Constructor with feedback
+   b. Apply changes directly to S-{Name}.vue OR re-dispatch builder with feedback
    c. Re-screenshot (steps 3-7) → re-call AskUserQuestion → loop until "Approved"
 ```
 
@@ -540,7 +540,7 @@ After QA passes:
 After ALL sections are approved, read `$PROJECT_DIR/docs/motion-spec.md`. Extract and pass inline:
 
 ```
-Agent: choreographer
+Agent: polisher
 Context:
   PROJECT_DIR: $PROJECT_DIR
   Brand easing: {cubic-bezier + character description}
@@ -567,7 +567,7 @@ Check: no consecutive techniques, prefers-reduced-motion, gsap.context() cleanup
 
 ## Phase 5A: Static Integration
 
-CEO handles integration directly (no console needed). All paths relative to `$PROJECT_DIR`:
+CEO handles integration directly (no agent needed). All paths relative to `$PROJECT_DIR`:
 
 1. Update `$PROJECT_DIR/src/router/index.js` — lazy-loaded routes for all pages
 2. Update `$PROJECT_DIR/src/App.vue` — add `<AtmosphereCanvas>`, `<AppPreloader>`, transition wrapper
@@ -658,9 +658,9 @@ Visual behavior must not change between static and API-wired state.
 
 1. **Extract, don't delegate reading.** CEO reads docs, extracts specific values, passes inline. Never "go read docs/design-brief.md" — paste the relevant values.
 
-2. **One task per console.** One section = one Constructor call. Never batch.
+2. **One task per agent.** One section = one builder call. Never batch.
 
-3. **Review before forwarding.** Read every console output before passing downstream.
+3. **Review before forwarding.** Read every agent output before passing downstream.
 
 4. **Pass failures explicitly.** "Layer 2 failed: H2 uses 24px instead of var(--text-2xl)" — not "QA failed."
 
@@ -686,8 +686,8 @@ Visual behavior must not change between static and API-wired state.
 
 ## What the CEO NEVER does
 
-- Write section components (that's Constructor)
-- Write motion code (that's Choreographer)
+- Write section components (that's `builder`)
+- Write motion code (that's `polisher`)
 - Write WebGL/Canvas (that's Atmosphere)
 - Skip QA gates
 - Skip User Review steps
