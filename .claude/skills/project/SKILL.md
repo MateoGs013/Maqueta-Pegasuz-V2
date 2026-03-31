@@ -534,9 +534,9 @@ Context (ALL values passed inline — builder reads nothing itself):
 **STEP 3: CEO Auto-QA Gate (replaces per-section user review)**
 
 ```
-1. CEO reads builder's score + breakdown + screenshots
-2. Score >= 7 and screenshots look reasonable → section PASSES auto-QA
-3. Score < 7 or CEO spots issue → re-dispatch builder with specific feedback
+1. CEO reads builder's Excellence Standard report + screenshots
+2. All requirements pass + signature named → section PASSES auto-QA
+3. Any dimension with 0 passes → re-dispatch builder with: "Dimension X failed: {specific requirement}"
 4. Max 2 CEO correction loops per section
 5. Section passes → APPROVED INTERNALLY (no user review yet)
 ```
@@ -554,7 +554,8 @@ Repeat STEP 1-3 for all remaining sections. No user review between sections.
 2. preview_start → navigate to each page
 3. Full-page screenshot: desktop + mobile per page
 4. ⛔ CALL AskUserQuestion:
-   Q: "All {N} sections are built (scores: S-Hero 8/10, S-Intro 7/10, ...).
+   Q: "All {N} sections are built and pass Excellence Standard.
+       Signatures: S-Hero (200px parallax counter), S-Intro (wave-offset headline), ...
        Here's the complete page. How does it look?"
    Options:
      "Approved — move to polish"

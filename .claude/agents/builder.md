@@ -81,24 +81,55 @@ AFTER writing S-{Name}.vue:
 **This is not optional.** Every section goes through the Preview Loop before reporting done.
 If Preview MCP is unavailable, state so and report without visual verification.
 
-## Quality Rubric — score EVERY section (0-10)
+## Excellence Standard — hard requirements, all must pass
 
-Score each dimension 0-2. Sum = total score. **Minimum to ship: 7/10.**
+These are not suggestions. They are **measurable requirements** verified in your own code
+and screenshots. Every section must pass ALL of them. If any fails, fix before reporting.
 
-| Dimension | 0 (reject) | 1 (weak) | 2 (strong) |
-|-----------|-----------|----------|------------|
-| **Composition** | Centered/symmetric, no overlap, no container breaks | Some asymmetry but grid is safe (1fr/1fr), no spatial surprise | Intentional asymmetry (1.4fr/0.6fr+), visible overlap, element breaks container |
-| **Depth** | Flat — content on background, nothing else | 2 layers (content + grain or gradient) | 3+ layers with independent spatial behavior (parallax, z-index, blur) |
-| **Typography** | One size, one weight, centered | 2-3 sizes, some weight contrast | 4+ sizes, dramatic scale (72px/14px), mixed weights, letter-spacing variation |
-| **Motion** | Generic fade-up, one stage, default easing | 2 stages, custom easing, some variety | 3+ choreographed stages, scroll-linked elements, different easing per role |
-| **Craft** | No hover states, no focus, basic cursor | Hover color change + focus-visible | Magnetic buttons, reveal hovers, cursor reactions, backdrop-blur, micro-interactions |
+### Composition (verify in CSS)
+- [ ] Grid ratio ≥ 1.4:1 (e.g., `1.4fr 1fr`, `2fr 0.8fr`, `65% 35%`)
+- [ ] At least 1 element with `position: absolute` or negative margin that overlaps another
+- [ ] At least 1 element wider than its container (negative margin, `100vw`, or `calc(100% + Npx)`)
+- [ ] `padding-top` ≠ `padding-bottom` (difference ≥ 20%)
+- [ ] At least 2 distinct text alignments in the section (not all `center` or all `left`)
 
-**Auto-reject triggers (score 0 on entire section regardless of total):**
-- Layout achievable with `text-align: center; max-width; margin: 0 auto`
-- All text centered
-- No z-index layering visible in screenshot
-- Identical padding top and bottom
-- Using `ease` or `ease-in-out` anywhere
+### Depth (verify in CSS + screenshot)
+- [ ] Minimum 3 distinct `z-index` values used
+- [ ] At least 1 `::before` or `::after` pseudo-element for atmosphere (beyond grain)
+- [ ] At least 1 of: `backdrop-filter`, `box-shadow`, gradient overlay, or `filter: blur()`
+- [ ] Background layer has scroll-responsive behavior (parallax, opacity shift, or color transition)
+
+### Typography (verify in CSS)
+- [ ] Largest `font-size` ÷ smallest `font-size` ≥ 4x (e.g., `--text-5xl` / `--text-xs`)
+- [ ] At least 4 distinct `font-size` values used in the section
+- [ ] At least 2 distinct `font-weight` values (e.g., 300 body + 700 headline)
+- [ ] At least 1 element with custom `letter-spacing` (not browser default)
+
+### Motion (verify in JS)
+- [ ] Entry animation has ≥ 3 `gsap.from/to/fromTo` calls with different `delay` values
+- [ ] At least 2 different easing curves used (e.g., `power4.out` for headlines + `power2.out` for body)
+- [ ] At least 1 scroll-linked animation (`ScrollTrigger` with `scrub`)
+- [ ] `stagger` used on at least 1 group of elements
+
+### Craft (verify in CSS + JS)
+- [ ] At least 2 visually distinct hover effects (not just color/opacity changes)
+- [ ] At least 1 `[data-magnetic]` element with magnetic pull effect
+- [ ] `focus-visible` on every interactive element
+- [ ] At least 1 of: `clip-path`, `mask`, `shape-outside`, or CSS `path()`
+
+### Signature Element (creative judgment)
+- [ ] Name ONE element in this section that would make someone pause and screenshot it
+- [ ] Explain in 1 sentence why it's distinctive
+
+Examples of signature elements:
+- A number counter that's 200px tall and bleeds behind the content
+- An image that responds to scroll with a parallax + clip-path wipe combo
+- A headline where each word has a different vertical offset creating a wave
+- A decorative SVG line that draws itself across the full viewport width
+- A card that physically lifts (shadow + scale + y) on hover with spring easing
+- Text used as a giant watermark at 5% opacity behind the main content
+
+**If you can't name a signature element, your section isn't distinctive enough. Redesign.**
 
 ## Implementation techniques
 
@@ -261,94 +292,25 @@ onBeforeUnmount(() => mm?.revert())
 </style>
 ```
 
-## Basic vs Premium — the rejection test
+## Scoring
 
-Before writing ANY section, mentally render it. If it matches a "basic" pattern below, REJECT your plan and redesign.
+Count how many Excellence Standard requirements pass. Report as: `{passed}/{total} + signature: {name}`.
+If any dimension has 0 passes → auto-reject, fix that dimension first.
+Minimum to ship: ALL hard requirements pass + signature element named.
 
-### BASIC (reject immediately)
+## Baseline checklist (technical, non-negotiable)
 
-**Layout:**
-- Centered headline → paragraph → button, vertically stacked
-- Two equal columns (1fr 1fr), text left image right
-- Three cards in a row, same size, same spacing, centered
-- Full-width image with centered overlay text
-- Symmetric anything — if you can draw a vertical line of symmetry, it's basic
-
-**Typography:**
-- One font size for all headlines
-- Body text at one size throughout
-- No size contrast between elements (everything 16-24px range)
-- Text centered on every element
-
-**Animation:**
-- Everything fades up from 30px with 0.6s ease
-- All elements enter at the same time or with uniform stagger
-- No scroll-linked motion, just entrance-and-done
-- Hover = color change only
-
-**Depth:**
-- Flat white/dark background, content sits on top, nothing else
-- No overlapping elements, no bleeding edges, no atmospheric layers
-- Every element in its own box, nothing breaks the grid
-
-### PREMIUM (what you must produce)
-
-**Layout:**
-- Asymmetric grid: `1.4fr 0.6fr` or `2fr 1fr` — never `1fr 1fr`
-- Elements overlap: image bleeds -60px into the next content block
-- Mixed alignment: headline left-aligned, caption right-aligned, CTA centered
-- Negative space used intentionally — large gaps that create tension
-- At least one element breaks the container (negative margin or vw-based width)
-
-**Typography:**
-- Dramatic scale contrast: 72px headline next to 14px caption = tension
-- Mixed weights in one line: "We build **extraordinary** things"
-- Letter-spacing variation: -0.04em on display, 0.15em on labels
-- Text as visual element: oversized, cropped, rotated, or used as background
-
-**Animation:**
-- Entry sequence with 3+ stages and intentional delays between groups
-- Scroll-linked parallax on at least one background/decorative element
-- Different easing per element role: headlines aggressive (power4), body gentle (power2)
-- Hover reveals content, transforms scale, triggers magnetic pull
-- Exit animations — elements leaving view are choreographed too
-
-**Depth (minimum 3 layers, always):**
-1. Background atmosphere (grain, gradient, canvas, decorative blur)
-2. Content layer (text, images, cards)
-3. Foreground accent (floating element, line, dot, decorative SVG)
-- Plus: at least one element with `z-index` that overlaps another
-- Plus: at least one shadow, glow, or backdrop-blur for physical depth
-
-### Self-check before writing code
-
-For every section, answer YES to all five:
-1. **Asymmetry** — Is the layout intentionally unbalanced?
-2. **Overlap** — Does at least one element break its bounding box?
-3. **Scale contrast** — Is the largest text 4x+ the smallest text?
-4. **Depth** — Can I count 3+ visual layers?
-5. **Choreography** — Does the entry animation have 3+ distinct stages?
-
-If any answer is NO, redesign before coding.
-
-## Quality checklist (every section)
-
-- [ ] Semantic HTML: `<section>`, `<article>`, `<header>`, `<figure>` — no div soup
-- [ ] Heading hierarchy correct, `aria-label` on section
-- [ ] `var(--token)` for ALL values — zero magic numbers, zero default easing
-- [ ] Fluid type: `clamp(var(--text-lg), 4vw, var(--text-4xl))`
-- [ ] Minimum 3 visual layers: background atmosphere + content + foreground decorative
-- [ ] Asymmetric or intentional composition — not centered-everything
-- [ ] Hover + `focus-visible` + magnetic on interactive elements
-- [ ] Motion: CINEMATIC DESCRIPTION implemented with exact values from docs/pages/{page}.md
-- [ ] `gsap.matchMedia()` + `mm.revert()` cleanup (replaces manual reduced-motion check)
-- [ ] `autoAlpha` used instead of `opacity` for all fade animations
-- [ ] `SplitText.create()` with `autoSplit: true`, `mask`, `aria: 'auto'` for text reveals
+- [ ] Semantic HTML, heading hierarchy, `aria-label` on section
+- [ ] `var(--token)` for ALL values — zero magic numbers
+- [ ] `gsap.matchMedia()` + `mm.revert()` cleanup
+- [ ] `autoAlpha` for fades, `SplitText.create()` with `mask` + `aria` for text
 - [ ] Responsive: 375px → 768px → 1280px → 1440px
-- [ ] Touch targets >= 44px
-- [ ] **STATIC ONLY**: zero store/API imports
-- [ ] Copy EXACT from docs/pages/{page}.md
-- [ ] **Preview Loop completed**: screenshots taken, evaluation done, fixes applied
+- [ ] Touch targets ≥ 44px
+- [ ] Static only: zero store/API imports
+- [ ] Copy exact from docs/pages/{page}.md
+- [ ] **Excellence Standard: all dimensions pass**
+- [ ] **Signature element named**
+- [ ] **Preview Loop completed with both passes**
 
 ## Rules
 

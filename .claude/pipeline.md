@@ -426,18 +426,18 @@ The creative visual experience is built first. API wiring happens after the user
 5. Builder returns: score, per-dimension breakdown, screenshots, self-assessment vs reference
 ```
 
-### Quality Rubric (Builder self-scores, CEO verifies)
+### Excellence Standard (Builder self-verifies, CEO confirms)
 
-| Dimension | 0 (reject) | 1 (weak) | 2 (strong) |
-|-----------|-----------|----------|------------|
-| Composition | Centered/symmetric, no breaks | Some asymmetry, safe grid | Intentional asymmetry, overlap, container breaks |
-| Depth | Flat — content on bg | 2 layers | 3+ layers with independent spatial behavior |
-| Typography | One size, one weight | 2-3 sizes, some contrast | 4+ sizes, dramatic scale, mixed weights |
-| Motion | Generic fade-up, default easing | 2 stages, custom easing | 3+ stages, scroll-linked, different easing per role |
-| Craft | No hover, no focus | Basic hover + focus-visible | Magnetic, reveals, cursor reactions, micro-interactions |
+The builder verifies **measurable hard requirements** in its own code (see builder.md for full list):
+- **Composition:** grid ratio ≥ 1.4:1, overlap, container break, padding asymmetry, mixed alignment
+- **Depth:** 3+ z-index values, atmospheric pseudo-element, backdrop-filter/shadow/blur, scroll-responsive bg
+- **Typography:** font size ratio ≥ 4x, 4+ sizes, 2+ weights, custom letter-spacing
+- **Motion:** 3+ animated elements with different delays, 2+ easing curves, scroll-linked animation, stagger
+- **Craft:** 2+ distinct hovers, magnetic element, focus-visible, clip-path/mask
+- **Signature:** 1 distinctive element named and explained
 
-**Auto-reject (score 0 regardless):** centered-everything, `ease`/`ease-in-out` anywhere, no z-layering.
-**Minimum to ship: 7/10.** Builder self-corrects until it reaches 7 or exhausts 3 loops.
+**All requirements must pass.** If any dimension has 0 passes → auto-reject, fix before reporting.
+Builder reports: `{passed}/{total} + signature: {name}`. Max 3 self-correction loops.
 
 ### Parallel build (when applicable):
 
