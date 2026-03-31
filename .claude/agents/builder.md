@@ -179,6 +179,76 @@ onBeforeUnmount(() => mm?.revert())
 </style>
 ```
 
+## Basic vs Premium — the rejection test
+
+Before writing ANY section, mentally render it. If it matches a "basic" pattern below, REJECT your plan and redesign.
+
+### BASIC (reject immediately)
+
+**Layout:**
+- Centered headline → paragraph → button, vertically stacked
+- Two equal columns (1fr 1fr), text left image right
+- Three cards in a row, same size, same spacing, centered
+- Full-width image with centered overlay text
+- Symmetric anything — if you can draw a vertical line of symmetry, it's basic
+
+**Typography:**
+- One font size for all headlines
+- Body text at one size throughout
+- No size contrast between elements (everything 16-24px range)
+- Text centered on every element
+
+**Animation:**
+- Everything fades up from 30px with 0.6s ease
+- All elements enter at the same time or with uniform stagger
+- No scroll-linked motion, just entrance-and-done
+- Hover = color change only
+
+**Depth:**
+- Flat white/dark background, content sits on top, nothing else
+- No overlapping elements, no bleeding edges, no atmospheric layers
+- Every element in its own box, nothing breaks the grid
+
+### PREMIUM (what you must produce)
+
+**Layout:**
+- Asymmetric grid: `1.4fr 0.6fr` or `2fr 1fr` — never `1fr 1fr`
+- Elements overlap: image bleeds -60px into the next content block
+- Mixed alignment: headline left-aligned, caption right-aligned, CTA centered
+- Negative space used intentionally — large gaps that create tension
+- At least one element breaks the container (negative margin or vw-based width)
+
+**Typography:**
+- Dramatic scale contrast: 72px headline next to 14px caption = tension
+- Mixed weights in one line: "We build **extraordinary** things"
+- Letter-spacing variation: -0.04em on display, 0.15em on labels
+- Text as visual element: oversized, cropped, rotated, or used as background
+
+**Animation:**
+- Entry sequence with 3+ stages and intentional delays between groups
+- Scroll-linked parallax on at least one background/decorative element
+- Different easing per element role: headlines aggressive (power4), body gentle (power2)
+- Hover reveals content, transforms scale, triggers magnetic pull
+- Exit animations — elements leaving view are choreographed too
+
+**Depth (minimum 3 layers, always):**
+1. Background atmosphere (grain, gradient, canvas, decorative blur)
+2. Content layer (text, images, cards)
+3. Foreground accent (floating element, line, dot, decorative SVG)
+- Plus: at least one element with `z-index` that overlaps another
+- Plus: at least one shadow, glow, or backdrop-blur for physical depth
+
+### Self-check before writing code
+
+For every section, answer YES to all five:
+1. **Asymmetry** — Is the layout intentionally unbalanced?
+2. **Overlap** — Does at least one element break its bounding box?
+3. **Scale contrast** — Is the largest text 4x+ the smallest text?
+4. **Depth** — Can I count 3+ visual layers?
+5. **Choreography** — Does the entry animation have 3+ distinct stages?
+
+If any answer is NO, redesign before coding.
+
 ## Quality checklist (every section)
 
 - [ ] Semantic HTML: `<section>`, `<article>`, `<header>`, `<figure>` — no div soup
