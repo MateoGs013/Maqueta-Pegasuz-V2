@@ -235,12 +235,72 @@ async function captureReference(url, outputBase, options = {}) {
     const layoutPatterns = await extractLayoutPatterns(page, sections)
 
     // ─────────────────────────────────────────────────────────
+    // PRE-WARM GSAP SNAPSHOT — read ScrollTrigger BEFORE scrolling.
+    // After the warm-up, once:true triggers are dead and getAll()=0.
+    // This snapshot preserves the registration count at load time.
+    // ─────────────────────────────────────────────────────────
+    const gsapPreWarm = await page.evaluate(() => {
+      const triggers = window.ScrollTrigger?.getAll?.() || []
+      return {
+        gsapActive:             !!(window.gsap || window.GreenSockGlobals),
+        scrollTriggerActive:    !!window.ScrollTrigger,
+        scrollTriggerCount:     triggers.length,
+        scrollTriggerScrubCount: triggers.filter(t => t.scrub).length,
+        customEases: [],
+        // Count children on globalTimeline (includes completed tweens)
+        tweenCount: window.gsap?.globalTimeline?.getChildren?.(true, true, true)?.length || 0,
+      }
+    })
+    console.log(`[capture] GSAP pre-warm: ${gsapPreWarm.scrollTriggerCount} triggers, scrub:${gsapPreWarm.scrollTriggerScrubCount}, tweens:${gsapPreWarm.tweenCount}`)
+
+    // ─────────────────────────────────────────────────────────
+    // GSAP WARM-UP — scroll full page before extracting metrics
+    // Without this, autoAlpha:0 elements are invisible at page load
+    // and ScrollTrigger has no registered tweens → motion: WEAK false positive.
+    // Slow scroll triggers all ScrollTrigger enter callbacks.
+    // ─────────────────────────────────────────────────────────
+    console.log('[capture] GSAP warm-up (scrolling to trigger animations)...')
+    const warmUpMs = await page.evaluate(async () => {
+      const start = Date.now()
+      const totalH = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)
+      const steps  = Math.min(30, Math.ceil(totalH / 250))
+      const stepPx = Math.ceil(totalH / steps)
+
+      for (let i = 0; i <= steps; i++) {
+        window.scrollTo({ top: i * stepPx, behavior: 'instant' })
+        await new Promise(r => setTimeout(r, 120))
+      }
+
+      // Settle at bottom briefly — catches late-triggering animations
+      await new Promise(r => setTimeout(r, 300))
+
+      // Return to top
+      window.scrollTo({ top: 0, behavior: 'instant' })
+      await new Promise(r => setTimeout(r, 200))
+
+      // Tell GSAP to recalculate all trigger positions
+      if (window.ScrollTrigger?.refresh) {
+        window.ScrollTrigger.refresh()
+        await new Promise(r => setTimeout(r, 300))
+      }
+
+      // Lenis: if present and paused, emit a scroll update
+      if (window.lenis?.emit) {
+        window.lenis.emit('scroll', { scroll: 0, limit: totalH, velocity: 0, direction: 0, progress: 0 })
+      }
+
+      return Date.now() - start
+    })
+    await new Promise(r => setTimeout(r, 400)) // final browser paint settle
+    console.log(`[capture] Warm-up done (${warmUpMs}ms)`)
+
+    // ─────────────────────────────────────────────────────────
     // EXCELLENCE STANDARD METRICS (v4 — new)
     // ─────────────────────────────────────────────────────────
     console.log('[capture] Extracting Excellence Standard metrics...')
     const depthMetrics = await extractDepthMetrics(page)
     const typographyMetrics = await extractTypographyMetrics(page)
-    const motionProfile = await extractMotionProfile(page)
+    const motionProfile = await extractMotionProfile(page, gsapPreWarm)
     const compositionMetrics = await extractCompositionMetrics(page)
     const sectionClassifications = await classifySections(page)
 
@@ -1608,8 +1668,11 @@ async function extractTypographyMetrics(page) {
 // ═══════════════════════════════════════════════════════════════
 // MOTION PROFILE — CSS transitions, GSAP state, ScrollTrigger
 // ═══════════════════════════════════════════════════════════════
-async function extractMotionProfile(page) {
-  return page.evaluate(() => {
+// preWarm: snapshot taken before scroll warm-up (ScrollTrigger counts are accurate there)
+async function extractMotionProfile(page, preWarm = {}) {
+  // CSS transitions/animations are read post-warm — elements now have their
+  // animated state applied, making cubic-bezier detection more accurate.
+  const css = await page.evaluate(() => {
     const allEls = [...document.querySelectorAll('*')]
     const cubicBeziers = new Set()
     const durations = []
@@ -1638,42 +1701,66 @@ async function extractMotionProfile(page) {
       }
     }
 
-    // GSAP state
-    const gsapActive = !!(window.gsap || window.GreenSockGlobals)
-    const scrollTriggerActive = !!window.ScrollTrigger
-    let scrollTriggerScrubCount = 0
-    let scrollTriggerCount = 0
-    if (window.ScrollTrigger) {
-      const triggers = window.ScrollTrigger.getAll?.() || []
-      scrollTriggerCount = triggers.length
-      scrollTriggerScrubCount = triggers.filter(t => t.scrub).length
-    }
-
-    const gsapTweenCount = window.gsap?.globalTimeline?.getChildren?.(true, true, true)?.length || 0
+    // Also read GSAP eases from CSS custom properties (our projects store them as tokens)
+    const root = getComputedStyle(document.documentElement)
+    const easeProp = root.getPropertyValue('--ease-out') || root.getPropertyValue('--ease') || ''
+    if (easeProp.includes('cubic-bezier')) cubicBeziers.add(easeProp.trim())
 
     return {
-      cssTransitions: {
-        count: transitionCount,
-        cubicBeziers: [...cubicBeziers].slice(0, 10),
-        cubicBezierCount: cubicBeziers.size,
-        avgDuration: durations.length
-          ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length * 100) / 100
-          : 0
-      },
-      cssAnimations: {
-        count: animationCount,
-        hasStagger: staggerDelayCount > 2
-      },
-      gsap: {
-        active: gsapActive,
-        tweenCount: gsapTweenCount,
-        scrollTrigger: scrollTriggerActive,
-        scrollTriggerCount,
-        scrollTriggerScrub: scrollTriggerScrubCount > 0,
-        scrollTriggerScrubCount
-      }
+      transitionCount,
+      animationCount,
+      staggerDelayCount,
+      cubicBeziers: [...cubicBeziers].slice(0, 10),
+      cubicBezierCount: cubicBeziers.size,
+      avgDuration: durations.length
+        ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length * 100) / 100
+        : 0
     }
   })
+
+  // GSAP state: use pre-warm snapshot (authoritative — triggers not yet dead)
+  // Fall back to live query if no pre-warm data was captured (e.g. reference sites)
+  const liveGSAP = await page.evaluate(() => {
+    const triggers = window.ScrollTrigger?.getAll?.() || []
+    return {
+      gsapActive:             !!(window.gsap || window.GreenSockGlobals),
+      scrollTriggerActive:    !!window.ScrollTrigger,
+      scrollTriggerCount:     triggers.length,
+      scrollTriggerScrubCount: triggers.filter(t => t.scrub).length,
+      tweenCount:             window.gsap?.globalTimeline?.getChildren?.(true, true, true)?.length || 0,
+    }
+  })
+
+  // Merge: pre-warm counts take priority for registration data
+  const gsapActive          = preWarm.gsapActive          ?? liveGSAP.gsapActive
+  const scrollTriggerActive = preWarm.scrollTriggerActive ?? liveGSAP.scrollTriggerActive
+  // Use the LARGER count — pre-warm catches registered triggers, live catches scrub ones still running
+  const scrollTriggerCount  = Math.max(preWarm.scrollTriggerCount  ?? 0, liveGSAP.scrollTriggerCount)
+  const scrollTriggerScrub  = Math.max(preWarm.scrollTriggerScrubCount ?? 0, liveGSAP.scrollTriggerScrubCount)
+  const tweenCount          = Math.max(preWarm.tweenCount ?? 0, liveGSAP.tweenCount)
+
+  return {
+    cssTransitions: {
+      count:           css.transitionCount,
+      cubicBeziers:    css.cubicBeziers,
+      cubicBezierCount: css.cubicBezierCount,
+      avgDuration:     css.avgDuration
+    },
+    cssAnimations: {
+      count:      css.animationCount,
+      hasStagger: css.staggerDelayCount > 2
+    },
+    gsap: {
+      active:               gsapActive,
+      tweenCount,
+      scrollTrigger:        scrollTriggerActive,
+      scrollTriggerCount,
+      scrollTriggerScrub:   scrollTriggerScrub > 0,
+      scrollTriggerScrubCount: scrollTriggerScrub,
+      // Flag: pre-warm data used (more reliable for own projects)
+      usedPreWarm:          Object.keys(preWarm).length > 0
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
