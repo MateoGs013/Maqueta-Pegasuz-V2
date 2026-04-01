@@ -30,10 +30,20 @@ designer_gate:
   decision_tree_used: true          # must cite design-decisions.md paths
 
 builder_gate:
-  excellence_dimensions: all_pass   # all 6 dimensions must pass
-  signature_named: true             # must be named + explained
-  score_minimum: 7                  # /10 from Preview Loop
-  anti_ai_patterns: 0              # zero tolerance
+  # Score minimum is DYNAMIC — resolved per section type from memory.
+  # See "Dynamic Threshold Resolution" below for the algorithm.
+  # Static fallback: 7.0 (used when no historical data exists for the type)
+  excellence_dimensions: all_pass   # observer signals must all be MEDIUM+
+  quality_gates: no_FAIL            # observer gates must all be PASS or WARN
+  signature_named: true
+  anti_ai_patterns: 0
+
+evaluator_gate:
+  # Composite score = (builder × 0.3) + (excellence_avg × 0.5) + (gates × 0.2)
+  # STRONG=10, MEDIUM=7, WEAK=4 | PASS=10, WARN=7, FAIL=0
+  approve_threshold: composite >= score_minimum AND all_excellence MEDIUM+ AND no_gate_FAIL
+  retry_threshold:   composite >= score_minimum - 1.5 OR 1-2 signals WEAK
+  flag_threshold:    contrast_FAIL OR 3+_signals_WEAK OR composite < 6
 
 visual_qa:
   layers_visible: 3+
@@ -43,6 +53,42 @@ visual_qa:
 
 retry_max: 2                        # max agent re-dispatches per task before flagging
 ```
+
+---
+
+## Dynamic Threshold Resolution
+
+Before every `build/S-{Name}` task, the CEO resolves the score minimum from memory:
+
+```
+1. Identify section type from reference-observatory.md
+   (e.g. "hero", "testimonials", "pricing")
+
+2. Read design-intelligence/technique-scores.md
+   → filter entries where section_type = this type
+   → compute historical_avg = mean of their scores
+
+3. score_minimum = max(7.0, historical_avg - 0.3)
+   → "we expect to match or slightly beat historical average"
+   → floor at 7.0 so we never accept below-average work
+
+4. Include in context file:
+   "Expected minimum score: {score_minimum}/10
+    (based on {N} historical {type} sections, avg {historical_avg})"
+
+5. Evaluator uses this threshold (not the static 7.0 from builder_gate)
+```
+
+**Example thresholds from accumulated memory:**
+
+| Section type | Historical avg | Resolved minimum |
+|-------------|---------------|-----------------|
+| hero | 8.3 | **8.0** |
+| features | 7.8 | **7.5** |
+| testimonials | 7.4 | **7.1** |
+| contact | 7.0 | **7.0** (floor) |
+| pricing | 8.1 | **7.8** |
+| (new type) | — | **7.0** (default) |
 
 ---
 

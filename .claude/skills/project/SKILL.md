@@ -102,6 +102,46 @@ node capture-refs.mjs --batch "{urls}" --out "$PROJECT_DIR/_ref-captures"
 
 Spawn reference-analyst → `docs/reference-analysis.md`. Validate 9-point gate.
 
+### Extract Reference Observatory (after analyst completes)
+
+Read `_ref-captures/{domain}/analysis.md` and extract into `.brain/context/reference-observatory.md`:
+
+```markdown
+# Reference Observatory
+
+## Content Strategy Pattern
+{section type sequence from sectionClassifications, e.g. "hero → clients → features → stats → cta"}
+→ Use this as the default page structure unless the brief says otherwise.
+
+## Color Rhythm
+{rhythm string from sectionColors, e.g. "dark → dark → light → dark → mid"}
+{N} theme transitions — {intentional contrast / monotone / mixed}
+
+## Excellence Baseline (what the reference achieves)
+| Dimension | Signal | Notes |
+|-----------|--------|-------|
+| Composition | {signal} | {key evidence from analysis.md} |
+| Depth | {signal} | {z-index count, clip-paths, etc.} |
+| Typography | {signal} | {ratio, clamp usage} |
+| Motion | {signal} | {GSAP, scrub, cubic-beziers} |
+| Craft | {signal} | {hover states, grain, cursor} |
+
+## Quality Baseline
+| Gate | Signal |
+|------|--------|
+| Contrast | {signal} |
+| Animations | {PASS/FAIL} |
+| Images | {signal} |
+
+## Key Techniques to Borrow
+{from reference-analysis.md borrow list — top 3}
+
+## Patterns to Avoid
+{from reference-analysis.md avoid list — top 2}
+```
+
+This file is injected into `context/design-brief.md` and every `context/S-{Name}.md`.
+
 ---
 
 ## Phase 1: Creative Direction
@@ -120,6 +160,7 @@ Write `.brain/context/design-brief.md` including:
 - Project brief fields
 - Full reference-analysis.md content
 - **`## Memory Insights` block** (confidence-rated table from interpretation step)
+- **`## Reference Observatory` block** — paste full content of `.brain/context/reference-observatory.md`
 - Reference to decision trees + values library
 
 ### Spawn Designer
@@ -174,11 +215,21 @@ Read memory:
 - `section-patterns.md` → high-scoring layout+motion combos
 - `revision-patterns.md` → known risks for this section type
 
+**Resolve dynamic threshold** from memory before writing context:
+```
+section_type = classification from reference-observatory (e.g. "hero")
+Read technique-scores.md → find all entries where type = section_type
+historical_avg = average of their scores (or 7.0 if no data)
+score_minimum = max(7.0, historical_avg - 0.3)   ← never below 7
+```
+
 Write `.brain/context/S-{Name}.md` including:
 - Token values (only what this section needs)
 - Recipe card + cinematic description + exact copy
 - Library snippets (layout + motion + interaction patterns)
 - **`## Memory Insights` block** (HIGH/MEDIUM/LOW confidence table)
+- **`## Reference Observatory` block** — paste relevant subset from reference-observatory.md
+- `Expected minimum score: {score_minimum}/10 (historical avg for {section_type}: {historical_avg})`
 - Reference frame path
 
 **Step B: Spawn Builder**
@@ -188,16 +239,49 @@ Agent: builder
 Prompt: "Read $PROJECT_DIR/.brain/context/S-{Name}.md. Write S-{Name}.vue + report to .brain/reports/S-{Name}.md. Run Preview Loop."
 ```
 
-**Step C: Auto-Evaluate**
+**Step C: Observe → Evaluate → Decide**
 
-Read `.brain/reports/S-{Name}.md`:
-- Excellence Standard: all 6 dimensions pass + signature named?
-- Score >= 7?
-- 0 anti-AI patterns?
+```bash
+# 1. Ensure dev server is running
+#    (start with: cd "$PROJECT_DIR" && npx vite --port 5173 &)
 
-→ PASS: log `[AUTO-APPROVED] build/S-{Name} | score: {X} | signature: {name}` in `approvals.md`
-→ FAIL: re-dispatch with specific dimension failures (max 2 retries)
-→ Still fail: log `[NEEDS-REVIEW]` in `approvals.md`, continue
+# 2. Run observer against local project
+mkdir -p "$PROJECT_DIR/.brain/observer"
+cd "$MAQUETA_DIR/scripts"
+node capture-refs.mjs --local --port 5173 "$PROJECT_DIR/.brain/observer"
+```
+
+The observer writes `$PROJECT_DIR/.brain/observer/localhost/analysis.md`.
+
+```
+# 3. Write evaluator context
+```
+
+Write `.brain/context/evaluate-S-{Name}.md`:
+```markdown
+# Evaluate: S-{Name}
+- Builder report: .brain/reports/S-{Name}.md
+- Observer analysis: .brain/observer/localhost/analysis.md
+- Section type: {type from reference-observatory}
+- Dynamic threshold: {score_minimum}/10 (historical avg: {historical_avg})
+- Memory: {paste relevant rows from technique-scores.md for this type}
+```
+
+```
+# 4. Spawn evaluator
+```
+```
+Agent: evaluator
+Prompt: "Read $PROJECT_DIR/.brain/context/evaluate-S-{Name}.md. Produce .brain/evaluations/S-{Name}.md."
+```
+
+```
+# 5. Read decision
+```
+Read `.brain/evaluations/S-{Name}.md` → act on decision:
+- **APPROVE** → log `[AUTO-APPROVED] build/S-{Name} | score: {composite} | signature: {name}` in `approvals.md`
+- **RETRY** → re-dispatch builder with retry instructions from evaluation (max 2 — then auto-FLAG)
+- **FLAG** → log `[NEEDS-REVIEW] build/S-{Name} | {reason}` in `approvals.md`, continue pipeline
 
 **Memory Hook — fire immediately after auto-evaluation:**
 ```
@@ -242,6 +326,14 @@ Auto-evaluate visual QA at 4 breakpoints.
 
 Screenshot all pages.
 
+```bash
+# Final observer pass — full site quality check
+node "$MAQUETA_DIR/scripts/capture-refs.mjs" --local --port 5173 \
+  "$PROJECT_DIR/.brain/observer/final"
+```
+
+Read `.brain/observer/final/localhost/analysis.md` → include quality gate results in REVIEW-SUMMARY.
+
 **Autonomous:** Save to `docs/review/final/`. Write `REVIEW-SUMMARY.md`.
 **Interactive:** AskUserQuestion.
 
@@ -253,14 +345,24 @@ Screenshot all pages.
 ## What was built
 {pages, sections, tech decisions}
 
-## Scores
-{per-section scores from approvals.md}
+## Final Quality Gates (from observer)
+| Gate | Signal |
+|------|--------|
+| Contrast (WCAG AA) | {signal} |
+| Animation rules | {PASS/FAIL} |
+| Images | {signal} |
+| Heading hierarchy | {signal} |
+| Meta / SEO | {signal} |
+| **Overall** | **{signal}** |
+
+## Section Scores (composite — builder + observer)
+{per-section composite scores from evaluations/*.md}
 
 ## Auto-Approved
-{list of all [AUTO-APPROVED] tasks}
+{list of all [AUTO-APPROVED] tasks with composite scores}
 
 ## Needs Review
-{list of all [NEEDS-REVIEW] tasks with specifics}
+{list of all [NEEDS-REVIEW] tasks with reason + retry instructions}
 
 ## Key Decisions
 {D-001 through D-NNN from decisions.md}

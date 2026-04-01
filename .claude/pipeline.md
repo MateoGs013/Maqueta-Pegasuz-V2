@@ -50,7 +50,16 @@ $PROJECT_DIR/.brain/
   approvals.md      ← auto-approval log (async review for user — never blocks)
   learnings.md      ← real-time learnings (persisted to long-term memory continuously)
   context/          ← pre-computed input for each agent task (includes memory insights)
-  reports/          ← agent output reports
+    design-brief.md
+    reference-observatory.md  ← extracted from observer: type sequence, rhythm, baseline
+    S-{Name}.md               ← per section: tokens + recipe + memory + observatory
+    evaluate-S-{Name}.md      ← per section: builder report path + observer path + threshold
+    motion.md
+  reports/          ← agent output (builder, designer, polisher)
+  evaluations/      ← evaluator output per section: APPROVE/RETRY/FLAG + composite score
+  observer/         ← observer output per run
+    localhost/      ← from --local runs (per section QA)
+    final/          ← final full-site pass
 ```
 
 ### state.md Format (lightweight — read first on every turn)
@@ -177,6 +186,7 @@ Each task has: ID, agent, input, output, gate. Tasks run sequentially unless mar
 | `setup/create-dir` | ceo | identity.md | `$PROJECT_DIR/` created | Directory exists |
 | `setup/capture-refs` | ceo | identity.md URLs | `_ref-captures/` + `analysis.md` per page | Screenshots + analysis.md captured |
 | `setup/analyze-refs` | reference-analyst | `_ref-captures/` (`analysis.md` + `manifest.json` + screenshots) | `docs/reference-analysis.md` | 9-point gate |
+| `setup/observatory` | ceo | `_ref-captures/{domain}/analysis.md` | `.brain/context/reference-observatory.md` | content strategy + rhythm + baseline extracted |
 
 ### Phase 1: Creative Direction (Designer)
 
@@ -206,8 +216,10 @@ For EACH section:
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `context/S-{Name}` | ceo | tokens.md + pages/{page}.md + _libraries/ + learnings | `.brain/context/S-{Name}.md` | Context file complete |
+| `context/S-{Name}` | ceo | tokens.md + pages/{page}.md + _libraries/ + learnings + observatory | `.brain/context/S-{Name}.md` | Context file complete + dynamic threshold resolved |
 | `build/S-{Name}` | builder | `context/S-{Name}.md` | `S-{Name}.vue` + `reports/S-{Name}.md` | Excellence Standard + Preview Loop |
+| `observe/S-{Name}` | ceo | dev server at localhost:5173 | `.brain/observer/localhost/analysis.md` | Observer runs without error |
+| `evaluate/S-{Name}` | evaluator | `context/evaluate-S-{Name}.md` | `.brain/evaluations/S-{Name}.md` | APPROVE / RETRY / FLAG decision |
 
 After ALL sections pass:
 
@@ -264,7 +276,18 @@ ON EVERY TURN:
        → Extract source values, write context/{task}.md (includes insights)
        → Mark task [DONE], advance to next
 
-  4. IF task is "build/*" or "design/*" or "polish/*":
+  4. IF task is "build/*":
+       → Spawn builder: "Read $PROJECT_DIR/.brain/context/{X}.md, write component + report"
+       → Run observer: node capture-refs.mjs --local --port 5173 .brain/observer/
+       → Write context/evaluate-{X}.md (report path + observer path + threshold)
+       → Spawn evaluator: "Read context/evaluate-{X}.md, write .brain/evaluations/{X}.md"
+       → Read evaluation decision:
+           APPROVE → log [AUTO-APPROVED] with composite score, mark [DONE]
+           RETRY   → re-dispatch builder with retry instructions (max retry_max)
+           RETRY×2 → escalate to FLAG
+           FLAG    → log [NEEDS-REVIEW], mark [DONE], continue
+
+  4b. IF task is "design/*" or "polish/*":
        → Spawn agent: "Read $PROJECT_DIR/.brain/context/{X}.md, write output + report"
        → Read report → AUTO-EVALUATE against brain-config.md thresholds:
            PASS → log to approvals.md as [AUTO-APPROVED], mark [DONE]
