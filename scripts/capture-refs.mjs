@@ -244,6 +244,11 @@ async function captureReference(url, outputBase, options = {}) {
     const compositionMetrics = await extractCompositionMetrics(page)
     const sectionClassifications = await classifySections(page)
 
+    console.log('[capture] Running quality gates...')
+    const contrastAudit      = await extractContrastRatios(page)
+    const animationAudit     = await detectAnimationAntiPatterns(page)
+    const imageAudit         = await auditImageOptimization(page)
+
     // ─────────────────────────────────────────────────────────
     // PASS 2: HOVER SWEEP (desktop only — hover doesn't exist on mobile)
     // Detects hover states on interactive elements
@@ -378,6 +383,19 @@ async function captureReference(url, outputBase, options = {}) {
       motionProfile,
       compositionMetrics,
       sectionClassifications,
+
+      // ── v4.2: Quality gates ──
+      qualityGates: {
+        contrast:   contrastAudit,
+        animations: animationAudit,
+        images:     imageAudit,
+        // Overall: PASS only if all 3 pass
+        overall: [contrastAudit.signal, animationAudit.clean ? 'PASS' : 'FAIL', imageAudit.signal].every(s => s === 'PASS')
+          ? 'PASS'
+          : [contrastAudit.signal, animationAudit.clean ? 'PASS' : 'FAIL', imageAudit.signal].includes('FAIL')
+            ? 'FAIL' : 'WARN'
+      },
+
       excellenceSignals: computeExcellenceSignals({
         depthMetrics, typographyMetrics, motionProfile, compositionMetrics,
         interactions: { hoverStates, clickStates, scrollDiffs },
@@ -398,6 +416,7 @@ async function captureReference(url, outputBase, options = {}) {
     console.log(`[capture]   Spacing: ${spacingSystem.scale.length} values detected`)
     console.log(`[capture]   Tech: ${techStack.libraries.join(', ') || 'none detected'}`)
     console.log(`[capture]   Excellence → Composition:${signals.composition} Depth:${signals.depth} Typo:${signals.typography} Motion:${signals.motion} Craft:${signals.craft}`)
+    console.log(`[capture]   Quality   → Contrast:${manifest.qualityGates.contrast.signal} Animations:${manifest.qualityGates.animations.clean ? 'PASS' : 'FAIL'} Images:${manifest.qualityGates.images.signal} Overall:${manifest.qualityGates.overall}`)
     console.log(`[capture]   Saved to ${dir}/\n`)
 
     return manifest
@@ -1714,6 +1733,255 @@ async function extractCompositionMetrics(page) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// QUALITY GATE 1 — COLOR CONTRAST (WCAG 2.1 AA)
+// Traverses the tree to find effective bg color, computes ratio
+// for each text element, and classifies overall pass/warn/fail.
+// ═══════════════════════════════════════════════════════════════
+async function extractContrastRatios(page) {
+  return page.evaluate(() => {
+    // ── WCAG helpers ──────────────────────────────────────────
+    function toLinear(c) {
+      c /= 255
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+    }
+    function luminance(r, g, b) {
+      return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b)
+    }
+    function contrastRatio(L1, L2) {
+      const hi = Math.max(L1, L2), lo = Math.min(L1, L2)
+      return Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100
+    }
+    function parseRGB(str) {
+      const m = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+      return m ? [+m[1], +m[2], +m[3]] : null
+    }
+    function isTransparent(str) {
+      return !str || str === 'transparent' ||
+             str === 'rgba(0, 0, 0, 0)' || str.includes(', 0)')
+    }
+
+    // Walk up until we find a non-transparent background
+    function effectiveBg(el) {
+      let cur = el
+      while (cur && cur !== document.documentElement) {
+        const bg = getComputedStyle(cur).backgroundColor
+        if (!isTransparent(bg)) return bg
+        cur = cur.parentElement
+      }
+      return 'rgb(255, 255, 255)' // default white canvas
+    }
+
+    // ── Sample prominent text elements ────────────────────────
+    const targets = [...document.querySelectorAll('h1,h2,h3,p,a,button,li,label')]
+    const pairs   = []
+    const seen    = new Set()
+
+    for (const el of targets.slice(0, 80)) {
+      const style = getComputedStyle(el)
+      const fg    = style.color
+      const bg    = effectiveBg(el)
+
+      const fgRGB = parseRGB(fg)
+      const bgRGB = parseRGB(bg)
+      if (!fgRGB || !bgRGB) continue
+
+      const key = `${fg}|${bg}`
+      if (seen.has(key)) continue
+      seen.add(key)
+
+      const ratio  = contrastRatio(luminance(...fgRGB), luminance(...bgRGB))
+      const size   = parseFloat(style.fontSize)
+      const weight = parseInt(style.fontWeight)
+      const large  = size >= 18 || (size >= 14 && weight >= 700)
+      const aaMin  = large ? 3 : 4.5
+      const aaaMin = large ? 4.5 : 7
+
+      pairs.push({
+        tag:       el.tagName.toLowerCase(),
+        fg,
+        bg,
+        ratio,
+        large,
+        wcagAA:    ratio >= aaMin,
+        wcagAAA:   ratio >= aaaMin,
+      })
+    }
+
+    const total    = pairs.length
+    const failAA   = pairs.filter(p => !p.wcagAA)
+    const passAA   = pairs.filter(p =>  p.wcagAA)
+    const passRate = total ? Math.round(passAA.length / total * 100) : 100
+    const minRatio = total ? Math.min(...pairs.map(p => p.ratio)) : 0
+    const avgRatio = total ? Math.round(pairs.reduce((s,p) => s + p.ratio, 0) / total * 10) / 10 : 0
+
+    const signal = passRate >= 95 ? 'PASS' : passRate >= 80 ? 'WARN' : 'FAIL'
+
+    return {
+      signal,
+      passRate,
+      failingAA:  failAA.length,
+      passingAA:  passAA.length,
+      totalPairs: total,
+      minRatio,
+      avgRatio,
+      // Only return failing pairs — they're the actionable ones
+      failingSamples: failAA.slice(0, 10).map(p => ({
+        tag: p.tag, fg: p.fg, bg: p.bg, ratio: p.ratio, large: p.large
+      }))
+    }
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUALITY GATE 2 — ANIMATION ANTI-PATTERNS
+// Detects transitions on width/height/top/left, preventive
+// will-change, and infinite decorative loops.
+// ═══════════════════════════════════════════════════════════════
+async function detectAnimationAntiPatterns(page) {
+  return page.evaluate(() => {
+    const FORBIDDEN = ['width', 'height', 'top', 'left', 'right', 'bottom', 'margin', 'padding']
+    const found = []
+
+    const allEls = [...document.querySelectorAll('*')].slice(0, 600)
+
+    for (const el of allEls) {
+      const style = getComputedStyle(el)
+      const label = el.tagName.toLowerCase() +
+                    (el.id ? `#${el.id}` : '') +
+                    (el.className ? `.${(el.className.toString()).split(' ')[0]}` : '')
+
+      // ── Forbidden transition properties ──────────────────
+      const tp = style.transitionProperty
+      if (tp && tp !== 'none') {
+        const props = tp.split(',').map(p => p.trim().toLowerCase())
+        for (const prop of props) {
+          if (FORBIDDEN.some(f => prop === f || prop.startsWith(f + '-'))) {
+            found.push({
+              type: 'forbidden-transition',
+              element: label.slice(0, 80),
+              property: prop,
+              severity: 'HIGH',
+              rule: 'Only transform + opacity — never width/height/top/left'
+            })
+          }
+        }
+      }
+
+      // ── Preventive will-change ────────────────────────────
+      const wc = style.willChange
+      if (wc && wc !== 'auto') {
+        const hasTransition = parseFloat(style.transitionDuration) > 0
+        const hasAnimation  = parseFloat(style.animationDuration)  > 0
+        if (!hasTransition && !hasAnimation) {
+          found.push({
+            type: 'preventive-will-change',
+            element: label.slice(0, 80),
+            value: wc,
+            severity: 'MEDIUM',
+            rule: 'No preventive will-change — only set when animation is already active'
+          })
+        }
+      }
+
+      // ── Infinite decorative loops ─────────────────────────
+      const iter = style.animationIterationCount
+      const name = style.animationName
+      if (iter === 'infinite' && name && name !== 'none') {
+        const cls = (el.className || '').toString().toLowerCase()
+        const isLoader = /\b(spinner|loading|loader|progress|skeleton|pulse)\b/.test(cls)
+        if (!isLoader) {
+          found.push({
+            type: 'infinite-loop',
+            element: label.slice(0, 80),
+            animationName: name,
+            severity: 'MEDIUM',
+            rule: 'No infinite decorative loops'
+          })
+        }
+      }
+    }
+
+    // Deduplicate — same type+prop combo from different elements counts once
+    const seen = new Set()
+    const unique = found.filter(p => {
+      const key = p.type + ':' + (p.property || p.value || p.animationName || '')
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    }).slice(0, 20)
+
+    return {
+      clean:   unique.length === 0,
+      total:   unique.length,
+      high:    unique.filter(p => p.severity === 'HIGH').length,
+      medium:  unique.filter(p => p.severity === 'MEDIUM').length,
+      patterns: unique
+    }
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUALITY GATE 3 — IMAGE OPTIMIZATION
+// Checks lazy loading, dimensions, srcset, alt, format, oversize.
+// ═══════════════════════════════════════════════════════════════
+async function auditImageOptimization(page) {
+  return page.evaluate(() => {
+    const images = [...document.querySelectorAll('img')]
+    const results = []
+
+    for (const img of images) {
+      const src  = (img.currentSrc || img.src || '').split('?')[0]
+      const ext  = src.split('.').pop()?.toLowerCase()
+      const name = src.split('/').pop().slice(0, 60)
+
+      const modern     = ['webp', 'avif'].includes(ext)
+      const hasLazy    = img.loading === 'lazy'
+      const hasDims    = img.hasAttribute('width') && img.hasAttribute('height')
+      const hasSrcset  = img.hasAttribute('srcset') || !!img.closest('picture')
+      const hasAlt     = img.hasAttribute('alt')
+      const inHero     = !!img.closest('[class*="hero"], [class*="banner"], header')
+
+      // Oversize check (natural width > 2.5× rendered width)
+      const natW  = img.naturalWidth
+      const dispW = img.clientWidth
+      const oversized = natW > 0 && dispW > 20 && natW > dispW * 2.5
+
+      const issues = []
+      if (!hasAlt)                    issues.push('missing-alt')
+      if (!hasDims)                   issues.push('missing-dimensions')
+      if (!hasLazy && !inHero)        issues.push('missing-lazy')
+      if (!hasSrcset)                 issues.push('no-srcset')
+      if (!modern && ['jpg','jpeg','png','gif'].includes(ext)) issues.push('legacy-format')
+      if (oversized)                  issues.push(`oversized:${natW}px→${dispW}px`)
+
+      results.push({ name, format: ext || '?', modern, hasLazy, hasDims, hasSrcset, hasAlt, issues })
+    }
+
+    const total = results.length
+    if (total === 0) return { total: 0, signal: 'PASS', avgScore: 100, issues: [] }
+
+    const rate = key => total ? Math.round(results.filter(r => r[key]).length / total * 100) : 100
+
+    const avgScore = Math.round(
+      results.reduce((s, r) => s + Math.round((1 - r.issues.length / 6) * 100), 0) / total
+    )
+    const signal = avgScore >= 85 ? 'PASS' : avgScore >= 60 ? 'WARN' : 'FAIL'
+
+    return {
+      total,
+      signal,
+      avgScore,
+      lazyRate:         rate('hasLazy'),
+      dimensionRate:    rate('hasDims'),
+      modernFormatRate: rate('modern'),
+      altRate:          rate('hasAlt'),
+      srcsetRate:       rate('hasSrcset'),
+      issues: results.filter(r => r.issues.length > 0).slice(0, 15)
+    }
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
 // SECTION SEMANTIC CLASSIFICATION
 // 5-pass cascade: tag → class/id → heading → DOM structure → position
 // Types: nav | hero | about | features | services | work | testimonials |
@@ -2034,6 +2302,46 @@ function generateAnalysisReport(manifest, outputDir) {
     if (cssProps.length > 30) lines.push(`- … and ${cssProps.length - 30} more`)
     lines.push(``)
   }
+
+  // Quality Gates
+  const qg = manifest.qualityGates || {}
+  lines.push(`## Quality Gates`, ``)
+  lines.push(`| Gate | Signal | Detail |`)
+  lines.push(`|------|--------|--------|`)
+
+  // Contrast
+  const ct = qg.contrast || {}
+  lines.push(`| Contrast (WCAG AA) | ${ct.signal || '?'} | Pass rate: ${ct.passRate || 0}% · min ratio: ${ct.minRatio || 0} · failing pairs: ${ct.failingAA || 0}/${ct.totalPairs || 0} |`)
+  if (ct.failingSamples?.length) {
+    ct.failingSamples.slice(0, 4).forEach(s =>
+      lines.push(`|  | ↳ | \`${s.tag}\` fg:\`${s.fg}\` bg:\`${s.bg}\` → ratio **${s.ratio}** ${s.large ? '(large text)' : ''} |`)
+    )
+  }
+
+  // Animation anti-patterns
+  const an = qg.animations || {}
+  lines.push(`| Animation rules | ${an.clean ? 'PASS' : 'FAIL'} | ${an.clean ? 'No anti-patterns found' : `${an.total} issues — HIGH:${an.high} MEDIUM:${an.medium}`} |`)
+  if (!an.clean && an.patterns?.length) {
+    an.patterns.slice(0, 4).forEach(p =>
+      lines.push(`|  | ↳ | [${p.severity}] \`${p.type}\` on \`${p.element}\` — ${p.property || p.value || p.animationName || ''} |`)
+    )
+  }
+
+  // Images
+  const im = qg.images || {}
+  if (im.total > 0) {
+    lines.push(`| Images | ${im.signal || '?'} | Score: ${im.avgScore || 0}/100 · lazy:${im.lazyRate || 0}% · dims:${im.dimensionRate || 0}% · modern-format:${im.modernFormatRate || 0}% · alt:${im.altRate || 0}% |`)
+    if (im.issues?.length) {
+      im.issues.slice(0, 4).forEach(i =>
+        lines.push(`|  | ↳ | \`${i.name}\` → ${i.issues.join(', ')} |`)
+      )
+    }
+  } else {
+    lines.push(`| Images | PASS | No img elements found |`)
+  }
+
+  lines.push(`| **Overall** | **${qg.overall || '?'}** | All 3 gates must PASS |`)
+  lines.push(``)
 
   // Section Map
   const classifications = manifest.sectionClassifications || []
