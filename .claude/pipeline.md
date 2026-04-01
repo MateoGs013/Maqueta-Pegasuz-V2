@@ -1,741 +1,309 @@
-# Pipeline V5 — Agent Architecture
+# Pipeline V6 — Brain Architecture
 
-## Project Isolation
+## Core Concept: Three Memory Layers
 
-Maqueta (`C:\Users\mateo\Desktop\maqueta`) is a **read-only template**.
-Every project is created in a new directory: `C:\Users\mateo\Desktop\{project-slug}/`.
+```
+Layer 1: Working Memory   → $PROJECT_DIR/.brain/     (per-project, hot state)
+Layer 2: Session State    → $PROJECT_DIR/.brain/state.md  (crash recovery)
+Layer 3: Long-Term Memory → $MAQUETA_DIR/.claude/memory/design-intelligence/  (cross-project)
+```
 
-- `$MAQUETA_DIR` — template repo (scripts, scaffold, libraries, agents, skills)
-- `$PROJECT_DIR` — the active project being built (docs, captures, src, node_modules)
+**The brain works like this:**
+1. CEO reads `.brain/state.md` → knows where it is
+2. CEO reads `.brain/queue.md` → knows what to do next
+3. CEO writes `context/{task}.md` → pre-computes agent input
+4. Agent reads ONE context file → does ONE task → writes to `reports/{task}.md`
+5. CEO reads report → updates queue → writes decisions + learnings in real-time
+6. Repeat until queue is empty
 
-The CEO creates `$PROJECT_DIR` in Phase 0 after the identity card is confirmed.
-All subsequent paths (docs, captures, src) are relative to `$PROJECT_DIR`.
-
-## Architecture: CEO + 4 Agents
-
-The CEO (`/project` skill) orchestrates everything. Agents are specialized subprocesses
-that receive ONLY the context they need and produce specific outputs.
-
-**Context management is the CEO's #1 job.** Don't tell an agent "read the docs."
-Extract the relevant parts and pass them inline. This keeps agent context small and focused.
-
-**Agents reference `docs/_libraries/` for all decisions.** Subjective design choices
-(fonts, colors, motion, layout) are resolved via decision trees in `design-decisions.md`.
-Quality is verified against measurable benchmarks in `quality-benchmarks.md`.
-Specific values (durations, easing, spacing) are looked up from `values-reference.md`.
+**Why micro-tasks:** Each task is small enough that context can compact between tasks.
+After compaction, `.brain/` files are the ground truth — not conversation memory.
 
 ---
 
-## Autonomous Mode
+## Project Isolation
 
-When the user provides a complete brief in a single prompt (project type, name, mood,
-pages, and optionally references), the pipeline runs with **minimal user gates**.
-
-### How it works
-
-1. **Phase 0 (Discovery):** CEO extracts everything from the prompt. If all required
-   fields are present (name, type, mood, pages), skip the interactive interview.
-   Compile Identity Card and proceed immediately.
-
-2. **Phase 0.5 (References):** Runs normally (no user gate).
-
-3. **Phase 1 (Design):** Designer uses decision trees from `design-decisions.md` instead
-   of subjective judgment. CEO validates against 12-point gate. If passes → proceed
-   without user approval. The auto-validated creative direction uses library decision
-   trees, so it's systematically sound.
-
-4. **Phase 2 (Scaffold):** Runs normally (no user gate).
-
-5. **Phase 3 (Sections):** Builder self-evaluates with Preview Loop + Excellence Standard.
-   CEO auto-QA validates each section. After ALL sections pass:
-   - CEO assembles pages, takes full-page screenshots
-   - Instead of blocking for user review → write screenshots to `$PROJECT_DIR/docs/review/`
-   - Continue to Phase 4
-
-6. **Phase 4 (Motion):** Runs normally (auto-QA, no user gate).
-
-7. **Phase 5A (Integration):** CEO assembles and screenshots final site.
-   Screenshots saved to `$PROJECT_DIR/docs/review/final/`.
-   Write completion summary to `$PROJECT_DIR/.pipeline-state.md`.
-
-### When autonomous mode activates
-
-The CEO detects autonomous mode when:
-- The initial prompt contains ALL of: project name, type/description, mood, and pages
-- OR the user explicitly says "dejalo corriendo", "run overnight", "run autonomously"
-
-### Morning review folder
-
-All review screenshots are saved to `$PROJECT_DIR/docs/review/`:
 ```
-docs/review/
-  creative-direction/      ← palette + section plan text summary
-  sections/                ← per-section desktop + mobile screenshots
-  full-page/               ← assembled page screenshots
-  final/                   ← post-polish screenshots at 4 breakpoints
-  REVIEW-SUMMARY.md        ← what was built, scores, decisions made, anything flagged
+$MAQUETA_DIR = C:\Users\mateo\Desktop\maqueta     ← read-only template
+$PROJECT_DIR = C:\Users\mateo\Desktop\{slug}       ← all project output
 ```
 
-### Escalation: [NEEDS_REVIEW] flags
+Never write project files inside maqueta. Only read: scaffold, libraries, scripts, agents.
 
-If any step fails after maximum auto-correction loops:
-- Mark the item with `[NEEDS_REVIEW]` in `.pipeline-state.md`
-- Continue building the rest (don't block the entire pipeline)
-- The morning review summary lists all flagged items
+---
 
-### Autonomous Quality Gate Thresholds
+## .brain/ Directory (Working Memory)
 
-| Check | Pass Threshold | Action on Fail |
-|-------|---------------|----------------|
-| Designer 12-point validation | All 12 pass | Re-dispatch, max 3 loops → flag |
-| Builder Excellence Standard | All dimensions pass + signature | Self-fix, max 3 loops → flag |
-| CEO Auto-QA (screenshots) | No blank/broken areas, 3+ layers visible, mobile designed | Re-dispatch, max 2 loops → flag |
-| Anti-AI pattern check | 0 patterns detected | Re-dispatch with specific pattern |
-| Visual density | ≥ minimum for section type | Re-dispatch with density target |
-| Polisher Visual QA | All 4 breakpoints pass | Polisher self-fixes |
+Created at project start. Deleted at project completion (learnings already persisted to long-term memory).
 
-### Decision tree enforcement
+```
+$PROJECT_DIR/.brain/
+  state.md          ← 15 lines: current phase, next task, blockers
+  identity.md       ← project identity card
+  queue.md          ← micro-task queue with status
+  decisions.md      ← real-time decision log
+  learnings.md      ← real-time learnings (persisted to long-term memory continuously)
+  context/          ← pre-computed input for each agent task
+  reports/          ← agent output reports
+```
 
-In autonomous mode, agents MUST use the library decision trees:
-- **Font selection:** `design-decisions.md` § Font Selection → mood → category → specific font
-- **Palette construction:** `design-decisions.md` § Palette Construction → steps 1-6
-- **Typography scale:** `design-decisions.md` § Typography Scale → project type → ratio → computed sizes
-- **Easing curves:** `design-decisions.md` § Easing Curve Selection → standard set + personality additions
-- **Atmosphere:** `design-decisions.md` § Atmosphere Technique Selection → decision tree
-- **Section planning:** `design-decisions.md` § Section Planning → sequence + energy rhythm
-- **Motion categories:** `design-decisions.md` § Motion Category Assignment → section type → compatible categories
-- **Spatial composition:** `design-decisions.md` § Spatial Composition Defaults → grid ratios, overlaps, padding
+### state.md Format (lightweight — read first on every turn)
+
+```markdown
+# Brain State
+- **Project:** {name} ({slug})
+- **Phase:** {current phase name}
+- **Task:** {current micro-task ID from queue}
+- **Blocker:** {none | description}
+- **Next:** {exact next action — cold-resume instruction}
+- **Mode:** {interactive | autonomous}
+- **Files created:** {count}
+- **Sections:** {done}/{total}
+```
+
+### queue.md Format (task queue — ground truth for progress)
+
+```markdown
+# Task Queue — {project name}
+
+## Active
+- [IN_PROGRESS] {task-id} | {agent} | context/{file}.md → reports/{file}.md
+
+## Done
+- [DONE] {task-id} | {agent} | {output path} | {score if applicable}
+
+## Pending
+- [PENDING] {task-id} | {agent} | {dependencies if any}
+```
+
+### decisions.md Format (real-time — written as decisions happen)
+
+```markdown
+# Decisions — {project}
+
+## D-{NNN} | {topic} | {phase}
+- **Choice:** {what was chosen}
+- **Path:** {decision tree path if used}
+- **User:** {approved | changed to X | pending}
+- **Learn:** {what this teaches for future projects}
+```
+
+### context/{task}.md Format (pre-computed agent input)
+
+```markdown
+# Context: {task name}
+
+## Tokens
+{only the token values this task needs — not the full tokens.md}
+
+## Recipe
+{recipe card for this specific section}
+
+## Copy
+{exact text content}
+
+## Cinematic Description
+{full cinematic description}
+
+## Library Snippets
+{relevant patterns from _libraries/ — only what this task needs}
+
+## Learnings
+{relevant entries from design-intelligence/ — only what matters for this task}
+
+## Reference Frame
+{path to the best matching reference screenshot, if available}
+```
+
+### reports/{task}.md Format (agent output)
+
+```markdown
+# Report: {task name}
+
+## Output
+- File: {path to created file}
+- Score: {X/10 if applicable}
+
+## Excellence Standard
+{per-dimension pass/fail if builder task}
+
+## Signature
+{name and description of distinctive element}
+
+## Self-Assessment
+{what the agent checked, what it fixed, what remains}
+
+## Issues
+{any problems encountered}
+```
 
 ---
 
 ## Agent Registry
 
-| Agent | Role | Key Tools | Receives | Produces |
-|-------|------|-----------|----------|----------|
-| `reference-analyst` | Analyze captured screenshots + metadata | Read, Glob, WebFetch | Screenshot paths + manifest + URL | `docs/reference-analysis.md` |
-| `designer` | Design visual identity | Read, Glob, WebFetch | Brief + reference-analysis + ref frames + decision trees | `docs/tokens.md` + `docs/pages/*.md` |
-| `builder` | Build sections with self-preview | Read, Write, Edit, Glob, Grep, Preview MCP | Recipe card + tokens + copy + quality benchmarks (extracted) | `S-{Name}.vue` + `AtmosphereCanvas.vue` |
-| `polisher` | Motion + visual QA audit | Read, Write, Edit, Glob, Grep, Preview MCP | Motion spec + section list (extracted) | Composables + preloader |
+| Agent | Role | Reads | Writes |
+|-------|------|-------|--------|
+| `designer` | Visual identity | `.brain/context/design-brief.md` | `docs/tokens.md` + `docs/pages/*.md` |
+| `builder` | Section components | `.brain/context/S-{Name}.md` | `src/components/sections/S-{Name}.vue` + `.brain/reports/S-{Name}.md` |
+| `polisher` | Motion + QA | `.brain/context/motion.md` | `src/composables/use*.js` + `.brain/reports/motion.md` |
+| `reference-analyst` | Analyze references | `_ref-captures/` + `docs/_libraries/` | `docs/reference-analysis.md` |
+
+**Context management rule:** CEO writes the context file. Agent reads ONE file.
+Never tell an agent "read the docs" — pre-compute what it needs.
 
 ---
 
-## V5 Protocols
+## Micro-Task Catalog
 
-### Preview Loop (Builder Self-Correction)
+Each task has: ID, agent, input, output, gate. Tasks run sequentially unless marked parallel-safe.
 
-The builder doesn't code blind — it SEES its output and self-corrects before QA.
+### Phase 0: Discovery (CEO)
 
-```
-1. Builder writes S-{Name}.vue
-2. Builder starts dev server (if not running): preview_start
-3. Builder navigates to the page section: preview_eval (scroll to section)
-4. Builder screenshots desktop: preview_screenshot
-5. Builder screenshots mobile: preview_resize "mobile" → preview_screenshot → preview_resize "desktop"
-6. Builder EVALUATES against the cinematic description:
-   - Does the layout match the spatial composition? (grid fr, overlaps, breaks)
-   - Are there 3+ depth layers visible?
-   - Is the typography scale contrast dramatic enough?
-   - Does the composition have visible asymmetry?
-7. If NO on any check → Builder fixes → re-screenshots → re-evaluates (max 2 self-loops)
-8. If YES on all → Builder reports done
-```
+| Task ID | Agent | Input | Output | Gate |
+|---------|-------|-------|--------|------|
+| `setup/identity` | ceo | user message | `.brain/identity.md` | Brief is complete |
+| `setup/create-dir` | ceo | identity.md | `$PROJECT_DIR/` created | Directory exists |
+| `setup/capture-refs` | ceo | identity.md URLs | `_ref-captures/` | Screenshots captured |
+| `setup/analyze-refs` | reference-analyst | `_ref-captures/` + `_libraries/` | `docs/reference-analysis.md` | 9-point gate |
 
-**The builder must explicitly state what it checked and what it fixed in each loop.**
-This protocol catches 80%+ of "basic" output before QA even runs.
+### Phase 1: Creative Direction (Designer)
 
-### Visual QA Protocol
+| Task ID | Agent | Input | Output | Gate |
+|---------|-------|-------|--------|------|
+| `design/brief` | ceo | identity + ref-analysis + learnings | `.brain/context/design-brief.md` | Context file complete |
+| `design/tokens` | designer | `context/design-brief.md` | `docs/tokens.md` | 12-point validation |
+| `design/pages` | designer | `context/design-brief.md` + tokens.md | `docs/pages/*.md` | Section validation |
+| `review/creative` | ceo | tokens.md + pages/*.md | user approval | User says "approved" |
 
-QA uses real screenshots — not code reading — to validate visual quality.
+**Real-time learning:** After review/creative → CEO writes to:
+- `design-intelligence/font-pairings.md` (pairing + user reaction)
+- `design-intelligence/color-palettes.md` (palette + user reaction)
+- `.brain/decisions.md` (D-001: Font, D-002: Palette, etc.)
 
-```
-1. preview_start (if not running)
-2. For each breakpoint [375, 768, 1280, 1440]:
-   a. preview_resize to width
-   b. preview_screenshot
-   c. Evaluate screenshot against quality criteria:
-      - Depth: can you count 3+ visual layers?
-      - Asymmetry: is the layout visibly unbalanced (intentionally)?
-      - Scale contrast: is there dramatic size difference between elements?
-      - Overlap: does at least one element cross its container boundary?
-      - Atmosphere: is there grain, gradient, or decorative layer visible?
-      - Typography: are there 3+ distinct text sizes visible?
-3. preview_resize back to desktop
-4. Report: PASS/FAIL per breakpoint with visual evidence
-```
+### Phase 2: Scaffold (CEO)
 
-**Visual QA > code QA.** A section can have perfect code and still look basic.
-The screenshot is the truth.
+| Task ID | Agent | Input | Output | Gate |
+|---------|-------|-------|--------|------|
+| `setup/scaffold` | ceo | `_project-scaffold/` | `$PROJECT_DIR/src/` | Files copied |
+| `setup/gen-tokens` | ceo | `docs/tokens.md` | `src/styles/tokens.css` | CSS generated |
+| `build/atmosphere` | builder | `.brain/context/atmosphere.md` | `AtmosphereCanvas.vue` + report | 5-point check |
 
-### Pencil Mockup Protocol (CEO — Phase 1 User Review only)
+### Phase 3: Sections (Builder — parallel-safe between independent sections)
 
-The CEO creates a hero section mockup using Pencil MCP to give the user a
-visual preview of the creative direction BEFORE any code is written.
+For EACH section:
 
-```
-After designer completes tokens.md + pages/*.md:
+| Task ID | Agent | Input | Output | Gate |
+|---------|-------|-------|--------|------|
+| `context/S-{Name}` | ceo | tokens.md + pages/{page}.md + _libraries/ + learnings | `.brain/context/S-{Name}.md` | Context file complete |
+| `build/S-{Name}` | builder | `context/S-{Name}.md` | `S-{Name}.vue` + `reports/S-{Name}.md` | Excellence Standard + Preview Loop |
 
-1. CEO reads the hero section recipe + palette + typography from designer output
-2. CEO uses Pencil MCP to create a visual mockup:
-   a. get_guidelines(topic="landing-page")
-   b. get_style_guide_tags → pick relevant tags
-   c. get_style_guide(tags=[relevant]) — for layout inspiration
-   d. open_document("new")
-   e. batch_design — create hero mockup with:
-      - Exact palette colors from tokens.md
-      - Font families + scale from tokens.md
-      - Grid proportions from cinematic description (1.4fr/0.6fr, etc.)
-      - Key spatial relationships (overlaps, bleeds, asymmetry)
-   f. get_screenshot — capture as image for user review
-3. CEO presents to user: palette + typography + section plan + hero mockup screenshot
-4. User approves creative direction with visual confidence (not just hex codes)
-```
+After ALL sections pass:
 
-**This is optional.** If Pencil MCP is unavailable, the CEO presents text-only
-(palette hex + font names + section plan table). The pipeline works either way.
+| Task ID | Agent | Input | Output | Gate |
+|---------|-------|-------|--------|------|
+| `review/sections` | ceo | assembled page screenshots | user approval | User says "approved" |
 
-**Only the hero mockup.** One mockup for user approval, not mockups per section.
-The builder uses cinematic descriptions + Preview Loop — not mockups.
+**Real-time learning:** After review/sections → CEO writes to:
+- `design-intelligence/signatures.md` (each section's signature + reaction)
+- `design-intelligence/section-patterns.md` (layout+motion+score)
+- `design-intelligence/technique-scores.md` (update usage + avg)
+- `design-intelligence/revision-patterns.md` (if user requested changes)
+- `.brain/decisions.md` (D-NNN per section)
 
-### Parallel Section Protocol
+### Phase 4: Motion (Polisher)
 
-Sections that don't depend on each other can be built simultaneously
-using isolated git worktrees. Max 2 builders at once.
+| Task ID | Agent | Input | Output | Gate |
+|---------|-------|-------|--------|------|
+| `context/motion` | ceo | tokens.md + pages/*.md + section list | `.brain/context/motion.md` | Context file complete |
+| `polish/motion` | polisher | `context/motion.md` | composables + preloader + report | Visual QA 4 breakpoints |
 
-```
-1. CEO identifies independent sections (e.g., S-Hero and S-Features don't depend on each other)
-2. CEO spawns 2 builders with isolation: "worktree"
-   - Builder A: writes S-Hero.vue in worktree branch
-   - Builder B: writes S-Features.vue in worktree branch
-3. Each builder runs its own Preview Loop independently
-4. CEO merges completed sections back to main branch
-5. QA runs on merged result
-```
+### Phase 5: Integration (CEO)
 
-**Rules:**
-- Max 2 concurrent builders (API limit protection)
-- Sections on the same page that share visual flow (e.g., hero→intro transition) must be sequential
-- If API errors occur, fall back to sequential (1 builder at a time)
-- CEO resolves merge conflicts (usually none — different files)
+| Task ID | Agent | Input | Output | Gate |
+|---------|-------|-------|--------|------|
+| `integrate/router` | ceo | pages list | `src/router/index.js` | Routes work |
+| `integrate/views` | ceo | section list per page | `src/views/*.vue` | Views render |
+| `integrate/app` | ceo | component list | `src/App.vue` | App shell complete |
+| `integrate/seo` | ceo | identity + pages | meta tags per page | Tags present |
+| `review/final` | ceo | full-site screenshots | user approval | User says "approved" |
+
+### Phase 6: Retrospective (CEO)
+
+| Task ID | Agent | Input | Output | Gate |
+|---------|-------|-------|--------|------|
+| `cleanup/retrospective` | ceo | `.brain/decisions.md` + reports/ | verify long-term memory updated | All learnings persisted |
+| `cleanup/promote-rules` | ceo | `design-intelligence/rules.md` | promote 3+ validated rules | Rules promoted |
+| `cleanup/delete-temp` | ceo | `_ref-captures/`, `docs/review/` | directories deleted | Clean project |
 
 ---
 
-## Multi-Page Document Structure
-
-V5 uses per-page files instead of a single sections.md:
+## CEO Micro-Task Loop (the core algorithm)
 
 ```
-docs/
-  tokens.md                    ← global design system (palette, type, spacing, easing, atmosphere, cursor)
-  pages/
-    home.md                    ← homepage sections (recipe + cinematic + copy per section)
-    about.md                   ← about page sections
-    services.md                ← services page sections
-    contact.md                 ← contact page sections
-  mockups/                     ← CEO-generated hero mockup for Phase 1 User Review (Pencil MCP)
-  reference-analysis.md        ← from reference analyst (if references provided)
-  _libraries/                  ← copied from maqueta (layouts, interactions, motion)
+ON EVERY TURN:
+  1. Read .brain/state.md → know where I am
+  2. Read .brain/queue.md → find next [PENDING] task
+  3. IF task is "context/*":
+       → Read source docs, extract values, write context/{task}.md
+       → Mark task [DONE], advance to next
+  4. IF task is "build/*" or "design/*" or "polish/*":
+       → Spawn agent with: "Read $PROJECT_DIR/.brain/context/{X}.md, write output, write report to .brain/reports/{X}.md"
+       → Read report → verify gate → mark [DONE] or re-dispatch
+  5. IF task is "review/*":
+       → Screenshot → AskUserQuestion → wait
+  6. IF task is "integrate/*" or "setup/*" or "cleanup/*":
+       → Do it directly (no agent needed)
+  7. Update state.md with current position
+  8. Write decision to .brain/decisions.md if a choice was made
+  9. Write learning to long-term memory if something was learned
+  10. Continue to next task (or end turn if waiting for user)
 ```
 
-Each page file follows the same format:
-
-```markdown
-# {Page Name}
-
-## 1. Section Name
-- **Purpose:** what this section achieves
-- **Layout:** L-{Pattern} from _libraries/layouts.md
-- **Motion:** M-{Category} from _libraries/motion-categories.md
-- **Interaction:** I-{Pattern} from _libraries/interactions.md
-- **Energy:** HIGH / LOW / MEDIUM
-- **Responsive:** specific transformation
-- **Headline:** "exact text"
-- **Subtext:** "exact text"
-- **CTA:** "verb phrase"
-
-### Cinematic Description
-[Full cinematic description with spatial composition, entry sequence, etc.]
-```
-
-**Benefits:**
-- Smaller context per builder call (only the relevant page)
-- Router structure maps 1:1 to file structure
-- Easy to add/remove pages without touching other page specs
+**After compaction:** Steps 1-2 reconstruct full context from files. No conversation memory needed.
 
 ---
 
-## Rich Checkpoint Format
+## Autonomous Mode
 
-Context compaction WILL happen. The checkpoint must have enough detail to resume cold.
+Activates when initial prompt has: name + type + mood + pages (or user says "run autonomously").
 
-```markdown
-# Pipeline State
+**Differences from interactive:**
+- Skip `review/creative` → validate with 12-point gate + decision trees
+- Skip `review/sections` → auto-QA + screenshots to `docs/review/sections/`
+- Skip `review/final` → screenshots to `docs/review/final/` + write `REVIEW-SUMMARY.md`
+- Flag `[NEEDS_REVIEW]` instead of blocking
 
-## Project
-- Name: {name}
-- Slug: {slug}
-- PROJECT_DIR: {absolute path}
-- MAQUETA_DIR: C:\Users\mateo\Desktop\maqueta
-
-## Current Phase
-{phase number and name}
-
-## Completed
-- [x] Phase 0: Discovery — identity card confirmed
-- [x] Phase 0.5: References — {domains} captured
-- [x] Phase 1: Creative Direction — user approved
-- [x] Phase 2: Scaffold — tokens.css generated, atmosphere approved
-- [x] Phase 3.1: S-Hero — approved
-- [x] Phase 3.2: S-Intro — approved (builder self-corrected overlap issue)
-- [ ] Phase 3.3: S-Features — IN PROGRESS
-- [ ] Phase 4: Motion — pending
-- [ ] Phase 5A: Integration — pending
-
-## Key Decisions
-- Palette: {canvas} + {accent} hexes
-- Fonts: {display} + {body}
-- Easing: {cubic-bezier}
-- Pages: {list}
-- Sections total: {N}
-- Backend: {static/API}
-
-## Last Agent Instruction
-{Exact prompt that was sent to the last agent — so CEO can re-dispatch if compacted mid-build}
-Example: "Build S-Features with L-Grid-Bento layout, M-Stagger-Cascade motion..."
-
-## Last QA Feedback
-{If QA failed, the exact failure details — so CEO knows what to fix on resume}
-Example: "Layer 3 FAIL: no depth layers visible. Layer 5 FAIL: motion is generic fade-up, not M-Stagger-Cascade."
-
-## Pending Changes
-{Any uncommitted files or in-progress work}
-Example: "S-Features.vue half-written — builder was applying QA fix for overlap when compacted"
-
-## Files Created
-- docs/tokens.md, docs/pages/home.md, docs/pages/about.md
-- src/styles/tokens.css
-- src/components/AtmosphereCanvas.vue
-- src/components/sections/S-Hero.vue, S-Intro.vue
-
-## Next Action
-{Exact instruction for cold resume — specific enough to act on without reading conversation}
-```
+**Auto-QA thresholds** (same as V5.5):
+- Designer: 12 points pass
+- Builder: Excellence Standard all dimensions + signature
+- Screenshots: no blank/broken, 3+ layers, mobile designed
+- Anti-AI: 0 patterns
+- Density: meets minimum for section type
 
 ---
 
-## Design Learning System
-
-The pipeline learns from every project. Knowledge accumulates in
-`$MAQUETA_DIR/.claude/memory/design-intelligence.md` — a cross-project intelligence file.
-
-### Learning Loop
-
-```
-1. Phase 0: CEO reads design-intelligence.md → extracts relevant learnings for this project
-   - Proven font pairings for similar moods
-   - Failed color combinations to avoid
-   - Common revision patterns to anticipate
-   - Weakest Excellence Standard dimensions to emphasize
-
-2. Phase 1: CEO passes relevant learnings to designer inline:
-   "Proven pairings for dark cinematic: Clash Display + Satoshi (3 projects, always approved)"
-   "Avoid: purple gradients (rejected in 2 projects)"
-
-3. Phase 3: CEO passes to builder:
-   "High-scoring signatures: parallax counter (9/10 in axon), clip-path wipe combo (8/10)"
-   "Weakest dimension historically: Craft (avg 6/10) — spend extra effort"
-
-4. After EVERY user feedback → CEO appends to design-intelligence.md:
-   - What was approved vs changed (with specifics)
-   - New revision patterns detected
-   - Score data
-
-5. Phase 6: Full retrospective → CEO writes comprehensive learnings
-```
-
-### What Gets Learned
-
-| Category | When Captured | Who Uses It |
-|----------|--------------|-------------|
-| Font pairings (success/fail) | Phase 1 user review | Designer |
-| Color palettes (success/fail) | Phase 1 user review | Designer |
-| Signature elements (approved/rejected) | Phase 3 batch review | Builder |
-| Section patterns (layout + motion combos) | Phase 3 scores | Designer + Builder |
-| Common revision requests | Every user change | CEO (anticipation) |
-| Score trends per dimension | Phase 3 scores | Builder (focus areas) |
-| Technique effectiveness | Phase 3 scores | Builder |
-| Pipeline issues | Throughout | CEO |
-| Rules discovered | Retrospective | All agents (promoted to CLAUDE.md after 3 validations) |
-
-### Rule Promotion
-
-When a lesson is validated across 3+ projects, CEO promotes it:
-- Design rule → add to `CLAUDE.md` Design Philosophy
-- Agent-specific rule → add to the relevant agent `.md` file
-- Decision tree update → update `docs/_libraries/design-decisions.md`
-- Value update → update `docs/_libraries/values-reference.md`
-
-This creates a positive feedback loop: projects improve libraries → libraries improve projects.
-
----
-
-## Step 0: Gather Brief (CEO)
-
-CEO gathers from the user:
-- Project type, pages needed, inspiration URLs, mood, constraints
-- Creates task breakdown using TodoWrite
-- **Reads `$MAQUETA_DIR/.claude/memory/design-intelligence.md`** — extract relevant learnings
-
-**Gate:** Brief is clear. If ambiguous, CEO asks before proceeding.
-
----
-
-## Step 0.5: Reference Analysis (if URLs provided)
-
-### A: Capture (CEO runs directly)
-
-**Single URL (auto-discovers internal pages, max 5):**
-```bash
-cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs "{url}" "../_ref-captures"
-```
-
-**Multiple URLs (batch mode):**
-```bash
-cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --batch "{url1}" "{url2}" "{url3}" --out "../_ref-captures"
-```
-
-**Limit internal pages / disable discovery:**
-```bash
-cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --max-pages 3 "{url}" "../_ref-captures"
-cd scripts && npm install --silent 2>/dev/null && node capture-refs.mjs --no-discover "{url}" "../_ref-captures"
-```
-
-**Auto-discovery:** The script extracts nav/header links from the homepage and captures
-internal pages automatically (max 5 by default). Each page gets its own directory:
-- `_ref-captures/{domain}/` — homepage
-- `_ref-captures/{domain}--about/` — /about page
-- `_ref-captures/{domain}--work/` — /work page
-- `_ref-captures/{domain}--index.json` — site-level index mapping all captured pages
-
-**Produces per page in `_ref-captures/{domain}[--slug]/`:**
-- `desktop/frame-NNN.png` — per-section desktop screenshots (1440px)
-- `mobile/frame-NNN.png` — per-section mobile screenshots (375px)
-- `interactions/scroll-desktop-NNN.png` — scroll-triggered animation captures
-- `interactions/hover-NNN.png` — hover state captures
-- `interactions/click-NNN-before.png` / `click-NNN-after.png` — click state before/after
-- `full-page-desktop.png` + `full-page-mobile.png`
-- `manifest.json` — rich metadata (v3.1, 4-pass sweep):
-  - Clustered hex palette (text + bg, max 8 dominant colors each)
-  - Exact font families + heading typography (size, weight, letter-spacing, line-height, text-transform, color)
-  - Section boundaries with tag, class, id, scroll position, height
-  - Tech stack (libraries, smooth scroll, custom cursor, font sources, framework)
-  - CSS custom properties from `:root`
-  - Media inventory (videos, canvases + WebGL, SVG, Lottie, layered images, background images)
-  - **Interaction data:**
-    - `scrollDiffs` — elements that changed opacity/transform/clipPath on scroll, with before/after CSS values
-    - `headerBehavior` — type (static/sticky/transparent-to-solid/hide-on-scroll) with CSS diffs
-    - `hoverStates` — elements that changed on hover with before/after CSS diffs
-    - `clickStates` — tabs/accordions/modals with before/after screenshots and aria-expanded changes
-  - Spacing system (scale, base unit, section padding consistency)
-  - Layout patterns (grid/flex per section)
-  - Navigation (desktop links + mobile type: hamburger/bottom-nav/visible-links)
-  - Footer structure
-
-### B: Analyze (Agent: `reference-analyst`)
-**Context contract:**
-- IN: `_ref-captures/{domain}--index.json` — site-level index listing all captured pages per domain
-- IN: paths to `_ref-captures/{domain}[--slug]/` — all screenshots (desktop + mobile + interactions) + manifest v3.1 per page
-- IN: The original URL (analyst may use WebFetch to read page source for font links, meta tags, and additional library detection)
-- IN: `docs/_libraries/layouts.md`, `docs/_libraries/interactions.md`, `docs/_libraries/motion-categories.md` (for pattern mapping via reverse-lookup guide)
-- OUT: `docs/reference-analysis.md`
-
-**Multi-page awareness:** When multiple pages are captured per domain, the analyst should:
-1. Read the `{domain}--index.json` to understand which pages were captured
-2. Analyze each page's manifest and screenshots (homepage gets deepest analysis)
-3. Note page-specific patterns (e.g., "About page uses L-Zigzag" vs "Home uses L-Hero-Full")
-4. Identify cross-page consistency (shared nav, footer, tokens, motion approach)
-
-**Gate (QA validates):**
-1. All sections filled (colors, typography, layouts, motion, interactions, spacing, rhythm, responsive, borrow/avoid, recommendations)
-2. Every color/font claim references manifest data (not guessed from screenshots)
-3. Borrow list has 5+ items, each with confidence level (HIGH/MEDIUM/LOW) and frame reference
-4. Responsive analysis present (desktop vs mobile comparison)
-5. Tech stack documented from manifest
-6. Patterns mapped to library names (L-*, I-*, motion category names)
-7. Interaction analysis section present with scroll diffs, hover states, click states from manifest (all CONFIRMED behaviors documented)
-8. Header behavior documented with type and CSS changes
-9. Spacing system reported (base unit, scale, section padding)
-
----
-
-## Step 1: Creative Direction (Agent: `designer`)
-
-**Context contract:**
-- IN: User brief (project type, pages, mood, constraints)
-- IN: **Full `docs/reference-analysis.md`** — CEO passes the ENTIRE file, not excerpts
-- IN: Reference frame paths for attribution
-- IN: Template formats from `docs/_templates/`
-- IN: Pattern libraries from `docs/_libraries/`
-- OUT: Design documents:
-  - `docs/tokens.md` — complete design system (palette, typography, spacing, easing, atmosphere, cursor, CSS output block)
-  - `docs/pages/home.md` — homepage sections with recipe cards + cinematic descriptions + copy
-  - `docs/pages/{other}.md` — other page sections (one file per page)
-
-**Gate — 12-point validation (QA agent):**
-1. tokens.md: concept direction + 3+ visual principles stated
-2. tokens.md: 8+ colors with hex, semantic role, contrast ratios
-3. tokens.md: distinctive Google Fonts (NOT Inter/Roboto/Arial) + full px scale + import URLs
-4. tokens.md: motion tokens — --ease (cubic-bezier), --duration-fast/medium/slow/crawl
-5. tokens.md: atmosphere preset + mouse/scroll behavior + mobile CSS fallback
-6. tokens.md: complete :root {} CSS output block
-7. pages/*.md: every section has ALL recipe card fields + full cinematic description
-8. pages/*.md: cinematic descriptions have spatial composition (grid fr, overlaps, z-layers, padding asymmetry)
-9. pages/*.md: every entry sequence has 3+ numbered stages with ms timing
-10. pages/*.md: no consecutive sections share motion category
-11. pages/*.md: zero lorem ipsum, zero placeholder, CTAs are verb phrases
-12. pages/*.md: homepage ≥ 8 sections, other pages ≥ 5
-
-**On FAIL:** CEO passes specific failures to designer to fix. Max 3 loops.
-
-**User Review:** CEO presents concept + palette + section plan to user.
-If Pencil MCP is available, CEO also creates a hero mockup (see Pencil Mockup Protocol)
-to give the user a visual preview alongside the text summary.
-User approves or requests changes.
-
----
-
-## Step 2: Scaffold + Atmosphere (Agent: `builder`)
-
-**Scaffold:** CEO copies `$MAQUETA_DIR/_project-scaffold/` to `$PROJECT_DIR/`, copies `_libraries`, runs `npm install`.
-
-**Tokens CSS — auto-generated:**
-```bash
-node "$MAQUETA_DIR/scripts/generate-tokens.js" "$PROJECT_DIR"
-```
-This parses `docs/tokens.md`, extracts the `:root {}` CSS block + Google Fonts imports,
-and writes `src/styles/tokens.css`. No manual copy-paste needed.
-
-**Atmosphere:** Builder creates `AtmosphereCanvas.vue` using atmosphere tokens from tokens.md.
-- IN: Palette hex values (`--canvas`, `--surface`, `--accent-primary`, `--accent-secondary`)
-- IN: Atmosphere token values (preset, mouse radius, opacity, colors)
-- IN: Mobile fallback CSS value
-- OUT: `src/components/AtmosphereCanvas.vue`
-
-**Gate:**
-1. Canvas responds to mouse position
-2. Canvas responds to scroll offset
-3. Mobile fallback renders visible (not `display:none`)
-4. `aria-hidden="true"` present
-5. Cleanup on unmount (no leaks)
-
-**Auto-QA:** CEO screenshots canvas, verifies 5 checks pass. No user review needed for atmosphere —
-it will be seen in context during the Phase 3 batch review.
-
----
-
-## Step 3: Sections — STATIC BUILD PHASE (Agent: `builder`, with Preview Loop)
-
-**All sections are built with hardcoded static data. No store imports. No API calls.**
-The creative visual experience is built first. API wiring happens after the user approves (Step 5B).
-
-**Context contract — CEO extracts PER-SECTION and passes inline:**
-- IN: Recipe card for THIS section only (from pages/{page}.md)
-- IN: Content for THIS section only — exact text, verbatim
-- IN: Token values with descriptions (from tokens.md — actual hex, font names, px, cubic-bezier)
-- IN: Library code snippets (layout pattern, motion GSAP code, interaction CSS from _libraries/)
-- IN: Reference frame path — the captured screenshot that best matches this section type
-  (e.g., hero frame from `_ref-captures/{domain}/desktop/frame-001.png`)
-  Builder uses this during Preview Loop Pass B to compare visual quality
-- DO NOT pass: other sections' recipe cards, full docs, stores, services
-
-### Builder Flow (per section):
-
-```
-1. Builder reads context (tokens, recipe, copy, library snippets, reference frame)
-2. Builder writes S-{Name}.vue
-3. ► PREVIEW LOOP: Builder screenshots its own output
-   a. preview_start (if needed)
-   b. Navigate to section → preview_screenshot (desktop)
-   c. preview_resize "mobile" → preview_screenshot → restore desktop
-   d. PASS A: Evaluate against cinematic description (technical accuracy)
-   e. PASS B: Compare against reference frame (aesthetic quality)
-   f. SCORE on Quality Rubric (5 dimensions, 0-2 each, total /10)
-4. Auto-correction:
-   Score < 7  → MANDATORY self-fix → re-screenshot → re-score (max 3 loops)
-   Score >= 7 → Report done with score + breakdown
-5. Builder returns: score, per-dimension breakdown, screenshots, self-assessment vs reference
-```
-
-### Excellence Standard (Builder self-verifies, CEO confirms)
-
-The builder verifies **measurable hard requirements** in its own code (see builder.md for full list):
-- **Composition:** grid ratio ≥ 1.4:1, overlap, container break, padding asymmetry, mixed alignment
-- **Depth:** 3+ z-index values, atmospheric pseudo-element, backdrop-filter/shadow/blur, scroll-responsive bg
-- **Typography:** font size ratio ≥ 4x, 4+ sizes, 2+ weights, custom letter-spacing
-- **Motion:** 3+ animated elements with different delays, 2+ easing curves, scroll-linked animation, stagger
-- **Craft:** 2+ distinct hovers, magnetic element, focus-visible, clip-path/mask
-- **Signature:** 1 distinctive element named and explained
-
-**All requirements must pass.** If any dimension has 0 passes → auto-reject, fix before reporting.
-Builder reports: `{passed}/{total} + signature: {name}`. Max 3 self-correction loops.
-
-### Parallel build (when applicable):
-
-If 2+ sections are independent (no shared visual flow):
-```
-CEO spawns Builder A (isolation: "worktree") → S-Hero
-CEO spawns Builder B (isolation: "worktree") → S-Features
-Both run Preview Loop + scoring independently
-CEO merges worktrees on completion
-```
-Max 2 concurrent builders. Fall back to sequential on API errors.
-
-### Auto-QA Gate (replaces per-section user review)
-
-After builder reports done, CEO runs a quick QA check:
-
-```
-1. CEO reads builder's score + screenshots
-2. If score >= 7 and screenshots look reasonable → section PASSES auto-QA
-3. If score < 7 or CEO spots an issue → re-dispatch builder with specific feedback
-4. Max 2 CEO-triggered correction loops per section
-5. After auto-QA pass → section is APPROVED INTERNALLY (no user review yet)
-```
-
-**Sections accumulate.** The user does NOT review individual sections.
-
-### Batch User Review (after ALL sections pass auto-QA)
-
-Once all sections are built and pass auto-QA:
-
-```
-1. CEO assembles all sections in HomeView.vue (and other page views)
-2. preview_start → navigate to each page
-3. Full-page screenshot: desktop + mobile per page
-4. ⛔ AskUserQuestion:
-   Q: "All {N} sections are built. Here's the complete page(s). How does it look?"
-   Options:
-     "Approved — move to polish"
-     "Needs changes on specific sections"     → user names sections → CEO re-dispatches
-     "Major revision needed"                  → CEO identifies scope → targeted rebuild
-5. If "Needs changes": CEO re-dispatches only the named sections → builder fixes → re-screenshot → re-ask
-```
-
-**This reduces Phase 3 from N reviews (one per section) to 1-2 reviews (full page).**
-The quality bar is maintained by the builder's self-scoring + CEO auto-QA gate.
-
----
-
-## Step 4: Motion Choreography (Agent: `polisher`)
-
-**Context contract — CEO extracts from tokens.md and pages/*.md:**
-- IN: Brand easing (cubic-bezier + character)
-- IN: Duration table (fast, medium, slow)
-- IN: Per-section technique assignments (section name → category)
-- IN: Preloader spec (sequence, duration)
-- IN: Page transition spec (type, exit, enter)
-- IN: Hover state definitions
-- IN: Reduced-motion spec
-- IN: List of existing section files and their motion assignments
-- DO NOT pass: palette, content, layout details
-- OUT: `src/composables/useMotion.js`, `useLenis.js`, `useCursor.js`, `useTransitions.js`, `src/components/AppPreloader.vue`
-
-**Gate (QA agent — visual verification):**
-1. No consecutive sections share motion technique
-2. `prefers-reduced-motion` fully supported
-3. All animations use `gsap.context()` with cleanup
-4. No animation on width/height/top/left
-5. Page transitions work (verify with Preview: navigate between routes)
-6. Preloader matches spec (verify with Preview: reload page, screenshot sequence)
-
----
-
-## Step 5A: Static Integration + Final Audit (CEO)
-
-CEO assembles the static site:
-1. Update router with lazy-loaded routes
-2. Update App.vue with AtmosphereCanvas, AppPreloader, transition wrapper
-3. Update HomeView.vue with section components in order
-4. Create additional page views
-5. Add SEO meta to every page
-6. All content remains hardcoded
-
-**Final audit (QA agent — full visual + code):**
-- Visual: screenshots of all pages at all breakpoints
-- a11y + SEO + responsive + CSS + performance + motion + content
-- Lighthouse performance check if available
-
-**User Review:** CEO screenshots all pages (desktop + mobile). AskUserQuestion. Loop until approved.
-
----
-
-## Step 5B: API Wiring (CEO, only if Backend ≠ none)
-
-After static build is approved, connect to the API:
-1. Create `src/config/api.js` — single axios instance
-2. Create `src/services/{resource}.js` per data type
-3. Create `src/stores/{resource}.js` with Pinia (loading, error, data)
-4. Replace hardcoded template content with reactive store values
-5. Add loading and error states to each section that uses API data
-
-Visual behavior must not change between static and API-wired state.
-
----
-
-## Step 6: Retrospective + Cleanup (CEO)
-
-### A: Project Retrospective (MANDATORY)
-
-CEO writes learnings to `$MAQUETA_DIR/.claude/memory/design-intelligence.md`:
-
-```
-1. Font Pairings: append what was used, mood, user reaction
-2. Color Palettes: append canvas + accent, mood, user reaction
-3. Signature Elements: append each section's signature + whether approved/rejected
-4. Section Patterns: append successful layout+motion combos with scores
-5. Common Revisions: append EVERY change the user requested
-6. Score Trends: append project average + weakest/strongest dimensions
-7. Technique Effectiveness: increment usage count + update avg score per technique
-8. Pipeline Issues: append any delays, failures, or process friction
-9. Rules Discovered: append any new patterns found (will be promoted after 3 validations)
-```
-
-**Retrospective is not optional.** Without it, the next project doesn't benefit.
-
-### B: Rule Promotion Check
-
-After writing retrospective, CEO checks "Rules Discovered" table:
-- Any rule validated across 3+ projects → promote to permanent docs
-- Promotion targets: CLAUDE.md, agent files, or library files
-- Mark promoted rules in the table
-
-### C: Cleanup
-
-1. Delete `$PROJECT_DIR/_ref-captures/` directory
-2. Delete `$PROJECT_DIR/docs/review/` directory (screenshots served their purpose)
-3. Final report to user
-
----
-
-## Concurrency Rules
-
-- Steps are strictly sequential: 0 → 0.5 → 1 → 2 → 3 → 4 → 5A → 5B → 6
-- Within Step 3: up to 2 sections can build in parallel (worktree isolation)
-- Sequential sections (where visual flow matters) must still be built in order
-- Max 2 concurrent agents (builder + QA is OK, 2 builders is OK)
-- NEVER 3+ agents simultaneously
-- On API errors: reduce to 1 agent, retry
-- Preview Loop runs inside the builder — not a separate agent
-
-## CEO Context Management Rules
-
-1. **Extract, don't delegate reading.** CEO reads docs, extracts relevant parts, passes inline.
-2. **One task per agent.** Never ask an agent to do two things.
-3. **Review before forwarding.** Read agent output before passing downstream.
-4. **Pass failures explicitly.** "Layer 2 failed: H2 uses 24px instead of var(--text-2xl)" — not "QA failed."
-5. **Write checkpoint after every phase.** Rich format with last instruction + last QA feedback.
-6. **After compaction: read checkpoint first.** Trust the file over conversation memory.
-7. **Tokens auto-gen:** Always use `generate-tokens.js` instead of manual copy-paste.
-8. **Multi-page docs:** Read the specific page file, not all pages. Pass only the relevant section.
-9. **Decision trees:** Tell designer/builder to reference `docs/_libraries/design-decisions.md` for all subjective choices.
-10. **Quality benchmarks:** Tell builder to verify against `docs/_libraries/quality-benchmarks.md` Anti-AI checklist + density scoring.
-11. **Value lookups:** Tell agents to reference `docs/_libraries/values-reference.md` for specific durations, easing, spacing, hover values.
+## Parallel Rules
+
+- Max 2 concurrent builder agents (worktree isolation)
+- Independent sections only (different pages or non-adjacent)
+- Fall back to 1 on API errors
+- CEO prepares BOTH context files before spawning
+
+## Error Recovery
+
+- Agent spawn fails → retry once after 5s
+- Agent output incomplete → re-spawn with specific gaps
+- Gate fails 3x → flag [NEEDS_REVIEW], continue
+- Capture script fails → ask user to skip references
+- Preview Loop unavailable → builder reports without visuals, CEO screenshots instead
+
+## Context Management Rules
+
+1. **Write context file, then spawn.** Never pass 80 lines inline.
+2. **One task per agent.** One section = one builder call.
+3. **Read report before advancing.** Verify gate passes.
+4. **Update queue after every task.** Queue is ground truth.
+5. **Write decisions in real-time.** Not at Phase 6.
+6. **Write learnings in real-time.** Persist to long-term memory continuously.
+7. **After compaction: read state.md first.** Trust files over memory.
+8. **Use generate-tokens.js.** Never manually copy CSS.

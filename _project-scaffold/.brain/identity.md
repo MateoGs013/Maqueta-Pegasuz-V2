@@ -1,0 +1,11 @@
+# Identity: {name}
+- **Type:** {project type}
+- **Does:** {description}
+- **Audience:** {target audience}
+- **Pages:** {page list}
+- **Mood:** {aesthetic direction}
+- **Scheme:** {dark/light/both}
+- **References:** {URLs}
+- **Brand:** {scratch/existing}
+- **Backend:** {none/Pegasuz/other}
+- **Constraints:** {any}
