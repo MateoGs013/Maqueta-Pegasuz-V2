@@ -248,6 +248,9 @@ async function captureReference(url, outputBase, options = {}) {
     const contrastAudit      = await extractContrastRatios(page)
     const animationAudit     = await detectAnimationAntiPatterns(page)
     const imageAudit         = await auditImageOptimization(page)
+    const headingAudit       = await validateHeadingHierarchy(page)
+    const metaTags           = await extractMetaTags(page)
+    const sectionColors      = await extractSectionColors(page)
 
     // ─────────────────────────────────────────────────────────
     // PASS 2: HOVER SWEEP (desktop only — hover doesn't exist on mobile)
@@ -385,15 +388,27 @@ async function captureReference(url, outputBase, options = {}) {
       sectionClassifications,
 
       // ── v4.2: Quality gates ──
+      metaTags,
+      sectionColors,
       qualityGates: {
         contrast:   contrastAudit,
         animations: animationAudit,
         images:     imageAudit,
-        // Overall: PASS only if all 3 pass
-        overall: [contrastAudit.signal, animationAudit.clean ? 'PASS' : 'FAIL', imageAudit.signal].every(s => s === 'PASS')
-          ? 'PASS'
-          : [contrastAudit.signal, animationAudit.clean ? 'PASS' : 'FAIL', imageAudit.signal].includes('FAIL')
-            ? 'FAIL' : 'WARN'
+        headings:   headingAudit,
+        meta:       { signal: metaTags.signal, score: metaTags.score },
+        // Overall: PASS only if all gates pass
+        overall: (() => {
+          const signals = [
+            contrastAudit.signal,
+            animationAudit.clean ? 'PASS' : 'FAIL',
+            imageAudit.signal,
+            headingAudit.signal,
+            metaTags.signal
+          ]
+          return signals.every(s => s === 'PASS') ? 'PASS'
+               : signals.includes('FAIL')         ? 'FAIL'
+               :                                    'WARN'
+        })()
       },
 
       excellenceSignals: computeExcellenceSignals({
@@ -416,7 +431,8 @@ async function captureReference(url, outputBase, options = {}) {
     console.log(`[capture]   Spacing: ${spacingSystem.scale.length} values detected`)
     console.log(`[capture]   Tech: ${techStack.libraries.join(', ') || 'none detected'}`)
     console.log(`[capture]   Excellence → Composition:${signals.composition} Depth:${signals.depth} Typo:${signals.typography} Motion:${signals.motion} Craft:${signals.craft}`)
-    console.log(`[capture]   Quality   → Contrast:${manifest.qualityGates.contrast.signal} Animations:${manifest.qualityGates.animations.clean ? 'PASS' : 'FAIL'} Images:${manifest.qualityGates.images.signal} Overall:${manifest.qualityGates.overall}`)
+    console.log(`[capture]   Quality   → Contrast:${manifest.qualityGates.contrast.signal} Animations:${manifest.qualityGates.animations.clean ? 'PASS' : 'FAIL'} Images:${manifest.qualityGates.images.signal} Headings:${manifest.qualityGates.headings.signal} Meta:${manifest.qualityGates.meta.signal} Overall:${manifest.qualityGates.overall}`)
+    console.log(`[capture]   Color rhythm: ${manifest.sectionColors?.rhythm || 'unknown'} (${manifest.sectionColors?.transitions || 0} transitions)`)
     console.log(`[capture]   Saved to ${dir}/\n`)
 
     return manifest
@@ -1733,6 +1749,107 @@ async function extractCompositionMetrics(page) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// PER-SECTION DOMINANT COLOR — dark / mid / light rhythm
+// Walks each section's DOM tree to find its effective background,
+// then classifies as dark (<18% luminance) / mid / light.
+// ═══════════════════════════════════════════════════════════════
+async function extractSectionColors(page) {
+  return page.evaluate(() => {
+    function isTransparent(c) {
+      return !c || c === 'transparent' || c === 'rgba(0, 0, 0, 0)'
+    }
+    function effectiveBg(el) {
+      let cur = el
+      while (cur && cur !== document.documentElement) {
+        const bg = getComputedStyle(cur).backgroundColor
+        if (!isTransparent(bg)) return bg
+        cur = cur.parentElement
+      }
+      return null
+    }
+    function rgbToHex(rgb) {
+      const m = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+      if (!m) return null
+      return '#' + [m[1], m[2], m[3]].map(x => (+x).toString(16).padStart(2, '0')).join('')
+    }
+    function hexLuminance(hex) {
+      if (!hex || hex.length < 7) return 0.5
+      const r = parseInt(hex.slice(1, 3), 16) / 255
+      const g = parseInt(hex.slice(3, 5), 16) / 255
+      const b = parseInt(hex.slice(5, 7), 16) / 255
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b
+    }
+    function theme(hex) {
+      const l = hexLuminance(hex)
+      return l < 0.18 ? 'dark' : l < 0.50 ? 'mid' : 'light'
+    }
+
+    const sectionEls = [
+      ...document.querySelectorAll('header, section, footer, main > div, article, [class*="section"]')
+    ].filter(el => !el.closest('nav'))
+
+    // Deduplicate (keep outermost)
+    const unique = sectionEls.filter(el =>
+      !sectionEls.some(other => other !== el && other.contains(el))
+    )
+
+    const results = []
+
+    for (const el of unique.slice(0, 25)) {
+      // Collect all background colors in this section, weighted by element size
+      const counts = {}
+
+      const add = (hex, weight) => {
+        if (!hex) return
+        counts[hex] = (counts[hex] || 0) + weight
+      }
+
+      // The section itself gets heavy weight
+      const ownBg = effectiveBg(el)
+      add(rgbToHex(ownBg || ''), 8)
+
+      // Sample direct children (large blocks)
+      for (const child of [...el.children].slice(0, 10)) {
+        const bg = getComputedStyle(child).backgroundColor
+        if (!isTransparent(bg)) add(rgbToHex(bg), 2)
+      }
+
+      // Also check ::before via background-image / gradient
+      // (limited — we pick the most common non-white non-transparent)
+      const dominant = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .find(([hex]) => hex && hex !== '#000000' && hex !== '#ffffff')?.[0]
+        || Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0]
+        || null
+
+      results.push({
+        index: results.length,
+        tag:   el.tagName.toLowerCase(),
+        class: (el.className || '').toString().split(' ')[0].slice(0, 50),
+        bg:    dominant || null,
+        theme: dominant ? theme(dominant) : 'unknown'
+      })
+    }
+
+    // Color rhythm string: "dark → light → dark → dark → light"
+    const rhythm = results
+      .filter(s => s.theme !== 'unknown')
+      .map(s => s.theme)
+      .join(' → ')
+
+    // Count theme transitions (dark→light or light→dark = intentional contrast)
+    let transitions = 0
+    for (let i = 1; i < results.length; i++) {
+      if (results[i].theme !== results[i - 1].theme &&
+          results[i].theme !== 'unknown' &&
+          results[i - 1].theme !== 'unknown') transitions++
+    }
+
+    return { sections: results, rhythm, transitions }
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
 // QUALITY GATE 1 — COLOR CONTRAST (WCAG 2.1 AA)
 // Traverses the tree to find effective bg color, computes ratio
 // for each text element, and classifies overall pass/warn/fail.
@@ -1977,6 +2094,98 @@ async function auditImageOptimization(page) {
       altRate:          rate('hasAlt'),
       srcsetRate:       rate('hasSrcset'),
       issues: results.filter(r => r.issues.length > 0).slice(0, 15)
+    }
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUALITY GATE 4 — HEADING HIERARCHY (SEO + Accessibility)
+// Validates: exactly one H1, no skipped levels, headings present.
+// ═══════════════════════════════════════════════════════════════
+async function validateHeadingHierarchy(page) {
+  return page.evaluate(() => {
+    const headings = [...document.querySelectorAll('h1,h2,h3,h4,h5,h6')]
+    const structure = headings.map(h => ({
+      level: parseInt(h.tagName[1]),
+      text:  h.textContent?.trim().slice(0, 80) || ''
+    }))
+
+    const h1Count = structure.filter(h => h.level === 1).length
+
+    // Detect skipped levels (e.g. H1 → H3 skips H2)
+    const skips = []
+    for (let i = 1; i < structure.length; i++) {
+      const prev = structure[i - 1].level
+      const curr = structure[i].level
+      if (curr > prev + 1) {
+        skips.push({ from: `H${prev}`, to: `H${curr}`, text: structure[i].text })
+      }
+    }
+
+    const issues = []
+    if (structure.length === 0) issues.push('no-headings')
+    if (h1Count === 0)          issues.push('missing-h1')
+    if (h1Count > 1)            issues.push(`multiple-h1:${h1Count}`)
+    if (skips.length > 0)       issues.push(`skipped-levels:${skips.length}`)
+
+    return {
+      signal:         issues.length === 0 ? 'PASS' : issues.includes('missing-h1') ? 'FAIL' : 'WARN',
+      h1Count,
+      totalHeadings:  structure.length,
+      skippedLevels:  skips,
+      issues,
+      structure:      structure.slice(0, 20)
+    }
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
+// META TAGS — OG, Twitter Card, canonical, technical SEO
+// ═══════════════════════════════════════════════════════════════
+async function extractMetaTags(page) {
+  return page.evaluate(() => {
+    const get  = s => document.querySelector(s)?.getAttribute('content') || null
+    const attr = (s, a) => document.querySelector(s)?.getAttribute(a)  || null
+
+    const og = {
+      title:       get('meta[property="og:title"]'),
+      description: get('meta[property="og:description"]'),
+      image:       get('meta[property="og:image"]'),
+      type:        get('meta[property="og:type"]'),
+      url:         get('meta[property="og:url"]'),
+      siteName:    get('meta[property="og:site_name"]'),
+    }
+    const twitter = {
+      card:        get('meta[name="twitter:card"]'),
+      title:       get('meta[name="twitter:title"]'),
+      description: get('meta[name="twitter:description"]'),
+      image:       get('meta[name="twitter:image"]'),
+      site:        get('meta[name="twitter:site"]'),
+    }
+
+    const hasOG       = !!og.title
+    const hasOGImage  = !!og.image
+    const hasTwitter  = !!twitter.card
+    const hasDesc     = !!get('meta[name="description"]')
+    const hasCanon    = !!attr('link[rel="canonical"]', 'href')
+
+    const score = [hasOG, hasOGImage, hasTwitter, hasDesc, hasCanon]
+      .filter(Boolean).length                   // 0-5
+
+    return {
+      title:       document.title || null,
+      description: get('meta[name="description"]'),
+      keywords:    get('meta[name="keywords"]'),
+      canonical:   attr('link[rel="canonical"]', 'href'),
+      viewport:    get('meta[name="viewport"]'),
+      themeColor:  get('meta[name="theme-color"]'),
+      robots:      get('meta[name="robots"]'),
+      og,
+      twitter,
+      // Completeness
+      signal:      score >= 4 ? 'PASS' : score >= 2 ? 'WARN' : 'FAIL',
+      score,       // /5
+      hasOG, hasOGImage, hasTwitter, hasDesc, hasCanonical: hasCanon
     }
   })
 }
@@ -2232,13 +2441,17 @@ function generateAnalysisReport(manifest, outputDir) {
     ``,
   ]
 
-  // Palette
+  // Palette + color rhythm
+  const sc = manifest.sectionColors || {}
   lines.push(`## Palette`, ``)
   if (palette.textColors?.length) {
     lines.push(`**Text colors:** ${palette.textColors.slice(0, 8).join(' · ')}`)
   }
   if (palette.bgColors?.length) {
     lines.push(`**Background colors:** ${palette.bgColors.slice(0, 8).join(' · ')}`)
+  }
+  if (sc.rhythm) {
+    lines.push(`**Color rhythm:** ${sc.rhythm} (${sc.transitions} theme transitions)`)
   }
   lines.push(``)
 
@@ -2340,19 +2553,41 @@ function generateAnalysisReport(manifest, outputDir) {
     lines.push(`| Images | PASS | No img elements found |`)
   }
 
-  lines.push(`| **Overall** | **${qg.overall || '?'}** | All 3 gates must PASS |`)
+  // Headings
+  const hd = qg.headings || {}
+  lines.push(`| Heading hierarchy | ${hd.signal || '?'} | H1 count: ${hd.h1Count ?? '?'} · total headings: ${hd.totalHeadings ?? 0} · skipped levels: ${hd.skippedLevels?.length ?? 0}${hd.issues?.length ? ' · issues: ' + hd.issues.join(', ') : ''} |`)
+  if (hd.skippedLevels?.length) {
+    hd.skippedLevels.forEach(s =>
+      lines.push(`|  | ↳ | ${s.from}→${s.to}: "${s.text}" |`)
+    )
+  }
+
+  // Meta tags
+  const mt = manifest.metaTags || {}
+  lines.push(`| Meta / SEO | ${mt.signal || '?'} | Score: ${mt.score ?? 0}/5 · OG:${mt.hasOG ? '✓' : '✗'} OG-image:${mt.hasOGImage ? '✓' : '✗'} Twitter:${mt.hasTwitter ? '✓' : '✗'} description:${mt.hasDesc ? '✓' : '✗'} canonical:${mt.hasCanonical ? '✓' : '✗'} |`)
+
+  lines.push(`| **Overall** | **${qg.overall || '?'}** | All 5 gates must PASS |`)
   lines.push(``)
 
   // Section Map
   const classifications = manifest.sectionClassifications || []
   if (classifications.length) {
     lines.push(`## Section Map`, ``)
-    lines.push(`| # | Type | Confidence | Method | Heading | CTA |`)
-    lines.push(`|---|------|-----------|--------|---------|-----|`)
+    lines.push(`| # | Type | Theme | Confidence | Heading | CTA |`)
+    lines.push(`|---|------|-------|-----------|---------|-----|`)
+
+    // Build a theme lookup from sectionColors by index
+    const colorByIndex = {}
+    for (const sc of (manifest.sectionColors?.sections || [])) {
+      colorByIndex[sc.index] = sc
+    }
+
     for (const s of classifications) {
-      const heading = (s.headingText || '—').replace(/\|/g, '/')
-      const cta     = (s.ctaText     || '—').replace(/\|/g, '/')
-      lines.push(`| ${s.index} | **${s.type}** | ${s.confidence} | ${s.method} | ${heading} | ${cta} |`)
+      const heading   = (s.headingText || '—').replace(/\|/g, '/')
+      const cta       = (s.ctaText     || '—').replace(/\|/g, '/')
+      const colorInfo = colorByIndex[s.index]
+      const themePart = colorInfo ? `${colorInfo.theme}${colorInfo.bg ? ` \`${colorInfo.bg}\`` : ''}` : '—'
+      lines.push(`| ${s.index} | **${s.type}** | ${themePart} | ${s.confidence} | ${heading} | ${cta} |`)
     }
 
     // Content strategy summary (sequence of types, ignoring nav/unknown)
@@ -2372,6 +2607,21 @@ function generateAnalysisReport(manifest, outputDir) {
       .map(([t, n]) => `${t}×${n}`)
       .join(', ')
     if (countsStr) lines.push(`**Section types:** ${countsStr}`)
+    lines.push(``)
+  }
+
+  // SEO / Meta Tags
+  const seoMeta = manifest.metaTags || {}
+  if (seoMeta.title || seoMeta.og?.title) {
+    lines.push(`## SEO / Meta Tags`, ``)
+    if (seoMeta.title)            lines.push(`- **Title:** ${seoMeta.title}`)
+    if (seoMeta.description)      lines.push(`- **Description:** ${seoMeta.description}`)
+    if (seoMeta.canonical)        lines.push(`- **Canonical:** ${seoMeta.canonical}`)
+    if (seoMeta.og?.image)        lines.push(`- **OG Image:** ${seoMeta.og.image}`)
+    if (seoMeta.og?.type)         lines.push(`- **OG Type:** ${seoMeta.og.type}`)
+    if (seoMeta.twitter?.card)    lines.push(`- **Twitter Card:** ${seoMeta.twitter.card}`)
+    if (seoMeta.themeColor)       lines.push(`- **Theme Color:** ${seoMeta.themeColor}`)
+    if (seoMeta.robots)           lines.push(`- **Robots:** ${seoMeta.robots}`)
     lines.push(``)
   }
 
