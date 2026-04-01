@@ -17,14 +17,16 @@
 - [PENDING] setup/gen-tokens | ceo
 - [PENDING] context/atmosphere | ceo | ← INTERPRET memory
 - [PENDING] build/atmosphere | builder | context/atmosphere.md → reports/atmosphere.md
-- [PENDING] review/sections | ceo | autonomous: save screenshots; interactive: gate
+- [PENDING] review/observer | ceo | node capture-refs.mjs --local --port 5173 → .brain/observer/analysis.md
+- [PENDING] review/sections | ceo | observer analysis.md → autonomous: save to docs/review/; interactive: gate
 - [PENDING] context/motion | ceo | ← INTERPRET memory
 - [PENDING] polish/motion | polisher | context/motion.md → reports/motion.md
 - [PENDING] integrate/router | ceo
 - [PENDING] integrate/views | ceo
 - [PENDING] integrate/app | ceo
 - [PENDING] integrate/seo | ceo
-- [PENDING] review/final | ceo | autonomous: REVIEW-SUMMARY.md; interactive: gate
+- [PENDING] review/observer-final | ceo | node capture-refs.mjs --local --port 5173 → .brain/observer/final-analysis.md
+- [PENDING] review/final | ceo | observer final-analysis.md → autonomous: REVIEW-SUMMARY.md; interactive: gate
 - [PENDING] cleanup/retrospective | ceo
 - [PENDING] cleanup/promote-rules | ceo
 - [PENDING] cleanup/delete-temp | ceo

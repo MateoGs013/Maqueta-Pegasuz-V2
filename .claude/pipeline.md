@@ -175,8 +175,8 @@ Each task has: ID, agent, input, output, gate. Tasks run sequentially unless mar
 |---------|-------|-------|--------|------|
 | `setup/identity` | ceo | user message | `.brain/identity.md` | Brief is complete |
 | `setup/create-dir` | ceo | identity.md | `$PROJECT_DIR/` created | Directory exists |
-| `setup/capture-refs` | ceo | identity.md URLs | `_ref-captures/` | Screenshots captured |
-| `setup/analyze-refs` | reference-analyst | `_ref-captures/` + `_libraries/` | `docs/reference-analysis.md` | 9-point gate |
+| `setup/capture-refs` | ceo | identity.md URLs | `_ref-captures/` + `analysis.md` per page | Screenshots + analysis.md captured |
+| `setup/analyze-refs` | reference-analyst | `_ref-captures/` (`analysis.md` + `manifest.json` + screenshots) | `docs/reference-analysis.md` | 9-point gate |
 
 ### Phase 1: Creative Direction (Designer)
 
@@ -213,7 +213,8 @@ After ALL sections pass:
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `review/sections` | ceo | assembled page screenshots | autonomous: save to docs/review/ + continue; interactive: user approval | Memory hooks fire regardless of mode |
+| `review/observer` | ceo | dev server at localhost | `.brain/observer/analysis.md` | Observer runs without error |
+| `review/sections` | ceo | observer analysis.md + screenshots | autonomous: save to docs/review/ + continue; interactive: user approval | All excellenceSignals MEDIUM+ |
 
 **Memory hooks fire immediately (both modes):**
 - `design-intelligence/signatures.md` (each section's signature + approved/rejected)
@@ -237,7 +238,8 @@ After ALL sections pass:
 | `integrate/views` | ceo | section list per page | `src/views/*.vue` | Views render |
 | `integrate/app` | ceo | component list | `src/App.vue` | App shell complete |
 | `integrate/seo` | ceo | identity + pages | meta tags per page | Tags present |
-| `review/final` | ceo | full-site screenshots | autonomous: REVIEW-SUMMARY.md + continue; interactive: user approval | Memory hooks fire regardless |
+| `review/observer-final` | ceo | dev server at localhost | `.brain/observer/final-analysis.md` | Observer runs without error |
+| `review/final` | ceo | observer final-analysis.md + screenshots | autonomous: REVIEW-SUMMARY.md + continue; interactive: user approval | All excellenceSignals MEDIUM+ |
 
 ### Phase 6: Retrospective (CEO)
 

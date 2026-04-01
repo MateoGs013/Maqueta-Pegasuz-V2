@@ -1,19 +1,22 @@
 #!/usr/bin/env node
 /**
- * Reference Capture Script v3.1
+ * General Observer v4.0 (formerly Reference Capture Script)
  * Complete 4-pass analysis: Scroll → Hover → Click → Responsive
  * Auto-discovers internal pages from navigation links.
+ * Also works as a local project observer (--local flag).
  *
  * Captures desktop + mobile screenshots per section boundary,
  * extracts design tokens, tech stack, CSS custom properties,
  * runs interaction sweeps (hover states, click states, scroll behaviors),
  * detects spacing systems, and writes a rich manifest.
+ * Now also scores against the Excellence Standard and writes analysis.md.
  *
  * Usage:
  *   Single URL:           node capture-refs.mjs <url> [output-dir]
  *   Batch mode:           node capture-refs.mjs --batch <url1> <url2> ... [--out <dir>]
  *   Disable discovery:    node capture-refs.mjs --no-discover <url> [output-dir]
  *   Set max pages:        node capture-refs.mjs --max-pages 3 <url> [output-dir]
+ *   Local project:        node capture-refs.mjs --local --port 5173 <output-dir>
  *
  * Auto-discovery: when given a homepage URL, extracts nav links and captures
  * internal pages automatically. Each page gets its own directory:
@@ -30,6 +33,7 @@
  *   full-page-desktop.png
  *   full-page-mobile.png
  *   manifest.json                — rich metadata with interaction data
+ *   analysis.md                  — Excellence Standard scoring + human-readable summary
  */
 
 import puppeteer from 'puppeteer'
@@ -44,7 +48,8 @@ if (args.length === 0) {
   Single:    node capture-refs.mjs <url> [output-dir]
   Batch:     node capture-refs.mjs --batch <url1> <url2> ... [--out <dir>]
   No crawl:  node capture-refs.mjs --no-discover <url> [output-dir]
-  Max pages: node capture-refs.mjs --max-pages 3 <url> [output-dir]`)
+  Max pages: node capture-refs.mjs --max-pages 3 <url> [output-dir]
+  Local:     node capture-refs.mjs --local [--port 5173] [output-dir]`)
   process.exit(1)
 }
 
@@ -52,6 +57,8 @@ let urls = []
 let outputBase = '_ref-captures'
 let autoDiscover = true
 let maxInternalPages = 5
+let isLocal = false
+let localPort = 5173
 
 // Extract flags
 const flagArgs = []
@@ -60,13 +67,23 @@ for (let i = 0; i < args.length; i++) {
     autoDiscover = false
   } else if (args[i] === '--max-pages' && args[i + 1]) {
     maxInternalPages = parseInt(args[i + 1]) || 5
-    i++ // skip next arg
+    i++
+  } else if (args[i] === '--local') {
+    isLocal = true
+    autoDiscover = false // no crawling for local projects
+  } else if (args[i] === '--port' && args[i + 1]) {
+    localPort = parseInt(args[i + 1]) || 5173
+    i++
   } else {
     flagArgs.push(args[i])
   }
 }
 
-if (flagArgs[0] === '--batch') {
+if (isLocal) {
+  // Local mode: URL is localhost, output dir is the first positional arg
+  urls = [`http://localhost:${localPort}`]
+  if (flagArgs[0]) outputBase = flagArgs[0]
+} else if (flagArgs[0] === '--batch') {
   const outIdx = flagArgs.indexOf('--out')
   if (outIdx !== -1) {
     outputBase = flagArgs[outIdx + 1]
@@ -141,7 +158,8 @@ function clusterColors(hexColors, threshold = 30) {
 // ═══════════════════════════════════════════════════════════════
 // MAIN CAPTURE FUNCTION
 // ═══════════════════════════════════════════════════════════════
-async function captureReference(url, outputBase) {
+async function captureReference(url, outputBase, options = {}) {
+  const { local = false } = options
   const domain = new URL(url).hostname.replace(/\./g, '-')
   const slug = urlToSlug(url)
   const dirName = domain + slug
@@ -173,8 +191,8 @@ async function captureReference(url, outputBase) {
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 })
     await new Promise(r => setTimeout(r, 2000))
 
-    await dismissCookieBanner(page)
-    await waitForPreloader(page)
+    if (!local) await dismissCookieBanner(page)
+    if (!local) await waitForPreloader(page)
 
     // Capture header state at top (before any scroll)
     const headerStateTop = await captureHeaderState(page)
@@ -217,6 +235,15 @@ async function captureReference(url, outputBase) {
     const layoutPatterns = await extractLayoutPatterns(page, sections)
 
     // ─────────────────────────────────────────────────────────
+    // EXCELLENCE STANDARD METRICS (v4 — new)
+    // ─────────────────────────────────────────────────────────
+    console.log('[capture] Extracting Excellence Standard metrics...')
+    const depthMetrics = await extractDepthMetrics(page)
+    const typographyMetrics = await extractTypographyMetrics(page)
+    const motionProfile = await extractMotionProfile(page)
+    const compositionMetrics = await extractCompositionMetrics(page)
+
+    // ─────────────────────────────────────────────────────────
     // PASS 2: HOVER SWEEP (desktop only — hover doesn't exist on mobile)
     // Detects hover states on interactive elements
     // ─────────────────────────────────────────────────────────
@@ -233,8 +260,8 @@ async function captureReference(url, outputBase) {
     // Reload to reset state after hover sweep may have changed things
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 })
     await new Promise(r => setTimeout(r, 2000))
-    await dismissCookieBanner(page)
-    await waitForPreloader(page)
+    if (!local) await dismissCookieBanner(page)
+    if (!local) await waitForPreloader(page)
     const clickStates = await runClickSweep(page, interactionsDir)
 
     // ─────────────────────────────────────────────────────────
@@ -244,8 +271,8 @@ async function captureReference(url, outputBase) {
     await page.setViewport(VIEWPORTS.mobile)
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 })
     await new Promise(r => setTimeout(r, 2000))
-    await dismissCookieBanner(page)
-    await waitForPreloader(page)
+    if (!local) await dismissCookieBanner(page)
+    if (!local) await waitForPreloader(page)
 
     const mobileSections = await detectSections(page)
     const { frames: mobileFrames } = await captureWithScrollDiff(
@@ -279,12 +306,13 @@ async function captureReference(url, outputBase) {
     }
 
     const manifest = {
-      version: 3.1,
+      version: 4.0,
       url,
       domain,
       pagePath: new URL(url).pathname,
       dirName: dirName,
       capturedAt: new Date().toISOString(),
+      isLocal: local,
 
       viewports: VIEWPORTS,
 
@@ -326,7 +354,7 @@ async function captureReference(url, outputBase) {
       cssCustomProperties: cssCustomProps,
       media: meta.media,
 
-      // ── NEW in v3: Interaction sweep data ──
+      // ── v3: Interaction sweep data ──
       interactions: {
         scrollDiffs,
         headerBehavior,
@@ -334,19 +362,32 @@ async function captureReference(url, outputBase) {
         clickStates
       },
 
-      // ── NEW in v3: Layout & spacing analysis ──
+      // ── v3: Layout & spacing analysis ──
       spacingSystem,
       layoutPatterns,
 
       navigation: {
         ...meta.navigation,
         mobile: mobileNav
-      }
+      },
+
+      // ── v4: Excellence Standard metrics ──
+      depthMetrics,
+      typographyMetrics,
+      motionProfile,
+      compositionMetrics,
+      excellenceSignals: computeExcellenceSignals({
+        depthMetrics, typographyMetrics, motionProfile, compositionMetrics,
+        interactions: { hoverStates, clickStates, scrollDiffs },
+        techStack, layoutPatterns
+      })
     }
 
     writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2))
+    generateAnalysisReport(manifest, dir)
 
     const interactionCount = hoverStates.length + clickStates.length + scrollDiffs.length
+    const signals = manifest.excellenceSignals
     console.log(`[capture] ✓ Done!`)
     console.log(`[capture]   Desktop: ${desktopFrames.length} frames | Mobile: ${mobileFrames.length} frames`)
     console.log(`[capture]   Interactions: ${hoverStates.length} hover + ${clickStates.length} click + ${scrollDiffs.length} scroll diffs`)
@@ -354,6 +395,7 @@ async function captureReference(url, outputBase) {
     console.log(`[capture]   Palette: ${palette.textColors.length} text + ${palette.bgColors.length} bg clusters`)
     console.log(`[capture]   Spacing: ${spacingSystem.scale.length} values detected`)
     console.log(`[capture]   Tech: ${techStack.libraries.join(', ') || 'none detected'}`)
+    console.log(`[capture]   Excellence → Composition:${signals.composition} Depth:${signals.depth} Typo:${signals.typography} Motion:${signals.motion} Craft:${signals.craft}`)
     console.log(`[capture]   Saved to ${dir}/\n`)
 
     return manifest
@@ -1386,6 +1428,472 @@ async function extractCSSCustomProperties(page) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// DEPTH METRICS — z-index layers, clip-paths, backdrop, grain
+// ═══════════════════════════════════════════════════════════════
+async function extractDepthMetrics(page) {
+  return page.evaluate(() => {
+    const allEls = [...document.querySelectorAll('*')]
+    const zIndexSet = new Set()
+    let clipPathCount = 0
+    let backdropFilterCount = 0
+    let shadowCount = 0
+    let overlapElements = 0
+
+    for (const el of allEls) {
+      const style = getComputedStyle(el)
+      const z = parseInt(style.zIndex)
+      if (!isNaN(z) && style.position !== 'static') zIndexSet.add(z)
+      if (style.clipPath && style.clipPath !== 'none') clipPathCount++
+      if (style.backdropFilter && style.backdropFilter !== 'none') backdropFilterCount++
+      if ((style.boxShadow && style.boxShadow !== 'none') ||
+          (style.filter && style.filter.includes('drop-shadow'))) shadowCount++
+      if (style.position === 'absolute' || style.position === 'fixed') overlapElements++
+    }
+
+    // Pseudo-element detection via stylesheet inspection
+    let hasPseudoElements = false
+    try {
+      for (const sheet of document.styleSheets) {
+        try {
+          for (const rule of sheet.cssRules) {
+            if (rule.selectorText &&
+                (rule.selectorText.includes('::before') || rule.selectorText.includes('::after'))) {
+              const s = rule.style
+              if (s.content || s.position || s.background || s.backgroundImage) {
+                hasPseudoElements = true
+                break
+              }
+            }
+          }
+        } catch { }
+        if (hasPseudoElements) break
+      }
+    } catch { }
+
+    // Grain / noise detection
+    let hasGrain = false
+    const grainEl = document.querySelector('[class*="grain"], [class*="noise"], [id*="grain"], [id*="noise"]')
+    if (grainEl) hasGrain = true
+    if (!hasGrain) {
+      try {
+        for (const sheet of document.styleSheets) {
+          try {
+            for (const rule of sheet.cssRules) {
+              const text = rule.cssText || ''
+              if ((text.includes('noise') || text.includes('grain')) && text.includes('url(')) {
+                hasGrain = true
+                break
+              }
+            }
+          } catch { }
+          if (hasGrain) break
+        }
+      } catch { }
+    }
+    // Also check inline background-image for noise URLs
+    if (!hasGrain) {
+      for (const el of allEls.slice(0, 200)) {
+        const bg = getComputedStyle(el).backgroundImage || ''
+        if (bg.includes('noise') || bg.includes('grain')) { hasGrain = true; break }
+      }
+    }
+
+    return {
+      zIndexLayers: [...zIndexSet].sort((a, b) => a - b),
+      zIndexCount: zIndexSet.size,
+      clipPathCount: Math.min(clipPathCount, 50),
+      backdropFilterCount,
+      shadowCount: Math.min(shadowCount, 100),
+      overlapElements: Math.min(overlapElements, 50),
+      hasPseudoElements,
+      hasGrain
+    }
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TYPOGRAPHY METRICS — size ratio, weights, letter-spacing, clamp
+// ═══════════════════════════════════════════════════════════════
+async function extractTypographyMetrics(page) {
+  return page.evaluate(() => {
+    const textEls = [...document.querySelectorAll('h1,h2,h3,h4,h5,h6,p,span,a,li,button,label')]
+    const sizesSet = new Set()
+    const weightsSet = new Set()
+    const letterSpacingSet = new Set()
+
+    for (const el of textEls) {
+      const style = getComputedStyle(el)
+      const size = parseFloat(style.fontSize)
+      if (size >= 10) sizesSet.add(Math.round(size))
+      const weight = parseInt(style.fontWeight)
+      if (!isNaN(weight)) weightsSet.add(weight)
+      const ls = style.letterSpacing
+      if (ls && ls !== 'normal' && ls !== '0px') letterSpacingSet.add(ls)
+    }
+
+    // Check stylesheet rules for clamp()
+    let hasClamp = false
+    let hasCSSAnimations = false
+    try {
+      for (const sheet of document.styleSheets) {
+        try {
+          for (const rule of sheet.cssRules) {
+            const text = rule.cssText || ''
+            if (!hasClamp && text.includes('clamp(')) hasClamp = true
+            if (!hasCSSAnimations && rule.type === CSSRule.KEYFRAMES_RULE) hasCSSAnimations = true
+          }
+        } catch { }
+        if (hasClamp && hasCSSAnimations) break
+      }
+    } catch { }
+
+    const sizes = [...sizesSet].sort((a, b) => a - b)
+    const minSize = sizes[0] || 14
+    const maxSize = sizes[sizes.length - 1] || 14
+    const sizeRatio = Math.round((maxSize / minSize) * 10) / 10
+
+    return {
+      sizes,
+      sizeCount: sizes.length,
+      minSize,
+      maxSize,
+      sizeRatio,
+      weights: [...weightsSet].sort((a, b) => a - b),
+      weightCount: weightsSet.size,
+      hasLetterSpacing: letterSpacingSet.size > 0,
+      letterSpacingValues: [...letterSpacingSet].slice(0, 8),
+      hasClamp,
+      hasCSSAnimations
+    }
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MOTION PROFILE — CSS transitions, GSAP state, ScrollTrigger
+// ═══════════════════════════════════════════════════════════════
+async function extractMotionProfile(page) {
+  return page.evaluate(() => {
+    const allEls = [...document.querySelectorAll('*')]
+    const cubicBeziers = new Set()
+    const durations = []
+    let transitionCount = 0
+    let animationCount = 0
+    let staggerDelayCount = 0
+
+    for (const el of allEls.slice(0, 300)) {
+      const style = getComputedStyle(el)
+
+      const transitionDuration = parseFloat(style.transitionDuration)
+      if (transitionDuration > 0) {
+        transitionCount++
+        durations.push(transitionDuration)
+        const tf = style.transitionTimingFunction
+        if (tf && tf.includes('cubic-bezier')) cubicBeziers.add(tf)
+      }
+
+      const animDuration = parseFloat(style.animationDuration)
+      if (animDuration > 0) {
+        animationCount++
+        const at = style.animationTimingFunction
+        if (at && at.includes('cubic-bezier')) cubicBeziers.add(at)
+        const delay = parseFloat(style.animationDelay)
+        if (delay > 0) staggerDelayCount++
+      }
+    }
+
+    // GSAP state
+    const gsapActive = !!(window.gsap || window.GreenSockGlobals)
+    const scrollTriggerActive = !!window.ScrollTrigger
+    let scrollTriggerScrubCount = 0
+    let scrollTriggerCount = 0
+    if (window.ScrollTrigger) {
+      const triggers = window.ScrollTrigger.getAll?.() || []
+      scrollTriggerCount = triggers.length
+      scrollTriggerScrubCount = triggers.filter(t => t.scrub).length
+    }
+
+    const gsapTweenCount = window.gsap?.globalTimeline?.getChildren?.(true, true, true)?.length || 0
+
+    return {
+      cssTransitions: {
+        count: transitionCount,
+        cubicBeziers: [...cubicBeziers].slice(0, 10),
+        cubicBezierCount: cubicBeziers.size,
+        avgDuration: durations.length
+          ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length * 100) / 100
+          : 0
+      },
+      cssAnimations: {
+        count: animationCount,
+        hasStagger: staggerDelayCount > 2
+      },
+      gsap: {
+        active: gsapActive,
+        tweenCount: gsapTweenCount,
+        scrollTrigger: scrollTriggerActive,
+        scrollTriggerCount,
+        scrollTriggerScrub: scrollTriggerScrubCount > 0,
+        scrollTriggerScrubCount
+      }
+    }
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMPOSITION METRICS — padding asymmetry, text alignment, overlaps
+// ═══════════════════════════════════════════════════════════════
+async function extractCompositionMetrics(page) {
+  return page.evaluate(() => {
+    const sectionEls = [...document.querySelectorAll('section, main > div, article, [class*="section"]')]
+    const sectionData = []
+
+    for (const el of sectionEls.slice(0, 20)) {
+      const style = getComputedStyle(el)
+      const pt = parseFloat(style.paddingTop)
+      const pb = parseFloat(style.paddingBottom)
+      const paddingAsymmetry = (pt > 4 && pb > 4)
+        ? Math.round(Math.abs(pt - pb) / Math.max(pt, pb) * 100)
+        : 0
+
+      const textEls = [...el.querySelectorAll('h1,h2,h3,p')]
+      const alignments = new Set(textEls.map(t => getComputedStyle(t).textAlign))
+
+      const children = [...el.children]
+      const hasAbsoluteChild = children.some(c => {
+        const cs = getComputedStyle(c)
+        return cs.position === 'absolute' || cs.position === 'fixed'
+      })
+      const hasNegativeMargin = children.some(c => {
+        const cs = getComputedStyle(c)
+        return parseFloat(cs.marginTop) < 0 || parseFloat(cs.marginLeft) < 0
+      })
+
+      const rect = el.getBoundingClientRect()
+      const viewportWidth = window.innerWidth
+      const isFullBleed = rect.left <= 2 && rect.right >= viewportWidth - 2
+
+      sectionData.push({
+        tag: el.tagName.toLowerCase(),
+        class: (el.className || '').toString().slice(0, 60),
+        paddingTop: Math.round(pt),
+        paddingBottom: Math.round(pb),
+        paddingAsymmetry,
+        textAlignments: [...alignments],
+        hasAbsoluteChild,
+        hasNegativeMargin,
+        isFullBleed
+      })
+    }
+
+    // Page-wide text alignment variety
+    const allAlignments = new Set()
+    document.querySelectorAll('h1,h2,h3,p').forEach(el => {
+      allAlignments.add(getComputedStyle(el).textAlign)
+    })
+
+    // Container break: elements wider than viewport (full bleed)
+    const containerBreaks = [...document.querySelectorAll('*')].filter(el => {
+      const rect = el.getBoundingClientRect()
+      return rect.width > window.innerWidth * 1.01 && rect.width < window.innerWidth * 2
+    }).length
+
+    const avgPaddingAsymmetry = sectionData.length
+      ? Math.round(sectionData.reduce((s, d) => s + d.paddingAsymmetry, 0) / sectionData.length)
+      : 0
+
+    return {
+      sections: sectionData,
+      textAlignmentVariety: allAlignments.size,
+      textAlignments: [...allAlignments],
+      avgPaddingAsymmetry,
+      containerBreaks: Math.min(containerBreaks, 20)
+    }
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXCELLENCE SIGNALS — score all 5 dimensions (STRONG/MEDIUM/WEAK)
+// ═══════════════════════════════════════════════════════════════
+function computeExcellenceSignals({ depthMetrics, typographyMetrics, motionProfile, compositionMetrics, interactions, techStack, layoutPatterns }) {
+  const score = (val) => val >= 4 ? 'STRONG' : val >= 2 ? 'MEDIUM' : 'WEAK'
+
+  // COMPOSITION
+  const compPoints =
+    (compositionMetrics?.textAlignmentVariety >= 2 ? 1 : 0) +
+    (compositionMetrics?.avgPaddingAsymmetry >= 20 ? 1 : 0) +
+    (compositionMetrics?.sections?.some(s => s.hasAbsoluteChild || s.hasNegativeMargin) ? 1 : 0) +
+    (compositionMetrics?.containerBreaks > 0 ? 1 : 0) +
+    ((layoutPatterns || []).length >= 2 ? 1 : 0)
+
+  // DEPTH
+  const depthPoints =
+    ((depthMetrics?.zIndexCount || 0) >= 3 ? 1 : 0) +
+    (depthMetrics?.hasPseudoElements ? 1 : 0) +
+    ((depthMetrics?.backdropFilterCount || 0) > 0 ? 1 : 0) +
+    ((depthMetrics?.clipPathCount || 0) > 0 ? 1 : 0) +
+    ((interactions?.scrollDiffs?.length || 0) > 0 ? 1 : 0)
+
+  // TYPOGRAPHY
+  const typoPoints =
+    ((typographyMetrics?.sizeRatio || 0) >= 4 ? 1 : 0) +
+    ((typographyMetrics?.sizeCount || 0) >= 4 ? 1 : 0) +
+    ((typographyMetrics?.weightCount || 0) >= 2 ? 1 : 0) +
+    (typographyMetrics?.hasLetterSpacing ? 1 : 0) +
+    (typographyMetrics?.hasClamp ? 1 : 0)
+
+  // MOTION
+  const motionPoints =
+    ((motionProfile?.cssTransitions?.cubicBezierCount || 0) >= 2 ? 1 : 0) +
+    (motionProfile?.gsap?.active ? 1 : 0) +
+    (motionProfile?.gsap?.scrollTrigger ? 1 : 0) +
+    (motionProfile?.gsap?.scrollTriggerScrub ? 1 : 0) +
+    (motionProfile?.cssAnimations?.hasStagger ? 1 : 0)
+
+  // CRAFT
+  const craftPoints =
+    ((interactions?.hoverStates?.length || 0) >= 2 ? 1 : 0) +
+    (techStack?.hasCustomCursor ? 1 : 0) +
+    ((depthMetrics?.clipPathCount || 0) > 0 ? 1 : 0) +
+    (depthMetrics?.hasGrain ? 1 : 0) +
+    ((depthMetrics?.backdropFilterCount || 0) > 0 ? 1 : 0)
+
+  return {
+    composition: score(compPoints),
+    depth: score(depthPoints),
+    typography: score(typoPoints),
+    motion: score(motionPoints),
+    craft: score(craftPoints),
+    _scores: { composition: compPoints, depth: depthPoints, typography: typoPoints, motion: motionPoints, craft: craftPoints }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ANALYSIS REPORT — writes analysis.md alongside manifest.json
+// ═══════════════════════════════════════════════════════════════
+function generateAnalysisReport(manifest, outputDir) {
+  const signals = manifest.excellenceSignals || {}
+  const palette = manifest.palette || {}
+  const typo = manifest.typographyMetrics || {}
+  const depth = manifest.depthMetrics || {}
+  const motion = manifest.motionProfile || {}
+  const comp = manifest.compositionMetrics || {}
+  const tech = manifest.techStack || {}
+  const scores = signals._scores || {}
+
+  const signalIcon = { STRONG: '✓', MEDIUM: '~', WEAK: '✗' }
+
+  const lines = [
+    `# Observer Report: ${manifest.url}`,
+    `> Captured: ${manifest.capturedAt} | Observer v4.0`,
+    ``,
+    `## Summary`,
+    `- **Sections detected:** ${manifest.sectionCount}`,
+    `- **Tech stack:** ${tech.libraries?.join(', ') || 'none detected'}`,
+    `- **CSS custom properties:** ${Object.keys(manifest.cssCustomProperties || {}).length} tokens`,
+    `- **Page height:** ${manifest.pageHeight || '?'}px`,
+    `- **Has smooth scroll:** ${tech.hasSmoothScroll ? 'yes' : 'no'}`,
+    `- **Has custom cursor:** ${tech.hasCustomCursor ? 'yes' : 'no'}`,
+    ``,
+    `## Excellence Standard Signals`,
+    ``,
+    `| Dimension | Signal | Score | Evidence |`,
+    `|-----------|--------|-------|----------|`,
+    `| Composition | ${signalIcon[signals.composition] || '?'} ${signals.composition || '?'} | ${scores.composition || 0}/5 | text-alignments:${comp.textAlignmentVariety || 0} · padding-asymmetry:${comp.avgPaddingAsymmetry || 0}% · container-breaks:${comp.containerBreaks || 0} |`,
+    `| Depth | ${signalIcon[signals.depth] || '?'} ${signals.depth || '?'} | ${scores.depth || 0}/5 | z-index-layers:${depth.zIndexCount || 0} · clip-paths:${depth.clipPathCount || 0} · backdrop-filters:${depth.backdropFilterCount || 0} · pseudo-elements:${depth.hasPseudoElements ? 'yes' : 'no'} · grain:${depth.hasGrain ? 'yes' : 'no'} |`,
+    `| Typography | ${signalIcon[signals.typography] || '?'} ${signals.typography || '?'} | ${scores.typography || 0}/5 | ratio:${typo.sizeRatio || 0}x · sizes:${typo.sizeCount || 0} · weights:${typo.weightCount || 0} · letter-spacing:${typo.hasLetterSpacing ? 'yes' : 'no'} · clamp:${typo.hasClamp ? 'yes' : 'no'} |`,
+    `| Motion | ${signalIcon[signals.motion] || '?'} ${signals.motion || '?'} | ${scores.motion || 0}/5 | cubic-beziers:${motion.cssTransitions?.cubicBezierCount || 0} · gsap:${motion.gsap?.active ? 'yes' : 'no'} · scroll-triggers:${motion.gsap?.scrollTriggerCount || 0} · scrub:${motion.gsap?.scrollTriggerScrub ? 'yes' : 'no'} · stagger:${motion.cssAnimations?.hasStagger ? 'yes' : 'no'} |`,
+    `| Craft | ${signalIcon[signals.craft] || '?'} ${signals.craft || '?'} | ${scores.craft || 0}/5 | hover-states:${manifest.interactions?.hoverStates?.length || 0} · custom-cursor:${tech.hasCustomCursor ? 'yes' : 'no'} · clip-path:${(depth.clipPathCount || 0) > 0 ? 'yes' : 'no'} · grain:${depth.hasGrain ? 'yes' : 'no'} |`,
+    ``,
+  ]
+
+  // Palette
+  lines.push(`## Palette`, ``)
+  if (palette.textColors?.length) {
+    lines.push(`**Text colors:** ${palette.textColors.slice(0, 8).join(' · ')}`)
+  }
+  if (palette.bgColors?.length) {
+    lines.push(`**Background colors:** ${palette.bgColors.slice(0, 8).join(' · ')}`)
+  }
+  lines.push(``)
+
+  // Typography detail
+  lines.push(
+    `## Typography`,
+    `- **Fonts:** ${(manifest.fonts || []).join(', ') || 'none detected'}`,
+    `- **Font sizes:** ${(typo.sizes || []).join(', ')}px`,
+    `- **Size ratio:** ${typo.sizeRatio}x (${typo.minSize}px → ${typo.maxSize}px)`,
+    `- **Weights:** ${(typo.weights || []).join(', ')}`,
+    `- **Letter-spacing:** ${typo.hasLetterSpacing ? (typo.letterSpacingValues || []).join(', ') : 'none'}`,
+    `- **Fluid type (clamp):** ${typo.hasClamp ? 'yes' : 'no'}`,
+    ``
+  )
+
+  // Motion detail
+  lines.push(`## Motion Profile`)
+  lines.push(`- **CSS transitions:** ${motion.cssTransitions?.count || 0} elements (avg ${motion.cssTransitions?.avgDuration || 0}s)`)
+  if (motion.cssTransitions?.cubicBeziers?.length) {
+    lines.push(`- **Custom easing curves:**`)
+    motion.cssTransitions.cubicBeziers.slice(0, 5).forEach(cb => lines.push(`  - \`${cb}\``))
+  }
+  lines.push(`- **GSAP:** ${motion.gsap?.active ? `active (${motion.gsap.tweenCount} tweens)` : 'not detected'}`)
+  if (motion.gsap?.scrollTrigger) {
+    lines.push(`- **ScrollTrigger:** ${motion.gsap.scrollTriggerCount} triggers, ${motion.gsap.scrollTriggerScrubCount} with scrub`)
+  }
+  lines.push(`- **CSS animations:** ${motion.cssAnimations?.count || 0} (stagger: ${motion.cssAnimations?.hasStagger ? 'yes' : 'no'})`)
+  lines.push(``)
+
+  // Depth detail
+  lines.push(
+    `## Depth & Layering`,
+    `- **Z-index layers:** ${depth.zIndexCount || 0} distinct values — [${(depth.zIndexLayers || []).join(', ')}]`,
+    `- **Clip-paths:** ${depth.clipPathCount || 0} elements`,
+    `- **Backdrop filters:** ${depth.backdropFilterCount || 0} elements`,
+    `- **Shadows:** ${depth.shadowCount || 0} elements`,
+    `- **Absolute-positioned elements:** ${depth.overlapElements || 0}`,
+    `- **Pseudo-elements (::before/::after):** ${depth.hasPseudoElements ? 'yes' : 'no'}`,
+    `- **Grain/noise texture:** ${depth.hasGrain ? 'yes' : 'no'}`,
+    ``
+  )
+
+  // Composition detail
+  lines.push(`## Composition`)
+  lines.push(`- **Text alignments:** ${(comp.textAlignments || []).join(', ')}`)
+  lines.push(`- **Avg padding asymmetry:** ${comp.avgPaddingAsymmetry || 0}%`)
+  lines.push(`- **Container breaks (full-bleed elements):** ${comp.containerBreaks || 0}`)
+  if (comp.sections?.length) {
+    lines.push(`- **Per-section padding:**`)
+    comp.sections.slice(0, 8).forEach(s => {
+      lines.push(`  - \`.${s.class.split(' ')[0] || s.tag}\` → top:${s.paddingTop}px bottom:${s.paddingBottom}px asymmetry:${s.paddingAsymmetry}%`)
+    })
+  }
+  lines.push(``)
+
+  // CSS Tokens
+  const cssProps = Object.entries(manifest.cssCustomProperties || {})
+  if (cssProps.length) {
+    lines.push(`## CSS Custom Properties (${cssProps.length} tokens)`, ``)
+    cssProps.slice(0, 30).forEach(([k, v]) => lines.push(`- \`${k}: ${v}\``))
+    if (cssProps.length > 30) lines.push(`- … and ${cssProps.length - 30} more`)
+    lines.push(``)
+  }
+
+  // Interactions
+  lines.push(
+    `## Interactions`,
+    `- **Hover states captured:** ${manifest.interactions?.hoverStates?.length || 0}`,
+    `- **Click states captured:** ${manifest.interactions?.clickStates?.length || 0}`,
+    `- **Scroll diffs detected:** ${manifest.interactions?.scrollDiffs?.length || 0}`,
+    `- **Header behavior:** ${manifest.interactions?.headerBehavior?.type || 'unknown'}`,
+    ``
+  )
+
+  const report = lines.join('\n')
+  writeFileSync(join(outputDir, 'analysis.md'), report)
+  console.log(`[capture]   → analysis.md written`)
+  return report
+}
+
+// ═══════════════════════════════════════════════════════════════
 // AUTO-DISCOVERY — Extract internal pages from nav links
 // ═══════════════════════════════════════════════════════════════
 async function discoverInternalPages(url, maxPages) {
@@ -1507,7 +2015,7 @@ const results = []
 
 for (const u of expandedUrls) {
   try {
-    const result = await captureReference(u, outputBase)
+    const result = await captureReference(u, outputBase, { local: isLocal })
     results.push({ url: u, status: 'ok', manifest: result })
   } catch (err) {
     console.error(`[capture] ✗ Failed: ${u} — ${err.message}`)

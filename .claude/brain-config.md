@@ -142,3 +142,45 @@ promotion_targets:
   value: docs/_libraries/values-reference.md
 auto_promote: true                 # brain promotes without asking
 ```
+
+---
+
+## Observer Integration (v4)
+
+The General Observer (`scripts/capture-refs.mjs`) is now used in two modes:
+
+### Mode A: Reference analysis (setup/capture-refs task)
+```bash
+node capture-refs.mjs <url> $PROJECT_DIR/_ref-captures
+```
+- Captures external reference sites
+- Output: manifest.json + analysis.md + screenshots per page
+- Feed to: `reference-analyst` agent → `docs/reference-analysis.md`
+
+### Mode B: Own-project QA (review/sections and review/final tasks)
+```bash
+node capture-refs.mjs --local --port 5173 $PROJECT_DIR/.brain/observer
+```
+- Observes the project running locally
+- Output: manifest.json + analysis.md with **Excellence Standard scores**
+- Feed to: CEO auto-evaluation engine
+- Approval criteria derived from `excellenceSignals` in observer output
+
+### Observer → Approval Criteria
+
+When evaluating builder output, the CEO must:
+1. Run observer on localhost AFTER the dev server is running
+2. Read `.brain/observer/{localhost}/analysis.md`
+3. Compare `excellenceSignals` against `brain-config.md` thresholds:
+   - All dimensions must be MEDIUM or STRONG
+   - WEAK on any dimension → flag in `approvals.md`, trigger retry
+4. Inject observer findings into next context file as "## Observer Signals" block
+
+```yaml
+observer_gate:
+  composition: MEDIUM+    # WEAK → retry with composition guidance
+  depth: MEDIUM+
+  typography: MEDIUM+
+  motion: MEDIUM+         # checked after polish phase
+  craft: MEDIUM+          # checked after polish phase
+```
