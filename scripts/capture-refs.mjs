@@ -242,6 +242,7 @@ async function captureReference(url, outputBase, options = {}) {
     const typographyMetrics = await extractTypographyMetrics(page)
     const motionProfile = await extractMotionProfile(page)
     const compositionMetrics = await extractCompositionMetrics(page)
+    const sectionClassifications = await classifySections(page)
 
     // ─────────────────────────────────────────────────────────
     // PASS 2: HOVER SWEEP (desktop only — hover doesn't exist on mobile)
@@ -376,6 +377,7 @@ async function captureReference(url, outputBase, options = {}) {
       typographyMetrics,
       motionProfile,
       compositionMetrics,
+      sectionClassifications,
       excellenceSignals: computeExcellenceSignals({
         depthMetrics, typographyMetrics, motionProfile, compositionMetrics,
         interactions: { hoverStates, clickStates, scrollDiffs },
@@ -1712,6 +1714,162 @@ async function extractCompositionMetrics(page) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// SECTION SEMANTIC CLASSIFICATION
+// 5-pass cascade: tag → class/id → heading → DOM structure → position
+// Types: nav | hero | about | features | services | work | testimonials |
+//        pricing | stats | cta | faq | contact | team | process |
+//        clients | blog | footer | unknown
+// ═══════════════════════════════════════════════════════════════
+async function classifySections(page) {
+  return page.evaluate(() => {
+    // ── Pass 1 & 2 lookup tables ─────────────────────────────
+    const CLASS_PATTERNS = {
+      nav:          /\b(nav|navigation|menu|topbar|top-bar)\b/,
+      hero:         /\b(hero|banner|splash|jumbotron|intro|landing|above-fold)\b/,
+      about:        /\b(about|story|mission|who-we|who-i|biography|bio|values)\b/,
+      features:     /\b(feature|capability|solution|what-we|what-i)\b/,
+      services:     /\b(service|offering|expertise|specialit)\b/,
+      work:         /\b(work|project|portfolio|case-stud|showcase|gallery|selected)\b/,
+      testimonials: /\b(testimonial|review|feedback|quote|client-say|social-proof|trust)\b/,
+      pricing:      /\b(pricing|plan|tier|subscription|package|cost)\b/,
+      stats:        /\b(stat|metric|counter|number|achievement|impact|result|figure)\b/,
+      cta:          /\b(cta|call-to-action|get-started|sign-up|signup|ready|start-now)\b/,
+      faq:          /\b(faq|accordion|question|answer|help)\b/,
+      contact:      /\b(contact|get-in-touch|reach-out|hire|inquiry|form)\b/,
+      team:         /\b(team|member|people|staff|founder|crew|about-us)\b/,
+      process:      /\b(process|how-it|how-we|step|workflow|approach|methodology)\b/,
+      clients:      /\b(client|partner|logo|trust|brand|customer|sponsor)\b/,
+      blog:         /\b(blog|news|article|post|insight|update|press|journal)\b/,
+      footer:       /\b(footer|foot|bottom)\b/,
+    }
+
+    const HEADING_KEYWORDS = {
+      about:        /\b(about|who we are|who i am|our story|my story|our mission|values)\b/i,
+      features:     /\b(features|what we do|what i do|offerings|capabilities|how we help)\b/i,
+      services:     /\b(services|what we offer|our services|expertise|specialties)\b/i,
+      work:         /\b(work|projects|portfolio|case studies|selected work|our work|built)\b/i,
+      team:         /\b(team|meet the|our people|the founders|who.?s behind)\b/i,
+      process:      /\b(process|how it works|how we work|our approach|methodology|the steps)\b/i,
+      clients:      /\b(clients|partners|trusted by|companies we.?ve|brands|our clients)\b/i,
+      faq:          /\b(faq|frequently asked|questions|common questions)\b/i,
+      contact:      /\b(contact|get in touch|reach out|let.?s talk|hire me|work with me)\b/i,
+      cta:          /\b(get started|start now|ready to|let.?s build|book a|schedule a)\b/i,
+      testimonials: /\b(testimonials|what (clients|people|they|customers) say|reviews|kind words)\b/i,
+      blog:         /\b(blog|articles|news|insights|latest|thoughts|writing|journal)\b/i,
+      stats:        /\b(by the numbers|our impact|results|achievements|in numbers)\b/i,
+      pricing:      /\b(pricing|plans|our plans|choose a plan|how much)\b/i,
+    }
+
+    // ── Main classification loop ─────────────────────────────
+    const candidates = [
+      ...document.querySelectorAll('header, nav, footer, section, article, main > div, main > section, [class*="section"], [id*="section"]')
+    ]
+
+    // Deduplicate: remove elements that are children of other candidates
+    const unique = candidates.filter(el =>
+      !candidates.some(other => other !== el && other.contains(el))
+    )
+
+    const results = []
+
+    for (const [index, el] of unique.slice(0, 30).entries()) {
+      const tag = el.tagName.toLowerCase()
+      const identifiers = ((el.className || '').toString() + ' ' + (el.id || '')).toLowerCase()
+      const headingEl = el.querySelector('h1, h2, h3')
+      const headingText = headingEl?.textContent?.trim().slice(0, 100) || ''
+      const bodyText = el.textContent?.toLowerCase().slice(0, 600) || ''
+
+      let type = null
+      let confidence = null
+      let method = null
+
+      // ── Pass 1: tag ──────────────────────────────────────
+      if (tag === 'header') { type = 'nav';    confidence = 'HIGH';   method = 'tag' }
+      if (tag === 'nav')    { type = 'nav';    confidence = 'HIGH';   method = 'tag' }
+      if (tag === 'footer') { type = 'footer'; confidence = 'HIGH';   method = 'tag' }
+
+      // ── Pass 2: class / id patterns ──────────────────────
+      if (!type) {
+        for (const [t, pattern] of Object.entries(CLASS_PATTERNS)) {
+          if (pattern.test(identifiers)) {
+            type = t; confidence = 'HIGH'; method = 'class/id'
+            break
+          }
+        }
+      }
+
+      // ── Pass 3: heading text ─────────────────────────────
+      if (!type && headingText) {
+        for (const [t, pattern] of Object.entries(HEADING_KEYWORDS)) {
+          if (pattern.test(headingText)) {
+            type = t; confidence = 'MEDIUM'; method = 'heading'
+            break
+          }
+        }
+      }
+
+      // ── Pass 4: DOM structure heuristics ─────────────────
+      if (!type) {
+        const hasPriceSymbol = /(\$|€|£|\bper month\b|\bper year\b|\/mo\b|\/yr\b)/.test(bodyText)
+        const hasFormInput   = el.querySelectorAll('input[type="email"], input[type="text"], textarea').length > 0
+        const hasForm        = el.querySelector('form') !== null
+        const starEls        = el.querySelectorAll('[class*="star"], [class*="rating"], [class*="review"]').length
+        const quoteEls       = el.querySelectorAll('blockquote, [class*="quote"], [class*="testimonial"]').length
+        const ariaExpanded   = el.querySelectorAll('[aria-expanded]').length
+        const logoImgs       = el.querySelectorAll('img[class*="logo"], img[alt*="logo"], img[class*="client"], img[class*="partner"]').length
+
+        // Count leaf text nodes that look like large numbers
+        const bigNumberCount = [...el.querySelectorAll('*')].filter(c => {
+          if (c.children.length > 0) return false
+          const t = c.textContent?.trim() || ''
+          return /^\d[\d,.]*[k+%]?$/.test(t) && t.replace(/[^\d]/g, '').length >= 2
+        }).length
+
+        if (hasPriceSymbol)                  { type = 'pricing';      confidence = 'MEDIUM'; method = 'content:price'    }
+        else if (starEls >= 2 || quoteEls >= 1) { type = 'testimonials'; confidence = 'MEDIUM'; method = 'content:quotes'   }
+        else if (hasForm || hasFormInput)    { type = 'contact';      confidence = 'MEDIUM'; method = 'content:form'     }
+        else if (ariaExpanded >= 3)          { type = 'faq';          confidence = 'MEDIUM'; method = 'content:accordion' }
+        else if (bigNumberCount >= 3)        { type = 'stats';        confidence = 'MEDIUM'; method = 'content:numbers'  }
+        else if (logoImgs >= 3)              { type = 'clients';      confidence = 'LOW';    method = 'content:logos'    }
+      }
+
+      // ── Pass 5: position fallback ─────────────────────────
+      if (!type) {
+        const hasH1 = !!el.querySelector('h1')
+        if (index === 0 && hasH1) { type = 'hero';    confidence = 'LOW'; method = 'position:first+h1' }
+        else if (index === 0)     { type = 'hero';    confidence = 'LOW'; method = 'position:first'    }
+      }
+
+      // ── Extract CTA button text ───────────────────────────
+      const ctaEl = el.querySelector(
+        'a[class*="btn"], a[class*="cta"], a[class*="button"], button[class*="cta"], button[class*="btn"]'
+      )
+      const ctaText = ctaEl?.textContent?.trim().slice(0, 60) || null
+
+      // ── Count interactive elements ────────────────────────
+      const linkCount   = el.querySelectorAll('a[href]').length
+      const buttonCount = el.querySelectorAll('button').length
+      const imageCount  = el.querySelectorAll('img').length
+
+      results.push({
+        index,
+        tag,
+        type:        type || 'unknown',
+        confidence:  confidence || 'LOW',
+        method:      method || 'none',
+        headingText: headingText || null,
+        ctaText,
+        linkCount,
+        buttonCount,
+        imageCount,
+      })
+    }
+
+    return results
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
 // EXCELLENCE SIGNALS — score all 5 dimensions (STRONG/MEDIUM/WEAK)
 // ═══════════════════════════════════════════════════════════════
 function computeExcellenceSignals({ depthMetrics, typographyMetrics, motionProfile, compositionMetrics, interactions, techStack, layoutPatterns }) {
@@ -1874,6 +2032,38 @@ function generateAnalysisReport(manifest, outputDir) {
     lines.push(`## CSS Custom Properties (${cssProps.length} tokens)`, ``)
     cssProps.slice(0, 30).forEach(([k, v]) => lines.push(`- \`${k}: ${v}\``))
     if (cssProps.length > 30) lines.push(`- … and ${cssProps.length - 30} more`)
+    lines.push(``)
+  }
+
+  // Section Map
+  const classifications = manifest.sectionClassifications || []
+  if (classifications.length) {
+    lines.push(`## Section Map`, ``)
+    lines.push(`| # | Type | Confidence | Method | Heading | CTA |`)
+    lines.push(`|---|------|-----------|--------|---------|-----|`)
+    for (const s of classifications) {
+      const heading = (s.headingText || '—').replace(/\|/g, '/')
+      const cta     = (s.ctaText     || '—').replace(/\|/g, '/')
+      lines.push(`| ${s.index} | **${s.type}** | ${s.confidence} | ${s.method} | ${heading} | ${cta} |`)
+    }
+
+    // Content strategy summary (sequence of types, ignoring nav/unknown)
+    const sequence = classifications
+      .filter(s => s.type !== 'nav' && s.type !== 'unknown')
+      .map(s => s.type)
+    if (sequence.length) {
+      lines.push(``)
+      lines.push(`**Content strategy:** ${sequence.join(' → ')}`)
+    }
+
+    // Type counts
+    const typeCounts = {}
+    for (const s of classifications) typeCounts[s.type] = (typeCounts[s.type] || 0) + 1
+    const countsStr = Object.entries(typeCounts)
+      .filter(([t]) => t !== 'unknown')
+      .map(([t, n]) => `${t}×${n}`)
+      .join(', ')
+    if (countsStr) lines.push(`**Section types:** ${countsStr}`)
     lines.push(``)
   }
 
