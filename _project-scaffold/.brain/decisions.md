@@ -1,4 +1,5 @@
 # Decisions — {project name}
 
-<!-- CEO writes here in real-time as decisions happen -->
-<!-- Format: ## D-NNN | Topic | Phase -->
+<!-- Brain writes here in real-time after each decision. -->
+<!-- Format: ## D-{NNN} | {topic} | {phase} -->
+<!-- Fields: Choice, Path (decision tree), Auto-Approved/User reaction, Learn -->

@@ -4,6 +4,6 @@
 - **Task:** setup/identity
 - **Blocker:** none
 - **Next:** Parse user brief and compile identity card
-- **Mode:** interactive
+- **Mode:** autonomous
 - **Files created:** 0
 - **Sections:** 0/0

@@ -1,11 +1,12 @@
 # Identity: {name}
-- **Type:** {project type}
-- **Does:** {description}
-- **Audience:** {target audience}
-- **Pages:** {page list}
-- **Mood:** {aesthetic direction}
+- **Type:** {e.g., Architecture studio}
+- **Does:** {1-2 sentences}
+- **Audience:** {who they serve}
+- **Pages:** {list}
+- **Mood:** {e.g., Dark & Cinematic}
 - **Scheme:** {dark/light/both}
-- **References:** {URLs}
+- **References:** {URLs or none}
 - **Brand:** {scratch/existing}
 - **Backend:** {none/Pegasuz/other}
+- **Mode:** autonomous
 - **Constraints:** {any}

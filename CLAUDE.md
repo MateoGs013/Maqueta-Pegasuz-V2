@@ -1,4 +1,4 @@
-# Pegasuz V6 — Brain Architecture Pipeline
+# Pegasuz V6.1 — Autonomous Brain Pipeline
 
 ## Project Isolation
 
@@ -28,13 +28,16 @@ Vue 3 (`<script setup>`) + Vite + Vue Router + Pinia
 GSAP 3 + ScrollTrigger + Lenis · CSS Custom Properties
 @splinetool/runtime (optional — interactive 3D scenes, loaded dynamically)
 
-## Brain Architecture (V6)
+## Brain Architecture (V6.1 — Autonomous)
+
+**Default mode is autonomous.** The brain builds, evaluates, and learns without waiting for the user.
+User reads `docs/review/REVIEW-SUMMARY.md` when done. Override with "interactive" in the brief.
 
 Three memory layers:
 
 | Layer | Location | Purpose | Lifetime |
 |-------|----------|---------|----------|
-| **Working Memory** | `$PROJECT_DIR/.brain/` | Hot state: tasks, context, reports | Per project |
+| **Working Memory** | `$PROJECT_DIR/.brain/` | Hot state: tasks, context, reports, approvals | Per project |
 | **Long-Term Memory** | `$MAQUETA_DIR/.claude/memory/design-intelligence/` | Cross-project intelligence | Permanent |
 | **Session State** | `$PROJECT_DIR/.brain/state.md` | Crash recovery | Per project |
 
@@ -45,22 +48,27 @@ Three memory layers:
   identity.md       <- project identity card
   queue.md          <- micro-task queue with status
   decisions.md      <- real-time decision log
+  approvals.md      <- auto-approval log (user reads async — never blocks)
   learnings.md      <- real-time learnings
-  context/          <- pre-computed input files for agents
+  context/          <- pre-computed input files (includes Memory Insights block)
   reports/          <- agent output reports
 ```
 
-### Core Loop
+### Autonomous Brain Loop
 ```
-1. Read .brain/state.md      -> where am I?
-2. Read .brain/queue.md      -> what's next?
-3. Execute ONE micro-task     -> context file | agent spawn | review
-4. Update queue + state       -> mark done, set next
-5. Write decision + learning  -> .brain/ + long-term memory
+1. Read .brain/state.md        -> where am I?
+2. Read .brain/queue.md        -> what's next?
+3. INTERPRET                    -> read design-intelligence/ -> inject Memory Insights
+4. Execute ONE micro-task       -> context file | agent spawn | integration
+5. AUTO-EVALUATE                -> pass/fail vs brain-config.md thresholds
+6. MEMORY HOOK                  -> write learning to design-intelligence/ immediately
+7. Log to approvals.md + decisions.md
+8. Update queue + state         -> continue
 ```
 
-See `.claude/pipeline.md` for full micro-task catalog.
-See `.claude/skills/project/SKILL.md` for CEO orchestration.
+**Brain config:** `.claude/brain-config.md` — thresholds, mode, memory hooks, rule promotion.
+**Pipeline:** `.claude/pipeline.md` — micro-task catalog, auto-approval engine, interpretation layer.
+**CEO skill:** `.claude/skills/project/SKILL.md` — orchestration logic.
 
 ---
 
@@ -142,5 +150,6 @@ CEO orchestrates via `/project` skill. Agents read from `.brain/context/` files.
 | `polisher` | Motion + QA | `.brain/context/motion.md` | composables + `.brain/reports/motion.md` |
 | `reference-analyst` | Analyze references | `_ref-captures/` | `docs/reference-analysis.md` |
 
-**Context rule:** CEO writes context file before spawning agent.
+**Context rule:** CEO writes context file (with Memory Insights block) before spawning agent.
 Agent reads ONE file — never "read the docs."
+Brain auto-approves output against thresholds. Failures logged to `approvals.md`, never block pipeline.

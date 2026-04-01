@@ -1,4 +1,4 @@
-# Pipeline V6 — Brain Architecture
+# Pipeline V6.1 — Autonomous Brain
 
 ## Core Concept: Three Memory Layers
 
@@ -11,13 +11,18 @@ Layer 3: Long-Term Memory → $MAQUETA_DIR/.claude/memory/design-intelligence/  
 **The brain works like this:**
 1. CEO reads `.brain/state.md` → knows where it is
 2. CEO reads `.brain/queue.md` → knows what to do next
-3. CEO writes `context/{task}.md` → pre-computes agent input
-4. Agent reads ONE context file → does ONE task → writes to `reports/{task}.md`
-5. CEO reads report → updates queue → writes decisions + learnings in real-time
-6. Repeat until queue is empty
+3. CEO **enriches context** with memory insights (interpretation layer)
+4. CEO writes `context/{task}.md` → pre-computes agent input
+5. Agent reads ONE context file → does ONE task → writes to `reports/{task}.md`
+6. CEO reads report → **auto-evaluates** against thresholds → approve or retry
+7. CEO **writes learnings immediately** to long-term memory
+8. CEO logs decision to `.brain/approvals.md` + `.brain/decisions.md`
+9. Repeat until queue is empty
 
 **Why micro-tasks:** Each task is small enough that context can compact between tasks.
 After compaction, `.brain/` files are the ground truth — not conversation memory.
+
+**Default mode is autonomous.** No human gates unless the brief includes "interactive" or "supervised".
 
 ---
 
@@ -42,8 +47,9 @@ $PROJECT_DIR/.brain/
   identity.md       ← project identity card
   queue.md          ← micro-task queue with status
   decisions.md      ← real-time decision log
+  approvals.md      ← auto-approval log (async review for user — never blocks)
   learnings.md      ← real-time learnings (persisted to long-term memory continuously)
-  context/          ← pre-computed input for each agent task
+  context/          ← pre-computed input for each agent task (includes memory insights)
   reports/          ← agent output reports
 ```
 
@@ -93,6 +99,15 @@ $PROJECT_DIR/.brain/
 ```markdown
 # Context: {task name}
 
+## Memory Insights
+← CEO injects this block BEFORE spawning. Read brain-config.md § Interpretation.
+
+| Topic | Insight | Confidence |
+|-------|---------|-----------|
+| Font  | Clash Display + Satoshi → validated 4x for dark cinematic | HIGH |
+| Technique | Clip-path reveal → avg 9/10 | HIGH |
+| Risk  | Users enlarge hero images → pre-emptively large | MEDIUM |
+
 ## Tokens
 {only the token values this task needs — not the full tokens.md}
 
@@ -107,9 +122,6 @@ $PROJECT_DIR/.brain/
 
 ## Library Snippets
 {relevant patterns from _libraries/ — only what this task needs}
-
-## Learnings
-{relevant entries from design-intelligence/ — only what matters for this task}
 
 ## Reference Frame
 {path to the best matching reference screenshot, if available}
@@ -173,11 +185,11 @@ Each task has: ID, agent, input, output, gate. Tasks run sequentially unless mar
 | `design/brief` | ceo | identity + ref-analysis + learnings | `.brain/context/design-brief.md` | Context file complete |
 | `design/tokens` | designer | `context/design-brief.md` | `docs/tokens.md` | 12-point validation |
 | `design/pages` | designer | `context/design-brief.md` + tokens.md | `docs/pages/*.md` | Section validation |
-| `review/creative` | ceo | tokens.md + pages/*.md | user approval | User says "approved" |
+| `review/creative` | ceo | tokens.md + pages/*.md | autonomous: save screenshots; interactive: user approval | Memory hooks fire regardless of mode |
 
-**Real-time learning:** After review/creative → CEO writes to:
-- `design-intelligence/font-pairings.md` (pairing + user reaction)
-- `design-intelligence/color-palettes.md` (palette + user reaction)
+**Memory hooks fire immediately (both modes):**
+- `design-intelligence/font-pairings.md` (pairing + reaction)
+- `design-intelligence/color-palettes.md` (palette + reaction)
 - `.brain/decisions.md` (D-001: Font, D-002: Palette, etc.)
 
 ### Phase 2: Scaffold (CEO)
@@ -201,10 +213,10 @@ After ALL sections pass:
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `review/sections` | ceo | assembled page screenshots | user approval | User says "approved" |
+| `review/sections` | ceo | assembled page screenshots | autonomous: save to docs/review/ + continue; interactive: user approval | Memory hooks fire regardless of mode |
 
-**Real-time learning:** After review/sections → CEO writes to:
-- `design-intelligence/signatures.md` (each section's signature + reaction)
+**Memory hooks fire immediately (both modes):**
+- `design-intelligence/signatures.md` (each section's signature + approved/rejected)
 - `design-intelligence/section-patterns.md` (layout+motion+score)
 - `design-intelligence/technique-scores.md` (update usage + avg)
 - `design-intelligence/revision-patterns.md` (if user requested changes)
@@ -225,7 +237,7 @@ After ALL sections pass:
 | `integrate/views` | ceo | section list per page | `src/views/*.vue` | Views render |
 | `integrate/app` | ceo | component list | `src/App.vue` | App shell complete |
 | `integrate/seo` | ceo | identity + pages | meta tags per page | Tags present |
-| `review/final` | ceo | full-site screenshots | user approval | User says "approved" |
+| `review/final` | ceo | full-site screenshots | autonomous: REVIEW-SUMMARY.md + continue; interactive: user approval | Memory hooks fire regardless |
 
 ### Phase 6: Retrospective (CEO)
 
@@ -243,42 +255,150 @@ After ALL sections pass:
 ON EVERY TURN:
   1. Read .brain/state.md → know where I am
   2. Read .brain/queue.md → find next [PENDING] task
+
   3. IF task is "context/*":
-       → Read source docs, extract values, write context/{task}.md
+       → INTERPRET: read relevant design-intelligence/ files
+       → Write "## Memory Insights" block with confidence levels
+       → Extract source values, write context/{task}.md (includes insights)
        → Mark task [DONE], advance to next
+
   4. IF task is "build/*" or "design/*" or "polish/*":
-       → Spawn agent with: "Read $PROJECT_DIR/.brain/context/{X}.md, write output, write report to .brain/reports/{X}.md"
-       → Read report → verify gate → mark [DONE] or re-dispatch
+       → Spawn agent: "Read $PROJECT_DIR/.brain/context/{X}.md, write output + report"
+       → Read report → AUTO-EVALUATE against brain-config.md thresholds:
+           PASS → log to approvals.md as [AUTO-APPROVED], mark [DONE]
+           FAIL → re-dispatch with specific failures (max retry_max)
+           STILL FAIL → log to approvals.md as [NEEDS-REVIEW], mark [DONE], continue
+
   5. IF task is "review/*":
-       → Screenshot → AskUserQuestion → wait
+       → AUTONOMOUS: Screenshot → save to docs/review/ → skip to next task
+       → INTERACTIVE: Screenshot → AskUserQuestion → wait for user
+       → SUPERVISED: Screenshot → AskUserQuestion after EVERY section
+
   6. IF task is "integrate/*" or "setup/*" or "cleanup/*":
        → Do it directly (no agent needed)
-  7. Update state.md with current position
-  8. Write decision to .brain/decisions.md if a choice was made
-  9. Write learning to long-term memory if something was learned
-  10. Continue to next task (or end turn if waiting for user)
+
+  7. MEMORY HOOKS — run after EVERY task that produced a decision:
+       → font/palette decision → write to font-pairings.md / color-palettes.md
+       → section approved → write to signatures.md + section-patterns.md + technique-scores.md
+       → user changed something → write to revision-patterns.md
+       → pipeline issue → write to pipeline-lessons.md
+       → rule reaches 3 validations → auto-promote, mark PROMOTED in rules.md
+
+  8. Update state.md (phase, task, next)
+  9. Update .brain/decisions.md with entry
+  10. Continue (no end-of-turn pause unless waiting for user in interactive mode)
 ```
 
 **After compaction:** Steps 1-2 reconstruct full context from files. No conversation memory needed.
 
 ---
 
-## Autonomous Mode
+## Operating Modes
 
-Activates when initial prompt has: name + type + mood + pages (or user says "run autonomously").
+Read `brain-config.md` for full threshold definitions.
 
-**Differences from interactive:**
-- Skip `review/creative` → validate with 12-point gate + decision trees
-- Skip `review/sections` → auto-QA + screenshots to `docs/review/sections/`
-- Skip `review/final` → screenshots to `docs/review/final/` + write `REVIEW-SUMMARY.md`
-- Flag `[NEEDS_REVIEW]` instead of blocking
+### Autonomous (DEFAULT)
 
-**Auto-QA thresholds** (same as V5.5):
-- Designer: 12 points pass
-- Builder: Excellence Standard all dimensions + signature
-- Screenshots: no blank/broken, 3+ layers, mobile designed
-- Anti-AI: 0 patterns
-- Density: meets minimum for section type
+Brain builds the entire project without waiting.
+User gets `docs/review/REVIEW-SUMMARY.md` at the end — not blocking gates.
+
+- All `review/*` tasks → screenshot + save to `docs/review/` + **continue**
+- All agent outputs → auto-evaluated against thresholds
+- Failures → retry (max 2) → flag `[NEEDS-REVIEW]` → **continue**
+- Memory → written in real-time after every decision
+- Rules → promoted automatically at 3 validations
+
+### Interactive
+
+Add "interactive" to the brief. Three human gates:
+1. `review/creative` — approve palette + typography + section plan
+2. `review/sections` — approve all sections as a full page
+3. `review/final` — approve complete site
+
+### Supervised
+
+Add "supervised" to the brief. Human reviews each section individually.
+Slowest mode — use only for experimental or high-stakes projects.
+
+---
+
+## Auto-Approval Engine
+
+After every agent task, brain evaluates the report:
+
+```
+PASS criteria (from brain-config.md):
+  designer_gate: 12/12 points + decision trees used
+  builder_gate: all Excellence dimensions + signature + score >= 7 + 0 anti-AI patterns
+  visual_qa: 3+ layers + no broken + mobile designed + density >= 3
+
+ON PASS:
+  → append to .brain/approvals.md: [AUTO-APPROVED] {task} | score: {X} | {timestamp}
+  → mark [DONE] in queue
+  → trigger memory hooks
+
+ON FAIL (after retry_max = 2):
+  → append to .brain/approvals.md: [NEEDS-REVIEW] {task} | failed: {dimension} | {timestamp}
+  → mark [DONE] in queue (never blocks)
+  → continue to next task
+```
+
+### approvals.md Format
+
+```markdown
+# Auto-Approvals — {project}
+
+## [AUTO-APPROVED] build/S-Hero | score: 8/10 | signature: parallax counter | 2026-04-01
+## [AUTO-APPROVED] build/S-Features | score: 9/10 | signature: bento depth cards | 2026-04-01
+## [NEEDS-REVIEW] build/S-Stats | failed: Craft (0/4) | 2 retries exhausted | 2026-04-01
+```
+
+User reads this file when they want. Nothing waits for them.
+
+---
+
+## Interpretation Layer
+
+Before writing any `context/{task}.md`, CEO reads memory and enriches with insights.
+
+```
+FOR design tasks:
+  → read: font-pairings.md + color-palettes.md + revision-patterns.md + rules.md
+  → inject "## Memory Insights" block with confidence levels
+
+FOR build tasks:
+  → read: signatures.md + technique-scores.md + section-patterns.md + revision-patterns.md
+  → inject insights: high-scoring techniques, known risks, weak dimensions
+
+FOR polish tasks:
+  → read: technique-scores.md + pipeline-lessons.md
+  → inject: effective composable patterns, known issues to avoid
+```
+
+**Confidence levels:**
+- `HIGH` — 3+ project validations → follow with confidence
+- `MEDIUM` — 1-2 validations → prefer but watch
+- `LOW` — no data → neutral (don't avoid, don't prioritize)
+
+**Rule:** If confidence is HIGH and the rule contradicts a subjective choice → trust the rule.
+If confidence is LOW → still document the decision so it can build toward HIGH.
+
+---
+
+## Memory Hooks (auto-write events)
+
+These fire automatically — no explicit CEO instruction needed.
+
+| Event | Writes to | Fields |
+|-------|-----------|--------|
+| Font selected | `font-pairings.md` | date, project, mood, display, body, reaction, lesson |
+| Palette selected | `color-palettes.md` | date, project, mood, canvas, accent, reaction, lesson |
+| Section auto-approved | `signatures.md` | date, project, section, element, description, why |
+| Section score received | `section-patterns.md` | layout, motion, technique, score |
+| Technique used | `technique-scores.md` | increment usage + update avg score |
+| User changed something | `revision-patterns.md` | what changed, original, new, pattern |
+| Pipeline issue | `pipeline-lessons.md` | phase, issue, resolution, prevention |
+| Rule validated 3x | `rules.md` → promote | mark PROMOTED, write to target file |
 
 ---
 
