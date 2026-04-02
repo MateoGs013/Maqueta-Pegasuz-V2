@@ -271,6 +271,21 @@ node capture-refs.mjs --local --port 5173 "$PROJECT_DIR/.brain/observer"
 
 The observer writes `$PROJECT_DIR/.brain/observer/localhost/analysis.md`.
 
+Immediately after each observer pass, refresh the structured quality layer:
+
+```bash
+cd "$MAQUETA_DIR/scripts"
+npm run refresh:quality -- --project "$PROJECT_DIR"
+```
+
+This command updates:
+- `.brain/reports/quality/observer.json`
+- `.brain/reports/quality/critic.json`
+- `.brain/reports/quality/scorecard.json`
+- `.brain/reports/visual-debt.json`
+- `.brain/metrics.json`
+- `.brain/reviews/REVIEW-SUMMARY.md`
+
 ```
 # 3. Write evaluator context
 ```
