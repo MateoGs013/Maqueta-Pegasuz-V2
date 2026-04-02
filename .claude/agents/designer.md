@@ -62,6 +62,25 @@ Each section needs ALL fields:
 - "Content in a clean grid" — what proportions? what fr values?
 - "Subtle gradient adds depth" — what direction? what colors? what opacity?
 
+## Hero section — MANDATORY recipe selection
+
+Before writing the hero cinematic description, read Section 10 of `design-decisions.md`.
+Pick ONE of the five recipes (A–E) and state it explicitly:
+
+```
+Spatial Recipe: C — Layered Planes
+```
+
+The cinematic description must then describe THAT recipe. You cannot invent a layout that does
+not match a recipe. The recipe constrains the spatial structure — you own the details within it.
+
+**THE BANNED HERO — if your hero matches this, pick a different recipe:**
+- Full-width dark background + large heading (left or centered) + subtitle + CTA button
+- Thin vertical/horizontal accent line as the only depth element
+- No structural visual element (image, blob, oversized type, 3D) — just text on color
+
+A decorative line, a year badge, or a small label do NOT save a banned layout.
+
 ## Validation (12-point gate)
 
 1. tokens.md: concept + 3+ visual principles
@@ -75,7 +94,7 @@ Each section needs ALL fields:
 9. pages/*.md: entry sequences with 3+ stages, ms timing
 10. pages/*.md: no consecutive sections share motion category
 11. pages/*.md: zero lorem ipsum, CTAs are verb phrases
-12. pages/*.md: homepage >= 8 sections, other pages >= 5
+12. **pages/*.md: hero section cites `Spatial Recipe: {letter} — {name}` + matches recipe spec**
 
 ## Rules
 

@@ -1,0 +1,332 @@
+/*
+ * Maqueta Component Token System
+ * ================================
+ * Generic CSS custom properties used by ALL hero and nav components.
+ *
+ * HOW TO USE IN A PROJECT:
+ *   1. Import this file in your project's main.css or App.vue
+ *   2. Override any variable inside your own :root {} block
+ *   3. Components never use hardcoded values — always var(--token)
+ *
+ * OVERRIDE EXAMPLE:
+ *   :root {
+ *     --color-canvas: #0f0d0a;
+ *     --color-accent: #c4843e;
+ *     --font-display: 'Playfair Display', serif;
+ *   }
+ */
+
+:root {
+
+  /* ─────────────────────────────────────────
+     PALETTE
+  ───────────────────────────────────────── */
+
+  /* Canvas — main backgrounds */
+  --color-canvas:          #0a0a0f;   /* near-black, never pure #000 */
+  --color-canvas-alt:      #111118;   /* secondary bg, panels, blocks */
+  --color-canvas-invert:   #fafaf7;   /* light mode canvas */
+
+  /* Surface — cards, overlays, glass layers */
+  --color-surface:         rgba(255, 255, 255, 0.04);
+  --color-surface-mid:     rgba(255, 255, 255, 0.08);
+  --color-surface-high:    rgba(255, 255, 255, 0.12);
+
+  /* Text */
+  --color-text:            #f5f0e8;   /* warm white, never pure #fff */
+  --color-text-muted:      rgba(245, 240, 232, 0.55);
+  --color-text-subtle:     rgba(245, 240, 232, 0.25);
+  --color-text-invert:     #0a0a0f;   /* for use on light backgrounds */
+
+  /* Accent */
+  --color-accent:          #c4843e;   /* override per project */
+  --color-accent-muted:    rgba(196, 132, 62, 0.55);
+  --color-accent-subtle:   rgba(196, 132, 62, 0.15);
+
+  /* Structural */
+  --color-line:            rgba(255, 255, 255, 0.06);
+  --color-line-strong:     rgba(255, 255, 255, 0.12);
+  --color-line-invert:     rgba(0, 0, 0, 0.08);
+
+
+  /* ─────────────────────────────────────────
+     TYPOGRAPHY — FAMILIES
+  ───────────────────────────────────────── */
+
+  --font-display:  'Space Grotesk', system-ui, sans-serif;
+  --font-serif:    Georgia, 'Times New Roman', serif; /* override: 'Cormorant Garamond', serif */
+  --font-body:     'DM Sans', system-ui, sans-serif;
+  --font-mono:     'Geist Mono', 'DM Mono', monospace;
+
+
+  /* ─────────────────────────────────────────
+     TYPOGRAPHY — SCALE (fluid with clamp)
+     Formula: clamp(min, preferred, max)
+     Preferred uses vw so it scales with viewport.
+  ───────────────────────────────────────── */
+
+  /* Display — hero headings, type monuments */
+  --text-hero:      clamp(72px,  10vw,  160px);
+  --text-display:   clamp(48px,  6vw,   96px);
+  --text-heading:   clamp(32px,  4vw,   64px);
+  --text-title:     clamp(22px,  2.5vw, 36px);
+
+  /* Body */
+  --text-body-lg:   clamp(16px,  1.2vw, 20px);
+  --text-body:      clamp(14px,  1vw,   16px);
+  --text-body-sm:   13px;
+
+  /* Labels — eyebrows, captions, stats labels */
+  --text-label:     11px;
+  --text-label-sm:  10px;
+
+  /* Letter spacing */
+  --tracking-tight:   -0.04em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.1em;
+  --tracking-wider:   0.2em;
+  --tracking-widest:  0.3em;
+
+  /* Line height */
+  --leading-none:   1;
+  --leading-tight:  1.06;
+  --leading-snug:   1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+
+
+  /* ─────────────────────────────────────────
+     SPACING
+  ───────────────────────────────────────── */
+
+  /* Section padding */
+  --space-section-y:  clamp(80px, 10vw, 160px);
+  --space-section-x:  clamp(24px, 4vw,  80px);
+
+  /* Component gaps */
+  --space-gap-sm:   clamp(8px,  1vw,  16px);
+  --space-gap:      clamp(16px, 2vw,  32px);
+  --space-gap-lg:   clamp(32px, 4vw,  64px);
+  --space-gap-xl:   clamp(48px, 6vw,  96px);
+
+  /* Fixed scale */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-20:  80px;
+  --space-24:  96px;
+  --space-32:  128px;
+
+
+  /* ─────────────────────────────────────────
+     BORDER RADIUS
+  ───────────────────────────────────────── */
+
+  --radius-xs:    4px;
+  --radius-sm:    8px;
+  --radius-md:    12px;
+  --radius-lg:    20px;
+  --radius-xl:    32px;
+  --radius-pill:  9999px;
+
+
+  /* ─────────────────────────────────────────
+     MOTION — EASING
+  ───────────────────────────────────────── */
+
+  /* Primary — fast out, slow at end. Most common. */
+  --ease-out:         cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Cinematic — slow in AND out. For reveals, curtains. */
+  --ease-in-out:      cubic-bezier(0.87, 0, 0.13, 1);
+
+  /* Snappy — quick start, crisp stop. For UI feedback. */
+  --ease-snap:        cubic-bezier(0.25, 0, 0, 1);
+
+  /* Bounce — slight overshoot. For playful elements. */
+  --ease-spring:      cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Linear — progress bars, scrub animations. */
+  --ease-linear:      linear;
+
+
+  /* ─────────────────────────────────────────
+     MOTION — DURATIONS
+  ───────────────────────────────────────── */
+
+  --duration-instant: 0.15s;
+  --duration-fast:    0.4s;
+  --duration-base:    0.8s;
+  --duration-slow:    1.2s;
+  --duration-cinematic: 1.8s;
+
+  /* Stagger base — multiply by index in GSAP */
+  --stagger-base:     0.08s;
+  --stagger-slow:     0.12s;
+
+
+  /* ─────────────────────────────────────────
+     GLASS & BLUR
+  ───────────────────────────────────────── */
+
+  --blur-sm:    blur(8px);
+  --blur-md:    blur(16px);
+  --blur-lg:    blur(24px);
+  --blur-glass: blur(16px) saturate(180%);
+
+  /* Glass backgrounds — used by nav and card components */
+  --glass-dark:   rgba(10, 10, 15, 0.7);
+  --glass-light:  rgba(250, 250, 247, 0.7);
+  --glass-accent: rgba(196, 132, 62, 0.08);
+
+  /* Glass borders */
+  --glass-border-dark:  1px solid rgba(255, 255, 255, 0.06);
+  --glass-border-light: 1px solid rgba(0, 0, 0, 0.06);
+
+  /* Glass shadows */
+  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.12),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+
+  /* ─────────────────────────────────────────
+     OVERLAYS — used in FullBleed, DiagonalSlash
+  ───────────────────────────────────────── */
+
+  --overlay-heavy:   rgba(10, 10, 15, 0.75);
+  --overlay-mid:     rgba(10, 10, 15, 0.50);
+  --overlay-light:   rgba(10, 10, 15, 0.30);
+  --overlay-accent:  rgba(196, 132, 62, 0.15);
+
+
+  /* ─────────────────────────────────────────
+     Z-INDEX SCALE
+  ───────────────────────────────────────── */
+
+  --z-below:      -1;
+  --z-base:        0;
+  --z-raised:     10;
+  --z-overlay:   100;
+  --z-nav:       900;
+  --z-modal:    1000;
+  --z-cursor:   9999;
+
+
+  /* ─────────────────────────────────────────
+     LAYOUT — GRID
+  ───────────────────────────────────────── */
+
+  --grid-cols:     12;
+  --grid-gutter:   clamp(16px, 2vw, 32px);
+  --grid-margin:   clamp(24px, 4vw, 80px);
+
+  /* Common breakpoints as reference (use in media queries, not var()) */
+  /* --bp-sm: 375px | --bp-md: 768px | --bp-lg: 1280px | --bp-xl: 1440px */
+
+
+  /* ─────────────────────────────────────────
+     HERO-SPECIFIC TOKENS
+     Used exclusively by hero section components
+  ───────────────────────────────────────── */
+
+  /* KineticGrid */
+  --hero-grid-line:        rgba(255, 255, 255, 0.04);
+  --hero-grid-line-strong: rgba(255, 255, 255, 0.08);
+  --hero-index-opacity:    0.055;  /* giant background number */
+
+  /* ColorBlock / DiagonalSlash */
+  --hero-block-accent:     var(--color-accent);  /* right-side color block */
+  --hero-panel-bg:         var(--color-canvas-invert); /* light panel on dark */
+
+  /* TypeMonument */
+  --hero-monument-size:    clamp(180px, 28vw, 380px);
+
+  /* WorkMosaic */
+  --hero-card-rotation-max: 4deg;  /* max rotation on scattered cards */
+
+  /* Scattered */
+  --hero-pill-bg:          var(--color-surface);
+  --hero-pill-border:      var(--color-line);
+
+  /* BrutalistGrid */
+  --hero-rule-width:       3px;
+  --hero-rule-color:       var(--color-text-invert);
+
+  /* Watermark / background words */
+  --hero-watermark-opacity: 0.055;
+
+
+  /* ─────────────────────────────────────────
+     NAV-SPECIFIC TOKENS
+     Used exclusively by navigation components
+  ───────────────────────────────────────── */
+
+  /* Shared nav sizing */
+  --nav-height-full:    80px;
+  --nav-height-compact: 44px;
+  --nav-height-pill:    48px;
+  --nav-side-width:     64px;
+  --nav-side-expanded:  220px;
+
+  /* Pill nav */
+  --nav-pill-width:     520px;
+  --nav-pill-radius:    var(--radius-pill);
+  --nav-pill-bg:        var(--glass-dark);
+  --nav-pill-border:    var(--glass-border-dark);
+  --nav-pill-shadow:    var(--glass-shadow);
+
+  /* Link states */
+  --nav-link-color:       var(--color-text-muted);
+  --nav-link-hover:       var(--color-text);
+  --nav-link-active:      var(--color-text);
+  --nav-link-size:        13px;
+  --nav-link-tracking:    0.02em;
+
+  /* Active indicators */
+  --nav-dot-size:         4px;
+  --nav-indicator-height: 2px;
+  --nav-indicator-color:  var(--color-accent);
+
+  /* CTA inside nav */
+  --nav-cta-bg:           var(--color-text);
+  --nav-cta-color:        var(--color-text-invert);
+  --nav-cta-radius:       var(--radius-pill);
+
+  /* Hamburger */
+  --nav-hamburger-width:  32px;
+  --nav-hamburger-gap:    6px;
+  --nav-hamburger-thick:  2px;
+}
+
+
+/* ─────────────────────────────────────────
+   REDUCED MOTION
+   All components respect this.
+───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant:   0s;
+    --duration-fast:      0s;
+    --duration-base:      0s;
+    --duration-slow:      0s;
+    --duration-cinematic: 0s;
+    --stagger-base:       0s;
+    --stagger-slow:       0s;
+  }
+}
+
+
+/* ─────────────────────────────────────────
+   RESPONSIVE OVERRIDES
+   Tokens that change value at breakpoints.
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root {
+    --nav-pill-width:     calc(100vw - 32px);
+    --hero-monument-size: clamp(100px, 22vw, 200px);
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "active": [
+    {
+      "id": "build/S-Hero",
+      "agent": "builder",
+      "status": "in_progress",
+      "dependsOn": [
+        "context/S-Hero"
+      ]
+    }
+  ],
+  "pending": [
+    {
+      "id": "observe/S-Hero",
+      "agent": "observer",
+      "status": "pending"
+    },
+    {
+      "id": "evaluate/S-Hero",
+      "agent": "evaluator",
+      "status": "pending"
+    },
+    {
+      "id": "build/S-Services",
+      "agent": "builder",
+      "status": "pending"
+    },
+    {
+      "id": "review/final",
+      "agent": "ceo",
+      "status": "pending"
+    }
+  ],
+  "done": [
+    {
+      "id": "design/brief",
+      "agent": "ceo",
+      "status": "done"
+    },
+    {
+      "id": "design/tokens",
+      "agent": "designer",
+      "status": "done"
+    },
+    {
+      "id": "design/pages",
+      "agent": "designer",
+      "status": "done"
+    }
+  ]
+}

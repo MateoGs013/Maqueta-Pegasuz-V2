@@ -79,7 +79,10 @@ Every agent must check against this list. If ANY pattern is detected, fix immedi
 
 | AI Default | Detection | Premium Alternative |
 |------------|-----------|---------------------|
-| "Hero Left, Text Right" | 1fr 1fr symmetric split | Asymmetric ratios (1.4fr 0.6fr, 2fr 0.8fr) |
+| **THE BANNED HERO:** dark bg + large heading + subtitle + CTA button + thin accent line | Hero section matches this pattern exactly | Use L-Hero-SplitTension / OversizedVisual / LayeredPlanes / KineticGrid / FullBleedOverlay from design-decisions.md §10 |
+| `L-Hero-Center` (centered text, flat bg) | Hero uses `L-Hero-Center` or `L-Hero-Split` with 1fr/1fr | Any hero recipe from design-decisions.md §10 |
+| Hero density score ≤ 3 | Count: structural visual missing | Structural visual (image/back-type/blob ≥30% viewport) is non-negotiable |
+| "Hero Left, Text Right" | 1fr 1fr symmetric split | Asymmetric ratios (1.618fr 1fr, 2fr 0.8fr, never 1fr 1fr) |
 | Three cards below hero | Uniform card grid after hero | Asymmetric grid, overlapping elements, varied sizes |
 | Everything centered | All text-align: center | Mixed alignment (left + right + center) |
 | Uniform `py-20` all sections | Same padding everywhere | Varied padding with 20%+ difference per section |
@@ -87,6 +90,7 @@ Every agent must check against this list. If ANY pattern is detected, fix immedi
 | Symmetric everything | mirror-image layouts | Intentional asymmetry with purpose |
 | Cards in cards in cards | 3+ nesting levels | Maximum 2 nesting levels |
 | `border-radius: 12px` everywhere | Single radius value | Mix: 0px (sharp), 4px (subtle), 8px (medium), 999px (pill) |
+| `min-height: 100vh` on hero | iOS Safari shows hero taller than viewport on load | `min-height: 100svh` (small viewport height — stable) |
 
 ### Motion Anti-Patterns
 

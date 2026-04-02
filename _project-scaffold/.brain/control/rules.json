@@ -1,0 +1,16 @@
+{
+  "approvalThresholds": {
+    "scoreMinimum": 7,
+    "observerMinimum": "MEDIUM",
+    "criticBrandAlignmentMinimum": "MEDIUM"
+  },
+  "biases": {
+    "blueprintRole": "curated-anchor",
+    "defaultAutonomy": "auto-retry",
+    "humanIntervention": "flags-only"
+  },
+  "overrides": {
+    "bannedSeeds": [],
+    "lockedSections": []
+  }
+}

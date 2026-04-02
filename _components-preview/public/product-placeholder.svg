@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a2520"/>
+      <stop offset="50%" stop-color="#3d3228"/>
+      <stop offset="100%" stop-color="#1a1815"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#c4843e" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#c4843e" stop-opacity="0.08"/>
+    </linearGradient>
+    <radialGradient id="s" cx="50%" cy="40%" r="45%">
+      <stop offset="0%" stop-color="#c4843e" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+  <!-- Device body -->
+  <rect x="80" y="60" width="320" height="360" rx="24" fill="url(#g)" stroke="#c4843e" stroke-opacity="0.15" stroke-width="1"/>
+  <!-- Screen -->
+  <rect x="100" y="85" width="280" height="240" rx="8" fill="#0d0b09"/>
+  <!-- Screen glow -->
+  <rect x="100" y="85" width="280" height="240" rx="8" fill="url(#s)"/>
+  <!-- Screen content lines -->
+  <rect x="130" y="140" width="120" height="3" rx="1.5" fill="#c4843e" fill-opacity="0.4"/>
+  <rect x="130" y="155" width="200" height="2" rx="1" fill="#f5f0e8" fill-opacity="0.12"/>
+  <rect x="130" y="168" width="180" height="2" rx="1" fill="#f5f0e8" fill-opacity="0.08"/>
+  <rect x="130" y="181" width="160" height="2" rx="1" fill="#f5f0e8" fill-opacity="0.06"/>
+  <!-- Screen blocks -->
+  <rect x="130" y="210" width="90" height="60" rx="4" fill="#f5f0e8" fill-opacity="0.04"/>
+  <rect x="230" y="210" width="90" height="60" rx="4" fill="#c4843e" fill-opacity="0.08"/>
+  <!-- Keyboard area -->
+  <rect x="100" y="340" width="280" height="60" rx="4" fill="url(#a)"/>
+  <!-- Trackpad -->
+  <rect x="180" y="350" width="120" height="40" rx="6" fill="#0d0b09" fill-opacity="0.3" stroke="#f5f0e8" stroke-opacity="0.04" stroke-width="1"/>
+  <!-- Logo mark on device -->
+  <circle cx="240" cy="115" r="6" fill="none" stroke="#c4843e" stroke-opacity="0.25" stroke-width="1"/>
+</svg>

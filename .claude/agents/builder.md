@@ -42,6 +42,41 @@ AFTER writing S-{Name}.vue:
 8. Write report to .brain/reports/S-{Name}.md
 ```
 
+### Hero section — extra gate (run BEFORE scoring)
+
+If building a hero section, look at your screenshot and answer these three questions:
+
+**Q1 — Structural visual VISIBLE?**
+In the screenshot: is there a non-text element (image, gradient field, blob, oversized type as texture)
+that is VISUALLY DISTINGUISHABLE from the background? It must have its own color, brightness, or
+shape that registers as a separate visual entity — not just a slightly lighter dark area.
+→ YES: continue
+→ NO: **REBUILD**. A structural visual that blends into the background = invisible = does not count.
+   - Dark photos at ≤60% opacity on a dark background → invisible. Increase to 80-100%, or switch to a gradient mesh.
+   - If the visual "hides" behind low opacity: raise the opacity or change the element entirely.
+
+**Q2 — Column/zone split clearly readable?**
+Can you see the compositional division (two columns, depth planes, grid zones) in the screenshot?
+Or does everything blend into one undifferentiated dark mass?
+→ YES (division visible): continue
+→ NO: **REBUILD**. The spatial structure must read visually, not just exist in CSS.
+
+**Q3 — Is this the banned hero?**
+Does the section look like: dark bg + large heading + subtitle + CTA button + optional thin accent line?
+That is: NO distinguishable structural visual, NO readable column split, NO depth?
+→ NO (does not match): continue
+→ YES (matches): **REBUILD**. Pick from the concrete spatial recipes in design-decisions.md Section 10.
+
+**Safe visual choices for mid-plane (never fail):**
+- Gradient mesh in accent colors: `radial-gradient(circle at 70% 40%, var(--accent-primary-20), transparent 60%)` — always visible, always high contrast
+- SVG illustration with brand colors at 100% opacity — always visible
+- Bright/warm photography at 75-85% opacity (NOT dark studio/code/night shots)
+- Oversized type `font-weight: 700+` at 8-12% opacity at `22vw+` — reads as texture even at low opacity
+
+**Never use as mid-plane:**
+- Dark photography (code editor, dark studio, night shots) at ≤60% opacity — invisible on dark background
+- Unsplash stock photos without checking their dominant brightness first
+
 ## Excellence Standard — ALL must pass
 
 ### Composition (CSS)
@@ -127,6 +162,8 @@ onBeforeUnmount(() => mm?.revert())
 - No "ease"/"ease-in-out", no single border-radius, no everything-centered
 - Font size ratio >= 4x, 2+ weights, mixed alignment
 - Visual density >= 3 (4 for hero/portfolio)
+- **Hero sections:** no "dark bg + heading + subtitle + CTA button + decorative line" pattern
+- **Hero sections:** structural visual element required (image/blob/oversized-type/3D occupying ≥30% viewport)
 
 ## Report Format (.brain/reports/S-{Name}.md)
 

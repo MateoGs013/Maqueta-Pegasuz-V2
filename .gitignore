@@ -35,3 +35,8 @@ _ref-captures/
 # Claude Code local session data
 .claude/todos/
 .claude/projects/
+.claude/worktrees/
+
+# Internal tool outputs
+panel-dist/
+dist-check/

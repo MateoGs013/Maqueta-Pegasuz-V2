@@ -1,0 +1,24 @@
+{
+  "runId": "critic-2026-04-02-hero-pass-2",
+  "target": "home/hero",
+  "score": 7.4,
+  "brandAlignment": "strong",
+  "verdict": "retry",
+  "notes": [
+    "The hero already feels branded and non-generic, but the ambient depth still reads softer than the desired award-level tension.",
+    "Typography is doing the heavy lifting successfully; the next iteration should make the mid-plane visual more legible at tablet width.",
+    "The current CTA cluster is credible, but the section still needs one sharper detail to feel fully resolved."
+  ],
+  "issues": [
+    {
+      "type": "tension",
+      "severity": "medium",
+      "message": "The visual hierarchy is clear, but the atmosphere still absorbs too much contrast on 768px."
+    },
+    {
+      "type": "craft",
+      "severity": "low",
+      "message": "The hero needs one more high-frequency detail so the lower third does not flatten after the first read."
+    }
+  ]
+}

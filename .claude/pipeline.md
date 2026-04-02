@@ -4,7 +4,7 @@
 
 ```
 Layer 1: Working Memory   → $PROJECT_DIR/.brain/     (per-project, hot state)
-Layer 2: Session State    → $PROJECT_DIR/.brain/state.md  (crash recovery)
+Layer 2: Session State    → $PROJECT_DIR/.brain/state.md + state.json  (crash recovery + machine state)
 Layer 3: Long-Term Memory → $MAQUETA_DIR/.claude/memory/design-intelligence/  (cross-project)
 ```
 
@@ -18,6 +18,39 @@ Layer 3: Long-Term Memory → $MAQUETA_DIR/.claude/memory/design-intelligence/  
 7. CEO **writes learnings immediately** to long-term memory
 8. CEO logs decision to `.brain/approvals.md` + `.brain/decisions.md`
 9. Repeat until queue is empty
+
+## Front-Brain Runtime Contract
+
+The operational brain is now **hybrid Markdown + JSON**:
+
+- Markdown preserves narrative context, design reasoning, decision logs, and human-readable reviews.
+- JSON exposes machine-readable run state for selectors, evaluators, retries, and the internal panel.
+
+Every generated project should expose this minimum contract:
+
+```text
+$PROJECT_DIR/
+  DESIGN.md
+  .brain/
+    state.md
+    state.json
+    metrics.json
+    queue.md
+    queue.json
+    control/
+      rules.json
+    decisions.md
+    context/
+    reports/
+      quality/
+        observer.json
+        critic.json
+        scorecard.json
+    reviews/
+      REVIEW-SUMMARY.md
+```
+
+`state.md` remains the cold-resume entrypoint for agents. `state.json`, `metrics.json`, `queue.json`, and `control/rules.json` are the structured mirrors consumed by automation and the backoffice.
 
 **Why micro-tasks:** Each task is small enough that context can compact between tasks.
 After compaction, `.brain/` files are the ground truth — not conversation memory.
@@ -44,11 +77,16 @@ Created at project start. Deleted at project completion (learnings already persi
 ```
 $PROJECT_DIR/.brain/
   state.md          ← 15 lines: current phase, next task, blockers
+  state.json        ← machine-readable run state for retries, panel, and automations
+  metrics.json      ← scorecards, retries, debt counts, and aggregate quality state
   identity.md       ← project identity card
   queue.md          ← micro-task queue with status
+  queue.json        ← structured queue mirror for backoffice consumption
   decisions.md      ← real-time decision log
   approvals.md      ← auto-approval log (async review for user — never blocks)
   learnings.md      ← real-time learnings (persisted to long-term memory continuously)
+  control/
+    rules.json      ← hard rules, biases, and approval thresholds for the current run
   context/          ← pre-computed input for each agent task (includes memory insights)
     design-brief.md
     reference-observatory.md  ← extracted from observer: type sequence, rhythm, baseline
@@ -56,10 +94,12 @@ $PROJECT_DIR/.brain/
     evaluate-S-{Name}.md      ← per section: builder report path + observer path + threshold
     motion.md
   reports/          ← agent output (builder, designer, polisher)
+    quality/        ← observer + critic + scorecard JSON outputs
   evaluations/      ← evaluator output per section: APPROVE/RETRY/FLAG + composite score
   observer/         ← observer output per run
     localhost/      ← from --local runs (per section QA)
     final/          ← final full-site pass
+  reviews/          ← human-readable summaries and async review notes
 ```
 
 ### state.md Format (lightweight — read first on every turn)
@@ -164,8 +204,8 @@ $PROJECT_DIR/.brain/
 
 | Agent | Role | Reads | Writes |
 |-------|------|-------|--------|
-| `designer` | Visual identity | `.brain/context/design-brief.md` | `docs/tokens.md` + `docs/pages/*.md` |
-| `builder` | Section components | `.brain/context/S-{Name}.md` | `src/components/sections/S-{Name}.vue` + `.brain/reports/S-{Name}.md` |
+| `designer` | Visual identity | `.brain/context/design-brief.md` | `DESIGN.md` + `docs/tokens.md` + `docs/pages/*.md` |
+| `builder` | Section components | `.brain/context/S-{Name}.md` + `DESIGN.md` | `src/components/sections/S-{Name}.vue` + `.brain/reports/S-{Name}.md` |
 | `polisher` | Motion + QA | `.brain/context/motion.md` | `src/composables/use*.js` + `.brain/reports/motion.md` |
 | `reference-analyst` | Analyze references | `_ref-captures/` + `docs/_libraries/` | `docs/reference-analysis.md` |
 
@@ -193,8 +233,8 @@ Each task has: ID, agent, input, output, gate. Tasks run sequentially unless mar
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
 | `design/brief` | ceo | identity + ref-analysis + learnings | `.brain/context/design-brief.md` | Context file complete |
-| `design/tokens` | designer | `context/design-brief.md` | `docs/tokens.md` | 12-point validation |
-| `design/pages` | designer | `context/design-brief.md` + tokens.md | `docs/pages/*.md` | Section validation |
+| `design/tokens` | designer | `context/design-brief.md` | `DESIGN.md` + `docs/tokens.md` | 12-point validation |
+| `design/pages` | designer | `context/design-brief.md` + `DESIGN.md` + tokens.md | `docs/pages/*.md` | Section validation |
 | `review/creative` | ceo | tokens.md + pages/*.md | autonomous: save screenshots; interactive: user approval | Memory hooks fire regardless of mode |
 
 **Memory hooks fire immediately (both modes):**
@@ -216,7 +256,7 @@ For EACH section:
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `context/S-{Name}` | ceo | tokens.md + pages/{page}.md + _libraries/ + learnings + observatory | `.brain/context/S-{Name}.md` | Context file complete + dynamic threshold resolved |
+| `context/S-{Name}` | ceo | `DESIGN.md` + tokens.md + pages/{page}.md + _libraries/ + learnings + observatory | `.brain/context/S-{Name}.md` | Context file complete + dynamic threshold resolved |
 | `build/S-{Name}` | builder | `context/S-{Name}.md` | `S-{Name}.vue` + `reports/S-{Name}.md` | Excellence Standard + Preview Loop |
 | `observe/S-{Name}` | ceo | dev server at localhost:5173 | `.brain/observer/localhost/analysis.md` | Observer runs without error |
 | `evaluate/S-{Name}` | evaluator | `context/evaluate-S-{Name}.md` | `.brain/evaluations/S-{Name}.md` | APPROVE / RETRY / FLAG decision |
@@ -239,7 +279,7 @@ After ALL sections pass:
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `context/motion` | ceo | tokens.md + pages/*.md + section list | `.brain/context/motion.md` | Context file complete |
+| `context/motion` | ceo | `DESIGN.md` + tokens.md + pages/*.md + section list | `.brain/context/motion.md` | Context file complete |
 | `polish/motion` | polisher | `context/motion.md` | composables + preloader + report | Visual QA 4 breakpoints |
 
 ### Phase 5: Integration (CEO)

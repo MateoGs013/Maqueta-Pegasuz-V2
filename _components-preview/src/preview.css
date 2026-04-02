@@ -1,0 +1,42 @@
+/* Preview overrides — sets the forge-studio identity as default */
+:root {
+  --color-canvas:         #0d0b09;
+  --color-canvas-alt:     #141210;
+  --color-canvas-invert:  #fafaf7;
+  --color-surface:        rgba(255,255,255,0.04);
+  --color-text:           #f5f0e8;
+  --color-text-muted:     rgba(245,240,232,0.52);
+  --color-text-subtle:    rgba(245,240,232,0.22);
+  --color-text-invert:    #0d0b09;
+  --color-accent:         #c4843e;
+  --color-accent-muted:   rgba(196,132,62,0.55);
+  --color-accent-subtle:  rgba(196,132,62,0.12);
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-serif:   'Cormorant Garamond', Georgia, serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 0.4s;
+  --duration-base: 0.8s;
+
+  --hero-watermark-opacity: 0.05;
+
+  --z-nav:    900;
+  --z-raised: 10;
+  --z-base:   0;
+
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-6:  24px;
+  --space-8:  32px;
+
+  --text-label:    11px;
+  --text-label-sm: 10px;
+  --text-body:     14px;
+
+  --leading-relaxed: 1.7;
+}
+
+html, body { background: var(--color-canvas); }

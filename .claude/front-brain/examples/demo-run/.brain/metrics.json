@@ -1,0 +1,20 @@
+{
+  "designConsistencyScore": 74,
+  "motionConsistencyScore": 68,
+  "responsiveScore": 71,
+  "a11yRisk": "medium",
+  "visualDebtOpen": 7,
+  "observerSignals": {
+    "composition": "MEDIUM",
+    "depth": "MEDIUM",
+    "typography": "STRONG",
+    "motion": "MEDIUM",
+    "craft": "MEDIUM"
+  },
+  "scorecard": {
+    "observer": 7.8,
+    "critic": 7.4,
+    "memoryAlignment": 8.1,
+    "final": 7.7
+  }
+}
