@@ -12,9 +12,11 @@ This directory contains the implementation contract, fixtures, and structured ex
 
 - `../FRONT_BRAIN_SCHEMA.md`: canonical implementation contract.
 - `examples/demo-run/`: reference payload for panel development and schema validation.
+- `runtime/`: generated cache consumed by the panel after syncing real projects.
 
 ## Rules
 
 - Fixtures must model the real project artifact structure.
 - Structured state belongs in JSON.
 - Narrative context, rationale, and approvals belong in Markdown.
+- Runtime cache is generated, not edited manually.

@@ -11,7 +11,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src'),
       '@components': path.resolve(__dirname, '../_components'),
-      '@front-brain-example': path.resolve(__dirname, '../.claude/front-brain/examples/demo-run'),
+      '@front-brain-runtime': path.resolve(__dirname, '../.claude/front-brain/runtime'),
     },
     dedupe: ['vue', 'vue-router', 'gsap'],
   },

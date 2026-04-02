@@ -36,6 +36,7 @@ _ref-captures/
 .claude/todos/
 .claude/projects/
 .claude/worktrees/
+.claude/front-brain/runtime/runs.generated.json
 
 # Internal tool outputs
 panel-dist/

@@ -4,8 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 4000",
-    "build": "vite build --emptyOutDir false",
+    "sync:runs": "node ../scripts/sync-front-brain-runs.mjs",
+    "dev": "npm run sync:runs && vite --port 4000",
+    "build": "npm run sync:runs && vite build --emptyOutDir false",
     "preview": "vite preview"
   },
   "dependencies": {

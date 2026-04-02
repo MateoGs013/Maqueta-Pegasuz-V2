@@ -67,7 +67,12 @@ Lives in `panel/`. It is the operator surface for:
 - visual debt
 - decisions and learnings
 
-The current panel implementation is wired against `.claude/front-brain/examples/demo-run/` and acts as the reference payload for live project ingestion.
+The panel now reads a generated runtime cache in `.claude/front-brain/runtime/runs.generated.json`.
+That cache is produced by `scripts/sync-front-brain-runs.mjs`, which bridges:
+
+- modern hybrid projects with `DESIGN.md` + `.brain/*.json`
+- legacy markdown-only `.brain/` projects through a fallback normalization layer
+- the canonical `demo-run` fixture
 
 ## Development Notes
 
@@ -98,6 +103,8 @@ npm run build
 cd panel
 npm run build
 ```
+
+`panel` build automatically runs the runtime sync first.
 
 ## Near-Term Objective
 

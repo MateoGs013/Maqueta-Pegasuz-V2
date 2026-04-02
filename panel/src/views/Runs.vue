@@ -49,6 +49,11 @@ const queueTone = {
           <span class="pill pill--medium">{{ runOverview.mode }}</span>
         </header>
 
+        <div class="pill-row">
+          <span class="pill pill--accent">{{ runOverview.sourceType }}</span>
+          <span v-if="runOverview.legacyBridge" class="pill pill--weak">legacy bridge</span>
+        </div>
+
         <div class="detail-grid">
           <div>
             <p class="detail-label">Active page</p>
@@ -71,6 +76,7 @@ const queueTone = {
         <div class="notice-card">
           <p class="detail-label">Next autonomous action</p>
           <p class="detail-copy">{{ runOverview.nextAction }}</p>
+          <p class="detail-copy">Source: {{ runOverview.sourcePath }}</p>
         </div>
 
         <div class="queue-board">

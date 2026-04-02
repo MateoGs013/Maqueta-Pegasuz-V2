@@ -16,6 +16,7 @@ const iframeKey = ref(0)
 const syncQuery = () => {
   router.replace({
     query: {
+      run: route.query.run || undefined,
       active: active.value,
       type: activeCategory.value !== 'all' ? activeCategory.value : undefined,
       tag: activeTag.value !== 'all' ? activeTag.value : undefined,
@@ -182,7 +183,7 @@ watch(active, () => { loading.value = true })
             </div>
             <div class="preview-actions">
               <span
-                v-if="active === selectedBlueprints.hero.name || active === selectedBlueprints.nav.name"
+                v-if="active === selectedBlueprints.hero?.name || active === selectedBlueprints.nav?.name"
                 class="pill pill--accent"
               >
                 Active run seed

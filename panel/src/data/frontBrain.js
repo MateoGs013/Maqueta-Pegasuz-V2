@@ -1,24 +1,15 @@
-import designMarkdown from '@front-brain-example/DESIGN.md?raw'
-import decisionsMarkdown from '@front-brain-example/.brain/decisions.md?raw'
-import reviewMarkdown from '@front-brain-example/.brain/reviews/REVIEW-SUMMARY.md?raw'
-import state from '@front-brain-example/.brain/state.json'
-import metrics from '@front-brain-example/.brain/metrics.json'
-import queue from '@front-brain-example/.brain/queue.json'
-import rulesConfig from '@front-brain-example/.brain/control/rules.json'
-import observer from '@front-brain-example/.brain/reports/quality/observer.json'
-import critic from '@front-brain-example/.brain/reports/quality/critic.json'
-import scorecard from '@front-brain-example/.brain/reports/quality/scorecard.json'
-import visualDebt from '@front-brain-example/.brain/reports/visual-debt.json'
+import runtimeCache from '@front-brain-runtime/runs.generated.json'
 import {
   allBlueprints,
   blueprintManifest,
 } from '@components/blueprints.manifest.js'
 
-const titleCase = (value) =>
+const titleCase = (value = '') =>
   value
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
     .replace(/[-_]/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase())
+    .trim()
 
 const scoreTone = (value) => {
   if (value >= 8) return 'strong'
@@ -39,38 +30,101 @@ const ruleTone = (type) => {
 }
 
 const blueprintIndex = new Map(allBlueprints.map((blueprint) => [blueprint.name, blueprint]))
+const query = new URLSearchParams(window.location.search)
+
+const fallbackRun = runtimeCache.runs.find((run) => run.id === runtimeCache.defaultRunId) ?? runtimeCache.runs[0]
+const requestedRunId = query.get('run')
+const activeRun =
+  runtimeCache.runs.find((run) => run.id === requestedRunId) ??
+  fallbackRun
+
+const designMarkdown = activeRun.documents.designMarkdown
+const decisionsMarkdown = activeRun.documents.decisionsMarkdown
+const reviewMarkdown = activeRun.documents.reviewMarkdown
+const state = {
+  project: activeRun.project,
+  mode: activeRun.mode,
+  currentPhase: activeRun.currentPhase,
+  currentTask: activeRun.currentTask,
+  currentFocus: activeRun.currentFocus,
+  healthIndex: activeRun.healthIndex,
+  maturityScore: activeRun.maturityScore,
+  activePage: activeRun.activePage,
+  activeSection: activeRun.activeSection,
+  retriesUsed: activeRun.retriesUsed,
+  retryBudget: activeRun.retryBudget,
+  lastReviewAt: activeRun.lastReviewAt,
+  nextAction: activeRun.nextAction,
+}
+
+const metrics = activeRun.metrics
+const queue = activeRun.queue
+const rulesConfig = activeRun.rulesConfig
+const observer = activeRun.observer
+const critic = activeRun.critic
+const scorecard = activeRun.scorecard
+const visualDebt = activeRun.visualDebt
 
 const heroMatch = decisionsMarkdown.match(/`(S-[^`]+)`/)
 const navMatch = decisionsMarkdown.match(/`(N-[^`]+)`/)
+const selectedHeroName = heroMatch?.[1] ?? 'S-AmbientAtmosphere'
+const selectedNavName = navMatch?.[1] ?? 'N-Contextual'
+
+export const activeRunId = activeRun.id
+
+export const runCatalog = runtimeCache.runs.map((run) => ({
+  id: run.id,
+  label: run.label,
+  sourceType: run.sourceType,
+  legacyBridge: run.legacyBridge,
+  mode: run.mode,
+  currentPhase: run.currentPhase,
+  finalScore: run.scorecard.finalScore,
+  visualDebtOpen: run.visualDebt.summary.open,
+}))
 
 export const selectedBlueprints = {
-  hero: blueprintIndex.get(heroMatch?.[1] ?? 'S-AmbientAtmosphere'),
-  nav: blueprintIndex.get(navMatch?.[1] ?? 'N-Contextual'),
+  hero: blueprintIndex.get(selectedHeroName),
+  nav: blueprintIndex.get(selectedNavName),
 }
 
 const directionSpecs = [
   {
-    label: 'Atmospheric Editorial',
-    heroName: 'S-AmbientAtmosphere',
-    navName: 'N-Contextual',
-    rationale: 'Closest to the active Design DNA: warm-black, cinematic, strong typographic identity.',
+    label: activeRun.legacyBridge ? 'Bridge fallback direction' : 'Active direction',
+    heroName: selectedHeroName,
+    navName: selectedNavName,
+    rationale: activeRun.legacyBridge
+      ? 'Legacy run does not expose structured seed selection yet, so the panel falls back to the canonical baseline pair.'
+      : 'Primary seed pair inferred from the active run decision log.',
   },
   {
     label: 'Cinematic Frame',
     heroName: 'S-FullBleedOverlay',
     navName: 'N-FullscreenOverlay',
-    rationale: 'More overt launch energy with stronger scene-setting and a high-ceremony menu system.',
+    rationale: 'High-ceremony direction for launches, campaigns, and overtly cinematic brands.',
   },
   {
     label: 'Type-First Tension',
     heroName: 'S-TypeMonument',
     navName: 'N-MinimalHamburger',
-    rationale: 'Pushes the brand toward a sharper editorial stance while staying premium and non-generic.',
+    rationale: 'Sharper editorial direction that emphasizes typography over environmental spectacle.',
   },
 ]
 
+const uniqueDirections = []
+for (const direction of directionSpecs) {
+  if (uniqueDirections.some((item) => item.heroName === direction.heroName && item.navName === direction.navName)) {
+    continue
+  }
+
+  uniqueDirections.push(direction)
+}
+
 export const runOverview = {
   ...state,
+  sourceType: activeRun.sourceType,
+  sourcePath: activeRun.sourcePath,
+  legacyBridge: activeRun.legacyBridge,
   queueCounts: {
     active: queue.active.length,
     pending: queue.pending.length,
@@ -83,7 +137,7 @@ export const runOverview = {
   decision: scorecard.decision,
 }
 
-export const directionCandidates = directionSpecs.map((direction, index) => ({
+export const directionCandidates = uniqueDirections.map((direction, index) => ({
   id: `DIR-0${index + 1}`,
   ...direction,
   hero: blueprintIndex.get(direction.heroName),
@@ -106,7 +160,7 @@ export const scoreSummary = [
   {
     label: 'Memory Alignment',
     value: scorecard.memoryAlignmentScore,
-    detail: 'cross-project',
+    detail: activeRun.legacyBridge ? 'bridge heuristic' : 'cross-project',
     tone: scoreTone(scorecard.memoryAlignmentScore),
   },
   {
@@ -140,7 +194,7 @@ export const healthCards = [
     label: 'Retry Budget',
     value: `${runOverview.retriesUsed}/${runOverview.retryBudget}`,
     suffix: '',
-    note: runOverview.decision === 'retry' ? 'Autonomous retry still allowed' : 'Awaiting escalation',
+    note: runOverview.decision === 'retry' ? 'Autonomous retry still allowed' : 'Escalation required',
   },
 ]
 
@@ -166,12 +220,12 @@ export const designMetrics = [
   {
     label: 'Design consistency',
     value: metrics.designConsistencyScore,
-    note: 'system coherence',
+    note: activeRun.legacyBridge ? 'bridge estimate' : 'system coherence',
   },
   {
     label: 'Motion consistency',
     value: metrics.motionConsistencyScore,
-    note: 'motion family alignment',
+    note: activeRun.legacyBridge ? 'bridge estimate' : 'motion family alignment',
   },
   {
     label: 'Responsive score',
@@ -245,6 +299,10 @@ export const blueprintStats = {
 }
 
 export const frontBrainSnapshot = {
+  id: activeRun.id,
+  sourceType: activeRun.sourceType,
+  sourcePath: activeRun.sourcePath,
+  legacyBridge: activeRun.legacyBridge,
   designMarkdown,
   decisionsMarkdown,
   reviewMarkdown,
