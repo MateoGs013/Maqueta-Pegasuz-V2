@@ -1,0 +1,23 @@
+{
+  "name": "Northstar Atelier",
+  "type": "creative-studio",
+  "description": "Boutique digital studio creating launch-ready brand sites for design-led founders.",
+  "audience": "Founders and premium brands that expect a high-craft editorial web presence.",
+  "pages": ["home", "work", "about", "contact"],
+  "mood": "Dark cinematic editorial",
+  "scheme": "dark",
+  "references": [
+    "https://example.com/reference-one",
+    "https://example.com/reference-two"
+  ],
+  "brand": "scratch",
+  "backend": "none",
+  "mode": "autonomous",
+  "promptSummary": "Create a premium, award-level studio site with cinematic depth, strong typography, and a non-generic hero.",
+  "constraints": [
+    "Avoid generic SaaS dashboard patterns",
+    "Keep the hero typography-led even if media is present"
+  ],
+  "seedFamilies": ["cinematic", "editorial", "ambient"],
+  "bannedSeeds": ["S-BentoDashboard"]
+}

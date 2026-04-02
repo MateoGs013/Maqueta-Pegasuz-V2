@@ -40,6 +40,7 @@ Deprecated sandbox. Preview belongs inside `panel`.
 ## Known Gaps
 
 - The front-brain runtime contract exists in scaffold and schema, but live project generation still needs to emit every artifact consistently.
+- New projects now have a concrete bootstrap step (`scripts/bootstrap-front-brain.mjs`) to emit the hybrid contract natively from parsed brief data.
 - The panel bridge is active, but legacy projects still arrive with heuristic scores until they emit `DESIGN.md` and `.brain/*.json`.
 - Blueprint coverage exists, but the automatic selector and mutation scoring loop are still in progress.
 - Multimodal critic integration is specified in the schema, but not yet wired into the execution loop.
@@ -47,7 +48,7 @@ Deprecated sandbox. Preview belongs inside `panel`.
 
 ## Next Execution Track
 
-1. Migrate legacy projects to emit hybrid front-brain artifacts natively
+1. Wire `/project` execution to call the bootstrap step end-to-end without manual intervention
 2. Build the automatic seed selector and mutation scorer
 3. Wire observer + critic JSON into the runtime loop
 4. Close remaining legacy naming and compatibility drift

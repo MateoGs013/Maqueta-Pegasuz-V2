@@ -1,5 +1,38 @@
 {
-  "active": [],
-  "pending": [],
-  "done": []
+  "active": [
+    {
+      "id": "design/brief",
+      "agent": "ceo",
+      "status": "in_progress"
+    }
+  ],
+  "pending": [
+    {
+      "id": "design/tokens",
+      "agent": "designer",
+      "status": "pending"
+    },
+    {
+      "id": "design/pages",
+      "agent": "designer",
+      "status": "pending"
+    },
+    {
+      "id": "review/creative",
+      "agent": "ceo",
+      "status": "pending"
+    }
+  ],
+  "done": [
+    {
+      "id": "setup/identity",
+      "agent": "ceo",
+      "status": "done"
+    },
+    {
+      "id": "setup/create-dir",
+      "agent": "ceo",
+      "status": "done"
+    }
+  ]
 }

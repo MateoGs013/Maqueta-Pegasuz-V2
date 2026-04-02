@@ -1,0 +1,20 @@
+{
+  "runId": "observer-project-name",
+  "target": "home/overview",
+  "viewports": [375, 768, 1280, 1440],
+  "signals": {
+    "composition": "PENDING",
+    "depth": "PENDING",
+    "typography": "PENDING",
+    "motion": "PENDING",
+    "craft": "PENDING"
+  },
+  "gates": {
+    "contrast": "PENDING",
+    "animations": "PENDING",
+    "images": "PENDING",
+    "headingHierarchy": "PENDING",
+    "meta": "PENDING"
+  },
+  "visualDebt": []
+}

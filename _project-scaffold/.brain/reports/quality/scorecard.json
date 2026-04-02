@@ -1,0 +1,12 @@
+{
+  "target": "home/overview",
+  "observerScore": 0,
+  "criticScore": 0,
+  "memoryAlignmentScore": 0,
+  "finalScore": 0,
+  "decision": "pending",
+  "retryInstructions": [
+    "Generate the initial creative direction before trusting the scorecard.",
+    "Run observer and critic after the first homepage pass."
+  ]
+}

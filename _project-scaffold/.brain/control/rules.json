@@ -1,16 +1,33 @@
 {
-  "approvalThresholds": {
-    "scoreMinimum": 7,
+  "rules": [
+    {
+      "id": "FRONT-001",
+      "type": "constraint",
+      "enabled": true,
+      "text": "No aprobar heroes con estructura generica o centrada por defecto."
+    },
+    {
+      "id": "FRONT-002",
+      "type": "constraint",
+      "enabled": true,
+      "text": "Toda seccion debe exponer una decision compositiva visible y una senal de craft."
+    },
+    {
+      "id": "FRONT-003",
+      "type": "bias",
+      "enabled": true,
+      "text": "Usar blueprints como anclas creativas curadas, no como plantillas rigidas."
+    },
+    {
+      "id": "FRONT-004",
+      "type": "override",
+      "enabled": true,
+      "text": "No aprobar si contraste o jerarquia fallan aunque el score creativo sea alto."
+    }
+  ],
+  "thresholds": {
     "observerMinimum": "MEDIUM",
-    "criticBrandAlignmentMinimum": "MEDIUM"
-  },
-  "biases": {
-    "blueprintRole": "curated-anchor",
-    "defaultAutonomy": "auto-retry",
-    "humanIntervention": "flags-only"
-  },
-  "overrides": {
-    "bannedSeeds": [],
-    "lockedSections": []
+    "criticMinimum": 7,
+    "finalMinimum": 7.5
   }
 }

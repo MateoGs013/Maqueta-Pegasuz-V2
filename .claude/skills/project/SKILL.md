@@ -86,7 +86,23 @@ mkdir -p "$PROJECT_DIR/docs/pages" "$PROJECT_DIR/docs/mockups" \
 cp -r "$MAQUETA_DIR/docs/_libraries" "$PROJECT_DIR/docs/_libraries"
 ```
 
-Write initial `state.md` + `queue.md` (full task list) + empty `decisions.md` + `approvals.md` + `learnings.md`.
+Write `.brain/context/intake.json` with the parsed brief, then bootstrap the hybrid front-brain contract immediately:
+
+```bash
+node "$MAQUETA_DIR/scripts/bootstrap-front-brain.mjs" \
+  --project "$PROJECT_DIR" \
+  --brief-file "$PROJECT_DIR/.brain/context/intake.json"
+```
+
+This step must emit:
+
+- `DESIGN.md`
+- `.brain/state.md` + `.brain/state.json`
+- `.brain/metrics.json`
+- `.brain/queue.md` + `.brain/queue.json`
+- `.brain/control/rules.json`
+- `.brain/reports/quality/*.json`
+- `.brain/reviews/REVIEW-SUMMARY.md`
 
 In **autonomous mode**: announce identity card, create directory, proceed immediately.
 In **interactive mode**: show identity card to user → wait for confirmation.
@@ -197,6 +213,8 @@ rsync -a --exclude='node_modules' "$MAQUETA_DIR/_project-scaffold/" "$PROJECT_DI
 cd "$PROJECT_DIR" && npm install
 node "$MAQUETA_DIR/scripts/generate-tokens.js" "$PROJECT_DIR"
 ```
+
+After scaffold copy, rerun the bootstrap command so scaffold placeholders are replaced with the parsed run identity instead of template values.
 
 Write `.brain/context/atmosphere.md` with palette + atmosphere tokens.
 Spawn builder → `AtmosphereCanvas.vue` + report. Auto-evaluate 5-point check.

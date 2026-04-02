@@ -106,6 +106,15 @@ npm run build
 
 `panel` build automatically runs the runtime sync first.
 
+To bootstrap a new project into the hybrid front-brain contract without waiting for later migration:
+
+```bash
+cd scripts
+npm run bootstrap:brain -- --project "C:\\Users\\mateo\\Desktop\\my-project" --brief-file ".\\examples\\front-brain-brief.example.json"
+```
+
+That command emits `DESIGN.md`, `.brain/state.json`, `.brain/metrics.json`, `.brain/queue.json`, `.brain/control/rules.json`, quality placeholders, and the first review summary.
+
 ## Near-Term Objective
 
 Maqueta is moving toward a Stitch-like workflow:
