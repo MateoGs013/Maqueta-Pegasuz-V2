@@ -25,7 +25,7 @@ Execution roadmap for moving Maqueta toward a Stitch-like autonomous frontend br
 - Promote observer + critic + scorecard into the main approval loop.
 - Persist reusable learnings into `.claude/memory/design-intelligence/`.
 
-Status: the native bootstrap step now exists. The next gap is wiring `/project` execution so it calls the bootstrapper automatically during real runs.
+Status: the native bootstrap step now exists and the end-to-end initializer is available. The next gap is pushing `/project` deeper into automatic context generation, seed selection, and observer/critic loops after init.
 
 ### 2. Seed selection
 

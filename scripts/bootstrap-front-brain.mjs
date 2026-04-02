@@ -1,5 +1,6 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 const parseArgs = (argv) => {
   const args = {}
@@ -666,16 +667,7 @@ const resolveBrief = async ({ args, projectDir }) => {
   return {}
 }
 
-const main = async () => {
-  const args = parseArgs(process.argv.slice(2))
-  const projectArg = args.project
-
-  if (!projectArg) {
-    throw new Error('Missing required argument: --project <path>')
-  }
-
-  const projectDir = path.resolve(projectArg)
-  const briefInput = await resolveBrief({ args, projectDir })
+const bootstrapProject = async ({ projectDir, briefInput = {} }) => {
   const brief = normalizeBrief({ brief: briefInput, projectDir })
   const hasReferences = brief.references.length > 0
   const nextAction = hasReferences
@@ -721,10 +713,42 @@ const main = async () => {
   await writeJson(path.join(projectDir, '.brain', 'reports', 'visual-debt.json'), buildVisualDebtJson())
   await writeText(path.join(projectDir, '.brain', 'reviews', 'REVIEW-SUMMARY.md'), buildReviewSummary(brief, nextAction))
 
-  console.log(`Bootstrapped front-brain artifacts for ${brief.name} at ${projectDir}`)
+  return {
+    brief,
+    projectDir,
+    nextAction,
+  }
 }
 
-main().catch((error) => {
-  console.error(error.message)
-  process.exitCode = 1
-})
+const main = async () => {
+  const args = parseArgs(process.argv.slice(2))
+  const projectArg = args.project
+
+  if (!projectArg) {
+    throw new Error('Missing required argument: --project <path>')
+  }
+
+  const projectDir = path.resolve(projectArg)
+  const briefInput = await resolveBrief({ args, projectDir })
+  const result = await bootstrapProject({ projectDir, briefInput })
+  console.log(`Bootstrapped front-brain artifacts for ${result.brief.name} at ${projectDir}`)
+}
+
+const isEntrypoint =
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
+
+if (isEntrypoint) {
+  main().catch((error) => {
+    console.error(error.message)
+    process.exitCode = 1
+  })
+}
+
+export {
+  bootstrapProject,
+  normalizeBrief,
+  parseArgs,
+  readJson,
+  slugify,
+}
