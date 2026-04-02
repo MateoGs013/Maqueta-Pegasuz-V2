@@ -45,7 +45,7 @@ Status: automatic direction selection now emits structured candidates and a chos
 
 - Connect real observer output at 375, 768, 1280, and 1440.
 - Refresh structured quality artifacts from observer output with a canonical script.
-- Replace heuristic critic output with multimodal critic results in structured JSON.
+- Use multimodal critic results when credentials exist and preserve heuristic fallback without changing the output contract.
 - Auto-retry until threshold or hard flag conditions are met.
 
 ## Acceptance targets

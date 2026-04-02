@@ -270,6 +270,8 @@ This command updates:
 - `.brain/metrics.json`
 - `.brain/reviews/REVIEW-SUMMARY.md`
 
+Critic mode defaults to `auto`: use the OpenAI-backed multimodal critic when `OPENAI_API_KEY` is available, otherwise fall back to the deterministic critic without changing the output contract. Override with `--critic-mode multimodal` or `--critic-mode heuristic` when the run requires it.
+
 ```
 # 3. Write evaluator context
 ```
