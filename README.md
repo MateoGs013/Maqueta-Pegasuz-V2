@@ -115,6 +115,15 @@ npm run bootstrap:brain -- --project "C:\\Users\\mateo\\Desktop\\my-project" --b
 
 That command emits `DESIGN.md`, `.brain/state.json`, `.brain/metrics.json`, `.brain/queue.json`, `.brain/control/rules.json`, quality placeholders, and the first review summary.
 
+To create a brand-new project end-to-end from the template:
+
+```bash
+cd scripts
+npm run init:project -- --brief-file ".\\examples\\front-brain-brief.example.json"
+```
+
+This creates `Desktop\\{slug}`, copies `_project-scaffold`, copies `docs/_libraries`, bootstraps the hybrid front-brain contract, and runs `npm install` unless `--skip-install` is passed.
+
 ## Near-Term Objective
 
 Maqueta is moving toward a Stitch-like workflow:

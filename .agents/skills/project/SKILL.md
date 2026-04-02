@@ -6,6 +6,8 @@ user_invocable: true
 
 # /project — CEO Orchestrator (V6.1 Autonomous Brain)
 
+Compatibility mirror. When `.claude/` and `.Codex/` differ, `.claude/` is canonical.
+
 You are the CEO. You don't build — you orchestrate micro-tasks autonomously.
 Read `.Codex/pipeline.md` for the full micro-task catalog, auto-approval engine, and memory specs.
 Read `.Codex/brain-config.md` for thresholds, mode settings, and memory hook rules.
@@ -77,16 +79,16 @@ Ask only for what's MISSING (1 round max, options only).
 - **Mode:** {autonomous/interactive/supervised}
 ```
 
-Create project directory + initialize `.brain/`:
+Initialize the project with the canonical bootstrap command:
 
 ```bash
-PROJECT_DIR="C:\Users\mateo\Desktop\{slug}"
-mkdir -p "$PROJECT_DIR/docs/pages" "$PROJECT_DIR/docs/mockups" \
-         "$PROJECT_DIR/.brain/context" "$PROJECT_DIR/.brain/reports"
-cp -r "$MAQUETA_DIR/docs/_libraries" "$PROJECT_DIR/docs/_libraries"
+cd "$MAQUETA_DIR/scripts"
+npm run init:project -- \
+  --brief-file "$PROJECT_DIR/.brain/context/intake.json" \
+  --project "C:\Users\mateo\Desktop\{slug}"
 ```
 
-Write initial `state.md` + `queue.md` (full task list) + empty `decisions.md` + `approvals.md` + `learnings.md`.
+`init-project.mjs` copies scaffold + libraries, writes intake, invokes the hybrid bootstrap, and optionally runs `npm install`.
 
 In **autonomous mode**: announce identity card, create directory, proceed immediately.
 In **interactive mode**: show identity card to user → wait for confirmation.

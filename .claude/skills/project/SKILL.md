@@ -77,25 +77,25 @@ Ask only for what's MISSING (1 round max, options only).
 - **Mode:** {autonomous/interactive/supervised}
 ```
 
-Create project directory + initialize `.brain/`:
+Initialize the project with the canonical bootstrap command:
 
 ```bash
-PROJECT_DIR="C:\Users\mateo\Desktop\{slug}"
-mkdir -p "$PROJECT_DIR/docs/pages" "$PROJECT_DIR/docs/mockups" \
-         "$PROJECT_DIR/.brain/context" "$PROJECT_DIR/.brain/reports"
-cp -r "$MAQUETA_DIR/docs/_libraries" "$PROJECT_DIR/docs/_libraries"
+cd "$MAQUETA_DIR/scripts"
+npm run init:project -- \
+  --brief-file "$PROJECT_DIR/.brain/context/intake.json" \
+  --project "C:\Users\mateo\Desktop\{slug}"
 ```
 
-Write `.brain/context/intake.json` with the parsed brief, then bootstrap the hybrid front-brain contract immediately:
+`init-project.mjs` is responsible for:
 
-```bash
-node "$MAQUETA_DIR/scripts/bootstrap-front-brain.mjs" \
-  --project "$PROJECT_DIR" \
-  --brief-file "$PROJECT_DIR/.brain/context/intake.json"
-```
+- copying `_project-scaffold/`
+- copying `docs/_libraries/`
+- creating `docs/pages`, `docs/mockups`, and `_ref-captures`
+- writing `.brain/context/intake.json`
+- invoking the hybrid bootstrap
+- optionally running `npm install`
 
-This step must emit:
-
+This step must leave the project with:
 - `DESIGN.md`
 - `.brain/state.md` + `.brain/state.json`
 - `.brain/metrics.json`
@@ -214,7 +214,7 @@ cd "$PROJECT_DIR" && npm install
 node "$MAQUETA_DIR/scripts/generate-tokens.js" "$PROJECT_DIR"
 ```
 
-After scaffold copy, rerun the bootstrap command so scaffold placeholders are replaced with the parsed run identity instead of template values.
+`init-project.mjs` already copied the scaffold and reran the bootstrap over real brief data, so no extra placeholder repair step is needed here.
 
 Write `.brain/context/atmosphere.md` with palette + atmosphere tokens.
 Spawn builder → `AtmosphereCanvas.vue` + report. Auto-evaluate 5-point check.

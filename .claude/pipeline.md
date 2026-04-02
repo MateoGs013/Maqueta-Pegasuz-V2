@@ -52,15 +52,16 @@ $PROJECT_DIR/
 
 `state.md` remains the cold-resume entrypoint for agents. `state.json`, `metrics.json`, `queue.json`, and `control/rules.json` are the structured mirrors consumed by automation and the backoffice.
 
-The canonical way to emit this contract is:
+The canonical way to initialize a new project and emit this contract is:
 
 ```bash
-node "$MAQUETA_DIR/scripts/bootstrap-front-brain.mjs" \
-  --project "$PROJECT_DIR" \
-  --brief-file "$PROJECT_DIR/.brain/context/intake.json"
+cd "$MAQUETA_DIR/scripts"
+npm run init:project -- \
+  --brief-file "$PROJECT_DIR/.brain/context/intake.json" \
+  --project "$PROJECT_DIR"
 ```
 
-The bootstrap script is idempotent and should be rerun after scaffold copy so placeholders never survive into a real project run.
+`init-project.mjs` copies the scaffold and libraries, writes the intake payload, runs the bootstrapper, and can install dependencies. `bootstrap-front-brain.mjs` remains the lower-level idempotent emitter when the project already exists and only needs hybrid artifacts refreshed.
 
 **Why micro-tasks:** Each task is small enough that context can compact between tasks.
 After compaction, `.brain/` files are the ground truth — not conversation memory.
