@@ -1,0 +1,34 @@
+{
+  "summary": {
+    "open": 7,
+    "critical": 0,
+    "medium": 3,
+    "low": 4
+  },
+  "items": [
+    {
+      "id": "VD-hero-001",
+      "section": "hero",
+      "severity": "medium",
+      "owner": "builder",
+      "status": "open",
+      "message": "Tablet depth still lacks enough separation between atmosphere and mid-plane visual."
+    },
+    {
+      "id": "VD-services-001",
+      "section": "services",
+      "severity": "medium",
+      "owner": "builder",
+      "status": "open",
+      "message": "Section rhythm repeats the hero's density pattern too closely."
+    },
+    {
+      "id": "VD-nav-001",
+      "section": "nav",
+      "severity": "low",
+      "owner": "polisher",
+      "status": "open",
+      "message": "Section label cadence and CTA hover timing are slightly detached."
+    }
+  ]
+}

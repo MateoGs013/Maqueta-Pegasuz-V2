@@ -1,0 +1,19 @@
+{
+  "project": {
+    "name": "Atelier Fuego",
+    "slug": "atelier-fuego",
+    "type": "creative-studio"
+  },
+  "mode": "design-autonomous",
+  "currentPhase": "build",
+  "currentTask": "build/S-Hero",
+  "currentFocus": "hero-clarity",
+  "healthIndex": 82,
+  "maturityScore": 41,
+  "activePage": "home",
+  "activeSection": "hero",
+  "retriesUsed": 1,
+  "retryBudget": 3,
+  "lastReviewAt": "2026-04-02T00:00:00Z",
+  "nextAction": "Run observer after hero rebuild and compare against Design DNA thresholds"
+}

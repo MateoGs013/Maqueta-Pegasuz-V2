@@ -459,3 +459,196 @@ Sections must alternate energy levels. Never 3+ HIGH or 3+ LOW in sequence.
 | Font size 72px+ | Scale down 70% | Scale down 50% |
 | Section padding 160px | 120px | 80px |
 | Decorative elements | Keep if < 30% of viewport | Hide or simplify |
+
+---
+
+## 10. Hero Spatial Recipes — MANDATORY
+
+The hero must use one of the five recipes below. They map 1:1 to `layouts.md` (L-Hero-*).
+State the recipe in the cinematic description: `Layout: L-Hero-LayeredPlanes | Spatial Recipe: C`.
+
+**Why this matters:** LLMs produce the most statistically probable output. The most probable hero in training data is: dark background + centered heading + subtext + button. This pattern appears in thousands of Tailwind tutorial repos. Selecting a recipe forces a compositionally specific spatial structure that cannot arise from probability alone.
+
+---
+
+### Recipe A — L-Hero-SplitTension
+`grid-template-columns: 1.618fr 1fr` (or `2fr 0.8fr` for dominant).
+Visual in the second column with a **diagonal `clip-path` edge** that breaks the column boundary and bleeds 60px into the text column. Heading has 1-2 words bleeding back past the grid line. Index number ("01" or year) anchors the bottom of the text column.
+
+**What makes it non-generic:** the diagonal clip-path edge locks the two columns together spatially — they feel like one composition, not two placed side by side.
+
+Cinematic description must include:
+- The `fr` values (not just "asymmetric")
+- The clip-path polygon angles (e.g. `polygon(8% 0, 100% 0, 100% 100%, 0% 100%)`)
+- The bleed amount in px
+- The bottom anchor element
+
+---
+
+### Recipe B — L-Hero-OversizedVisual
+Visual occupies 55-70% viewport width, flushes to viewport edge (no container). Text is in a constrained block (`max-width: 44%`) on the opposite side, with a **frosted glass or semi-transparent band** behind it only (not the full background).
+
+**What makes it non-generic:** the full-height visual flush to the edge makes the layout feel like a magazine spread. The contrast band behind text only (not behind everything) preserves the image's visual weight rather than dimming it universally.
+
+Cinematic description must include:
+- The visual's viewport flush direction (left or right edge)
+- The grid split (`1fr 1.5fr` or similar, not `1fr 1fr`)
+- The contrast band technique (frosted glass / semi-transparent / dark strip)
+- `min-height: 100svh` (not `100vh`)
+
+---
+
+### Recipe C — L-Hero-LayeredPlanes
+Three simultaneously visible depth planes all sharing the same grid cell via `grid-area: 1 / -1`:
+1. **Back plane:** brand initial, year, or noun at `font-size: clamp(180px, 22vw, 360px)`, 6-10% opacity, `white-space: nowrap; overflow: visible` — clips past viewport edge intentionally
+2. **Mid plane:** atmospheric visual (gradient mesh, texture, or image) at 35-55% opacity
+3. **Front plane:** heading + CTA, constrained to 52% width, positioned left or right — never centered
+
+**Mid-plane visibility rule:** the mid-plane MUST be visually distinguishable from the canvas color.
+- ✅ Gradient mesh: `radial-gradient(circle at 70% 30%, var(--accent-primary-20), transparent 60%)` — always safe
+- ✅ Bright/warm photography at 75-85% opacity
+- ✅ Abstract SVG or illustration at 100% opacity
+- ❌ Dark photography (code editor, dark studio, night scenes) at ≤65% opacity — blends into canvas, invisible
+
+**What makes it non-generic:** the back-type plane functions as spatial architecture — it defines scale, rhythm, and depth without being readable as content. Three simultaneous planes create genuine z-axis depth, not depth simulated by shadows.
+
+Cinematic description must include:
+- The back-type content (brand word, initial, or year)
+- The `clamp()` values for back-type size
+- The mid-plane visual type (gradient mesh / image / texture)
+- The front-plane position (left or right, with offset %)
+
+---
+
+### Recipe D — L-Hero-KineticGrid
+Named CSS grid areas where a large index/number spans 2 columns AND 2 rows simultaneously (`grid-area: idx`), and the heading spans 2 rows. Minimum 4 visible elements at different grid coordinates.
+
+The index/number: `font-size: clamp(200px, 25vw, 400px)`, 5-8% opacity. It is not decoration — it is the dominant visual mass that everything else organizes around.
+
+**What makes it non-generic:** the grid IS the composition. Elements live at specific named coordinates, not stacked in a single column. The large index creates a visual anchor that forces everything else into relationship with it.
+
+Cinematic description must include:
+- The 3-column, 3-row grid template with named areas
+- The index number/word content + size
+- The image inset position (which grid area)
+- How the heading spans multiple rows
+
+---
+
+### Recipe E — L-Hero-FullBleedOverlay
+Full-height visual fills the section (100% coverage). Content is NOT centered — anchored to a specific corner: `left: 8%; bottom: 15%` or `right: 10%; top: 20%`. One text element uses `mix-blend-mode: overlay` to integrate with the image beneath.
+
+The contrast overlay is NOT `rgba(0,0,0,0.7)` — that is the most common "safe" choice and destroys the visual. Use a directional gradient in the project's canvas color, capping at 0.4-0.55 opacity, leaving the visual at 60-80% visibility.
+
+**What makes it non-generic:** the image is a visual partner, not a background to be darkened for readability. The `mix-blend-mode` word makes it feel designed, not templated.
+
+Cinematic description must include:
+- The visual subject and its dominant colors
+- The overlay gradient direction and max opacity
+- The content anchor position (`left: %; bottom: %`)
+- Which text element gets `mix-blend-mode: overlay` and why
+
+---
+
+### THE BANNED HERO
+
+```
+❌ Dark background
+❌ Large heading (left or centered)
+❌ Subtitle text below
+❌ CTA button below that
+❌ Thin vertical/horizontal accent line as the only "depth" element
+❌ Small badge ("EST. 2024", "Available", etc.) as the only secondary element
+❌ Nothing else — just text on a flat or gradient background
+```
+
+**Why it's the default:** distributional convergence. Every Tailwind tutorial, every "hero template" repo, every Bootstrap starter uses this exact pattern. It is the most statistically probable hero from any AI model trained on web content. A decorative line does not rescue it. A badge does not rescue it. The spatial pattern must change.
+
+If your hero matches the banned pattern → stop, pick a recipe above, and redesign.
+
+---
+
+### Hero density requirement
+
+Visual density score MUST be ≥ 4. Count these elements:
+- **Structural visual** (image, oversized type as architecture, 3D, gradient blob ≥ 30% viewport) → +1
+- **Heading** (counts only if it functions architecturally — ≥ 80px or bleeds past container) → +1
+- **Subtext block** → +1
+- **CTA / interactive element** → +1
+- **Structural spatial element** (contrast band, grid index, clip-path divide) → +1
+- **Atmospheric layer** (grain, gradient, blur behind content) → +1
+
+A hero with only "heading + subtitle + CTA + decorative line" = 3 points → FAIL.
+A thin accent line is NOT a structural visual. It does not count.
+Minimum score of 4 requires at minimum: structural visual + heading + subtext + 1 structural spatial element.
+
+---
+
+### Hero viewport height
+
+Always use `min-height: 100svh` (small viewport height — stable on iOS Safari).
+`100vh` fails on iOS Safari: it measures the largest viewport (toolbars hidden), so the hero is taller than the screen on first load.
+`svh`: stable, toolbars-visible. `dvh`: dynamic (causes repaints). `lvh`: largest. Use `svh`.
+
+```css
+.hero {
+  min-height: 100vh;    /* fallback for older browsers */
+  min-height: 100svh;   /* override: stable on iOS Safari */
+}
+```
+
+---
+
+## 11. Hero Motion Sequence — Canonical Order
+
+The hero entrance animation tells a spatial story. Order is not arbitrary — each stage reveals the space before filling it with content.
+
+```
+Stage 0 → preloader / page transition exits           (0ms)
+Stage 1 → atmosphere + grain layer fades in           (0ms,   800ms, ease: power2.out)
+Stage 2 → decorative elements (rules, grain, borders) (200ms, 400ms, ease: power2.out)
+Stage 3 → navigation bar                              (300ms, 500ms, ease: power3.out)
+Stage 4 → kicker / eyebrow label                      (500ms, 400ms, ease: power3.out)
+Stage 5 → headline: SplitText line/word/char reveal   (700ms, line stagger 120ms)
+Stage 6 → body text / subheadline                     (900ms, 600ms — after headline starts)
+Stage 7 → CTA button: scale from 0.92 + autoAlpha     (1100ms, 500ms)
+Stage 8 → structural visual (image / back-type plane) (600ms — parallel to text, not before)
+Stage 9 → scroll indicator                            (1400ms, 300ms)
+```
+
+**Why atmosphere first:** it establishes the spatial context (depth, color, scale) before content enters. Viewers subconsciously register the space before reading. If content enters first, it feels like an empty white room being populated — not a cinematic reveal.
+
+**Why the visual is parallel, not first:** the structural visual and the headline are co-equal spatial anchors. One entering before the other makes the first feel dominant. Starting them together (600ms vs 700ms, 100ms apart) creates tension.
+
+### SplitText implementation (current standard)
+
+```js
+const split = SplitText.create('h1', {
+  type: 'lines',        // 'chars' for short dramatic headlines
+  mask: 'lines',        // creates overflow:hidden wrapper per line, no extra divs
+  autoSplit: true,
+  aria: 'auto'          // preserves screen reader text
+})
+gsap.from(split.lines, {
+  yPercent: 100,
+  autoAlpha: 0,
+  duration: 1.0,
+  stagger: 0.12,
+  ease: 'power4.out',
+  delay: 0.7,
+  clearProps: 'all'     // CSS takes over after animation
+})
+```
+
+For short headlines (1-4 words), prefer `type: 'chars'` with `stagger: 0.025` and `ease: 'expo.out'` for a more dramatic reveal.
+
+### Scroll-linked parallax (three planes)
+
+```js
+// Each plane moves at a different rate — creates genuine depth on scroll
+gsap.to('.hero__back-type',   { y: '30%', ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.5 } })
+gsap.to('.hero__mid-visual',  { y: '15%', ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.5 } })
+gsap.to('.hero__front-content', { y: '8%',  ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.5 } })
+```
+
+`scrub: 0.5` is mandatory (not `scrub: true` — too snappy; not `scrub: 1.5` — too sluggish). Never combine `scrub` with `toggleActions` on the same ScrollTrigger.

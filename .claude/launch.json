@@ -6,6 +6,13 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "--host", "--port", "5173"],
       "port": 5173
+    },
+    {
+      "name": "maqueta-panel",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "C:\\Users\\mateo\\Desktop\\maqueta\\panel",
+      "port": 4000
     }
   ]
 }

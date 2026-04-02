@@ -1,0 +1,33 @@
+{
+  "rules": [
+    {
+      "id": "FRONT-001",
+      "type": "constraint",
+      "enabled": true,
+      "text": "No aprobar heroes con visual estructural invisible sobre fondo oscuro"
+    },
+    {
+      "id": "FRONT-002",
+      "type": "constraint",
+      "enabled": true,
+      "text": "Toda seccion debe exponer una decision compositiva visible en screenshot"
+    },
+    {
+      "id": "FRONT-003",
+      "type": "bias",
+      "enabled": true,
+      "text": "Priorizar seeds con identidad tipografica fuerte antes que layouts neutros"
+    },
+    {
+      "id": "FRONT-004",
+      "type": "override",
+      "enabled": true,
+      "text": "No aprobar si contrast = FAIL aunque el score creativo sea alto"
+    }
+  ],
+  "thresholds": {
+    "observerMinimum": "MEDIUM",
+    "criticMinimum": 7.0,
+    "finalMinimum": 7.5
+  }
+}

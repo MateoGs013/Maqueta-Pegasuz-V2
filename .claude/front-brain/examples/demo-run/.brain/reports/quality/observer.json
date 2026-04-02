@@ -1,0 +1,38 @@
+{
+  "runId": "observer-2026-04-02-hero-pass-2",
+  "target": "home/hero",
+  "viewports": [
+    375,
+    768,
+    1280,
+    1440
+  ],
+  "signals": {
+    "composition": "MEDIUM",
+    "depth": "MEDIUM",
+    "typography": "STRONG",
+    "motion": "MEDIUM",
+    "craft": "MEDIUM"
+  },
+  "gates": {
+    "contrast": "PASS",
+    "animations": "PASS",
+    "images": "WARN",
+    "headingHierarchy": "PASS",
+    "meta": "WARN"
+  },
+  "visualDebt": [
+    {
+      "id": "VD-hero-001",
+      "severity": "medium",
+      "section": "hero",
+      "issue": "Primary glow and particle field are still too close in luminance on tablet."
+    },
+    {
+      "id": "VD-nav-001",
+      "severity": "low",
+      "section": "nav",
+      "issue": "Section label feels slightly detached from CTA rhythm at 768px."
+    }
+  ]
+}

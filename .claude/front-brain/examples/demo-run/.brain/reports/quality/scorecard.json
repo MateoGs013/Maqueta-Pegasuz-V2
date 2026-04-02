@@ -1,0 +1,12 @@
+{
+  "target": "home/hero",
+  "observerScore": 7.8,
+  "criticScore": 7.4,
+  "memoryAlignmentScore": 8.1,
+  "finalScore": 7.7,
+  "decision": "retry",
+  "retryInstructions": [
+    "Increase hero mid-plane separation on tablet by widening the luminance gap between particle field and glow cluster.",
+    "Add one sharper craft signal to the lower third without turning the CTA area into a SaaS control bar."
+  ]
+}

@@ -39,11 +39,12 @@ builder_gate:
   anti_ai_patterns: 0
 
 evaluator_gate:
-  # Composite score = (builder × 0.3) + (excellence_avg × 0.5) + (gates × 0.2)
+  # Composite score = observer + critic + design-dna compliance + memory confidence.
+  # Structured outputs are persisted to .brain/reports/quality/{observer,critic,scorecard}.json
   # STRONG=10, MEDIUM=7, WEAK=4 | PASS=10, WARN=7, FAIL=0
-  approve_threshold: composite >= score_minimum AND all_excellence MEDIUM+ AND no_gate_FAIL
-  retry_threshold:   composite >= score_minimum - 1.5 OR 1-2 signals WEAK
-  flag_threshold:    contrast_FAIL OR 3+_signals_WEAK OR composite < 6
+  approve_threshold: composite >= score_minimum AND all_excellence MEDIUM+ AND no_gate_FAIL AND critic_brand_alignment >= MEDIUM
+  retry_threshold:   composite >= score_minimum - 1.5 OR 1-2 signals WEAK OR critic_genericity = MEDIUM
+  flag_threshold:    contrast_FAIL OR 3+_signals_WEAK OR composite < 6 OR critic_brand_alignment = LOW
 
 visual_qa:
   layers_visible: 3+
@@ -229,4 +230,26 @@ observer_gate:
   typography: MEDIUM+
   motion: MEDIUM+         # checked after polish phase
   craft: MEDIUM+          # checked after polish phase
+
+critic_gate:
+  genericity: LOW         # MEDIUM/HIGH → retry
+  brand_alignment: MEDIUM+
+  tension: MEDIUM+
+  pattern_repetition: LOW
+
+## Design DNA Contract
+
+Every project must generate a root-level `DESIGN.md` before section building starts.
+This file is the canonical design toolkit for the run and must include:
+
+- brand intent and tone
+- composition constraints
+- typography rules
+- palette intent
+- motion rules
+- responsive rules
+- anti-patterns
+- allowed / banned seed combinations
+
+The brain treats `DESIGN.md` as a required input for `builder`, `polisher`, and the multimodal critic.
 ```

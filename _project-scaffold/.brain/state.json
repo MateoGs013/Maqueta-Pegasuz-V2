@@ -1,0 +1,14 @@
+{
+  "project": {
+    "name": "Project Name",
+    "slug": "project-name"
+  },
+  "mode": "autonomous",
+  "phase": "setup",
+  "task": "setup/identity",
+  "status": "idle",
+  "currentSection": null,
+  "blocker": null,
+  "nextAction": "Parse the brief and generate DESIGN.md.",
+  "lastUpdatedAt": null
+}

@@ -1,0 +1,27 @@
+{
+  "score": {
+    "overall": null,
+    "observer": null,
+    "critic": null
+  },
+  "dimensions": {
+    "composition": null,
+    "depth": null,
+    "typography": null,
+    "motion": null,
+    "craft": null,
+    "a11y": null,
+    "responsive": null,
+    "designSystemConsistency": null,
+    "visualDebt": null
+  },
+  "retries": {
+    "used": 0,
+    "max": 2
+  },
+  "flags": [],
+  "visualDebt": {
+    "open": 0,
+    "critical": 0
+  }
+}
