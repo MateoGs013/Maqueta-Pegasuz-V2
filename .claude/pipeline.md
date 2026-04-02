@@ -64,6 +64,12 @@ npm run refresh:quality -- --project "$PROJECT_DIR"
 
 `refresh-quality.mjs` reads the latest observer artifacts, derives deterministic observer and critic JSON, updates visual debt and metrics, and rewrites `REVIEW-SUMMARY.md`.
 
+`refresh-quality.mjs` now supports:
+
+- `--critic-mode auto` → multimodal critic if `OPENAI_API_KEY` exists, otherwise deterministic fallback
+- `--critic-mode multimodal` → require model-based critic output
+- `--critic-mode heuristic` → force deterministic critic output
+
 The canonical way to initialize a new project and emit this contract is:
 
 ```bash

@@ -2,6 +2,7 @@ import { promises as fs } from 'node:fs'
 import { spawn } from 'node:child_process'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { deriveCritic, multimodalCriticDefaults } from './multimodal-critic.mjs'
 
 const signalRank = {
   WEAK: 1,
@@ -338,76 +339,6 @@ const deriveObserverFromManifest = ({ manifest = null, analysisMarkdown = '', st
   }
 }
 
-const deriveCritic = ({ observer, observerScore, rulesConfig, blueprintSelection, designMarkdown }) => {
-  const selectionConfidence = blueprintSelection?.selection?.confidence ?? 0.4
-  const allowedTags =
-    blueprintSelection?.input?.allowedTags?.hero?.length || blueprintSelection?.input?.allowedTags?.nav?.length
-      ? 1
-      : 0.75
-
-  let score = observerScore * 0.72 + selectionConfidence * 2.1 + allowedTags
-  const notes = []
-  const issues = []
-
-  if (observer.gates.contrast === 'FAIL') {
-    score -= 1.3
-    issues.push({
-      type: 'contrast',
-      severity: 'high',
-      message: 'Contrast failure overrides creative confidence and forces the critic into a blocking posture.',
-    })
-  }
-
-  if (observer.signals.typography === 'STRONG') {
-    notes.push('Typography is carrying identity strongly enough to support the selected direction.')
-  } else {
-    notes.push('Typography has not fully landed yet, which weakens perceived authorship.')
-  }
-
-  if (observer.signals.depth === 'WEAK') {
-    issues.push({
-      type: 'depth',
-      severity: 'medium',
-      message: 'Depth is not reading clearly enough in screenshots, so the selected direction is underperforming visually.',
-    })
-  }
-
-  if (designMarkdown.includes('No centered generic SaaS hero')) {
-    notes.push('Design DNA still bans generic centered hero patterns, which is consistent with the current selection policy.')
-  }
-
-  if (blueprintSelection?.selection?.heroName) {
-    notes.push(`Current direction is ${blueprintSelection.selection.heroName} + ${blueprintSelection.selection.navName}.`)
-  }
-
-  const brandAlignment = score >= 8 ? 'high' : score >= 6.8 ? 'medium' : 'low'
-  const thresholds = rulesConfig?.thresholds ?? {
-    observerMinimum: 'MEDIUM',
-    criticMinimum: 7,
-    finalMinimum: 7.5,
-  }
-  const verdict =
-    observer.gates.contrast === 'FAIL'
-      ? 'flag'
-      : score >= Number(thresholds.criticMinimum ?? 7)
-        ? 'approve'
-        : 'retry'
-
-  return {
-    critic: {
-      runId: `critic-${Date.now()}`,
-      generatedAt: new Date().toISOString(),
-      target: observer.target,
-      score: Number(score.toFixed(2)),
-      brandAlignment,
-      verdict,
-      notes,
-      issues,
-    },
-    criticScore: Number(score.toFixed(2)),
-  }
-}
-
 const summarizeVisualDebt = (items) => {
   const summary = {
     open: items.length,
@@ -451,6 +382,7 @@ const updateReviewSummary = async ({ projectDir, projectName, scorecard, visualD
 
 - Observer: ${scorecard.observerScore}/10
 - Critic: ${scorecard.criticScore}/10
+- Critic mode: ${critic.source}${critic.model ? ` (${critic.model})` : ''}
 - Final: ${scorecard.finalScore}/10
 - Decision: ${scorecard.decision}
 - Visual debt open: ${visualDebt.summary.open}
@@ -521,7 +453,14 @@ const runObserver = async ({ projectDir, port = 5173 }) => {
   })
 }
 
-const refreshQuality = async ({ projectDir, observerSourceDir = null, runObserverFirst = false, port = 5173 }) => {
+const refreshQuality = async ({
+  projectDir,
+  observerSourceDir = null,
+  runObserverFirst = false,
+  port = 5173,
+  criticMode = multimodalCriticDefaults.defaultMode,
+  criticModel = multimodalCriticDefaults.defaultModel,
+}) => {
   const statePath = path.join(projectDir, '.brain', 'state.json')
   const metricsPath = path.join(projectDir, '.brain', 'metrics.json')
   const rulesPath = path.join(projectDir, '.brain', 'control', 'rules.json')
@@ -546,12 +485,15 @@ const refreshQuality = async ({ projectDir, observerSourceDir = null, runObserve
   const manifest = await readJson(path.join(sourceDir, 'manifest.json'), null)
   const analysisMarkdown = await readText(path.join(sourceDir, 'analysis.md'))
   const { observer, observerScore, debtItems } = deriveObserverFromManifest({ manifest, analysisMarkdown, state })
-  const { critic, criticScore } = deriveCritic({
+  const { critic, criticScore } = await deriveCritic({
     observer,
     observerScore,
     rulesConfig,
     blueprintSelection,
     designMarkdown,
+    sourceDir,
+    criticMode,
+    criticModel,
   })
 
   const memoryAlignmentScore = Number((((blueprintSelection?.selection?.confidence ?? 0.4) * 10)).toFixed(2))
@@ -633,6 +575,7 @@ const refreshQuality = async ({ projectDir, observerSourceDir = null, runObserve
       memoryAlignment: memoryAlignmentScore,
       final: finalScore,
     },
+    criticMode: critic.source,
   }
 
   const updatedState = {
@@ -688,9 +631,13 @@ const main = async () => {
     observerSourceDir: typeof args['observer-source'] === 'string' ? args['observer-source'] : null,
     runObserverFirst: Boolean(args['run-observer']),
     port: Number(args.port || 5173),
+    criticMode: typeof args['critic-mode'] === 'string' ? args['critic-mode'] : multimodalCriticDefaults.defaultMode,
+    criticModel: typeof args['critic-model'] === 'string' ? args['critic-model'] : multimodalCriticDefaults.defaultModel,
   })
 
-  console.log(`Refreshed quality for ${result.state.project?.name || path.basename(projectDir)} from ${result.sourceDir}`)
+  console.log(
+    `Refreshed quality for ${result.state.project?.name || path.basename(projectDir)} from ${result.sourceDir} using ${result.critic.source}`,
+  )
 }
 
 main().catch((error) => {

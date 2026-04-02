@@ -142,6 +142,25 @@ npm run refresh:quality -- --project "C:\\Users\\mateo\\Desktop\\my-project"
 
 That command rewrites `.brain/reports/quality/observer.json`, `.brain/reports/quality/critic.json`, `.brain/reports/quality/scorecard.json`, `.brain/reports/visual-debt.json`, `.brain/metrics.json`, and `REVIEW-SUMMARY.md`.
 
+By default, `refresh-quality` runs in `auto` critic mode:
+
+- if `OPENAI_API_KEY` exists, it sends the latest observer screenshots to a multimodal critic model
+- if not, it falls back to the deterministic heuristic critic and records the fallback in `critic.json`
+
+You can force the mode explicitly:
+
+```bash
+cd scripts
+npm run refresh:quality -- --project "C:\\Users\\mateo\\Desktop\\my-project" --critic-mode multimodal
+```
+
+Optional environment variables:
+
+- `OPENAI_API_KEY`
+- `OPENAI_PROJECT_ID`
+- `OPENAI_ORGANIZATION_ID`
+- `OPENAI_QUALITY_MODEL` (defaults to `gpt-5-mini`)
+
 ## Near-Term Objective
 
 Maqueta is moving toward a Stitch-like workflow:
