@@ -1,14 +1,19 @@
 {
   "project": {
     "name": "Project Name",
-    "slug": "project-name"
+    "slug": "project-name",
+    "type": "creative-studio"
   },
-  "mode": "autonomous",
-  "phase": "setup",
-  "task": "setup/identity",
-  "status": "idle",
-  "currentSection": null,
-  "blocker": null,
-  "nextAction": "Parse the brief and generate DESIGN.md.",
-  "lastUpdatedAt": null
+  "mode": "design-autonomous",
+  "currentPhase": "design",
+  "currentTask": "design/brief",
+  "currentFocus": "brief-alignment",
+  "healthIndex": 66,
+  "maturityScore": 12,
+  "activePage": "home",
+  "activeSection": "creative-direction",
+  "retriesUsed": 0,
+  "retryBudget": 3,
+  "lastReviewAt": null,
+  "nextAction": "Write .brain/context/design-brief.md with memory insights and spawn the designer."
 }

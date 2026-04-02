@@ -1,0 +1,12 @@
+{
+  "runId": "critic-project-name",
+  "target": "home/overview",
+  "score": 0,
+  "brandAlignment": "pending",
+  "verdict": "pending",
+  "notes": [
+    "Bootstrap placeholders only.",
+    "Replace with real critic output once the first design pass exists."
+  ],
+  "issues": []
+}

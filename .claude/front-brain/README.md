@@ -13,6 +13,7 @@ This directory contains the implementation contract, fixtures, and structured ex
 - `../FRONT_BRAIN_SCHEMA.md`: canonical implementation contract.
 - `examples/demo-run/`: reference payload for panel development and schema validation.
 - `runtime/`: generated cache consumed by the panel after syncing real projects.
+- `../../scripts/bootstrap-front-brain.mjs`: canonical project bootstrapper for emitting hybrid artifacts from intake data.
 
 ## Rules
 
