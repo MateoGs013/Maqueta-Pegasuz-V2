@@ -48,11 +48,21 @@ $PROJECT_DIR/
         observer.json
         critic.json
         scorecard.json
+      visual-debt.json
     reviews/
       REVIEW-SUMMARY.md
 ```
 
 `state.md` remains the cold-resume entrypoint for agents. `state.json`, `metrics.json`, `queue.json`, `blueprints/selection.json`, and `control/rules.json` are the structured mirrors consumed by automation and the backoffice.
+
+The canonical way to refresh quality artifacts after an observer pass is:
+
+```bash
+cd "$MAQUETA_DIR/scripts"
+npm run refresh:quality -- --project "$PROJECT_DIR"
+```
+
+`refresh-quality.mjs` reads the latest observer artifacts, derives deterministic observer and critic JSON, updates visual debt and metrics, and rewrites `REVIEW-SUMMARY.md`.
 
 The canonical way to initialize a new project and emit this contract is:
 
@@ -278,7 +288,7 @@ After ALL sections pass:
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `review/observer` | ceo | dev server at localhost | `.brain/observer/analysis.md` | Observer runs without error |
+| `review/observer` | ceo | dev server at localhost | `.brain/observer/analysis.md` + `.brain/reports/quality/*.json` | Observer runs without error |
 | `review/sections` | ceo | observer analysis.md + screenshots | autonomous: save to docs/review/ + continue; interactive: user approval | All excellenceSignals MEDIUM+ |
 
 **Memory hooks fire immediately (both modes):**
@@ -303,7 +313,7 @@ After ALL sections pass:
 | `integrate/views` | ceo | section list per page | `src/views/*.vue` | Views render |
 | `integrate/app` | ceo | component list | `src/App.vue` | App shell complete |
 | `integrate/seo` | ceo | identity + pages | meta tags per page | Tags present |
-| `review/observer-final` | ceo | dev server at localhost | `.brain/observer/final-analysis.md` | Observer runs without error |
+| `review/observer-final` | ceo | dev server at localhost | `.brain/observer/final-analysis.md` + `.brain/reports/quality/*.json` | Observer runs without error |
 | `review/final` | ceo | observer final-analysis.md + screenshots | autonomous: REVIEW-SUMMARY.md + continue; interactive: user approval | All excellenceSignals MEDIUM+ |
 
 ### Phase 6: Retrospective (CEO)
@@ -332,6 +342,7 @@ ON EVERY TURN:
   4. IF task is "build/*":
        → Spawn builder: "Read $PROJECT_DIR/.brain/context/{X}.md, write component + report"
        → Run observer: node capture-refs.mjs --local --port 5173 .brain/observer/
+       → Refresh quality: npm run refresh:quality -- --project "$PROJECT_DIR"
        → Write context/evaluate-{X}.md (report path + observer path + threshold)
        → Spawn evaluator: "Read context/evaluate-{X}.md, write .brain/evaluations/{X}.md"
        → Read evaluation decision:
@@ -348,7 +359,7 @@ ON EVERY TURN:
            STILL FAIL → log to approvals.md as [NEEDS-REVIEW], mark [DONE], continue
 
   5. IF task is "review/*":
-       → AUTONOMOUS: Screenshot → save to docs/review/ → skip to next task
+       → AUTONOMOUS: Screenshot + refresh quality → save to docs/review/ → skip to next task
        → INTERACTIVE: Screenshot → AskUserQuestion → wait for user
        → SUPERVISED: Screenshot → AskUserQuestion after EVERY section
 

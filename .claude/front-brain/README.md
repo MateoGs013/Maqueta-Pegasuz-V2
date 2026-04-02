@@ -16,6 +16,7 @@ This directory contains the implementation contract, fixtures, and structured ex
 - `../../scripts/bootstrap-front-brain.mjs`: canonical project bootstrapper for emitting hybrid artifacts from intake data.
 - `../../scripts/init-project.mjs`: end-to-end project initializer that copies scaffold, writes intake, and invokes the bootstrapper.
 - `../../scripts/select-blueprints.mjs`: automatic hero/nav selector that emits structured direction candidates.
+- `../../scripts/refresh-quality.mjs`: deterministic quality refresh that promotes observer artifacts into scorecard, critic, visual debt, and review outputs.
 
 ## Rules
 

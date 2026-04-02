@@ -133,6 +133,15 @@ cd scripts
 npm run select:blueprints -- --project "C:\\Users\\mateo\\Desktop\\my-project"
 ```
 
+If you need to promote the latest observer output into structured quality artifacts for the brain and panel:
+
+```bash
+cd scripts
+npm run refresh:quality -- --project "C:\\Users\\mateo\\Desktop\\my-project"
+```
+
+That command rewrites `.brain/reports/quality/observer.json`, `.brain/reports/quality/critic.json`, `.brain/reports/quality/scorecard.json`, `.brain/reports/visual-debt.json`, `.brain/metrics.json`, and `REVIEW-SUMMARY.md`.
+
 ## Near-Term Objective
 
 Maqueta is moving toward a Stitch-like workflow:
@@ -142,7 +151,7 @@ Maqueta is moving toward a Stitch-like workflow:
 3. multiple visual directions
 4. seed selection with mutation budgets
 5. homepage generation
-6. observer + multimodal critic retries
+6. observer-driven scorecard refresh and critic retries
 7. final review summary with no mandatory human intervention
 
 Execution details now live in `.claude/front-brain/ROADMAP.md`.
