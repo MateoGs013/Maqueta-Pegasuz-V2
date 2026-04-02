@@ -15,6 +15,7 @@ This directory contains the implementation contract, fixtures, and structured ex
 - `runtime/`: generated cache consumed by the panel after syncing real projects.
 - `../../scripts/bootstrap-front-brain.mjs`: canonical project bootstrapper for emitting hybrid artifacts from intake data.
 - `../../scripts/init-project.mjs`: end-to-end project initializer that copies scaffold, writes intake, and invokes the bootstrapper.
+- `../../scripts/select-blueprints.mjs`: automatic hero/nav selector that emits structured direction candidates.
 
 ## Rules
 

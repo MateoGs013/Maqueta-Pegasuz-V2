@@ -37,6 +37,8 @@ $PROJECT_DIR/
     metrics.json
     queue.md
     queue.json
+    blueprints/
+      selection.json
     control/
       rules.json
     decisions.md
@@ -50,7 +52,7 @@ $PROJECT_DIR/
       REVIEW-SUMMARY.md
 ```
 
-`state.md` remains the cold-resume entrypoint for agents. `state.json`, `metrics.json`, `queue.json`, and `control/rules.json` are the structured mirrors consumed by automation and the backoffice.
+`state.md` remains the cold-resume entrypoint for agents. `state.json`, `metrics.json`, `queue.json`, `blueprints/selection.json`, and `control/rules.json` are the structured mirrors consumed by automation and the backoffice.
 
 The canonical way to initialize a new project and emit this contract is:
 

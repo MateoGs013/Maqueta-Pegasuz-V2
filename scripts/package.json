@@ -6,6 +6,7 @@
     "bootstrap:brain": "node bootstrap-front-brain.mjs",
     "capture": "node capture-refs.mjs",
     "init:project": "node init-project.mjs",
+    "select:blueprints": "node select-blueprints.mjs",
     "tokens": "node generate-tokens.js",
     "sync:runs": "node sync-front-brain-runs.mjs"
   },

@@ -1,0 +1,145 @@
+{
+  "generatedAt": "2026-04-02T00:00:00Z",
+  "input": {
+    "projectName": "Atelier Fuego",
+    "projectSlug": "atelier-fuego",
+    "scheme": "dark",
+    "preferredTags": ["cinematic", "editorial", "ambient", "typography-led", "luxury"],
+    "allowedTags": {
+      "hero": ["editorial", "ambient", "cinematic", "typography-led"],
+      "nav": ["editorial", "ambient", "cinematic", "interaction-led"]
+    },
+    "bannedSeeds": [],
+    "densityTarget": 3,
+    "assetReady": true
+  },
+  "heroCandidates": [
+    {
+      "name": "S-AmbientAtmosphere",
+      "label": "Ambient Atmosphere",
+      "score": 24.25,
+      "reasons": [
+        "dark theme compatible",
+        "allowed tags: ambient, cinematic",
+        "preferred tags: ambient, cinematic, digital",
+        "density fits target 3",
+        "avoids static-gradient-hero",
+        "fits studio/editorial posture"
+      ],
+      "trendTags": ["ambient", "digital", "cinematic"],
+      "compositionFamily": "ambient-canvas",
+      "motionFamily": "particle-breath",
+      "densityScore": 2,
+      "requiredAssets": []
+    },
+    {
+      "name": "S-TypeMonument",
+      "label": "Type Monument",
+      "score": 22.75,
+      "reasons": [
+        "dark theme compatible",
+        "allowed tags: typography-led, editorial, luxury",
+        "preferred tags: typography-led, editorial, luxury",
+        "density fits target 3",
+        "fits studio/editorial posture"
+      ],
+      "trendTags": ["typography-led", "editorial", "luxury"],
+      "compositionFamily": "type-monolith",
+      "motionFamily": "masked-rise",
+      "densityScore": 2,
+      "requiredAssets": []
+    }
+  ],
+  "navCandidates": [
+    {
+      "name": "N-Contextual",
+      "label": "Contextual",
+      "score": 20.25,
+      "reasons": [
+        "dark theme compatible",
+        "allowed tags: interaction-led, editorial",
+        "preferred tags: interaction-led, editorial, product-ui",
+        "density fits target 3",
+        "fits studio/editorial posture"
+      ],
+      "trendTags": ["interaction-led", "product-ui", "editorial"],
+      "compositionFamily": "adaptive-header",
+      "motionFamily": "theme-shift",
+      "densityScore": 3,
+      "requiredAssets": []
+    },
+    {
+      "name": "N-FullscreenOverlay",
+      "label": "Fullscreen Overlay",
+      "score": 19.5,
+      "reasons": [
+        "dark theme compatible",
+        "allowed tags: cinematic, editorial, luxury",
+        "preferred tags: cinematic, editorial, luxury",
+        "density fits target 3",
+        "fits studio/editorial posture"
+      ],
+      "trendTags": ["cinematic", "editorial", "luxury"],
+      "compositionFamily": "overlay-split",
+      "motionFamily": "panel-reveal",
+      "densityScore": 3,
+      "requiredAssets": []
+    }
+  ],
+  "directions": [
+    {
+      "id": "DIR-01",
+      "label": "Editorial Tension",
+      "heroName": "S-AmbientAtmosphere",
+      "navName": "N-Contextual",
+      "heroScore": 24.25,
+      "navScore": 20.25,
+      "score": 46,
+      "sharedTags": ["editorial"],
+      "rationale": "Ambient Atmosphere preserves cinematic depth while Contextual keeps the navigation authored into the page. Shared tags editorial keep hero and nav moving in the same visual language. Both stay viable on the dark scheme.",
+      "reasons": [
+        "allowed tags: ambient, cinematic",
+        "fits studio/editorial posture",
+        "allowed tags: interaction-led, editorial"
+      ]
+    },
+    {
+      "id": "DIR-02",
+      "label": "Cinematic Frame",
+      "heroName": "S-TypeMonument",
+      "navName": "N-FullscreenOverlay",
+      "heroScore": 22.75,
+      "navScore": 19.5,
+      "score": 43.75,
+      "sharedTags": ["editorial", "luxury"],
+      "rationale": "Type Monument keeps the homepage type-led while Fullscreen Overlay turns navigation into a ceremony. Shared tags editorial, luxury keep hero and nav moving in the same visual language. Both stay viable on the dark scheme.",
+      "reasons": [
+        "allowed tags: typography-led, editorial, luxury",
+        "preferred tags: cinematic, editorial, luxury"
+      ]
+    },
+    {
+      "id": "DIR-03",
+      "label": "Ambient Signal",
+      "heroName": "S-CinematicCurtain",
+      "navName": "N-GlassBlur",
+      "heroScore": 21.75,
+      "navScore": 18,
+      "score": 41.25,
+      "sharedTags": ["luxury", "ambient"],
+      "rationale": "Cinematic Curtain adds launch drama while Glass Blur keeps the header premium and atmospheric. Shared tags luxury, ambient keep hero and nav moving in the same visual language. Both stay viable on the dark scheme.",
+      "reasons": [
+        "preferred tags: cinematic, luxury, ambient",
+        "dark theme compatible"
+      ]
+    }
+  ],
+  "selection": {
+    "chosenDirectionId": "DIR-01",
+    "heroName": "S-AmbientAtmosphere",
+    "navName": "N-Contextual",
+    "score": 46,
+    "rationale": "Ambient Atmosphere preserves cinematic depth while Contextual keeps the navigation authored into the page. Shared tags editorial keep hero and nav moving in the same visual language. Both stay viable on the dark scheme.",
+    "confidence": 0.81
+  }
+}
