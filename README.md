@@ -124,6 +124,15 @@ npm run init:project -- --brief-file ".\\examples\\front-brain-brief.example.jso
 
 This creates `Desktop\\{slug}`, copies `_project-scaffold`, copies `docs/_libraries`, bootstraps the hybrid front-brain contract, and runs `npm install` unless `--skip-install` is passed.
 
+The init flow now also emits `.brain/blueprints/selection.json`, which contains three scored direction candidates plus the chosen hero/nav pair.
+
+If you need to rerun only seed selection on an existing project:
+
+```bash
+cd scripts
+npm run select:blueprints -- --project "C:\\Users\\mateo\\Desktop\\my-project"
+```
+
 ## Near-Term Objective
 
 Maqueta is moving toward a Stitch-like workflow:

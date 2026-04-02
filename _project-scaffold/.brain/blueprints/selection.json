@@ -1,0 +1,20 @@
+{
+  "generatedAt": null,
+  "input": {
+    "projectName": "Project Name",
+    "projectSlug": "project-name",
+    "scheme": "dark",
+    "preferredTags": [],
+    "allowedTags": {
+      "hero": [],
+      "nav": []
+    },
+    "bannedSeeds": [],
+    "densityTarget": 3,
+    "assetReady": false
+  },
+  "heroCandidates": [],
+  "navCandidates": [],
+  "directions": [],
+  "selection": null
+}

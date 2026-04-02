@@ -41,14 +41,15 @@ Deprecated sandbox. Preview belongs inside `panel`.
 
 - The front-brain runtime contract exists in scaffold and schema, but live project generation still needs to emit every artifact consistently.
 - New projects now have a concrete initializer (`scripts/init-project.mjs`) that copies scaffold, carries libraries, and emits the hybrid contract natively from parsed brief data.
+- New projects now emit structured seed selection in `.brain/blueprints/selection.json` through the automatic blueprint selector.
 - The panel bridge is active, but legacy projects still arrive with heuristic scores until they emit `DESIGN.md` and `.brain/*.json`.
-- Blueprint coverage exists, but the automatic selector and mutation scoring loop are still in progress.
+- Blueprint coverage exists, and the automatic selector is now active, but mutation scoring and repetition history are still in progress.
 - Multimodal critic integration is specified in the schema, but not yet wired into the execution loop.
 - Some legacy docs and compatibility surfaces still reflect older naming or orchestration assumptions.
 
 ## Next Execution Track
 
-1. Build the automatic seed selector and mutation scorer
-2. Wire observer + critic JSON into the runtime loop
-3. Push `/project` beyond init so it also generates design-brief context automatically
+1. Wire observer + critic JSON into the runtime loop
+2. Push `/project` beyond init so it also generates design-brief context automatically
+3. Add mutation scoring and repetition history on top of the selector
 4. Close remaining legacy naming and compatibility drift

@@ -119,12 +119,14 @@ const runInstall = async (projectDir) => {
 }
 
 const writeInitializationSummary = async ({ projectDir, brief, installSkipped }) => {
+  const selection = await readJson(path.join(projectDir, '.brain', 'blueprints', 'selection.json'), null)
   const content = `# Project Init
 
 ## Status
 
 - Project scaffold copied
 - Front-brain bootstrap emitted
+- Blueprint selector emitted
 - Libraries copied into \`docs/_libraries\`
 - npm install: ${installSkipped ? 'skipped' : 'completed'}
 
@@ -134,6 +136,12 @@ const writeInitializationSummary = async ({ projectDir, brief, installSkipped })
 - Slug: ${brief.slug}
 - Mode: ${brief.mode}
 - Pages: ${brief.pages.join(', ')}
+
+## Direction
+
+- Hero: ${selection?.selection?.heroName ?? 'pending'}
+- Nav: ${selection?.selection?.navName ?? 'pending'}
+- Direction: ${selection?.selection?.chosenDirectionId ?? 'pending'}
 `
 
   const targetPath = path.join(projectDir, '.brain', 'reports', 'project-init.md')

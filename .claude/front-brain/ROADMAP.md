@@ -33,6 +33,8 @@ Status: the native bootstrap step now exists and the end-to-end initializer is a
 - Score candidate hero/nav directions before the builder starts.
 - Track mutation budgets and seed-family repetition across runs.
 
+Status: automatic direction selection now emits structured candidates and a chosen hero/nav pair. The next gap is mutation scoring plus repetition tracking across project history.
+
 ### 3. Backoffice
 
 - Replace fixture-only panel loading with a runtime cache generated from real projects.

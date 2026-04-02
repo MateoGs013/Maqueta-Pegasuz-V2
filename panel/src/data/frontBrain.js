@@ -64,11 +64,12 @@ const observer = activeRun.observer
 const critic = activeRun.critic
 const scorecard = activeRun.scorecard
 const visualDebt = activeRun.visualDebt
-
-const heroMatch = decisionsMarkdown.match(/`(S-[^`]+)`/)
-const navMatch = decisionsMarkdown.match(/`(N-[^`]+)`/)
-const selectedHeroName = heroMatch?.[1] ?? 'S-AmbientAtmosphere'
-const selectedNavName = navMatch?.[1] ?? 'N-Contextual'
+const blueprintSelection = activeRun.blueprintSelection ?? {
+  directions: [],
+  selection: null,
+}
+const selectedHeroName = blueprintSelection.selection?.heroName ?? 'S-AmbientAtmosphere'
+const selectedNavName = blueprintSelection.selection?.navName ?? 'N-Contextual'
 
 export const activeRunId = activeRun.id
 
@@ -88,28 +89,19 @@ export const selectedBlueprints = {
   nav: blueprintIndex.get(selectedNavName),
 }
 
-const directionSpecs = [
-  {
-    label: activeRun.legacyBridge ? 'Bridge fallback direction' : 'Active direction',
-    heroName: selectedHeroName,
-    navName: selectedNavName,
-    rationale: activeRun.legacyBridge
-      ? 'Legacy run does not expose structured seed selection yet, so the panel falls back to the canonical baseline pair.'
-      : 'Primary seed pair inferred from the active run decision log.',
-  },
-  {
-    label: 'Cinematic Frame',
-    heroName: 'S-FullBleedOverlay',
-    navName: 'N-FullscreenOverlay',
-    rationale: 'High-ceremony direction for launches, campaigns, and overtly cinematic brands.',
-  },
-  {
-    label: 'Type-First Tension',
-    heroName: 'S-TypeMonument',
-    navName: 'N-MinimalHamburger',
-    rationale: 'Sharper editorial direction that emphasizes typography over environmental spectacle.',
-  },
-]
+const directionSpecs = blueprintSelection.directions?.length
+  ? blueprintSelection.directions
+  : [
+      {
+        id: 'DIR-01',
+        label: activeRun.legacyBridge ? 'Bridge fallback direction' : 'Fallback direction',
+        heroName: selectedHeroName,
+        navName: selectedNavName,
+        rationale: activeRun.legacyBridge
+          ? 'Legacy run does not expose structured seed selection yet, so the panel falls back to the canonical baseline pair.'
+          : 'Structured seed selection is missing, so the panel falls back to the canonical baseline pair.',
+      },
+    ]
 
 const uniqueDirections = []
 for (const direction of directionSpecs) {
@@ -138,7 +130,7 @@ export const runOverview = {
 }
 
 export const directionCandidates = uniqueDirections.map((direction, index) => ({
-  id: `DIR-0${index + 1}`,
+  id: direction.id ?? `DIR-0${index + 1}`,
   ...direction,
   hero: blueprintIndex.get(direction.heroName),
   nav: blueprintIndex.get(direction.navName),
@@ -311,6 +303,7 @@ export const frontBrainSnapshot = {
   scorecard,
   visualDebt,
   rulesConfig,
+  blueprintSelection,
   selectedBlueprints,
 }
 

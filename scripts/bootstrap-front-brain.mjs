@@ -2,6 +2,8 @@ import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+import { selectBlueprintDirections } from './select-blueprints.mjs'
+
 const parseArgs = (argv) => {
   const args = {}
 
@@ -612,13 +614,31 @@ const buildApprovalsLog = () => `# Approvals — pending
 <!-- Brain writes automatic approvals and flags here. -->
 `
 
-const buildDecisionsLog = (brief) => `# Decisions — ${brief.name}
+const buildDecisionsLog = (brief, blueprintSelection) => `# Decisions — ${brief.name}
 
 ## D-001 | Front-brain bootstrap | setup
 - **Choice:** Emit native hybrid runtime artifacts before the first design task.
 - **Path:** bootstrap/front-brain
 - **User:** pending
 - **Learn:** New projects should begin with machine-readable state, not rely on later bridge migration.
+
+## D-002 | Hero Seed Selection | design
+- **Choice:** \`${blueprintSelection?.selection?.heroName ?? 'pending'}\` as the primary hero seed.
+- **Path:** blueprint-selector/hero
+- **User:** pending
+- **Learn:** Initial direction should be explicit and structured before section generation starts.
+
+## D-003 | Navigation Direction | design
+- **Choice:** \`${blueprintSelection?.selection?.navName ?? 'pending'}\` as the primary navigation seed.
+- **Path:** blueprint-selector/nav
+- **User:** pending
+- **Learn:** Navigation should be selected as part of the visual direction, not pasted on later.
+
+## D-004 | Direction Choice | design
+- **Choice:** ${blueprintSelection?.selection?.chosenDirectionId ?? 'pending'}${blueprintSelection?.selection?.rationale ? ` — ${blueprintSelection.selection.rationale}` : ''}
+- **Path:** blueprint-selector/direction
+- **User:** pending
+- **Learn:** The selected direction should explain why the hero and nav belong together.
 `
 
 const buildLearningsLog = () => `# Learnings
@@ -676,10 +696,12 @@ const bootstrapProject = async ({ projectDir, briefInput = {} }) => {
   const phaseLabel = hasReferences ? 'Phase 0.5: References' : 'Phase 1: Creative Direction'
   const activeTask = hasReferences ? 'setup/capture-refs' : 'design/brief'
   const queueJson = buildQueueJson({ hasReferences })
+  const designMarkdown = buildDesignMarkdown(brief)
 
   await ensureDir(projectDir)
   await ensureDir(path.join(projectDir, '.brain', 'context'))
   await ensureDir(path.join(projectDir, '.brain', 'control'))
+  await ensureDir(path.join(projectDir, '.brain', 'blueprints'))
   await ensureDir(path.join(projectDir, '.brain', 'reports', 'quality'))
   await ensureDir(path.join(projectDir, '.brain', 'reviews'))
 
@@ -696,7 +718,13 @@ const bootstrapProject = async ({ projectDir, briefInput = {} }) => {
     },
   })
   await writeText(path.join(projectDir, '.brain', 'context', 'intake.md'), buildIntakeMarkdown(brief))
-  await writeText(path.join(projectDir, 'DESIGN.md'), buildDesignMarkdown(brief))
+  await writeText(path.join(projectDir, 'DESIGN.md'), designMarkdown)
+  const blueprintSelection = await selectBlueprintDirections({
+    projectDir,
+    briefInput: brief,
+    designMarkdown,
+    persist: true,
+  })
   await writeText(path.join(projectDir, '.brain', 'identity.md'), buildIdentityMarkdown(brief))
   await writeText(path.join(projectDir, '.brain', 'state.md'), buildStateMarkdown({ brief, activeTask, phaseLabel, nextAction }))
   await writeJson(path.join(projectDir, '.brain', 'state.json'), buildStateJson({ brief, hasReferences, nextAction }))
@@ -705,7 +733,7 @@ const bootstrapProject = async ({ projectDir, briefInput = {} }) => {
   await writeJson(path.join(projectDir, '.brain', 'metrics.json'), buildMetricsJson())
   await writeJson(path.join(projectDir, '.brain', 'control', 'rules.json'), buildRulesJson(brief))
   await writeText(path.join(projectDir, '.brain', 'approvals.md'), buildApprovalsLog())
-  await writeText(path.join(projectDir, '.brain', 'decisions.md'), buildDecisionsLog(brief))
+  await writeText(path.join(projectDir, '.brain', 'decisions.md'), buildDecisionsLog(brief, blueprintSelection))
   await writeText(path.join(projectDir, '.brain', 'learnings.md'), buildLearningsLog())
   await writeJson(path.join(projectDir, '.brain', 'reports', 'quality', 'observer.json'), buildObserverJson(brief))
   await writeJson(path.join(projectDir, '.brain', 'reports', 'quality', 'critic.json'), buildCriticJson(brief))
@@ -715,6 +743,7 @@ const bootstrapProject = async ({ projectDir, briefInput = {} }) => {
 
   return {
     brief,
+    blueprintSelection,
     projectDir,
     nextAction,
   }
