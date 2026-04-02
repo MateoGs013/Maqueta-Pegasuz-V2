@@ -1,8 +1,15 @@
 <script setup>
+import { ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { panelMeta, runOverview } from '@/data/frontBrain.js'
+import {
+  activeRunId,
+  panelMeta,
+  runCatalog,
+  runOverview,
+} from '@/data/frontBrain.js'
 
 const route = useRoute()
+const selectedRunId = ref(activeRunId)
 
 const nav = [
   { to: '/', label: 'Runs', badge: `${panelMeta.queueOpen}` },
@@ -16,6 +23,19 @@ const nav = [
 const isActive = (to) => {
   if (to === '/') return route.path === '/'
   return route.path.startsWith(to)
+}
+
+const navTarget = (to) => ({
+  path: to,
+  query: {
+    run: activeRunId,
+  },
+})
+
+const switchRun = () => {
+  const url = new URL(window.location.href)
+  url.searchParams.set('run', selectedRunId.value)
+  window.location.assign(url.toString())
 }
 </script>
 
@@ -32,12 +52,18 @@ const isActive = (to) => {
         <p class="run-label">Active run</p>
         <h2 class="run-title">{{ panelMeta.projectName }}</h2>
         <p class="run-type">{{ panelMeta.projectType }}</p>
+        <select v-model="selectedRunId" class="run-select" @change="switchRun">
+          <option v-for="run in runCatalog" :key="run.id" :value="run.id">
+            {{ run.label }} · {{ run.sourceType }}
+          </option>
+        </select>
         <div class="run-score-row">
           <div>
             <p class="run-score">{{ panelMeta.finalScore.toFixed(1) }}</p>
             <p class="run-score-label">combined score</p>
           </div>
           <div class="run-score-meta">
+            <span v-if="runOverview.legacyBridge" class="run-chip">legacy bridge</span>
             <span class="run-chip">{{ runOverview.currentPhase }}</span>
             <span class="run-chip">{{ runOverview.decision }}</span>
           </div>
@@ -48,7 +74,7 @@ const isActive = (to) => {
         <RouterLink
           v-for="item in nav"
           :key="item.to"
-          :to="item.to"
+          :to="navTarget(item.to)"
           class="nav-item"
           :class="{ active: isActive(item.to) }"
         >
@@ -147,6 +173,16 @@ const isActive = (to) => {
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
+}
+
+.run-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--p-border-light);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--p-text-strong);
+  font: 400 12px var(--p-body);
 }
 
 .run-score {

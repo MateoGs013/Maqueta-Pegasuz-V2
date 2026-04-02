@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "capture": "node capture-refs.mjs",
-    "tokens": "node generate-tokens.js"
+    "tokens": "node generate-tokens.js",
+    "sync:runs": "node sync-front-brain-runs.mjs"
   },
   "dependencies": {
     "puppeteer": "^23.0.0"

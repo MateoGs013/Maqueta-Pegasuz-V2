@@ -24,7 +24,7 @@ Curated seed library. These are creative anchors with minimum quality contracts,
 
 ### `panel/`
 
-Structured backoffice over the demo-run fixture. It now exposes:
+Structured backoffice over a generated runtime cache. It now exposes:
 
 - runs
 - blueprints
@@ -40,14 +40,14 @@ Deprecated sandbox. Preview belongs inside `panel`.
 ## Known Gaps
 
 - The front-brain runtime contract exists in scaffold and schema, but live project generation still needs to emit every artifact consistently.
-- Panel data is wired to structured fixtures, but the live project bridge is still pending.
+- The panel bridge is active, but legacy projects still arrive with heuristic scores until they emit `DESIGN.md` and `.brain/*.json`.
 - Blueprint coverage exists, but the automatic selector and mutation scoring loop are still in progress.
 - Multimodal critic integration is specified in the schema, but not yet wired into the execution loop.
 - Some legacy docs and compatibility surfaces still reflect older naming or orchestration assumptions.
 
 ## Next Execution Track
 
-1. Replace fixture-only panel data with live project ingestion
+1. Migrate legacy projects to emit hybrid front-brain artifacts natively
 2. Build the automatic seed selector and mutation scorer
 3. Wire observer + critic JSON into the runtime loop
 4. Close remaining legacy naming and compatibility drift

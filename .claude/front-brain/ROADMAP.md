@@ -33,7 +33,7 @@ Execution roadmap for moving Maqueta toward a Stitch-like autonomous frontend br
 
 ### 3. Backoffice
 
-- Replace demo-run fixture loading with live project ingestion.
+- Replace fixture-only panel loading with a runtime cache generated from real projects.
 - Add run history, screenshots, and section-level comparisons.
 - Surface visual debt trends and repeated failure modes across projects.
 
@@ -48,3 +48,4 @@ Execution roadmap for moving Maqueta toward a Stitch-like autonomous frontend br
 - Prompt-only flow produces `DESIGN.md`, three directions, selected seed pair, homepage, observer pass, critic pass, and review summary.
 - No repeated generic hero/nav families when the manifest provides stronger alternatives.
 - Panel reads JSON as primary state and Markdown only as narrative context.
+- Panel can ingest both modern hybrid runs and legacy markdown-only runs through the runtime bridge.
