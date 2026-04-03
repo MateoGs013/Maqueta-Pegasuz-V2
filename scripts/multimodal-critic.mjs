@@ -402,6 +402,37 @@ const createHeaders = () => {
   return headers
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const fetchWithRetry = async (url, options, { maxAttempts = 3, timeoutMs = 30000, backoffBase = 2000 } = {}) => {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
+
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal })
+      clearTimeout(timer)
+
+      if (response.status === 429 || response.status >= 500) {
+        if (attempt === maxAttempts) return response
+        const delay = backoffBase * Math.pow(2, attempt - 1)
+        console.log(`[critic] OpenAI returned ${response.status}, retrying in ${delay}ms (attempt ${attempt}/${maxAttempts})`)
+        await sleep(delay)
+        continue
+      }
+
+      return response
+    } catch (error) {
+      clearTimeout(timer)
+      if (attempt === maxAttempts) throw error
+      const delay = backoffBase * Math.pow(2, attempt - 1)
+      const reason = error.name === 'AbortError' ? 'timeout' : error.message
+      console.log(`[critic] Request failed (${reason}), retrying in ${delay}ms (attempt ${attempt}/${maxAttempts})`)
+      await sleep(delay)
+    }
+  }
+}
+
 const requestMultimodalCritic = async ({ observer, sourceDir, blueprintSelection, designMarkdown, rulesConfig, model }) => {
   const headers = createHeaders()
   if (!headers) {
@@ -448,7 +479,7 @@ const requestMultimodalCritic = async ({ observer, sourceDir, blueprintSelection
     ],
   }
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetchWithRetry('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers,
     body: JSON.stringify(payload),

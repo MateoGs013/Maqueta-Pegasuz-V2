@@ -234,7 +234,8 @@ const scoreBlueprint = (blueprint, category, context) => {
     scoreReasons.push(`preferred tags: ${preferredMatches.join(', ')}`)
   }
 
-  const densityDelta = Math.abs((blueprint.densityScore ?? context.densityTarget) - context.densityTarget)
+  const effectiveDensity = Number(blueprint.densityScore) || context.densityTarget
+  const densityDelta = Math.abs(effectiveDensity - context.densityTarget)
   score += Math.max(0, 3 - densityDelta)
   if (densityDelta <= 1) {
     scoreReasons.push(`density fits target ${context.densityTarget}`)
@@ -273,7 +274,7 @@ const scoreBlueprint = (blueprint, category, context) => {
   return {
     name: blueprint.name,
     label: blueprint.label,
-    score: Number(score.toFixed(2)),
+    score: Number(Math.max(0, score).toFixed(2)),
     reasons: unique(scoreReasons),
     trendTags,
     compositionFamily: blueprint.compositionFamily,
