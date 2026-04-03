@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import MarkdownDocument from '@/components/MarkdownDocument.vue'
 import {
   criticNotes,
@@ -15,7 +16,10 @@ import {
   scoreSummary,
 } from '@/data/frontBrain.js'
 
-const maxTechScore = Math.max(...memoryTechniques.map((t) => t.score), 10)
+const maxTechScore = computed(() => {
+  const scores = memoryTechniques.value.map((t) => t.score)
+  return scores.length > 0 ? Math.max(...scores, 10) : 10
+})
 
 const sl = { Observer: 'Observer', Critic: 'Critico', 'Memory Alignment': 'Memoria', Final: 'Final' }
 const sv = { critical: 'critico', medium: 'medio', low: 'bajo' }

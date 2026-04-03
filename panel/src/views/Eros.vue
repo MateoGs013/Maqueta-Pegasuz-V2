@@ -8,8 +8,14 @@ import {
   memoryFonts,
 } from '@/data/frontBrain.js'
 
-const maxScore = computed(() => Math.max(...memoryTechniques.value.map((t) => t.score), 10))
-const maxUses = computed(() => Math.max(...memoryTechniques.value.map((t) => t.uses), 1))
+const maxScore = computed(() => {
+  const scores = memoryTechniques.value.map((t) => t.score)
+  return scores.length > 0 ? Math.max(...scores, 10) : 10
+})
+const maxUses = computed(() => {
+  const uses = memoryTechniques.value.map((t) => t.uses)
+  return uses.length > 0 ? Math.max(...uses, 1) : 1
+})
 
 const decLabel = { approve: 'Aprobado', retry: 'Reintentar', flag: 'Flag' }
 </script>
