@@ -74,6 +74,12 @@ for (let i = 0; i < args.length; i++) {
   } else if (args[i] === '--port' && args[i + 1]) {
     localPort = parseInt(args[i + 1]) || 5173
     i++
+  } else if ((args[i] === '--path' || args[i] === '--out') && args[i + 1]) {
+    outputBase = args[i + 1]
+    i++
+  } else if (args[i].startsWith('--')) {
+    console.error(`Unknown flag: ${args[i]}`)
+    process.exit(1)
   } else {
     flagArgs.push(args[i])
   }
