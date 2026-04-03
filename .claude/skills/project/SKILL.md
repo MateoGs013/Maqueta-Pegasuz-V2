@@ -405,7 +405,11 @@ Final report: project path, pages, sections, avg score, memory stats, promoted r
 
 ## TRAINING MODE
 
-When the user says "train", "entrenar", or "training" + project path:
+Triggers: "train", "entrenar", "training", "aprender de", "learn from"
+
+### A) Project Training (rate what Eros built)
+
+When the user says "train" + project path:
 
 ### Quick Rate (single section)
 ```bash
@@ -450,6 +454,63 @@ node "$SCRIPTS/eros-memory.mjs" promote
 9. Show updated memory stats:
 ```bash
 node "$SCRIPTS/eros-memory.mjs" stats
+```
+
+### B) Reference Training (learn from external sites)
+
+When the user says "aprender de [url]", "learn from [url]", "entrenar con [url]", or shows a reference URL:
+
+1. Start session:
+```bash
+node "$SCRIPTS/eros-train-reference.mjs" session --url "{url}"
+```
+
+2. Read the output — it contains the analysis (sections, techniques, fonts, palette, excellence signals, borrow/avoid lists).
+
+3. Present the analysis to the user:
+   - Show detected techniques, fonts, palette
+   - Show excellence dimensions (Composition, Depth, Typography, Motion, Craft)
+   - Show borrow and avoid recommendations
+   - Ask: "What overall score would you give this site? (1-10)"
+   - Ask: "What mood does it have?" (e.g., dark cinematic, minimal editorial)
+   - Ask for notes on specific techniques
+
+4. Collect ratings and learn:
+```bash
+node "$SCRIPTS/eros-train-reference.mjs" learn \
+  --analysis "{analysisPath}" \
+  --ratings '{"overall":9,"mood":"dark cinematic","primarySectionType":"hero","fontNote":"...","paletteNote":"...","techniques":{"SplitText":9,"parallax":8}}'
+```
+
+5. Show what was written to memory:
+```bash
+node "$SCRIPTS/eros-memory.mjs" stats
+```
+
+### C) Reference Comparison (A/B learning)
+
+When the user wants to compare two sites:
+
+1. Analyze both:
+```bash
+node "$SCRIPTS/eros-train-reference.mjs" analyze --url "{urlA}"
+node "$SCRIPTS/eros-train-reference.mjs" analyze --url "{urlB}"
+```
+
+2. Compare:
+```bash
+node "$SCRIPTS/eros-train-reference.mjs" compare --a "{pathA}/analysis.json" --b "{pathB}/analysis.json"
+```
+
+3. Present comparison to user: which techniques, fonts, palettes are unique to each, which are shared.
+
+4. Ask: "Which site is better overall? What makes it better?"
+
+5. Learn from the winner with a high rating and from the loser with notes on what to avoid.
+
+### D) List training sessions
+```bash
+node "$SCRIPTS/eros-train-reference.mjs" list
 ```
 
 ---

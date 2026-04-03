@@ -17,7 +17,8 @@
     "eros:log": "node eros-log.mjs",
     "eros:train": "node eros-train.mjs",
     "eros:detect": "node eros-detect-changes.mjs",
-    "eros:test": "node eros-test-e2e.mjs"
+    "eros:test": "node eros-test-e2e.mjs",
+    "eros:ref": "node eros-train-reference.mjs"
   },
   "dependencies": {
     "puppeteer": "^23.0.0"
