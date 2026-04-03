@@ -178,6 +178,32 @@ needs_review_flag:
 
 ---
 
+## Completion Gate (Phase 5 Hard Stop)
+
+Phase 5 CANNOT close unless these conditions are met. This is not advisory — it blocks.
+
+```yaml
+completion_gate:
+  observer_ran: true                    # .brain/observer/ must have analysis.md
+  quality_refreshed: true               # .brain/reports/quality/scorecard.json must exist
+  scorecard_nonzero: true               # scorecard.finalScore > 0
+  queue_complete: true                  # all queue.json tasks status = "done"
+  evaluations_complete: true            # every build/S-* has matching evaluations/*.md
+  queue_synced: true                    # queue.md DONE count == queue.json done count
+
+on_gate_fail:
+  action: execute_missing_step          # not skip, not flag — actually run the step
+  log_to: state.md (Blocker field)
+  retry: until all checks pass
+```
+
+**Queue sync enforcement:**
+- Every task status change MUST update both `queue.md` and `queue.json`
+- Before any `review/*` or `integrate/*` task, verify queue sync
+- `state.md` section count must match `queue.json` done count
+
+---
+
 ## Rule Promotion
 
 ```yaml

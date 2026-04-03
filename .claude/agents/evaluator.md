@@ -18,6 +18,25 @@ CEO writes `.brain/context/evaluate-S-{Name}.md` with:
 - Dynamic threshold (score minimum for this section type from memory)
 - Memory snapshot: historical avg score + technique effectiveness for this type
 
+## Input Validation (mandatory first step)
+
+Before computing any scores, verify all inputs exist and contain required data:
+
+1. **Builder report** — Read the file at the path given. Confirm it contains:
+   - A self-score line matching `**Score:** N/10` (where N is 1-10)
+   - At least one section describing what was built
+   - A signature reference (e.g., `S-` prefixed name)
+   If the builder report is missing or empty: write the evaluation with `**Decision:** RETRY` and note "Builder report is missing or incomplete. Re-dispatch builder for this section."
+
+2. **Observer analysis** — Read the file at the path given. Confirm it contains:
+   - An `## Excellence Standard Signals` section with at least 3 dimension rows
+   - A `## Quality Gates` section with at least the Contrast gate
+   If the observer analysis is missing or empty: write the evaluation with `**Decision:** RETRY` and note "Observer analysis is missing. Run capture-refs before evaluating."
+
+3. **Dynamic threshold** — Confirm the threshold is a number between 4 and 10. If missing or out of range, default to 7.0.
+
+Only proceed to the Evidence Matrix if all three inputs validate.
+
 ## Output
 
 Write `.brain/evaluations/S-{Name}.md`:

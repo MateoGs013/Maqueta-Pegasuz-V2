@@ -40,6 +40,15 @@
             "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"\\.vue$\"; then ISSUES=\"\"; grep -q \"import axios\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - AXIOS direct import: use service layer\"; grep -qE \"gsap\\.(to|from|fromTo).*?(width|height|top|left|right|bottom)[^T]\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - Animating layout property: use transform/opacity only\"; grep -qE \"will-change\" \"$FILE\" 2>/dev/null && ISSUES=\"$ISSUES\\n  - will-change detected: remove preventive usage\"; if [ -n \"$ISSUES\" ]; then echo \"\"; echo \"[ANTI-PATTERN]\"; echo -e \"$ISSUES\"; fi; fi'"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"\\.brain/reports/S-.*\\.md$\"; then HAS_SCREENSHOT=$(grep -ciE \"screenshot|desktop.*mobile|mobile.*desktop|preview_screenshot\" \"$FILE\" 2>/dev/null || echo 0); HAS_SCORE=$(grep -ciE \"score|excellence standard\" \"$FILE\" 2>/dev/null || echo 0); if [ \"$HAS_SCREENSHOT\" -eq 0 ] || [ \"$HAS_SCORE\" -eq 0 ]; then echo \"\"; echo \"[PREVIEW LOOP] Builder report missing preview loop evidence.\"; [ \"$HAS_SCREENSHOT\" -eq 0 ] && echo \"  - No screenshot/viewport mentions found\"; [ \"$HAS_SCORE\" -eq 0 ] && echo \"  - No quality scoring mentions found\"; fi; fi'"
+          }
+        ]
       }
     ]
   }

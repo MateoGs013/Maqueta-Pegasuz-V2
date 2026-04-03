@@ -522,3 +522,76 @@ These fire automatically — no explicit CEO instruction needed.
 6. **Write learnings in real-time.** Persist to long-term memory continuously.
 7. **After compaction: read state.md first.** Trust files over memory.
 8. **Use generate-tokens.js.** Never manually copy CSS.
+
+---
+
+## Queue Sync Enforcement (MANDATORY)
+
+The CEO MUST update BOTH `queue.md` AND `queue.json` after every single task completion.
+This is non-negotiable — a task that completes without updating the queue is a pipeline bug.
+
+### Rules
+
+1. **Dual-write obligation:** Every task status change (PENDING → IN_PROGRESS → DONE) MUST be written to both `queue.md` and `queue.json` in the same turn. Never update one without the other.
+
+2. **queue.json update contract:** When marking a task DONE, write these fields:
+   ```json
+   {
+     "id": "build/S-Hero",
+     "status": "done",
+     "completedAt": "2026-04-03T14:30:00Z",
+     "score": 8.2,
+     "decision": "approved"
+   }
+   ```
+
+3. **Reconciliation check:** Before advancing to any `review/*` or `integrate/*` task, the CEO MUST verify that the count of DONE tasks in `queue.json` matches the count of `[DONE]` entries in `queue.md`. If they diverge, reconcile before proceeding.
+
+4. **state.md ↔ queue.json sync:** The `Sections: {done}/{total}` count in `state.md` MUST match the `done` count in `queue.json`. Update both atomically.
+
+---
+
+## Completion Gate (MANDATORY — Phase 5 cannot close without this)
+
+Phase 5 CANNOT be marked as "Complete" unless ALL of the following are true:
+
+### Hard Requirements
+
+1. **Observer ran:** `.brain/observer/` directory exists AND contains at least one `analysis.md` file with non-empty content. If the observer never ran, Phase 5 is BLOCKED.
+
+2. **refresh-quality ran:** `.brain/reports/quality/scorecard.json` exists AND `finalScore > 0`. A scorecard with `finalScore: 0` means the quality loop never executed — Phase 5 is BLOCKED.
+
+3. **Queue is complete:** Every task in `queue.json` has `status: "done"`. No task can be left as `"pending"` or `"in_progress"` when Phase 5 closes.
+
+4. **Evaluations exist:** For every `build/S-{Name}` task, a corresponding `.brain/evaluations/S-{Name}.md` file MUST exist with an APPROVE, RETRY, or FLAG decision.
+
+### Enforcement Algorithm
+
+```
+BEFORE marking Phase 5 as "Complete":
+  1. Check: does .brain/observer/ contain analysis.md? → NO → BLOCK
+  2. Check: does .brain/reports/quality/scorecard.json exist? → NO → BLOCK
+  3. Read scorecard.json → is finalScore > 0? → NO → BLOCK
+  4. Read queue.json → are all tasks "done"? → NO → BLOCK
+  5. Count build/S-* tasks → count evaluations/*.md → match? → NO → BLOCK
+
+  IF any check BLOCKS:
+    → Log to state.md: "Blocker: completion gate failed — {which check}"
+    → Execute missing steps (run observer, run refresh-quality, etc.)
+    → Re-check after execution
+    → Only proceed when ALL checks pass
+
+  IF all checks PASS:
+    → Write to state.md: "Phase: 5 | Status: Complete | Quality: {finalScore}/10"
+    → Write to approvals.md: "[QUALITY-GATE] Phase 5 completion | score: {finalScore}/10"
+    → Proceed to Phase 6
+```
+
+### What to do when blocked
+
+| Missing step | Recovery action |
+|-------------|-----------------|
+| Observer never ran | Start dev server → run `capture-refs.mjs --local` → retry |
+| scorecard.json missing or zero | Run `npm run refresh:quality -- --project "$PROJECT_DIR"` → retry |
+| Queue tasks still pending | Execute remaining pending tasks → retry |
+| Evaluations missing | Write evaluate context → spawn evaluator → retry |
