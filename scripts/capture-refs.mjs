@@ -188,6 +188,18 @@ async function captureReference(url, outputBase, options = {}) {
   try {
     const page = await browser.newPage()
 
+    // Network-level library detection: intercept module requests
+    const networkLibs = new Set()
+    page.on('response', res => {
+      const url = res.url().toLowerCase()
+      if (url.includes('/gsap') || url.includes('greensock')) networkLibs.add('GSAP')
+      if (url.includes('scrolltrigger')) networkLibs.add('ScrollTrigger')
+      if (url.includes('splittext')) networkLibs.add('SplitText')
+      if (url.includes('/three') || url.includes('three.module')) networkLibs.add('Three.js')
+      if (url.includes('/lenis')) networkLibs.add('Lenis')
+      if (url.includes('splinetool') || url.includes('/spline')) networkLibs.add('Spline')
+    })
+
     // ─────────────────────────────────────────────────────────
     // PASS 1: SCROLL SWEEP (desktop)
     // Captures per-section screenshots + scroll-triggered behaviors
@@ -402,14 +414,38 @@ async function captureReference(url, outputBase, options = {}) {
         }
       })
       // Merge: take the MAX of pre-warm and post-wheel for each counter
-      gsapPreWarm.gsapActive = gsapPreWarm.gsapActive || postWheelGSAP.gsapActive
-      gsapPreWarm.scrollTriggerActive = gsapPreWarm.scrollTriggerActive || postWheelGSAP.scrollTriggerActive
+      // Also: if GSAP was detected via network (ESM), mark as active even if window.gsap is undefined
+      gsapPreWarm.gsapActive = gsapPreWarm.gsapActive || postWheelGSAP.gsapActive || networkLibs.has('GSAP')
+      gsapPreWarm.scrollTriggerActive = gsapPreWarm.scrollTriggerActive || postWheelGSAP.scrollTriggerActive || networkLibs.has('ScrollTrigger')
       gsapPreWarm.scrollTriggerCount = Math.max(gsapPreWarm.scrollTriggerCount || 0, postWheelGSAP.scrollTriggerCount)
       gsapPreWarm.scrollTriggerScrubCount = Math.max(gsapPreWarm.scrollTriggerScrubCount || 0, postWheelGSAP.scrollTriggerScrubCount)
       gsapPreWarm.tweenCount = Math.max(gsapPreWarm.tweenCount || 0, postWheelGSAP.tweenCount)
       if (postWheelGSAP.tweenCount > 0) {
         console.log(`[capture] Post-wheel GSAP snapshot: ${postWheelGSAP.tweenCount} tweens, ${postWheelGSAP.scrollTriggerCount} triggers`)
       }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // POST-WHEEL TECH RE-DETECTION — merge network-detected libs
+    // and check for inline transforms created by GSAP during wheel
+    // ─────────────────────────────────────────────────────────
+    if (networkLibs.size > 0) {
+      const newLibs = [...networkLibs].filter(l => !techStack.libraries.includes(l))
+      if (newLibs.length > 0) {
+        techStack.libraries.push(...newLibs)
+        console.log(`[capture] Network-detected libraries: ${newLibs.join(', ')}`)
+      }
+    }
+    // Check for inline transforms that appeared after wheel events
+    const postWheelTransforms = await page.evaluate(() => {
+      return [...document.querySelectorAll('*')].slice(0, 300).filter(el => {
+        const t = el.style.transform || el.style.cssText
+        return t && t.length > 5
+      }).length
+    })
+    if (postWheelTransforms > 5 && !techStack.libraries.some(l => l.includes('GSAP'))) {
+      techStack.libraries.push('GSAP (runtime)')
+      console.log(`[capture] Runtime transform detection: ${postWheelTransforms} transformed elements → GSAP inferred`)
     }
 
     // ─────────────────────────────────────────────────────────
