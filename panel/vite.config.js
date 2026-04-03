@@ -1,9 +1,11 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import erosPlugin from './vite-plugin-eros.js'
+import workshopPlugin from './vite-plugin-workshop.js'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), erosPlugin(), workshopPlugin()],
   build: {
     emptyOutDir: false,
   },

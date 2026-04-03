@@ -1,7 +1,6 @@
 <script setup>
-import { defineAsyncComponent, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import PanelShell from '@/components/PanelShell.vue'
+import { defineAsyncComponent, ref, onMounted, onUnmounted } from 'vue'
+import PanelSwitcher from '@/components/PanelSwitcher.vue'
 
 // Check for ?preview=ComponentName in the URL.
 // This lets the panel's own Vite server render a component in isolation
@@ -26,13 +25,27 @@ const PreviewComp = isPreview
         : import(`@components/heroes/${previewName}.vue`)
     )
   : null
+
+// ── Workshop prop overrides via postMessage ──
+const propOverrides = ref({})
+
+function onMessage(e) {
+  if (e.data?.type === 'prop-override') {
+    propOverrides.value = { ...e.data.props }
+  }
+}
+
+if (isPreview) {
+  onMounted(() => window.addEventListener('message', onMessage))
+  onUnmounted(() => window.removeEventListener('message', onMessage))
+}
 </script>
 
 <template>
   <!-- ── Preview mode: render component fullscreen ── -->
   <template v-if="isPreview">
     <Suspense>
-      <component :is="PreviewComp" />
+      <component :is="PreviewComp" v-bind="propOverrides" />
       <template #fallback>
         <div class="preview-loading">Loading {{ previewName }}…</div>
       </template>
@@ -50,8 +63,11 @@ const PreviewComp = isPreview
     </template>
   </template>
 
-  <!-- ── Panel mode: full shell with router ── -->
-  <PanelShell v-else />
+  <!-- ── Panel mode: router handles shell selection ── -->
+  <template v-else>
+    <RouterView />
+    <PanelSwitcher />
+  </template>
 </template>
 
 <style scoped>
