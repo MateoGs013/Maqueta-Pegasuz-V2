@@ -14,6 +14,7 @@ export default createRouter({
         { path: 'calidad', component: () => import('@/views/Calidad.vue') },
         { path: 'componentes', component: () => import('@/views/Componentes.vue') },
         { path: 'system', component: () => import('@/views/Eros.vue') },
+        { path: 'training', component: () => import('@/views/Training.vue') },
       ],
     },
 

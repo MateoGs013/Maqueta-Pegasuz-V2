@@ -18,6 +18,7 @@ const nav = [
   { to: '/eros/calidad', label: 'Calidad' },
   { to: '/eros/componentes', label: 'Componentes' },
   { to: '/eros/system', label: 'Sistema' },
+  { to: '/eros/training', label: 'Training' },
 ]
 
 const isActive = (item) => {
@@ -59,6 +60,7 @@ const onKeydown = (e) => {
   else if (key === '2') router.push(navTarget('/eros/calidad'))
   else if (key === '3') router.push(navTarget('/eros/componentes'))
   else if (key === '4') router.push(navTarget('/eros/system'))
+  else if (key === '5') router.push(navTarget('/eros/training'))
   else if (key === 'r' || key === 'R') window.location.reload()
   else if (key === 't' || key === 'T') { drawerOpen.value = !drawerOpen.value; drawerTab.value = 'terminal' }
 }

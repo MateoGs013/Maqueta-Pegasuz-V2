@@ -29,6 +29,15 @@
             "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"/src/\" && ! echo \"$FILE\" | grep -qE \"_project-scaffold\"; then DOCS_DIR=$(echo \"$FILE\" | sed \"s|/src/.*|/docs/|\"); if [ ! -f \"${DOCS_DIR}tokens.md\" ] || [ ! -d \"${DOCS_DIR}pages\" ]; then echo \"\"; echo \"[V5 GATE] Design docs missing. Run Designer teammate first.\"; echo \"  Required: docs/tokens.md + docs/pages/*.md\"; fi; fi'"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; BLOCKED=false; MSG=\"\"; if echo \"$FILE\" | grep -qE \"\\.brain/(state\\.md|state\\.json|queue\\.md|queue\\.json)$\"; then BLOCKED=true; MSG=\"Use eros-state.mjs instead of writing directly to state/queue files.\"; fi; if echo \"$FILE\" | grep -qE \"\\.brain/approvals\\.md$\"; then BLOCKED=true; MSG=\"Use eros-log.mjs approve/flag instead of writing directly to approvals.md.\"; fi; if echo \"$FILE\" | grep -qE \"\\.brain/decisions\\.md$\"; then BLOCKED=true; MSG=\"Use eros-log.mjs decision instead of writing directly to decisions.md.\"; fi; if echo \"$FILE\" | grep -qE \"design-intelligence/.*\\.(json|md)$\" && ! echo \"$FILE\" | grep -qE \"maqueta/scripts/\"; then BLOCKED=true; MSG=\"Use eros-memory.mjs learn instead of writing directly to design-intelligence files.\"; fi; if [ \"$BLOCKED\" = true ]; then echo \"\"; echo \"[EROS ENFORCE] BLOCKED: $MSG\"; echo \"  File: $FILE\"; echo \"  These files are owned by eros-* scripts. Run the appropriate script.\"; exit 2; fi'"
+          }
+        ]
       }
     ],
     "PostToolUse": [
