@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import {
   erosStats,
   erosRunHistory,
@@ -7,8 +8,8 @@ import {
   memoryFonts,
 } from '@/data/frontBrain.js'
 
-const maxScore = Math.max(...memoryTechniques.map((t) => t.score), 10)
-const maxUses = Math.max(...memoryTechniques.map((t) => t.uses), 1)
+const maxScore = computed(() => Math.max(...memoryTechniques.value.map((t) => t.score), 10))
+const maxUses = computed(() => Math.max(...memoryTechniques.value.map((t) => t.uses), 1))
 
 const decLabel = { approve: 'Aprobado', retry: 'Reintentar', flag: 'Flag' }
 </script>

@@ -91,6 +91,21 @@ export default function erosPlugin() {
         res.end(JSON.stringify({ watchActive: !!watchProcess, logCount: logs.length }))
       })
 
+      // REST: full memory data (all design-intelligence JSON files)
+      server.middlewares.use('/__eros/memory-data', async (req, res) => {
+        const memDir = path.resolve(__dirname, '..', '.claude', 'memory', 'design-intelligence')
+        const files = ['font-pairings', 'color-palettes', 'signatures', 'section-patterns', 'technique-scores', 'revision-patterns', 'pipeline-lessons', 'rules', 'training-calibration']
+        const data = {}
+        for (const f of files) {
+          try {
+            const raw = await fsP.readFile(path.join(memDir, `${f}.json`), 'utf8')
+            data[f.replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = JSON.parse(raw)
+          } catch { data[f.replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = null }
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' })
+        res.end(JSON.stringify(data))
+      })
+
       // REST: start/stop watch
       server.middlewares.use('/__eros/start-watch', (req, res) => {
         if (req.method !== 'POST') { res.writeHead(405); res.end(); return }

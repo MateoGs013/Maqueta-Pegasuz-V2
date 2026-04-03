@@ -266,40 +266,87 @@ export const sectionBreakdown = computed(() => {
   return Object.values(map)
 })
 
-// ── Memory (static seed data for now) ──
+// ── Memory (live from design-intelligence JSON via /__eros/memory-data) ──
 
-export const memoryTechniques = [
-  { name: 'SplitText char reveal', uses: 4, score: 7.8 },
-  { name: 'Clip-path image reveal', uses: 3, score: 8.2 },
-  { name: 'Parallax depth layers', uses: 5, score: 7.4 },
-  { name: 'Magnetic buttons', uses: 3, score: 7.0 },
-  { name: 'Counter/ticker', uses: 2, score: 7.2 },
-  { name: 'Stagger cascade', uses: 4, score: 7.6 },
-  { name: 'Gradient mesh', uses: 2, score: 6.8 },
-  { name: 'Spline 3D', uses: 1, score: 6.5 },
-]
+const memoryData = shallowRef({
+  techniqueScores: { techniques: [] },
+  fontPairings: { works: [], failures: [] },
+  colorPalettes: { works: [], failures: [] },
+  signatures: { approved: [], rejected: [] },
+  sectionPatterns: { patterns: [] },
+  revisionPatterns: { patterns: [] },
+  pipelineLessons: { lessons: [] },
+  rules: { rules: [], nextId: 1 },
+  trainingCalibration: { projects: [], globalBias: 0, thresholdAdjustment: 0 },
+})
 
-export const memoryFonts = [
-  { display: 'Clash Display', body: 'Satoshi', mood: 'dark cinematic', status: 'ok' },
-  { display: 'Cormorant Garamond', body: 'DM Sans', mood: 'editorial', status: 'ok' },
-  { display: 'Inter', body: '—', mood: '—', status: 'fail' },
-  { display: 'Roboto', body: '—', mood: '—', status: 'fail' },
-]
+const fetchMemoryData = async () => {
+  try {
+    const res = await fetch('/__eros/memory-data')
+    const data = await res.json()
+    memoryData.value = {
+      techniqueScores: data.techniqueScores ?? memoryData.value.techniqueScores,
+      fontPairings: data.fontPairings ?? memoryData.value.fontPairings,
+      colorPalettes: data.colorPalettes ?? memoryData.value.colorPalettes,
+      signatures: data.signatures ?? memoryData.value.signatures,
+      sectionPatterns: data.sectionPatterns ?? memoryData.value.sectionPatterns,
+      revisionPatterns: data.revisionPatterns ?? memoryData.value.revisionPatterns,
+      pipelineLessons: data.pipelineLessons ?? memoryData.value.pipelineLessons,
+      rules: data.rules ?? memoryData.value.rules,
+      trainingCalibration: data.trainingCalibration ?? memoryData.value.trainingCalibration,
+    }
+  } catch { /* endpoint not available */ }
+}
+
+// Fetch on load + refresh every 30s
+fetchMemoryData()
+setInterval(fetchMemoryData, 30000)
+
+export const refreshMemory = fetchMemoryData
+
+export const memoryTechniques = computed(() =>
+  (memoryData.value.techniqueScores.techniques || []).map(t => ({
+    name: t.name,
+    uses: t.timesUsed ?? 0,
+    score: t.avgScore ?? 0,
+  }))
+)
+
+export const memoryFonts = computed(() => [
+  ...(memoryData.value.fontPairings.works || []).map(f => ({
+    display: f.display ?? '—', body: f.body ?? '—', mood: f.mood ?? '—', status: 'ok',
+  })),
+  ...(memoryData.value.fontPairings.failures || []).map(f => ({
+    display: f.display ?? '—', body: f.body ?? '—', mood: f.reason ?? '—', status: 'fail',
+  })),
+])
 
 // ── Eros system stats ──
 
-export const erosStats = computed(() => ({
-  version: '6.1',
-  totalRuns: runtimeCache.value.runs.length,
-  totalBlueprints: allBlueprints.length,
-  totalTechniques: memoryTechniques.length,
-  totalTechniqueUses: memoryTechniques.reduce((s, t) => s + t.uses, 0),
-  avgTechniqueScore: Number((memoryTechniques.reduce((s, t) => s + t.score, 0) / memoryTechniques.length).toFixed(1)),
-  bestTechnique: [...memoryTechniques].sort((a, b) => b.score - a.score)[0],
-  fontsApproved: memoryFonts.filter((f) => f.status === 'ok').length,
-  fontsRejected: memoryFonts.filter((f) => f.status === 'fail').length,
-  rulesCount: rulesConfig.value.rules.length,
-}))
+export const erosStats = computed(() => {
+  const techs = memoryTechniques.value
+  const fonts = memoryFonts.value
+  const totalUses = techs.reduce((s, t) => s + t.uses, 0)
+  const avgScore = techs.length > 0 ? Number((techs.reduce((s, t) => s + t.score, 0) / techs.length).toFixed(1)) : 0
+  return {
+    version: '7',
+    totalRuns: runtimeCache.value.runs.length,
+    totalBlueprints: allBlueprints.length,
+    totalTechniques: techs.length,
+    totalTechniqueUses: totalUses,
+    avgTechniqueScore: avgScore,
+    bestTechnique: [...techs].sort((a, b) => b.score - a.score)[0] ?? null,
+    fontsApproved: fonts.filter((f) => f.status === 'ok').length,
+    fontsRejected: fonts.filter((f) => f.status === 'fail').length,
+    rulesCount: memoryData.value.rules.rules.length,
+    dataPoints: (memoryData.value.fontPairings.works?.length ?? 0) +
+      (memoryData.value.signatures.approved?.length ?? 0) +
+      (memoryData.value.sectionPatterns.patterns?.length ?? 0) +
+      techs.length +
+      (memoryData.value.revisionPatterns.patterns?.length ?? 0),
+    calibrationBias: memoryData.value.trainingCalibration.globalBias ?? 0,
+  }
+})
 
 export const erosRunHistory = computed(() =>
   runtimeCache.value.runs.map((r) => {
@@ -312,12 +359,15 @@ export const erosRunHistory = computed(() =>
   })
 )
 
-export const erosMemoryRules = [
-  { rule: 'Purple gradients = AI fingerprint', status: 'promoted', validations: 4 },
-  { rule: 'Inter/Roboto = AI fingerprint fonts', status: 'promoted', validations: 4 },
-  { rule: '1fr 1fr grids = template-like', status: 'promoted', validations: 3 },
-  { rule: 'Uniform padding = AI tell', status: 'promoted', validations: 3 },
-]
+export const erosMemoryRules = computed(() =>
+  (memoryData.value.rules.rules || []).map(r => ({
+    rule: r.text,
+    status: (r.status || 'candidate').toLowerCase(),
+    validations: r.validations ?? 0,
+    id: r.id,
+    source: r.source,
+  }))
+)
 
 // ── SSE: live data subscription ──
 
