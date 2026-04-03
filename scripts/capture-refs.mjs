@@ -386,6 +386,33 @@ async function captureReference(url, outputBase, options = {}) {
     }
 
     // ─────────────────────────────────────────────────────────
+    // POST-WHEEL GSAP RE-SNAPSHOT — wheel handlers may create tweens
+    // that weren't in the pre-warm snapshot. Re-read globalTimeline
+    // to capture runtime-registered animations.
+    // ─────────────────────────────────────────────────────────
+    if (wheelStates.isWheelDriven && wheelStates.statesCaptured > 0) {
+      const postWheelGSAP = await page.evaluate(() => {
+        const triggers = window.ScrollTrigger?.getAll?.() || []
+        return {
+          gsapActive:             !!(window.gsap || window.GreenSockGlobals),
+          scrollTriggerActive:    !!window.ScrollTrigger,
+          scrollTriggerCount:     triggers.length,
+          scrollTriggerScrubCount: triggers.filter(t => t.scrub).length,
+          tweenCount:             window.gsap?.globalTimeline?.getChildren?.(true, true, true)?.length || 0,
+        }
+      })
+      // Merge: take the MAX of pre-warm and post-wheel for each counter
+      gsapPreWarm.gsapActive = gsapPreWarm.gsapActive || postWheelGSAP.gsapActive
+      gsapPreWarm.scrollTriggerActive = gsapPreWarm.scrollTriggerActive || postWheelGSAP.scrollTriggerActive
+      gsapPreWarm.scrollTriggerCount = Math.max(gsapPreWarm.scrollTriggerCount || 0, postWheelGSAP.scrollTriggerCount)
+      gsapPreWarm.scrollTriggerScrubCount = Math.max(gsapPreWarm.scrollTriggerScrubCount || 0, postWheelGSAP.scrollTriggerScrubCount)
+      gsapPreWarm.tweenCount = Math.max(gsapPreWarm.tweenCount || 0, postWheelGSAP.tweenCount)
+      if (postWheelGSAP.tweenCount > 0) {
+        console.log(`[capture] Post-wheel GSAP snapshot: ${postWheelGSAP.tweenCount} tweens, ${postWheelGSAP.scrollTriggerCount} triggers`)
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────
     // EXCELLENCE STANDARD METRICS (v4 — new)
     // ─────────────────────────────────────────────────────────
     console.log('[capture] Extracting Excellence Standard metrics...')
@@ -597,7 +624,7 @@ async function captureReference(url, outputBase, options = {}) {
       excellenceSignals: computeExcellenceSignals({
         depthMetrics, typographyMetrics, motionProfile, compositionMetrics,
         interactions: { hoverStates, clickStates, scrollDiffs },
-        techStack, layoutPatterns
+        techStack, layoutPatterns, wheelStates
       })
     }
 
@@ -1590,6 +1617,33 @@ async function detectTechStack(page) {
     if (allScriptText.includes('spline')) libs.push('Spline')
     if (allScriptText.includes('framer-motion') || allScriptText.includes('motion')) libs.push('Framer Motion')
     if (allScriptText.includes('swiper')) libs.push('Swiper')
+
+    // ESM module detection: check inline script content for imports
+    const inlineScripts = [...document.querySelectorAll('script[type="module"]')]
+      .map(s => s.textContent || '').join(' ').toLowerCase()
+    if (inlineScripts.includes('gsap') || inlineScripts.includes('scrolltrigger')) libs.push('GSAP')
+    if (inlineScripts.includes('three') || inlineScripts.includes('@three')) libs.push('Three.js')
+    if (inlineScripts.includes('lenis')) libs.push('Lenis')
+    if (inlineScripts.includes('spline') || inlineScripts.includes('@splinetool')) libs.push('Spline')
+
+    // DOM artifact detection: GSAP sets inline transforms on animated elements
+    const hasGSAPTransforms = [...document.querySelectorAll('*')].slice(0, 200).some(el => {
+      const t = el.style.transform
+      // GSAP uses matrix() or translate3d() inline
+      return t && (t.includes('matrix') || t.includes('translate3d'))
+    })
+    if (hasGSAPTransforms && !libs.includes('GSAP')) libs.push('GSAP (inferred)')
+
+    // CSS animation runtime: check document.getAnimations()
+    const runningAnimations = document.getAnimations?.()?.length || 0
+    if (runningAnimations > 5 && !libs.some(l => l.includes('GSAP'))) libs.push('CSS Animations (active)')
+
+    // Canvas/WebGL detection
+    const canvasEls = [...document.querySelectorAll('canvas')]
+    const hasWebGL = canvasEls.some(c => {
+      try { return !!c.getContext('webgl2') || !!c.getContext('webgl') } catch { return false }
+    })
+    if (hasWebGL && !libs.includes('Three.js') && !libs.includes('Spline')) libs.push('WebGL')
 
     // CSS frameworks
     const links = [...document.querySelectorAll('link[href]')].map(l => l.href).join(' ').toLowerCase()
@@ -2618,18 +2672,19 @@ async function classifySections(page) {
 // ═══════════════════════════════════════════════════════════════
 // EXCELLENCE SIGNALS — score all 5 dimensions (STRONG/MEDIUM/WEAK)
 // ═══════════════════════════════════════════════════════════════
-function computeExcellenceSignals({ depthMetrics, typographyMetrics, motionProfile, compositionMetrics, interactions, techStack, layoutPatterns }) {
+function computeExcellenceSignals({ depthMetrics, typographyMetrics, motionProfile, compositionMetrics, interactions, techStack, layoutPatterns, wheelStates }) {
   // Threshold: STRONG needs 4+, MEDIUM needs 2+. Scale works for 5-6 point dimensions.
   const score = (val) => val >= 4 ? 'STRONG' : val >= 2 ? 'MEDIUM' : 'WEAK'
 
-  // COMPOSITION — single-viewport sites get credit for sub-compositions
+  // COMPOSITION — single-viewport + wheel-driven sites get credit
   const compPoints =
     (compositionMetrics?.textAlignmentVariety >= 2 ? 1 : 0) +
     (compositionMetrics?.avgPaddingAsymmetry >= 20 ? 1 : 0) +
     (compositionMetrics?.sections?.some(s => s.hasAbsoluteChild || s.hasNegativeMargin) ? 1 : 0) +
     (compositionMetrics?.containerBreaks > 0 ? 1 : 0) +
     ((layoutPatterns || []).length >= 2 ? 1 : 0) +
-    ((compositionMetrics?.subCompositions || 0) >= 3 ? 1 : 0)
+    ((compositionMetrics?.subCompositions || 0) >= 3 ? 1 : 0) +
+    ((wheelStates?.statesCaptured || 0) >= 3 ? 1 : 0)
 
   // DEPTH — canvas elements count as real z-layers
   const depthPoints =
@@ -2648,14 +2703,15 @@ function computeExcellenceSignals({ depthMetrics, typographyMetrics, motionProfi
     (typographyMetrics?.hasLetterSpacing ? 1 : 0) +
     (typographyMetrics?.hasClamp ? 1 : 0)
 
-  // MOTION — runtime GSAP detection via globalTimeline, wheel states count as motion
+  // MOTION — runtime GSAP detection via globalTimeline, wheel states = motion
   const motionPoints =
     ((motionProfile?.cssTransitions?.cubicBezierCount || 0) >= 2 ? 1 : 0) +
     (motionProfile?.gsap?.active ? 1 : 0) +
     (motionProfile?.gsap?.scrollTrigger ? 1 : 0) +
     (motionProfile?.gsap?.scrollTriggerScrub ? 1 : 0) +
     (motionProfile?.cssAnimations?.hasStagger ? 1 : 0) +
-    ((motionProfile?.gsap?.tweenCount || 0) >= 5 ? 1 : 0)
+    ((motionProfile?.gsap?.tweenCount || 0) >= 5 ? 1 : 0) +
+    ((wheelStates?.statesCaptured || 0) >= 2 ? 1 : 0)
 
   // CRAFT
   const craftPoints =
@@ -2752,6 +2808,10 @@ function generateAnalysisReport(manifest, outputDir) {
     lines.push(`- **ScrollTrigger:** ${motion.gsap.scrollTriggerCount} triggers, ${motion.gsap.scrollTriggerScrubCount} with scrub`)
   }
   lines.push(`- **CSS animations:** ${motion.cssAnimations?.count || 0} (stagger: ${motion.cssAnimations?.hasStagger ? 'yes' : 'no'})`)
+  const wheelInfo = manifest.wheelStates || {}
+  if (wheelInfo.isWheelDriven) {
+    lines.push(`- **Wheel-driven states:** ${wheelInfo.statesCaptured || 0} distinct transitions detected`)
+  }
   lines.push(``)
 
   // Depth detail
