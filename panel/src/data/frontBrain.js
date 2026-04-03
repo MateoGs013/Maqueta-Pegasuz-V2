@@ -404,8 +404,13 @@ export const stopLiveSync = () => {
   }
 }
 
-// Auto-connect on import (with HMR cleanup)
-startLiveSync()
+// Defer SSE connection until after page load — prevents browser spinner from
+// staying active indefinitely (EventSource opened during load = "still loading")
+if (document.readyState === 'complete') {
+  startLiveSync()
+} else {
+  window.addEventListener('load', () => startLiveSync(), { once: true })
+}
 if (import.meta.hot) {
   import.meta.hot.dispose(() => { stopLiveSync() })
 }

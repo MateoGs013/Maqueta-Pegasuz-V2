@@ -73,7 +73,12 @@ export function useEros() {
   onMounted(() => {
     instanceCount++
     checkStatus()
-    connect()
+    // Defer SSE connect until after page load to prevent browser spinner
+    if (document.readyState === 'complete') {
+      connect()
+    } else {
+      window.addEventListener('load', () => connect(), { once: true })
+    }
   })
 
   onUnmounted(() => {
