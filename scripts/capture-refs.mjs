@@ -359,7 +359,7 @@ async function captureReference(url, outputBase, options = {}) {
       console.log(`[capture] Wheel-driven site detected: ${wheelStates.statesCaptured} additional states captured`)
       // Capture screenshots of each wheel state
       if (wheelStates.statesCaptured > 0) {
-        const wheelDir = join(outDir, 'wheel-states')
+        const wheelDir = join(dir, 'wheel-states')
         mkdirSync(wheelDir, { recursive: true })
 
         // Reset to initial state
