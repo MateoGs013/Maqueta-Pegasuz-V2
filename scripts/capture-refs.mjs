@@ -2361,11 +2361,16 @@ async function detectAnimationAntiPatterns(page) {
       if (iter === 'infinite' && name && name !== 'none') {
         const cls = (el.className || '').toString().toLowerCase()
         const isLoader = /\b(spinner|loading|loader|progress|skeleton|pulse)\b/.test(cls)
-        // Grain/noise texture loops with steps() are intentional — not anti-patterns
-        const isGrainLoop = (/\b(grain|noise)\b/.test(cls) || /\b(grain|noise)\b/.test(name) ||
-          el.getAttribute('aria-hidden') === 'true') &&
+        // Grain/noise texture loops with steps() are intentional
+        const isGrainLoop = (/\b(grain|noise)\b/.test(cls) || /\b(grain|noise)\b/.test(name)) &&
           (style.animationTimingFunction || '').includes('steps')
-        if (!isLoader && !isGrainLoop) {
+        // aria-hidden="true" elements are explicitly decorative — infinite loops are intentional
+        const isHiddenDecor = el.getAttribute('aria-hidden') === 'true' ||
+          el.closest('[aria-hidden="true"]') !== null
+        // Functional animations: marquees, cursors, status indicators, scrolling tracks
+        const isFunctional = /\b(marquee|cursor|blink|scroll|track|ticker|dot|status|indicator)\b/.test(cls) ||
+          /\b(marquee|cursor|blink|scroll|track|ticker)\b/.test(name)
+        if (!isLoader && !isGrainLoop && !isHiddenDecor && !isFunctional) {
           found.push({
             type: 'infinite-loop',
             element: label.slice(0, 80),
