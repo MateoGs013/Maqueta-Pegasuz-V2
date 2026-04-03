@@ -298,9 +298,17 @@ const fetchMemoryData = async () => {
   } catch { /* endpoint not available */ }
 }
 
-// Fetch on load + refresh every 30s
+// Fetch on load + refresh every 30s (guarded against HMR accumulation)
 fetchMemoryData()
-setInterval(fetchMemoryData, 30000)
+let memoryInterval = null
+if (!memoryInterval) {
+  memoryInterval = setInterval(fetchMemoryData, 30000)
+}
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    if (memoryInterval) { clearInterval(memoryInterval); memoryInterval = null }
+  })
+}
 
 export const refreshMemory = fetchMemoryData
 
@@ -396,5 +404,8 @@ export const stopLiveSync = () => {
   }
 }
 
-// Auto-connect on import
+// Auto-connect on import (with HMR cleanup)
 startLiveSync()
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => { stopLiveSync() })
+}

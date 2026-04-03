@@ -3,10 +3,15 @@ import { ref, onMounted, onUnmounted } from 'vue'
 const logs = ref([])
 const watchActive = ref(false)
 let eventSource = null
+let instanceCount = 0
 
 export function useEros() {
   const connect = () => {
-    if (eventSource) return
+    // Close existing connection before opening a new one (prevents accumulation)
+    if (eventSource) {
+      eventSource.close()
+      eventSource = null
+    }
     eventSource = new EventSource('/__eros/logs')
     eventSource.onmessage = (event) => {
       try {
@@ -17,6 +22,14 @@ export function useEros() {
     }
     eventSource.onerror = () => {
       watchActive.value = false
+      // Auto-reconnect after 5s instead of letting EventSource hammer the server
+      if (eventSource) {
+        eventSource.close()
+        eventSource = null
+      }
+      setTimeout(() => {
+        if (instanceCount > 0) connect()
+      }, 5000)
     }
     watchActive.value = true
   }
@@ -58,12 +71,17 @@ export function useEros() {
   }
 
   onMounted(() => {
+    instanceCount++
     checkStatus()
     connect()
   })
 
   onUnmounted(() => {
-    disconnect()
+    instanceCount--
+    if (instanceCount <= 0) {
+      disconnect()
+      instanceCount = 0
+    }
   })
 
   return {

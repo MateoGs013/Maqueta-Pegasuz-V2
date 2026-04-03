@@ -63,6 +63,26 @@ export default function erosPlugin() {
     name: 'vite-plugin-eros',
 
     configureServer(server) {
+      // SSE heartbeat — prevents zombie connections
+      const heartbeat = setInterval(() => {
+        const comment = `: heartbeat ${Date.now()}\n\n`
+        for (const res of logClients) {
+          try { res.write(comment) } catch { logClients.delete(res) }
+        }
+        for (const res of dataClients) {
+          try { res.write(comment) } catch { dataClients.delete(res) }
+        }
+      }, 15000)
+
+      // Cleanup on server close
+      server.httpServer?.on('close', () => {
+        clearInterval(heartbeat)
+        for (const res of logClients) { try { res.end() } catch {} }
+        for (const res of dataClients) { try { res.end() } catch {} }
+        logClients.clear()
+        dataClients.clear()
+      })
+
       // SSE: terminal logs
       server.middlewares.use('/__eros/logs', (req, res) => {
         res.writeHead(200, sseHeaders)
@@ -71,6 +91,7 @@ export default function erosPlugin() {
         }
         logClients.add(res)
         req.on('close', () => logClients.delete(res))
+        req.on('error', () => logClients.delete(res))
       })
 
       // SSE: live data — pushes full runs.generated.json on every change
@@ -83,6 +104,7 @@ export default function erosPlugin() {
         } catch { /* no data yet */ }
         dataClients.add(res)
         req.on('close', () => dataClients.delete(res))
+        req.on('error', () => dataClients.delete(res))
       })
 
       // REST: status
