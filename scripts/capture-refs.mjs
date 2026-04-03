@@ -449,6 +449,18 @@ async function captureReference(url, outputBase, options = {}) {
     }
 
     // ─────────────────────────────────────────────────────────
+    // NETWORK → GSAP PRE-WARM MERGE — ensure ESM-loaded GSAP
+    // is marked active for motion profile extraction
+    // ─────────────────────────────────────────────────────────
+    if (networkLibs.has('GSAP') && !gsapPreWarm.gsapActive) {
+      gsapPreWarm.gsapActive = true
+      console.log('[capture] GSAP detected via network (ESM) — marking active for motion scoring')
+    }
+    if (networkLibs.has('ScrollTrigger') && !gsapPreWarm.scrollTriggerActive) {
+      gsapPreWarm.scrollTriggerActive = true
+    }
+
+    // ─────────────────────────────────────────────────────────
     // EXCELLENCE STANDARD METRICS (v4 — new)
     // ─────────────────────────────────────────────────────────
     console.log('[capture] Extracting Excellence Standard metrics...')
@@ -1938,10 +1950,14 @@ async function extractMotionProfile(page, preWarm = {}) {
     const easeProp = root.getPropertyValue('--ease-out') || root.getPropertyValue('--ease') || ''
     if (easeProp.includes('cubic-bezier')) cubicBeziers.add(easeProp.trim())
 
+    // Runtime Web Animations API count (captures GSAP-created animations in ESM mode)
+    const runtimeAnimations = document.getAnimations?.()?.length || 0
+
     return {
       transitionCount,
       animationCount,
       staggerDelayCount,
+      runtimeAnimations,
       cubicBeziers: [...cubicBeziers].slice(0, 10),
       cubicBezierCount: cubicBeziers.size,
       avgDuration: durations.length
@@ -1980,7 +1996,8 @@ async function extractMotionProfile(page, preWarm = {}) {
     },
     cssAnimations: {
       count:      css.animationCount,
-      hasStagger: css.staggerDelayCount > 2
+      hasStagger: css.staggerDelayCount > 2,
+      runtimeAnimations: css.runtimeAnimations,
     },
     gsap: {
       active:               gsapActive,
@@ -2744,7 +2761,7 @@ function computeExcellenceSignals({ depthMetrics, typographyMetrics, motionProfi
     (typographyMetrics?.hasLetterSpacing ? 1 : 0) +
     (typographyMetrics?.hasClamp ? 1 : 0)
 
-  // MOTION — runtime GSAP detection via globalTimeline, wheel states = motion
+  // MOTION — multi-source detection: CSS, GSAP (window + network + runtime), wheel states
   const motionPoints =
     ((motionProfile?.cssTransitions?.cubicBezierCount || 0) >= 2 ? 1 : 0) +
     (motionProfile?.gsap?.active ? 1 : 0) +
@@ -2752,7 +2769,8 @@ function computeExcellenceSignals({ depthMetrics, typographyMetrics, motionProfi
     (motionProfile?.gsap?.scrollTriggerScrub ? 1 : 0) +
     (motionProfile?.cssAnimations?.hasStagger ? 1 : 0) +
     ((motionProfile?.gsap?.tweenCount || 0) >= 5 ? 1 : 0) +
-    ((wheelStates?.statesCaptured || 0) >= 2 ? 1 : 0)
+    ((wheelStates?.statesCaptured || 0) >= 2 ? 1 : 0) +
+    ((motionProfile?.cssTransitions?.count || 0) >= 6 ? 1 : 0)
 
   // CRAFT
   const craftPoints =
