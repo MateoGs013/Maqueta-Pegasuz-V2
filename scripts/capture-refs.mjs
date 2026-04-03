@@ -260,19 +260,23 @@ async function captureReference(url, outputBase, options = {}) {
     // Slow scroll triggers all ScrollTrigger enter callbacks.
     // ─────────────────────────────────────────────────────────
     console.log('[capture] GSAP warm-up (scrolling to trigger animations)...')
-    const warmUpMs = await page.evaluate(async () => {
+    const warmUpMs = await page.evaluate(async (preWarmTriggerCount) => {
       const start = Date.now()
       const totalH = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)
       const steps  = Math.min(30, Math.ceil(totalH / 250))
       const stepPx = Math.ceil(totalH / steps)
 
+      const animationCount = preWarmTriggerCount + (document.getAnimations?.()?.length || 0)
+      const stepDelay = animationCount > 10 ? 150 : animationCount > 3 ? 120 : 80
+      const settleTime = Math.max(400, Math.min(1500, animationCount * 50))
+
       for (let i = 0; i <= steps; i++) {
         window.scrollTo({ top: i * stepPx, behavior: 'instant' })
-        await new Promise(r => setTimeout(r, 120))
+        await new Promise(r => setTimeout(r, stepDelay))
       }
 
-      // Settle at bottom briefly — catches late-triggering animations
-      await new Promise(r => setTimeout(r, 300))
+      // Settle at bottom — catches late-triggering animations
+      await new Promise(r => setTimeout(r, Math.round(settleTime * 0.75)))
 
       // Return to top
       window.scrollTo({ top: 0, behavior: 'instant' })
@@ -281,7 +285,7 @@ async function captureReference(url, outputBase, options = {}) {
       // Tell GSAP to recalculate all trigger positions
       if (window.ScrollTrigger?.refresh) {
         window.ScrollTrigger.refresh()
-        await new Promise(r => setTimeout(r, 300))
+        await new Promise(r => setTimeout(r, Math.round(settleTime * 0.75)))
       }
 
       // Lenis: if present and paused, emit a scroll update
@@ -290,7 +294,7 @@ async function captureReference(url, outputBase, options = {}) {
       }
 
       return Date.now() - start
-    })
+    }, gsapPreWarm.scrollTriggerCount)
     await new Promise(r => setTimeout(r, 400)) // final browser paint settle
     console.log(`[capture] Warm-up done (${warmUpMs}ms)`)
 
@@ -306,6 +310,37 @@ async function captureReference(url, outputBase, options = {}) {
 
     console.log('[capture] Running quality gates...')
     const contrastAudit      = await extractContrastRatios(page)
+
+    // POST-SCROLL CONTRAST RE-CHECK — catch elements only visible after scroll
+    {
+      const pageH = await page.evaluate(() => Math.max(document.body.scrollHeight, document.documentElement.scrollHeight))
+      const vpH = await page.evaluate(() => window.innerHeight)
+      const scrollPositions = [Math.round(pageH * 0.33), Math.round(pageH * 0.66), Math.max(0, pageH - vpH)]
+      const additionalFailures = []
+      for (const scrollY of scrollPositions) {
+        await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), scrollY)
+        await new Promise(r => setTimeout(r, 200))
+        const check = await extractContrastRatios(page)
+        if (check.failingSamples?.length) additionalFailures.push(...check.failingSamples)
+      }
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+      await new Promise(r => setTimeout(r, 200))
+      if (additionalFailures.length > 0 && contrastAudit.failingSamples) {
+        const existingKeys = new Set(contrastAudit.failingSamples.map(p => `${p.fg}|${p.bg}`))
+        const newFailures = additionalFailures.filter(p => !existingKeys.has(`${p.fg}|${p.bg}`))
+        if (newFailures.length > 0) {
+          contrastAudit.failingSamples.push(...newFailures.slice(0, 10 - contrastAudit.failingSamples.length))
+          contrastAudit.failingAA += newFailures.length
+          contrastAudit.totalPairs += newFailures.length
+          contrastAudit.passRate = contrastAudit.totalPairs > 0
+            ? Math.round(contrastAudit.passingAA / contrastAudit.totalPairs * 100)
+            : 100
+          contrastAudit.signal = contrastAudit.passRate >= 95 ? 'PASS' : contrastAudit.passRate >= 80 ? 'WARN' : 'FAIL'
+          console.log(`[capture] Post-scroll found ${newFailures.length} additional contrast failures`)
+        }
+      }
+    }
+
     const animationAudit     = await detectAnimationAntiPatterns(page)
     const imageAudit         = await auditImageOptimization(page)
     const headingAudit       = await validateHeadingHierarchy(page)
@@ -552,13 +587,13 @@ async function detectSections(page) {
   return page.evaluate(() => {
     const candidates = [
       ...document.querySelectorAll('section'),
-      ...document.querySelectorAll('main > div'),
       ...document.querySelectorAll('main > section'),
-      ...document.querySelectorAll('[class*="section"]'),
-      ...document.querySelectorAll('[class*="Section"]'),
       ...document.querySelectorAll('[data-section]'),
       ...document.querySelectorAll('header'),
-      ...document.querySelectorAll('footer')
+      ...document.querySelectorAll('footer'),
+      ...document.querySelectorAll('[class*="section"]'),
+      ...document.querySelectorAll('[class*="Section"]'),
+      ...document.querySelectorAll('main > div'),
     ]
 
     const seen = new Set()
@@ -568,14 +603,19 @@ async function detectSections(page) {
       if (seen.has(el)) continue
       seen.add(el)
       const rect = el.getBoundingClientRect()
-      if (rect.height > 100 && rect.width > window.innerWidth * 0.5) {
-        sections.push({
-          tag: el.tagName.toLowerCase(),
-          className: (el.className?.toString?.() || '').split(' ').slice(0, 3).join(' '),
-          id: el.id || '',
-          top: rect.top + window.scrollY,
-          height: rect.height
-        })
+      const isSemantic = el.tagName === 'SECTION' || el.tagName === 'HEADER' || el.tagName === 'FOOTER' || el.hasAttribute('data-section')
+      const minH = isSemantic ? 100 : 200
+      if (rect.height > minH && rect.width > window.innerWidth * 0.5) {
+        const hasContent = el.querySelector('h1,h2,h3,p,img,video,canvas,svg') !== null
+        if (hasContent || isSemantic) {
+          sections.push({
+            tag: el.tagName.toLowerCase(),
+            className: (el.className?.toString?.() || '').split(' ').slice(0, 3).join(' '),
+            id: el.id || '',
+            top: rect.top + window.scrollY,
+            height: rect.height
+          })
+        }
       }
     }
 

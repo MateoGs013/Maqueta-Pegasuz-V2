@@ -75,6 +75,35 @@ const writeText = async (targetPath, value) => {
   await fs.writeFile(targetPath, value.trimEnd() + '\n', 'utf8')
 }
 
+const archiveReports = async (reportsDir, maxVersions = 5) => {
+  const historyDir = path.join(reportsDir, 'history')
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+  const versionDir = path.join(historyDir, timestamp)
+  const filesToArchive = ['quality/observer.json', 'quality/critic.json', 'quality/scorecard.json']
+  let hasAny = false
+
+  for (const file of filesToArchive) {
+    const src = path.join(reportsDir, file)
+    if (await exists(src)) {
+      hasAny = true
+      const dest = path.join(versionDir, file)
+      await ensureDir(path.dirname(dest))
+      await fs.copyFile(src, dest)
+    }
+  }
+
+  if (!hasAny) return
+
+  try {
+    const entries = await fs.readdir(historyDir, { withFileTypes: true })
+    const dirs = entries.filter((e) => e.isDirectory()).map((e) => e.name).sort()
+    const excess = dirs.slice(0, Math.max(0, dirs.length - maxVersions))
+    for (const dir of excess) {
+      await fs.rm(path.join(historyDir, dir), { recursive: true, force: true })
+    }
+  } catch { /* history dir might not exist yet */ }
+}
+
 const titleCase = (value = '') =>
   value
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
@@ -496,16 +525,18 @@ const refreshQuality = async ({
     criticModel,
   })
 
-  const memoryAlignmentScore = Number((((blueprintSelection?.selection?.confidence ?? 0.4) * 10)).toFixed(2))
-  const finalScore = Number((observerScore * 0.48 + criticScore * 0.34 + memoryAlignmentScore * 0.18).toFixed(2))
+  const rawConfidence = Number(blueprintSelection?.selection?.confidence ?? 0.4)
+  const safeConfidence = Number.isFinite(rawConfidence) ? Math.max(0, Math.min(1, rawConfidence)) : 0.4
+  const memoryAlignmentScore = Number((safeConfidence * 10).toFixed(2))
+  const rawFinal = observerScore * 0.48 + criticScore * 0.34 + memoryAlignmentScore * 0.18
+  const finalScore = Number.isFinite(rawFinal) ? Number(Math.max(0, Math.min(10, rawFinal)).toFixed(2)) : 0
   const thresholds = rulesConfig.thresholds ?? { observerMinimum: 'MEDIUM', criticMinimum: 7, finalMinimum: 7.5 }
-  const observerPass = signalRank[normalizeDimensionSignal(observer.signals.composition)] >= signalRank[String(thresholds.observerMinimum || 'MEDIUM').toUpperCase()]
-    && signalRank[normalizeDimensionSignal(observer.signals.depth)] >= signalRank[String(thresholds.observerMinimum || 'MEDIUM').toUpperCase()]
-    && signalRank[normalizeDimensionSignal(observer.signals.typography)] >= signalRank[String(thresholds.observerMinimum || 'MEDIUM').toUpperCase()]
-    && signalRank[normalizeDimensionSignal(observer.signals.motion)] >= signalRank[String(thresholds.observerMinimum || 'MEDIUM').toUpperCase()]
-    && signalRank[normalizeDimensionSignal(observer.signals.craft)] >= signalRank[String(thresholds.observerMinimum || 'MEDIUM').toUpperCase()]
-  const criticPass = criticScore >= Number(thresholds.criticMinimum ?? 7)
-  const finalPass = finalScore >= Number(thresholds.finalMinimum ?? 7.5)
+  const safeSignalRank = (signal) => signalRank[normalizeDimensionSignal(signal)] ?? 0
+  const thresholdRank = safeSignalRank(thresholds.observerMinimum || 'MEDIUM')
+  const observerPass = ['composition', 'depth', 'typography', 'motion', 'craft']
+    .every((dim) => safeSignalRank(observer.signals[dim]) >= thresholdRank)
+  const criticPass = Number.isFinite(criticScore) && criticScore >= Number(thresholds.criticMinimum ?? 7)
+  const finalPass = Number.isFinite(finalScore) && finalScore >= Number(thresholds.finalMinimum ?? 7.5)
   const decision =
     observer.gates.contrast === 'FAIL'
       ? 'flag'
@@ -587,6 +618,7 @@ const refreshQuality = async ({
     nextAction,
   }
 
+  await archiveReports(path.join(projectDir, '.brain', 'reports'))
   await writeJson(path.join(projectDir, '.brain', 'reports', 'quality', 'observer.json'), observer)
   await writeJson(path.join(projectDir, '.brain', 'reports', 'quality', 'critic.json'), critic)
   await writeJson(path.join(projectDir, '.brain', 'reports', 'quality', 'scorecard.json'), scorecard)

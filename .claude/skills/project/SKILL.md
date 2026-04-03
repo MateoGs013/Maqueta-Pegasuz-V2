@@ -20,8 +20,12 @@ Read `.claude/brain-config.md` for thresholds, mode settings, and memory hook ru
 5. AUTO-EVALUATE              → pass/fail against brain-config.md thresholds
 6. MEMORY HOOK                → write learning to design-intelligence/ immediately
 7. Log to approvals.md + decisions.md
-8. Update queue + state → continue to next task
+8. QUEUE SYNC (MANDATORY)     → update BOTH queue.md AND queue.json with task status
+9. Update state.md + state.json → continue to next task
 ```
+
+**Step 8 is non-negotiable.** A completed task that doesn't update both queue files is a pipeline bug.
+See pipeline.md § Queue Sync Enforcement for the dual-write contract.
 
 **Default is autonomous.** No pauses. No waiting. User reads `docs/review/REVIEW-SUMMARY.md` when the project is done.
 Override by including "interactive" or "supervised" in the brief.
@@ -369,7 +373,28 @@ node "$MAQUETA_DIR/scripts/capture-refs.mjs" --local --port 5173 \
 
 Read `.brain/observer/final/localhost/analysis.md` → include quality gate results in REVIEW-SUMMARY.
 
-**Autonomous:** Save to `docs/review/final/`. Write `REVIEW-SUMMARY.md`.
+### MANDATORY: Run Quality Loop Before Completion
+
+After integration and observer pass, ALWAYS run:
+
+```bash
+cd "$MAQUETA_DIR/scripts"
+npm run refresh:quality -- --project "$PROJECT_DIR"
+```
+
+Then verify the completion gate (see pipeline.md § Completion Gate):
+
+```
+1. Verify .brain/observer/ has analysis.md        → if missing, run observer
+2. Verify .brain/reports/quality/scorecard.json    → if missing, run refresh-quality
+3. Read scorecard.json → finalScore must be > 0    → if 0, run refresh-quality
+4. Verify all queue.json tasks are "done"          → if not, execute remaining
+5. Verify evaluations exist for all build/S-* tasks → if missing, run evaluator
+```
+
+**Phase 5 CANNOT close until all 5 checks pass.** If any check fails, execute the recovery action and re-check. Write the blocker to `state.md` so crash recovery knows what's pending.
+
+**Autonomous:** Save to `docs/review/final/`. Write `REVIEW-SUMMARY.md`. Include `finalScore` from scorecard.
 **Interactive:** AskUserQuestion.
 
 ### REVIEW-SUMMARY.md (autonomous mode)
@@ -432,3 +457,6 @@ Read `.brain/observer/final/localhost/analysis.md` → include quality gate resu
 - Spawn 3+ agents simultaneously
 - Manually copy-paste tokens CSS (use generate-tokens.js)
 - Block the pipeline for `[NEEDS-REVIEW]` items
+- **Mark Phase 5 as complete without running the observer + refresh-quality**
+- **Update queue.md without also updating queue.json (or vice versa)**
+- **Skip the completion gate checks before closing Phase 5**

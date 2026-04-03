@@ -433,11 +433,57 @@ ${nextAction}
   }
 }
 
+const parseStateMd = (content = '') => {
+  const fields = {}
+  for (const match of content.matchAll(/^- \*\*(.+?):\*\*\s*(.*)$/gm)) {
+    fields[match[1].trim()] = match[2].trim()
+  }
+  return fields
+}
+
+const enrichStateFromMd = (stateJson, stateMdFields) => {
+  const enriched = { ...stateJson }
+  // Phase: prefer state.md if JSON is still on default 'setup' and md has progressed
+  if (stateMdFields.Phase && (!enriched.currentPhase || enriched.currentPhase === 'setup')) {
+    const rawPhase = stateMdFields.Phase.toLowerCase().replace(/phase \d+:\s*/i, '').trim()
+    enriched.currentPhase = rawPhase || enriched.currentPhase
+  }
+  if (stateMdFields.Task && (!enriched.currentTask || enriched.currentTask === 'setup/capture-refs')) {
+    enriched.currentTask = stateMdFields.Task
+  }
+  if (stateMdFields.Blocker && enriched.currentFocus === undefined) {
+    enriched.currentFocus = stateMdFields.Blocker === 'none' ? stateMdFields.Task : stateMdFields.Blocker
+  }
+  if (stateMdFields.Next) {
+    enriched.nextAction = stateMdFields.Next
+  }
+  if (stateMdFields.Mode) {
+    enriched.mode = stateMdFields.Mode
+  }
+  if (stateMdFields['Files created']) {
+    enriched.filesCreated = parseInt(stateMdFields['Files created'], 10) || 0
+  }
+  if (stateMdFields.Sections) {
+    const parts = stateMdFields.Sections.split('/')
+    enriched.sectionsBuilt = parseInt(parts[0], 10) || 0
+    enriched.sectionsTotal = parseInt(parts[1], 10) || 0
+    // Infer health/maturity from progress
+    if (enriched.sectionsTotal > 0) {
+      const progress = enriched.sectionsBuilt / enriched.sectionsTotal
+      if (!enriched.healthIndex || enriched.healthIndex === 0) enriched.healthIndex = Math.round(progress * 80 + 20)
+      if (!enriched.maturityScore || enriched.maturityScore === 0) enriched.maturityScore = Math.round(progress * 100)
+    }
+  }
+  return enriched
+}
+
 const loadModernRun = async ({ id, sourceDir, sourceType }) => {
   const designMarkdown = await readText(path.join(sourceDir, 'DESIGN.md'))
   const decisionsMarkdown = await readText(path.join(sourceDir, '.brain', 'decisions.md'))
   const reviewMarkdown = await readText(path.join(sourceDir, '.brain', 'reviews', 'REVIEW-SUMMARY.md'))
-  const state = await readJson(path.join(sourceDir, '.brain', 'state.json'), {})
+  const stateJson = await readJson(path.join(sourceDir, '.brain', 'state.json'), {})
+  const stateMdContent = await readText(path.join(sourceDir, '.brain', 'state.md'))
+  const state = enrichStateFromMd(stateJson, parseStateMd(stateMdContent))
   const metrics = await readJson(path.join(sourceDir, '.brain', 'metrics.json'), {})
   const queue = await readJson(path.join(sourceDir, '.brain', 'queue.json'), { active: [], pending: [], done: [] })
   const blueprintSelection = await readJson(
@@ -575,3 +621,114 @@ const output = await buildOutput()
 await fs.writeFile(outputFile, `${JSON.stringify(output, null, 2)}\n`, 'utf8')
 
 console.log(`Synced ${output.runs.length} front-brain run(s) to ${path.relative(repoDir, outputFile)}`)
+
+// ── Watch mode: --watch flag for continuous .brain/ monitoring ──
+if (process.argv.includes('--watch')) {
+  const { watch } = await import('node:fs')
+  let debounceTimer = null
+  let rebuildCount = 0
+  let lastChangedFile = ''
+  let previousSnapshot = null
+  const DEBOUNCE_MS = 2000
+
+  const snapshotRuns = (out) =>
+    Object.fromEntries(out.runs.map((r) => [r.id, {
+      label: r.label,
+      phase: r.currentPhase,
+      score: r.scorecard.finalScore,
+      decision: r.scorecard.decision,
+      debt: r.visualDebt.summary.open,
+      queueDone: r.queue.done.length,
+      queuePending: r.queue.pending.length,
+    }]))
+
+  const logDeltas = (prev, next) => {
+    if (!prev) return
+    for (const [id, cur] of Object.entries(next)) {
+      const old = prev[id]
+      if (!old) {
+        console.log(`[watch] + Nuevo run: ${cur.label}`)
+        continue
+      }
+      const changes = []
+      if (old.phase !== cur.phase) changes.push(`fase: ${old.phase} → ${cur.phase}`)
+      if (old.score !== cur.score) {
+        const dir = cur.score > old.score ? '↑' : '↓'
+        changes.push(`score: ${old.score.toFixed(1)} → ${cur.score.toFixed(1)} ${dir}`)
+      }
+      if (old.decision !== cur.decision) changes.push(`decision: ${old.decision} → ${cur.decision}`)
+      if (old.debt !== cur.debt) {
+        const dir = cur.debt < old.debt ? '↓' : '↑'
+        changes.push(`deuda: ${old.debt} → ${cur.debt} ${dir}`)
+      }
+      if (old.queueDone !== cur.queueDone) {
+        const diff = cur.queueDone - old.queueDone
+        if (diff > 0) changes.push(`+${diff} tarea${diff > 1 ? 's' : ''} completada${diff > 1 ? 's' : ''}`)
+      }
+      if (changes.length > 0) {
+        console.log(`[watch] △ ${cur.label}: ${changes.join(' · ')}`)
+      }
+    }
+  }
+
+  previousSnapshot = snapshotRuns(output)
+
+  const rebuild = async () => {
+    rebuildCount += 1
+    try {
+      const freshOutput = await buildOutput()
+      await fs.writeFile(outputFile, `${JSON.stringify(freshOutput, null, 2)}\n`, 'utf8')
+
+      const newSnapshot = snapshotRuns(freshOutput)
+      logDeltas(previousSnapshot, newSnapshot)
+      previousSnapshot = newSnapshot
+
+      const trigger = lastChangedFile ? ` (${path.basename(lastChangedFile)})` : ''
+      console.log(`[watch] #${rebuildCount} — ${freshOutput.runs.length} run(s) sincronizados${trigger}`)
+    } catch (error) {
+      console.error(`[watch] Error: ${error.message}`)
+    }
+  }
+
+  const scheduleRebuild = (eventType, filename) => {
+    if (filename) lastChangedFile = filename
+    if (debounceTimer) clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(rebuild, DEBOUNCE_MS)
+  }
+
+  const watchDirs = []
+
+  // Watch example run
+  watchDirs.push(path.join(exampleDir, '.brain'))
+
+  // Watch desktop project .brain/ dirs
+  try {
+    const desktopEntries = await fs.readdir(desktopDir, { withFileTypes: true })
+    for (const entry of desktopEntries) {
+      if (!entry.isDirectory()) continue
+      const brainDir = path.join(desktopDir, entry.name, '.brain')
+      try {
+        await fs.access(brainDir)
+        watchDirs.push(brainDir)
+      } catch { /* no .brain/ */ }
+    }
+  } catch { /* desktop read failed */ }
+
+  for (const dir of watchDirs) {
+    try {
+      watch(dir, { recursive: true }, scheduleRebuild)
+      console.log(`[watch] Observando ${path.basename(path.dirname(dir))}/.brain/`)
+    } catch { /* watch failed for this dir */ }
+  }
+
+  console.log(`[watch] ${watchDirs.length} proyecto${watchDirs.length !== 1 ? 's' : ''} vigilado${watchDirs.length !== 1 ? 's' : ''}. Ctrl+C para detener.`)
+
+  // Keep the process alive — fs.watch alone may not hold the event loop on Windows
+  const keepAlive = setInterval(() => {}, 30000)
+
+  process.on('SIGINT', () => {
+    clearInterval(keepAlive)
+    console.log('\n[watch] Detenido.')
+    process.exit(0)
+  })
+}

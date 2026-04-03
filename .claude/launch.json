@@ -11,7 +11,7 @@
       "name": "maqueta-panel",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "cwd": "C:\\Users\\mateo\\Desktop\\maqueta\\panel",
+      "cwd": "panel",
       "port": 4000
     }
   ]

@@ -5,7 +5,6 @@ import {
   activeRunId,
   panelMeta,
   runCatalog,
-  runOverview,
 } from '@/data/frontBrain.js'
 import { useEros } from '@/composables/useEros.js'
 
@@ -15,15 +14,15 @@ const selectedRunId = ref(activeRunId.value)
 const { logs, watchActive, startWatch, stopWatch, generateProjectCommand } = useEros()
 
 const nav = [
-  { to: '/', label: 'Resumen' },
-  { to: '/calidad', label: 'Calidad' },
-  { to: '/componentes', label: 'Componentes' },
-  { to: '/eros', label: 'Eros' },
+  { to: '/eros', label: 'Resumen', exact: true },
+  { to: '/eros/calidad', label: 'Calidad' },
+  { to: '/eros/componentes', label: 'Componentes' },
+  { to: '/eros/system', label: 'Sistema' },
 ]
 
-const isActive = (to) => {
-  if (to === '/') return route.path === '/'
-  return route.path.startsWith(to)
+const isActive = (item) => {
+  if (item.exact) return route.path === item.to
+  return route.path.startsWith(item.to)
 }
 const navTarget = (to) => ({ path: to, query: { run: activeRunId.value } })
 const switchRun = () => {
@@ -34,7 +33,7 @@ const switchRun = () => {
 
 // ── Drawer: terminal + brief modal ──
 const drawerOpen = ref(false)
-const drawerTab = ref('terminal') // 'terminal' | 'brief'
+const drawerTab = ref('terminal')
 const logBox = ref(null)
 
 const scrollLogs = () => {
@@ -56,10 +55,10 @@ const copyBrief = () => {
 const onKeydown = (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return
   const key = e.key
-  if (key === '1') router.push(navTarget('/'))
-  else if (key === '2') router.push(navTarget('/calidad'))
-  else if (key === '3') router.push(navTarget('/componentes'))
-  else if (key === '4') router.push(navTarget('/eros'))
+  if (key === '1') router.push(navTarget('/eros'))
+  else if (key === '2') router.push(navTarget('/eros/calidad'))
+  else if (key === '3') router.push(navTarget('/eros/componentes'))
+  else if (key === '4') router.push(navTarget('/eros/system'))
   else if (key === 'r' || key === 'R') window.location.reload()
   else if (key === 't' || key === 'T') { drawerOpen.value = !drawerOpen.value; drawerTab.value = 'terminal' }
 }
@@ -90,7 +89,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
       </div>
 
       <nav class="sb-nav">
-        <RouterLink v-for="(item, i) in nav" :key="item.to" :to="navTarget(item.to)" class="sb-link" :class="{ active: isActive(item.to) }">
+        <RouterLink v-for="(item, i) in nav" :key="item.to" :to="navTarget(item.to)" class="sb-link" :class="{ active: isActive(item) }">
           <span class="sb-idx">{{ String(i + 1).padStart(2, '0') }}</span>
           <span class="sb-label">{{ item.label }}</span>
         </RouterLink>

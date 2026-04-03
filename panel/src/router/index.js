@@ -3,29 +3,29 @@ import { createRouter, createWebHistory } from 'vue-router'
 export default createRouter({
   history: createWebHistory(),
   routes: [
+    { path: '/', redirect: '/eros' },
+
+    // ── Eros panel ──
     {
-      path: '/',
-      component: () => import('@/views/Runs.vue'),
+      path: '/eros',
+      component: () => import('@/components/ErosShell.vue'),
+      children: [
+        { path: '', component: () => import('@/views/Resumen.vue') },
+        { path: 'calidad', component: () => import('@/views/Calidad.vue') },
+        { path: 'componentes', component: () => import('@/views/Componentes.vue') },
+        { path: 'system', component: () => import('@/views/Eros.vue') },
+      ],
     },
+
+    // ── Workshop panel ──
     {
-      path: '/blueprints',
-      component: () => import('@/views/Blueprints.vue'),
-    },
-    {
-      path: '/design-dna',
-      component: () => import('@/views/DesignDNA.vue'),
-    },
-    {
-      path: '/observer',
-      component: () => import('@/views/Observer.vue'),
-    },
-    {
-      path: '/visual-debt',
-      component: () => import('@/views/VisualDebt.vue'),
-    },
-    {
-      path: '/decisions',
-      component: () => import('@/views/Decisions.vue'),
+      path: '/workshop',
+      component: () => import('@/components/WorkshopShell.vue'),
+      children: [
+        { path: '', component: () => import('@/views/workshop/WorkshopHome.vue') },
+        { path: 'tokens', component: () => import('@/views/workshop/TokenEditor.vue') },
+        { path: 'components', component: () => import('@/views/workshop/ComponentEditor.vue') },
+      ],
     },
   ],
 })
