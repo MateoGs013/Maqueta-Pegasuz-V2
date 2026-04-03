@@ -1,4 +1,4 @@
-# Pipeline V6.1 — Autonomous Brain
+# Pipeline V6.1 → V7 — Autonomous Brain (Eros Script Architecture)
 
 ## Core Concept: Three Memory Layers
 
@@ -8,15 +8,15 @@ Layer 2: Session State    → $PROJECT_DIR/.brain/state.md + state.json  (crash 
 Layer 3: Long-Term Memory → $MAQUETA_DIR/.claude/memory/design-intelligence/  (cross-project)
 ```
 
-**The brain works like this:**
-1. CEO reads `.brain/state.md` → knows where it is
-2. CEO reads `.brain/queue.md` → knows what to do next
-3. CEO **enriches context** with memory insights (interpretation layer)
-4. CEO writes `context/{task}.md` → pre-computes agent input
-5. Agent reads ONE context file → does ONE task → writes to `reports/{task}.md`
-6. CEO reads report → **auto-evaluates** against thresholds → approve or retry
-7. CEO **writes learnings immediately** to long-term memory
-8. CEO logs decision to `.brain/approvals.md` + `.brain/decisions.md`
+**The brain works like this:** [V7: automated by eros-*.mjs scripts]
+1. CEO runs `node eros-state.mjs query` → knows where it is and what to do next
+2. CEO runs `node eros-context.mjs` → enriches context with memory insights (calls eros-memory.mjs interpret internally)
+3. CEO writes `context/{task}.md` → pre-computes agent input
+4. Agent reads ONE context file → does ONE task → writes to `reports/{task}.md`
+5. CEO runs `node eros-gate.mjs post` → auto-evaluates against thresholds → approve or retry
+6. CEO runs `node eros-memory.mjs learn` → writes learnings immediately to long-term memory
+7. CEO runs `node eros-log.mjs` → logs decision to `.brain/approvals.md` + `.brain/decisions.md`
+8. CEO runs `node eros-state.mjs advance` → atomically updates state.md, queue.md, queue.json
 9. Repeat until queue is empty
 
 ## Front-Brain Runtime Contract
@@ -334,57 +334,58 @@ After ALL sections pass:
 
 ## CEO Micro-Task Loop (the core algorithm)
 
+[V7: automated by eros-*.mjs] The CEO orchestrates — scripts enforce. Manual file reads/writes
+are replaced by deterministic script calls.
+
 ```
 ON EVERY TURN:
-  1. Read .brain/state.md → know where I am
-  2. Read .brain/queue.md → find next [PENDING] task
+  1. Run `node eros-state.mjs query` → know where I am + find next [PENDING] task
 
-  3. IF task is "context/*":
-       → INTERPRET: read relevant design-intelligence/ files
-       → Write "## Memory Insights" block with confidence levels
+  2. IF task is "context/*":
+       → Run `node eros-context.mjs --task {task-id} --project "$PROJECT_DIR"`
+         (internally calls eros-memory.mjs interpret → injects "## Memory Insights" block)
        → Extract source values, write context/{task}.md (includes insights)
-       → Mark task [DONE], advance to next
+       → Run `node eros-state.mjs advance` → mark task [DONE], advance to next
 
-  4. IF task is "build/*":
+  3. IF task is "build/*":
        → Spawn builder: "Read $PROJECT_DIR/.brain/context/{X}.md, write component + report"
        → Run observer: node capture-refs.mjs --local --port 5173 .brain/observer/
        → Refresh quality: npm run refresh:quality -- --project "$PROJECT_DIR"
        → Write context/evaluate-{X}.md (report path + observer path + threshold)
        → Spawn evaluator: "Read context/evaluate-{X}.md, write .brain/evaluations/{X}.md"
-       → Read evaluation decision:
-           APPROVE → log [AUTO-APPROVED] with composite score, mark [DONE]
+       → Run `node eros-gate.mjs post --task {task-id}` → read evaluation decision:
+           APPROVE → run `node eros-log.mjs` + `node eros-state.mjs advance`
            RETRY   → re-dispatch builder with retry instructions (max retry_max)
            RETRY×2 → escalate to FLAG
-           FLAG    → log [NEEDS-REVIEW], mark [DONE], continue
+           FLAG    → run `node eros-log.mjs --flag` + `node eros-state.mjs advance`
 
-  4b. IF task is "design/*" or "polish/*":
+  3b. IF task is "design/*" or "polish/*":
        → Spawn agent: "Read $PROJECT_DIR/.brain/context/{X}.md, write output + report"
-       → Read report → AUTO-EVALUATE against brain-config.md thresholds:
-           PASS → log to approvals.md as [AUTO-APPROVED], mark [DONE]
+       → Run `node eros-gate.mjs post --task {task-id}` → auto-evaluate against thresholds:
+           PASS → run `node eros-log.mjs` + `node eros-state.mjs advance`
            FAIL → re-dispatch with specific failures (max retry_max)
-           STILL FAIL → log to approvals.md as [NEEDS-REVIEW], mark [DONE], continue
+           STILL FAIL → run `node eros-log.mjs --flag` + `node eros-state.mjs advance`
 
-  5. IF task is "review/*":
-       → AUTONOMOUS: Screenshot + refresh quality → save to docs/review/ → skip to next task
+  4. IF task is "review/*":
+       → AUTONOMOUS: Screenshot + refresh quality → save to docs/review/ → run `node eros-state.mjs advance`
        → INTERACTIVE: Screenshot → AskUserQuestion → wait for user
        → SUPERVISED: Screenshot → AskUserQuestion after EVERY section
 
-  6. IF task is "integrate/*" or "setup/*" or "cleanup/*":
+  5. IF task is "integrate/*" or "setup/*" or "cleanup/*":
        → Do it directly (no agent needed)
 
-  7. MEMORY HOOKS — run after EVERY task that produced a decision:
-       → font/palette decision → write to font-pairings.md / color-palettes.md
-       → section approved → write to signatures.md + section-patterns.md + technique-scores.md
-       → user changed something → write to revision-patterns.md
-       → pipeline issue → write to pipeline-lessons.md
-       → rule reaches 3 validations → auto-promote, mark PROMOTED in rules.md
+  6. MEMORY HOOKS — run `node eros-memory.mjs learn` after EVERY task that produced a decision:
+       → --event font_selected / palette_selected → writes to font-pairings.md / color-palettes.md
+       → --event section_approved → writes to signatures.md + section-patterns.md + technique-scores.md
+       → --event user_change → writes to revision-patterns.md
+       → --event pipeline_issue → writes to pipeline-lessons.md
+       → --event rule_validated → auto-promote, mark PROMOTED in rules.md
 
-  8. Update state.md (phase, task, next)
-  9. Update .brain/decisions.md with entry
-  10. Continue (no end-of-turn pause unless waiting for user in interactive mode)
+  7. Run `node eros-state.mjs advance` → atomically updates state.md, queue.md, queue.json, decisions.md
+  8. Continue (no end-of-turn pause unless waiting for user in interactive mode)
 ```
 
-**After compaction:** Steps 1-2 reconstruct full context from files. No conversation memory needed.
+**After compaction:** Step 1 (`eros-state.mjs query`) reconstructs full context from files. No conversation memory needed.
 
 ---
 
@@ -454,20 +455,22 @@ User reads this file when they want. Nothing waits for them.
 
 ## Interpretation Layer
 
-Before writing any `context/{task}.md`, CEO reads memory and enriches with insights.
+[V7: automated by eros-context.mjs + eros-memory.mjs] The CEO never manually reads memory files.
+`eros-context.mjs` calls `eros-memory.mjs interpret` internally, which reads the relevant memory
+files, computes confidence levels, and produces the "## Memory Insights" block.
 
 ```
 FOR design tasks:
-  → read: font-pairings.md + color-palettes.md + revision-patterns.md + rules.md
-  → inject "## Memory Insights" block with confidence levels
+  → eros-memory.mjs interpret reads: font-pairings.md + color-palettes.md + revision-patterns.md + rules.md
+  → injects "## Memory Insights" block with confidence levels
 
 FOR build tasks:
-  → read: signatures.md + technique-scores.md + section-patterns.md + revision-patterns.md
-  → inject insights: high-scoring techniques, known risks, weak dimensions
+  → eros-memory.mjs interpret reads: signatures.md + technique-scores.md + section-patterns.md + revision-patterns.md
+  → injects insights: high-scoring techniques, known risks, weak dimensions
 
 FOR polish tasks:
-  → read: technique-scores.md + pipeline-lessons.md
-  → inject: effective composable patterns, known issues to avoid
+  → eros-memory.mjs interpret reads: technique-scores.md + pipeline-lessons.md
+  → injects: effective composable patterns, known issues to avoid
 ```
 
 **Confidence levels:**
@@ -482,18 +485,21 @@ If confidence is LOW → still document the decision so it can build toward HIGH
 
 ## Memory Hooks (auto-write events)
 
+[V7: automated by eros-memory.mjs] All hooks are handled by `node eros-memory.mjs learn --event <name> --data '<json>'`.
+The script validates event data against a schema before writing, ensuring consistent memory entries.
 These fire automatically — no explicit CEO instruction needed.
 
-| Event | Writes to | Fields |
-|-------|-----------|--------|
-| Font selected | `font-pairings.md` | date, project, mood, display, body, reaction, lesson |
-| Palette selected | `color-palettes.md` | date, project, mood, canvas, accent, reaction, lesson |
-| Section auto-approved | `signatures.md` | date, project, section, element, description, why |
-| Section score received | `section-patterns.md` | layout, motion, technique, score |
-| Technique used | `technique-scores.md` | increment usage + update avg score |
-| User changed something | `revision-patterns.md` | what changed, original, new, pattern |
-| Pipeline issue | `pipeline-lessons.md` | phase, issue, resolution, prevention |
-| Rule validated 3x | `rules.md` → promote | mark PROMOTED, write to target file |
+| Event | eros-memory.mjs event name | Writes to | Fields |
+|-------|---------------------------|-----------|--------|
+| Font selected | `font_selected` | `font-pairings.md` | date, project, mood, display, body, reaction, lesson |
+| Palette selected | `palette_selected` | `color-palettes.md` | date, project, mood, canvas, accent, reaction, lesson |
+| Section auto-approved | `section_approved` | `signatures.md` | date, project, section, element, description, why |
+| Section score received | `section_approved` | `section-patterns.md` | layout, motion, technique, score |
+| Technique used | `section_approved` | `technique-scores.md` | increment usage + update avg score |
+| User changed something | `user_change` | `revision-patterns.md` | what changed, original, new, pattern |
+| Pipeline issue | `pipeline_issue` | `pipeline-lessons.md` | phase, issue, resolution, prevention |
+| Rule discovered | `rule_discovered` | `rules.md` | add new candidate rule |
+| Rule validated 3x | `rule_validated` | `rules.md` → promote | mark PROMOTED, write to target file |
 
 ---
 
@@ -522,19 +528,23 @@ These fire automatically — no explicit CEO instruction needed.
 6. **Write learnings in real-time.** Persist to long-term memory continuously.
 7. **After compaction: read state.md first.** Trust files over memory.
 8. **Use generate-tokens.js.** Never manually copy CSS.
+9. [V7] **Use eros-context.mjs to build context files** — never assemble manually. The script handles memory interpretation, insight injection, and confidence levels.
+10. [V7] **Use eros-state.mjs for all state/queue updates** — never write to state.md, queue.md, or queue.json directly.
 
 ---
 
-## Queue Sync Enforcement (MANDATORY)
+## Queue Sync Enforcement (MANDATORY) — AUTOMATED by eros-state.mjs
 
-The CEO MUST update BOTH `queue.md` AND `queue.json` after every single task completion.
-This is non-negotiable — a task that completes without updating the queue is a pipeline bug.
+[V7: automated by eros-state.mjs] The dual-write obligation is now enforced by the script.
+The CEO MUST use `node eros-state.mjs advance` for all task status changes — never write
+to queue.md, queue.json, or state.md directly. The script performs atomic updates across
+all three files, eliminating the dual-write problem entirely.
 
 ### Rules
 
-1. **Dual-write obligation:** Every task status change (PENDING → IN_PROGRESS → DONE) MUST be written to both `queue.md` and `queue.json` in the same turn. Never update one without the other.
+1. **Atomic write via script:** Every task status change (PENDING → IN_PROGRESS → DONE) is handled by `eros-state.mjs advance`, which updates `queue.md`, `queue.json`, and `state.md` in a single operation. The dual-write obligation is enforced by the script — not by CEO discipline.
 
-2. **queue.json update contract:** When marking a task DONE, write these fields:
+2. **queue.json update contract:** When marking a task DONE, `eros-state.mjs` writes these fields:
    ```json
    {
      "id": "build/S-Hero",
@@ -545,13 +555,16 @@ This is non-negotiable — a task that completes without updating the queue is a
    }
    ```
 
-3. **Reconciliation check:** Before advancing to any `review/*` or `integrate/*` task, the CEO MUST verify that the count of DONE tasks in `queue.json` matches the count of `[DONE]` entries in `queue.md`. If they diverge, reconcile before proceeding.
+3. **Reconciliation check:** `eros-state.mjs` automatically verifies queue sync before advancing to any `review/*` or `integrate/*` task. Manual reconciliation is no longer needed.
 
-4. **state.md ↔ queue.json sync:** The `Sections: {done}/{total}` count in `state.md` MUST match the `done` count in `queue.json`. Update both atomically.
+4. **state.md <-> queue.json sync:** The `Sections: {done}/{total}` count in `state.md` always matches the `done` count in `queue.json` — enforced atomically by the script.
 
 ---
 
 ## Completion Gate (MANDATORY — Phase 5 cannot close without this)
+
+[V7: automated by eros-gate.mjs] Run `node eros-gate.mjs completion --project "$PROJECT_DIR"`
+to execute all 5 checks automatically. The script returns PASS or BLOCK with details.
 
 Phase 5 CANNOT be marked as "Complete" unless ALL of the following are true:
 
@@ -566,6 +579,8 @@ Phase 5 CANNOT be marked as "Complete" unless ALL of the following are true:
 4. **Evaluations exist:** For every `build/S-{Name}` task, a corresponding `.brain/evaluations/S-{Name}.md` file MUST exist with an APPROVE, RETRY, or FLAG decision.
 
 ### Enforcement Algorithm
+
+`eros-gate.mjs completion` runs this automatically:
 
 ```
 BEFORE marking Phase 5 as "Complete":

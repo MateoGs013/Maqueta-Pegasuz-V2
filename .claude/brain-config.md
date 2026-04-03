@@ -1,4 +1,4 @@
-# Brain Configuration — V6.1
+# Brain Configuration — V6.1 → V7 (Eros Script Architecture)
 
 Central configuration for autonomous behavior, approval thresholds, and memory rules.
 
@@ -59,13 +59,17 @@ retry_max: 2                        # max agent re-dispatches per task before fl
 
 ## Dynamic Threshold Resolution
 
-Before every `build/S-{Name}` task, the CEO resolves the score minimum from memory:
+[V7: automated by eros-memory.mjs] The CEO no longer manually reads memory files to resolve thresholds.
+Run: `node eros-memory.mjs threshold --section-type hero` to get the resolved minimum for any section type.
+The script reads `design-intelligence/technique-scores.md`, computes historical averages, and returns the threshold.
+
+The algorithm (now executed by the script):
 
 ```
 1. Identify section type from reference-observatory.md
    (e.g. "hero", "testimonials", "pricing")
 
-2. Read design-intelligence/technique-scores.md
+2. eros-memory.mjs reads design-intelligence/technique-scores.md
    → filter entries where section_type = this type
    → compute historical_avg = mean of their scores
 
@@ -95,31 +99,36 @@ Before every `build/S-{Name}` task, the CEO resolves the score minimum from memo
 
 ## Memory — Auto-Write Rules
 
+[V7: automated by eros-memory.mjs] All memory writes are handled by `eros-memory.mjs learn`.
+The CEO calls `node eros-memory.mjs learn --event <event_name> --data '<json>'` instead of manually editing memory files.
+
+Supported event names: `font_selected`, `palette_selected`, `section_approved`, `user_change`, `pipeline_issue`, `rule_discovered`, `rule_validated`.
+
 The brain writes to long-term memory **immediately** after each event.
 Never batch writes to Phase 6.
 
 ```yaml
-on_font_selected:
+on_font_selected:       # node eros-memory.mjs learn --event font_selected --data '...'
   write_to: design-intelligence/font-pairings.md
   fields: [date, project, mood, display, body, reaction, lesson]
 
-on_palette_selected:
+on_palette_selected:    # node eros-memory.mjs learn --event palette_selected --data '...'
   write_to: design-intelligence/color-palettes.md
   fields: [date, project, mood, canvas, accent, reaction, lesson]
 
-on_section_approved:
+on_section_approved:    # node eros-memory.mjs learn --event section_approved --data '...'
   write_to: design-intelligence/signatures.md
   write_to: design-intelligence/section-patterns.md
   write_to: design-intelligence/technique-scores.md
 
-on_user_change_requested:
+on_user_change_requested:  # node eros-memory.mjs learn --event user_change --data '...'
   write_to: design-intelligence/revision-patterns.md
   fields: [date, project, phase, what_changed, original, new, pattern]
 
-on_pipeline_issue:
+on_pipeline_issue:      # node eros-memory.mjs learn --event pipeline_issue --data '...'
   write_to: design-intelligence/pipeline-lessons.md
 
-on_rule_validated_3x:
+on_rule_validated_3x:   # node eros-memory.mjs learn --event rule_validated --data '...'
   promote_to: CLAUDE.md or agent file
   mark_in: design-intelligence/rules.md → PROMOTED
 ```
@@ -128,7 +137,13 @@ on_rule_validated_3x:
 
 ## Interpretation — Context Enrichment
 
-Before writing any `context/{task}.md`, the brain reads its own memory and injects insights.
+[V7: automated by eros-context.mjs] The CEO never manually reads memory files for interpretation.
+`eros-context.mjs` calls `eros-memory.mjs interpret` internally to read the relevant memory files,
+compute confidence levels, and inject the "## Memory Insights" block into the context file automatically.
+
+The CEO runs: `node eros-context.mjs --task <task-id> --project "$PROJECT_DIR"`
+
+The script selects the correct memory files based on task type:
 
 ```yaml
 before_design_task:
@@ -198,9 +213,12 @@ on_gate_fail:
 ```
 
 **Queue sync enforcement:**
-- Every task status change MUST update both `queue.md` and `queue.json`
-- Before any `review/*` or `integrate/*` task, verify queue sync
-- `state.md` section count must match `queue.json` done count
+[V7: automated by eros-state.mjs] The dual-write problem is eliminated. `eros-state.mjs` atomically
+updates `queue.md`, `queue.json`, and `state.md` in a single operation. The CEO never writes to these
+files directly — all state/queue mutations go through `eros-state.mjs`.
+- Every task status change is handled by `node eros-state.mjs advance`
+- Before any `review/*` or `integrate/*` task, `eros-state.mjs` verifies queue sync automatically
+- `state.md` section count always matches `queue.json` done count (enforced by the script)
 
 ---
 

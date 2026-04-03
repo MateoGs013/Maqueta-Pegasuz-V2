@@ -11,12 +11,15 @@ You evaluate completed work. You read three sources, cross-reference them, and p
 
 ## Inputs
 
-CEO writes `.brain/context/evaluate-S-{Name}.md` with:
+CEO runs `node eros-context.mjs evaluate --section S-{Name}` which writes `.brain/context/evaluate-S-{Name}.md` with:
 - Builder report path: `.brain/reports/S-{Name}.md`
 - Observer analysis path: `.brain/observer/localhost/analysis.md`
 - Section type (from `sectionClassifications` in observer manifest)
-- Dynamic threshold (score minimum for this section type from memory)
+- Dynamic threshold (score minimum for this section type, computed by `eros-memory.mjs threshold`)
 - Memory snapshot: historical avg score + technique effectiveness for this type
+
+**V7 Context Contract:** Context files are built by `eros-context.mjs evaluate --section S-{Name}`, not manually.
+The script automatically injects Memory Insights, Reference Observatory blocks, and the dynamic threshold from `eros-memory.mjs threshold`.
 
 ## Input Validation (mandatory first step)
 

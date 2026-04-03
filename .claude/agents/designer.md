@@ -17,6 +17,9 @@ Read `$PROJECT_DIR/.brain/context/design-brief.md` — CEO pre-computed all cont
 - Reference analysis summary + frame paths
 - Relevant learnings from previous projects (font pairings, palette successes/failures)
 
+**V7 Context Contract:** Context files are built by `eros-context.mjs`, not manually.
+The script automatically injects Memory Insights and Reference Observatory blocks.
+
 ## Decision Trees — MANDATORY for all subjective choices
 
 Read `$PROJECT_DIR/docs/_libraries/design-decisions.md` and follow:

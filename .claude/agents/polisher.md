@@ -19,6 +19,9 @@ Read `$PROJECT_DIR/.brain/context/motion.md` — CEO pre-computed all context:
 - Preloader spec, page transition spec, hover states, reduced-motion spec
 - List of existing S-*.vue files
 
+**V7 Context Contract:** Context files are built by `eros-context.mjs`, not manually.
+The script automatically injects Memory Insights and Reference Observatory blocks.
+
 ## Output: Composables
 
 ### src/composables/useLenis.js

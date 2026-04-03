@@ -18,6 +18,11 @@ Read `$PROJECT_DIR/.brain/context/S-{Name}.md` — CEO pre-computed all context:
 - Library snippets (layout pattern, motion code, interaction CSS)
 - Learnings (high-scoring signatures, weak dimensions, technique effectiveness)
 - Reference frame path (for visual comparison)
+- Dynamic quality threshold (from `eros-memory.mjs threshold`)
+
+**V7 Context Contract:** Context files are built by `eros-context.mjs`, not manually.
+The script automatically injects Memory Insights and Reference Observatory blocks.
+The dynamic threshold included in the context comes from `eros-memory.mjs threshold`.
 
 Also read for measurable criteria:
 - `$PROJECT_DIR/docs/_libraries/quality-benchmarks.md` — Anti-AI checklist, density scoring

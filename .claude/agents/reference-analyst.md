@@ -11,6 +11,9 @@ You analyze reference websites from their captured screenshots, interaction data
 
 ## Your inputs
 
+**V7 Context Contract:** Context files are built by `eros-context.mjs`, not manually.
+The script automatically injects Memory Insights and Reference Observatory blocks.
+
 The CEO passes you:
 0. Path to `_ref-captures/{domain}--index.json` — site-level index listing all captured pages for this domain (homepage + discovered internal pages). Read this FIRST to understand the full scope of captures.
 1. **Path to `_ref-captures/{domain}[--slug]/analysis.md`** — pre-computed human-readable summary with **Excellence Standard scores** (STRONG/MEDIUM/WEAK per dimension), palette, typography metrics, motion profile, depth/layering data, CSS tokens, and interaction counts. **Read this FIRST before the manifest** — it gives you the fastest overview.
