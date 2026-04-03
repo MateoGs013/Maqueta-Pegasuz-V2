@@ -9,6 +9,8 @@ Every new project is created in its own directory on the Desktop:
 Desktop/
   maqueta/                   <- TEMPLATE (read-only during projects)
     _project-scaffold/       <- Vue 3 starter (copied to new projects)
+    _components/             <- curated seed library (heroes/navs)
+    panel/                   <- dual panel: Eros (quality) + Workshop (ABM editor)
     docs/_libraries/         <- pattern libraries (copied to new projects)
     scripts/                 <- capture-refs.mjs, generate-tokens.js
     .claude/                 <- skills, agents, pipeline, memory

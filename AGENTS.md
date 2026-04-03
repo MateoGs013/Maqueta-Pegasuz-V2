@@ -10,7 +10,7 @@ Desktop/
   maqueta/                   <- TEMPLATE (read-only during projects)
     _project-scaffold/       <- Vue 3 starter (copied to new projects)
     _components/             <- curated seed library (heroes/navs as creative anchors)
-    panel/                   <- internal backoffice in development
+    panel/                   <- dual panel: Eros (quality) + Workshop (ABM editor)
     docs/_libraries/         <- pattern libraries (copied to new projects)
     scripts/                 <- capture-refs.mjs, generate-tokens.js
     .claude/                 <- canonical skills, agents, pipeline, memory

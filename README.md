@@ -4,7 +4,7 @@ Claude-first front-brain template for generating modern Vue 3 frontends with:
 
 - a curated seed library for non-generic heroes and navs
 - a hybrid `.brain` contract (`.md` + `.json`)
-- an internal backoffice panel for observability
+- a dual-panel system: **Eros** (autonomous quality) + **Workshop** (local ABM editor)
 - an observer-driven quality loop aimed at autonomous delivery
 
 ## Current Positioning
@@ -14,7 +14,7 @@ This repository is not a single product runtime. It is the source template for a
 - `.claude/` is the canonical source of truth for brain rules, pipeline, agents, memory, and front-brain contracts.
 - `_project-scaffold/` is the starter copied into each generated project.
 - `_components/` is the curated seed library the LLM uses as creative anchors.
-- `panel/` is the internal backoffice for runs, seeds, design DNA, observer output, visual debt, and decisions.
+- `panel/` hosts two isolated panels: Eros (observability) and Workshop (ABM editor).
 - `_components-preview/` is deprecated. Preview now belongs inside `panel`.
 
 ## Canonical Docs
@@ -25,8 +25,6 @@ This repository is not a single product runtime. It is the source template for a
 - [Front-Brain roadmap](./.claude/front-brain/ROADMAP.md)
 - [Pipeline](./.claude/pipeline.md)
 - [Brain config](./.claude/brain-config.md)
-
-The implementation contract in `.claude/FRONT_BRAIN_SCHEMA.md` is derived from the conceptual base in `BRAIN_FRONTEND_LOGICO.md`.
 
 ## Runtime Layers
 
@@ -56,23 +54,32 @@ Lives in `_components/`. Seeds are not rigid templates and not final assemblies.
 - minimum quality contracts
 - non-generic starting points the LLM can mutate without collapsing into basic heroes/navs
 
-### 4. Backoffice
+### 4. Panel (dual architecture)
 
-Lives in `panel/`. It is the operator surface for:
+Lives in `panel/`. Single Vite server, route-based separation, lazy-loaded — no state contamination.
 
-- run state
-- blueprint metadata
-- Design DNA
-- observer metrics
-- visual debt
-- decisions and learnings
+#### Eros (`/eros/*`)
 
-The panel now reads a generated runtime cache in `.claude/front-brain/runtime/runs.generated.json`.
-That cache is produced by `scripts/sync-front-brain-runs.mjs`, which bridges:
+Autonomous quality observability:
 
-- modern hybrid projects with `DESIGN.md` + `.brain/*.json`
-- legacy markdown-only `.brain/` projects through a fallback normalization layer
-- the canonical `demo-run` fixture
+- **Resumen** — score, health, queue, timeline
+- **Calidad** — observer signals, critic notes, debt breakdown
+- **Componentes** — blueprint browser with iframe preview
+- **Sistema** — run history, memory techniques, fonts, rules
+
+Data source: `runs.generated.json` via SSE live sync (`vite-plugin-eros.js`).
+
+#### Workshop (`/workshop/*`)
+
+Local ABM editor (personal Stitch-like tool):
+
+- **Token Editor** — visual editing of `_components/tokens.css` with color pickers, sliders, clamp sub-inputs, palette overview, import/export JSON
+- **Component Editor** — browse heroes/navs, edit props with live preview, create/duplicate/delete components
+- **Staging Layer** — in-memory drafts, diff viewer with selective apply, localStorage persistence, automatic backups
+
+Data source: `/__workshop/*` REST endpoints (`vite-plugin-workshop.js`).
+
+A floating pill at top-right switches between panels. Keyboard shortcuts: `1/2/3` for nav, `Ctrl+S` to review changes.
 
 ## Development Notes
 
@@ -86,9 +93,18 @@ Use `.claude/` as the source of truth.
 ### Preview strategy
 
 - `panel` owns preview mode via `?preview=ComponentName`.
+- Workshop uses the same mechanism for live token/prop editing via CSS injection and `postMessage`.
 - `_components-preview/` is retained only as deprecated sandbox compatibility.
 
 ### Build commands
+
+#### Panel
+
+```bash
+cd panel
+npm run dev        # dev server on :4000 (syncs runs first)
+npm run build      # production build (syncs runs first)
+```
 
 #### Scaffold
 
@@ -97,69 +113,30 @@ cd _project-scaffold
 npm run build
 ```
 
-#### Panel
+#### Scripts
 
 ```bash
-cd panel
-npm run build
-```
+# Create a new project from template
+cd scripts && npm run init:project -- --brief-file ".\\examples\\front-brain-brief.example.json"
 
-`panel` build automatically runs the runtime sync first.
+# Bootstrap brain contract on existing project
+npm run bootstrap:brain -- --project "C:\\Users\\mateo\\Desktop\\my-project"
 
-To bootstrap a new project into the hybrid front-brain contract without waiting for later migration:
-
-```bash
-cd scripts
-npm run bootstrap:brain -- --project "C:\\Users\\mateo\\Desktop\\my-project" --brief-file ".\\examples\\front-brain-brief.example.json"
-```
-
-That command emits `DESIGN.md`, `.brain/state.json`, `.brain/metrics.json`, `.brain/queue.json`, `.brain/control/rules.json`, quality placeholders, and the first review summary.
-
-To create a brand-new project end-to-end from the template:
-
-```bash
-cd scripts
-npm run init:project -- --brief-file ".\\examples\\front-brain-brief.example.json"
-```
-
-This creates `Desktop\\{slug}`, copies `_project-scaffold`, copies `docs/_libraries`, bootstraps the hybrid front-brain contract, and runs `npm install` unless `--skip-install` is passed.
-
-The init flow now also emits `.brain/blueprints/selection.json`, which contains three scored direction candidates plus the chosen hero/nav pair.
-
-If you need to rerun only seed selection on an existing project:
-
-```bash
-cd scripts
+# Rerun seed selection
 npm run select:blueprints -- --project "C:\\Users\\mateo\\Desktop\\my-project"
-```
 
-If you need to promote the latest observer output into structured quality artifacts for the brain and panel:
-
-```bash
-cd scripts
+# Refresh quality artifacts (observer, critic, scorecard, debt)
 npm run refresh:quality -- --project "C:\\Users\\mateo\\Desktop\\my-project"
+
+# Sync front-brain runs (with --watch for live panel updates)
+npm run sync:runs
 ```
 
-That command rewrites `.brain/reports/quality/observer.json`, `.brain/reports/quality/critic.json`, `.brain/reports/quality/scorecard.json`, `.brain/reports/visual-debt.json`, `.brain/metrics.json`, and `REVIEW-SUMMARY.md`.
+### Environment variables
 
-By default, `refresh-quality` runs in `auto` critic mode:
-
-- if `OPENAI_API_KEY` exists, it sends the latest observer screenshots to a multimodal critic model
-- if not, it falls back to the deterministic heuristic critic and records the fallback in `critic.json`
-
-You can force the mode explicitly:
-
-```bash
-cd scripts
-npm run refresh:quality -- --project "C:\\Users\\mateo\\Desktop\\my-project" --critic-mode multimodal
-```
-
-Optional environment variables:
-
-- `OPENAI_API_KEY`
-- `OPENAI_PROJECT_ID`
-- `OPENAI_ORGANIZATION_ID`
-- `OPENAI_QUALITY_MODEL` (defaults to `gpt-5-mini`)
+- `OPENAI_API_KEY` — enables multimodal critic mode
+- `OPENAI_PROJECT_ID`, `OPENAI_ORGANIZATION_ID` — optional
+- `OPENAI_QUALITY_MODEL` — defaults to `gpt-5-mini`
 
 ## Near-Term Objective
 
@@ -171,6 +148,7 @@ Maqueta is moving toward a Stitch-like workflow:
 4. seed selection with mutation budgets
 5. homepage generation
 6. observer-driven scorecard refresh and critic retries
-7. final review summary with no mandatory human intervention
+7. Workshop-based token/component editing with staged apply
+8. final review summary with no mandatory human intervention
 
 Execution details now live in `.claude/front-brain/ROADMAP.md`.
