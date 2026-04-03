@@ -1,0 +1,45 @@
+{
+  "rules": [
+    {
+      "id": "RULE-001",
+      "text": "Purple gradients = instant AI fingerprint",
+      "source": "Research (V5.5)",
+      "validations": 5,
+      "status": "PROMOTED",
+      "promotedTo": "CLAUDE.md",
+      "promotedAt": "2025-01-01",
+      "createdAt": "2025-01-01"
+    },
+    {
+      "id": "RULE-002",
+      "text": "Inter/Roboto = AI fingerprint fonts",
+      "source": "Research (V5.5)",
+      "validations": 5,
+      "status": "PROMOTED",
+      "promotedTo": "CLAUDE.md",
+      "promotedAt": "2025-01-01",
+      "createdAt": "2025-01-01"
+    },
+    {
+      "id": "RULE-003",
+      "text": "1fr 1fr grids look template-like",
+      "source": "Research (V5.5)",
+      "validations": 5,
+      "status": "PROMOTED",
+      "promotedTo": "CLAUDE.md",
+      "promotedAt": "2025-01-01",
+      "createdAt": "2025-01-01"
+    },
+    {
+      "id": "RULE-004",
+      "text": "Uniform padding across sections = AI tell",
+      "source": "Research (V5.5)",
+      "validations": 5,
+      "status": "PROMOTED",
+      "promotedTo": "CLAUDE.md",
+      "promotedAt": "2025-01-01",
+      "createdAt": "2025-01-01"
+    }
+  ],
+  "nextId": 5
+}

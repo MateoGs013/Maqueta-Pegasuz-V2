@@ -5,7 +5,7 @@ Cross-project signature intelligence. CEO appends after Phase 3 batch review.
 ## Approved
 
 | Date | Project | Section | Element | Description | Why It Worked |
-|------|---------|---------|---------|-------------|---------------|
+|------|------|------|------|------|------|
 | 2025-04 | baseline | Hero | Diagonal text overlap | Display heading rotated -3deg overlapping a full-bleed image with clip-path reveal | Creates immediate visual tension and breaks the "centered heading" pattern. Strong composition signal. |
 | 2025-04 | baseline | Nav | Contextual micro-interactions | Nav items that shift color/weight based on scroll section, with magnetic hover on CTA | Makes nav feel alive without being distracting. Good craft dimension score. |
 | 2025-04 | baseline | Features | Staggered card cascade | Bento grid with cards entering via ScrollTrigger.batch(), alternating from left/right with depth shadows | Reliable high-scorer. Combines stagger + depth + asymmetric grid for 3 excellence dimensions at once. |
@@ -18,6 +18,6 @@ Cross-project signature intelligence. CEO appends after Phase 3 batch review.
 ## Rejected
 
 | Date | Project | Section | Element | User Feedback | Lesson |
-|------|---------|---------|---------|---------------|--------|
+|------|------|------|------|------|------|
 | 2025-04 | baseline | Hero | Auto-playing video background | Full-viewport looping video behind hero text | Performance hit, accessibility concerns, feels like 2018. Use static image with motion overlays instead. |
 | 2025-04 | baseline | Features | Infinite scroll marquee | Horizontally scrolling ticker with brand logos | Feels cheap and distracting. Only works for testimonial quotes with careful pacing. |

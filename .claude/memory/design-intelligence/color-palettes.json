@@ -1,0 +1,34 @@
+{
+  "works": [
+    {
+      "date": "2026-04-01",
+      "project": "Forge Studio",
+      "mood": "dark cinematic editorial",
+      "canvas": "#0f0d0a (warm amber)",
+      "accent": "#c4843e (copper) + #e8d5b5 (wheat)",
+      "reaction": "approved by user",
+      "lesson": "Copper on warm amber = editorial warmth without red aggression. Differentiated from griflan red. Warm temperature intentional throughout.",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-02",
+      "project": "Coque",
+      "mood": "dark+light cinematic brutalism",
+      "canvas": "#0d0b14 (cool violet) + #f5f3ee (warm light)",
+      "accent": "#FF4D00 (electric vermillion) + #B8D4E3 (ice blue)",
+      "reaction": "auto-approved by brain",
+      "lesson": "Cool violet canvas = creative depth. Vermillion accent avoids copper (Forge) and purple (AI). Dual-theme palette with dark/light rhythm. 5.2:1 contrast on accent.",
+      "userRating": null,
+      "validations": 1
+    }
+  ],
+  "failures": [
+    {
+      "date": null,
+      "accent": "#667eea/#764ba2",
+      "reason": "Purple gradient = #1 AI fingerprint. Never use.",
+      "source": "seed"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "patterns": [
+    {
+      "date": "2025-04",
+      "project": "baseline",
+      "sectionType": "hero-cinematic",
+      "layout": "1fr 1.8fr asymmetric grid, full-height, image overlap right",
+      "motion": "Timeline entrance: bg scale → headline SplitText → subtext fade → CTA slide",
+      "keyTechnique": "Clip-path image reveal + SplitText char stagger",
+      "score": 8.2,
+      "userRating": null
+    },
+    {
+      "date": "2025-04",
+      "project": "baseline",
+      "sectionType": "features-grid",
+      "layout": "3-col bento grid (1fr 1.4fr 1fr), gap 20px, alternating card heights",
+      "motion": "ScrollTrigger.batch stagger from bottom, 0.05s per card",
+      "keyTechnique": "Stagger cascade + depth shadows on cards",
+      "score": 7.8,
+      "userRating": null
+    },
+    {
+      "date": "2025-04",
+      "project": "baseline",
+      "sectionType": "about-editorial",
+      "layout": "2-col split (text left 0.8fr, image right 1.2fr), generous padding",
+      "motion": "Scrub-linked parallax on image, text fade-up on enter",
+      "keyTechnique": "Parallax depth + editorial typography hierarchy",
+      "score": 7.6,
+      "userRating": null
+    },
+    {
+      "date": "2025-04",
+      "project": "baseline",
+      "sectionType": "testimonials",
+      "layout": "Single column centered, rotating quotes with crossfade",
+      "motion": "Pin section + morph between quotes, progress bar scrub",
+      "keyTechnique": "Pin + morphing technique, subtle depth overlay",
+      "score": 7.2,
+      "userRating": null
+    },
+    {
+      "date": "2025-04",
+      "project": "baseline",
+      "sectionType": "cta-ambient",
+      "layout": "Full-width dark section, centered headline, gradient mesh bg",
+      "motion": "Slow scale-in on headline, atmospheric gradient shift on scroll",
+      "keyTechnique": "Gradient mesh + cinematic slow-reveal",
+      "score": 7,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-02",
+      "project": "Coque",
+      "sectionType": "hero-cinematic",
+      "layout": "3-plane layered (back-type + gradient mesh + front-content), full-height, bottom-left content 52%",
+      "motion": "SplitText char reveal + 3-plane parallax scrub + magnetic CTA",
+      "keyTechnique": "Phantom back-type + gradient mesh atmosphere",
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-02",
+      "project": "Coque",
+      "sectionType": "work-portfolio",
+      "layout": "Alternating 1.4fr/0.6fr stagger with container breaks (-40px), light theme",
+      "motion": "Clip-path inset reveal per project + image zoom hover + cursor transform",
+      "keyTechnique": "Curtain reveal clip-path + hover zoom",
+      "score": 8.2,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-02",
+      "project": "Coque",
+      "sectionType": "services-grid",
+      "layout": "3-col asymmetric (1.2fr 1fr 0.8fr), dark, brutalist cards with border-top",
+      "motion": "ScrollTrigger.batch stagger + card lift hover + gutter accent line",
+      "keyTechnique": "Vermillion gutter accent at 70% height",
+      "score": 7.5,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-02",
+      "project": "Coque",
+      "sectionType": "marquee",
+      "layout": "Full-width dual-row contra-scroll, display + mono, dark",
+      "motion": "CSS infinite scroll + clip-path section reveal + hover pause",
+      "keyTechnique": "Contra-scroll speed differential",
+      "score": 7.8,
+      "userRating": null
+    }
+  ]
+}

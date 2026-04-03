@@ -1,0 +1,56 @@
+{
+  "works": [
+    {
+      "date": null,
+      "project": "(seed)",
+      "mood": "dark cinematic",
+      "display": "Clash Display",
+      "body": "Satoshi",
+      "mono": null,
+      "reaction": null,
+      "lesson": "Geometric display + clean grotesque = safe premium pairing",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-01",
+      "project": "Forge Studio",
+      "mood": "dark cinematic editorial",
+      "display": "Cormorant Garamond",
+      "body": "DM Sans",
+      "mono": "JetBrains Mono",
+      "reaction": "approved by user",
+      "lesson": "High-contrast Garamond for editorial authority. DM Sans geometric body. Distinguished from griflan's PP Editorial by classical Garamond DNA.",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-02",
+      "project": "Coque",
+      "mood": "dark+light cinematic brutalism",
+      "display": "Bebas Neue",
+      "body": "Space Grotesk",
+      "mono": "JetBrains Mono",
+      "reaction": "auto-approved by brain",
+      "lesson": "Condensed all-caps for brutalist impact + geometric sans for tech-forward body. JetBrains Mono for creative developer credibility. 16.4x ratio.",
+      "userRating": null,
+      "validations": 1
+    }
+  ],
+  "failures": [
+    {
+      "date": null,
+      "display": "Inter",
+      "body": null,
+      "reason": "Never use. Instant AI fingerprint.",
+      "source": "seed"
+    },
+    {
+      "date": null,
+      "display": "Roboto",
+      "body": null,
+      "reason": "Generic, overused. Avoid.",
+      "source": "seed"
+    }
+  ]
+}

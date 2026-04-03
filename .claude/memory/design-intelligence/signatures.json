@@ -1,0 +1,102 @@
+{
+  "approved": [
+    {
+      "date": "2025-04",
+      "project": "baseline",
+      "section": "Hero",
+      "sectionType": null,
+      "element": "Diagonal text overlap",
+      "description": "Display heading rotated -3deg overlapping a full-bleed image with clip-path reveal",
+      "whyItWorked": "Creates immediate visual tension and breaks the \"centered heading\" pattern. Strong composition signal.",
+      "userRating": null
+    },
+    {
+      "date": "2025-04",
+      "project": "baseline",
+      "section": "Nav",
+      "sectionType": null,
+      "element": "Contextual micro-interactions",
+      "description": "Nav items that shift color/weight based on scroll section, with magnetic hover on CTA",
+      "whyItWorked": "Makes nav feel alive without being distracting. Good craft dimension score.",
+      "userRating": null
+    },
+    {
+      "date": "2025-04",
+      "project": "baseline",
+      "section": "Features",
+      "sectionType": null,
+      "element": "Staggered card cascade",
+      "description": "Bento grid with cards entering via ScrollTrigger.batch(), alternating from left/right with depth shadows",
+      "whyItWorked": "Reliable high-scorer. Combines stagger + depth + asymmetric grid for 3 excellence dimensions at once.",
+      "userRating": null
+    },
+    {
+      "date": "2025-04",
+      "project": "baseline",
+      "section": "Footer",
+      "sectionType": null,
+      "element": "Parallax depth close",
+      "description": "Footer with 3 parallax layers (bg texture, content, floating accent) collapsing on scroll end",
+      "whyItWorked": "Distinctive close to page. Most footers are flat — this adds depth as a signature.",
+      "userRating": null
+    },
+    {
+      "date": "2026-04-02",
+      "project": "Coque",
+      "section": "Hero",
+      "sectionType": null,
+      "element": "Phantom architecture back-type",
+      "description": "Oversized \"COQUE\" at 22vw behind gradient mesh, 3-plane parallax (30%/15%/8%), front-content bottom-left",
+      "whyItWorked": "Back-type as spatial anchor creates depth without imagery. Avoids the dark-image-on-dark trap.",
+      "userRating": null
+    },
+    {
+      "date": "2026-04-02",
+      "project": "Coque",
+      "section": "FeaturedWork",
+      "sectionType": null,
+      "element": "Curtain reveal clip-path",
+      "description": "Each project reveals left-to-right via clip-path: inset() at 1000ms power3.inOut on light theme",
+      "whyItWorked": "Slow curtain-pull makes each project feel like an event. Light section provides breathing room.",
+      "userRating": null
+    },
+    {
+      "date": "2026-04-02",
+      "project": "Coque",
+      "section": "Marquee",
+      "sectionType": null,
+      "element": "Contra-scroll kinetic",
+      "description": "Two rows at different speeds (60px/s vs 45px/s) in opposite directions, pause on hover",
+      "whyItWorked": "Speed differential prevents mechanical feel. Display + mono rows add typographic contrast.",
+      "userRating": null
+    },
+    {
+      "date": "2026-04-02",
+      "project": "Coque",
+      "section": "CTA",
+      "sectionType": null,
+      "element": "Repulsion field",
+      "description": "Headline words push away from cursor while CTA button pulls toward it (magnetic + repulsion)",
+      "whyItWorked": "Gravitational tension creates micro-narrative — everything points toward the action button.",
+      "userRating": null
+    }
+  ],
+  "rejected": [
+    {
+      "date": "2025-04",
+      "project": "baseline",
+      "section": "Hero",
+      "element": "Auto-playing video background",
+      "feedback": "Full-viewport looping video behind hero text",
+      "lesson": "Performance hit, accessibility concerns, feels like 2018. Use static image with motion overlays instead."
+    },
+    {
+      "date": "2025-04",
+      "project": "baseline",
+      "section": "Features",
+      "element": "Infinite scroll marquee",
+      "feedback": "Horizontally scrolling ticker with brand logos",
+      "lesson": "Feels cheap and distracting. Only works for testimonial quotes with careful pacing."
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "patterns": [
+    {
+      "date": "2026-04-01",
+      "project": "Forge Studio",
+      "phase": "Phase 3 / S-Hero v1",
+      "whatChanged": "Hero too standard — text-only hero with just copper rule lacks immersion",
+      "original": "Large serif headline + copper rule + basic subtext",
+      "revised": "User wants: more visual depth, layered elements, closer to griflan's hero with device/image element, smaller headline, more editorial craft",
+      "pattern": "Text-only heroes feel generic for agency sites. Always include a STRUCTURAL visual element for immersion."
+    },
+    {
+      "date": "2026-04-01",
+      "project": "Forge Studio",
+      "phase": "Phase 3 / S-Hero v2",
+      "whatChanged": "Still not immersive — gradient placeholder divs instead of real images, background too bland",
+      "original": "Dark surface cards with gradient placeholders, subtle gradient mesh bg",
+      "revised": "User wants REAL IMAGES, not gradient placeholders. Background needs more character. Use design-decisions.md Section 10 hero recipes.",
+      "pattern": "Gradient placeholder divs look fake. Always use real images (Unsplash, picsum, etc). Hero MUST use one of the 5 spatial recipes from Section 10."
+    },
+    {
+      "date": "2026-04-01",
+      "project": "Forge Studio",
+      "phase": "Phase 3 / S-Hero v3",
+      "whatChanged": "PROJECT KILLED. 3 hero iterations failed. Stock photo of color swatches felt generic, back-type + grain + vignette felt overengineered.",
+      "original": "LayeredPlanes recipe with stock Unsplash image + ghost FORGE text + grain/vignette",
+      "revised": "The real problem: stacking CSS techniques ≠ good design. Griflan works because of CONFIDENT SIMPLICITY — excellent typography, relevant imagery (their actual work, not stock), clean dark space. Overengineering with multiple layers looks like a tech demo, not a premium site. Next time: build the simplest possible hero that's beautiful, then add ONE distinctive element.",
+      "pattern": null
+    }
+  ]
+}
