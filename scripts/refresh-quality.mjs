@@ -170,7 +170,11 @@ const computeDesignConsistencyScore = (signals) => {
 const computeMotionConsistencyScore = (signals, manifest = {}) => {
   const base = scoreFromSignal(signals.motion) * 20
   const triggerBonus = Math.min(10, (manifest.motionProfile?.gsap?.scrollTriggerCount || 0) * 1.25)
-  return Math.round(Math.max(0, Math.min(100, base + triggerBonus)))
+  // Runtime GSAP tween count bonus — rewards active animations detected at runtime
+  const tweenBonus = Math.min(8, (manifest.motionProfile?.gsap?.tweenCount || 0) * 0.5)
+  // Wheel-driven state transitions count as motion complexity
+  const wheelBonus = (manifest.wheelStates?.isWheelDriven && manifest.wheelStates?.statesCaptured > 0) ? 10 : 0
+  return Math.round(Math.max(0, Math.min(100, base + triggerBonus + tweenBonus + wheelBonus)))
 }
 
 const highestPriorityFocus = ({ signals, gates, debtItems }) => {

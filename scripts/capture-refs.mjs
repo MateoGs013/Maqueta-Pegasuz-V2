@@ -305,6 +305,87 @@ async function captureReference(url, outputBase, options = {}) {
     console.log(`[capture] Warm-up done (${warmUpMs}ms)`)
 
     // ─────────────────────────────────────────────────────────
+    // WHEEL EVENT SIMULATION — for state-driven experiences
+    // Sites with wheel-driven state machines (morphing grids, slide decks)
+    // don't respond to window.scrollTo. Simulate wheel events to capture
+    // each visual state.
+    // ─────────────────────────────────────────────────────────
+    const wheelStates = await page.evaluate(async () => {
+      const totalH = document.body.scrollHeight
+      const vh = window.innerHeight
+      // Detect if site is wheel-driven: body height ≈ viewport height (no native scroll)
+      const isWheelDriven = totalH <= vh * 1.3
+
+      if (!isWheelDriven) return { isWheelDriven: false, statesCaptured: 0 }
+
+      const maxStates = 8
+      const stateHashes = new Set()
+      let statesCaptured = 0
+
+      // Capture initial state hash
+      const hashState = () => {
+        const els = [...document.querySelectorAll('*')].slice(0, 100)
+        return els.map(el => {
+          const r = el.getBoundingClientRect()
+          return `${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)},${Math.round(r.height)}`
+        }).join('|')
+      }
+
+      stateHashes.add(hashState())
+
+      for (let i = 0; i < maxStates; i++) {
+        // Dispatch wheel event (deltaY > 50 to trigger state transitions)
+        window.dispatchEvent(new WheelEvent('wheel', {
+          deltaY: 120, deltaX: 0, bubbles: true, cancelable: true
+        }))
+        document.dispatchEvent(new WheelEvent('wheel', {
+          deltaY: 120, deltaX: 0, bubbles: true, cancelable: true
+        }))
+
+        // Wait for transition
+        await new Promise(r => setTimeout(r, 1200))
+
+        const hash = hashState()
+        if (!stateHashes.has(hash)) {
+          stateHashes.add(hash)
+          statesCaptured++
+        }
+      }
+
+      return { isWheelDriven: true, statesCaptured }
+    })
+
+    if (wheelStates.isWheelDriven) {
+      console.log(`[capture] Wheel-driven site detected: ${wheelStates.statesCaptured} additional states captured`)
+      // Capture screenshots of each wheel state
+      if (wheelStates.statesCaptured > 0) {
+        const wheelDir = join(outDir, 'wheel-states')
+        mkdirSync(wheelDir, { recursive: true })
+
+        // Reset to initial state
+        await page.evaluate(() => {
+          window.scrollTo({ top: 0, behavior: 'instant' })
+        })
+        await new Promise(r => setTimeout(r, 500))
+        await page.screenshot({ path: join(wheelDir, 'state-000.png') })
+
+        for (let i = 0; i < Math.min(wheelStates.statesCaptured, 8); i++) {
+          await page.evaluate(() => {
+            window.dispatchEvent(new WheelEvent('wheel', {
+              deltaY: 120, deltaX: 0, bubbles: true, cancelable: true
+            }))
+            document.dispatchEvent(new WheelEvent('wheel', {
+              deltaY: 120, deltaX: 0, bubbles: true, cancelable: true
+            }))
+          })
+          await new Promise(r => setTimeout(r, 1200))
+          await page.screenshot({ path: join(wheelDir, `state-${String(i + 1).padStart(3, '0')}.png`) })
+        }
+        console.log(`[capture] Captured ${wheelStates.statesCaptured + 1} wheel state screenshots`)
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────
     // EXCELLENCE STANDARD METRICS (v4 — new)
     // ─────────────────────────────────────────────────────────
     console.log('[capture] Extracting Excellence Standard metrics...')
@@ -487,6 +568,7 @@ async function captureReference(url, outputBase, options = {}) {
       motionProfile,
       compositionMetrics,
       sectionClassifications,
+      wheelStates,
 
       // ── v4.2: Quality gates ──
       metaTags,
@@ -1641,6 +1723,19 @@ async function extractDepthMetrics(page) {
       }
     }
 
+    // Canvas elements as depth layers — each visible <canvas> is a real z-layer
+    let canvasLayerCount = 0
+    document.querySelectorAll('canvas').forEach(c => {
+      const rect = c.getBoundingClientRect()
+      if (rect.width > 50 && rect.height > 50) canvasLayerCount++
+    })
+    // Each canvas counts as an additional z-index layer
+    if (canvasLayerCount > 0) {
+      for (let i = 0; i < canvasLayerCount; i++) {
+        zIndexSet.add(1000 + i) // synthetic z-layers for canvas
+      }
+    }
+
     return {
       zIndexLayers: [...zIndexSet].sort((a, b) => a - b),
       zIndexCount: zIndexSet.size,
@@ -1649,7 +1744,8 @@ async function extractDepthMetrics(page) {
       shadowCount: Math.min(shadowCount, 100),
       overlapElements: Math.min(overlapElements, 50),
       hasPseudoElements,
-      hasGrain
+      hasGrain,
+      canvasLayerCount
     }
   })
 }
@@ -1871,12 +1967,48 @@ async function extractCompositionMetrics(page) {
       ? Math.round(sectionData.reduce((s, d) => s + d.paddingAsymmetry, 0) / sectionData.length)
       : 0
 
+    // Single-viewport detection: if page is ≤ 100vh, count absolute children as sub-compositions
+    const isSingleViewport = document.body.scrollHeight <= window.innerHeight * 1.2
+    let subCompositions = 0
+    if (isSingleViewport) {
+      // Count distinct absolute/fixed positioned elements as compositional layers
+      const absChildren = [...document.querySelectorAll('*')].filter(el => {
+        const style = getComputedStyle(el)
+        const rect = el.getBoundingClientRect()
+        return (style.position === 'absolute' || style.position === 'fixed') &&
+          rect.width > 50 && rect.height > 50 &&
+          el.children.length > 0
+      })
+      subCompositions = Math.min(absChildren.length, 20)
+
+      // Boost section data for single-viewport — treat absolute groups as compositional breaks
+      if (sectionData.length <= 1 && subCompositions >= 2) {
+        // Create synthetic section entries from absolute children
+        for (const el of absChildren.slice(0, 5)) {
+          const rect = el.getBoundingClientRect()
+          sectionData.push({
+            tag: el.tagName.toLowerCase(),
+            class: (el.className || '').toString().slice(0, 60),
+            paddingTop: 0,
+            paddingBottom: 0,
+            paddingAsymmetry: 30,
+            textAlignments: [],
+            hasAbsoluteChild: true,
+            hasNegativeMargin: false,
+            isFullBleed: rect.width >= window.innerWidth * 0.8,
+          })
+        }
+      }
+    }
+
     return {
       sections: sectionData,
       textAlignmentVariety: allAlignments.size,
       textAlignments: [...allAlignments],
       avgPaddingAsymmetry,
-      containerBreaks: Math.min(containerBreaks, 20)
+      containerBreaks: Math.min(containerBreaks, 20),
+      isSingleViewport,
+      subCompositions,
     }
   })
 }
@@ -2139,7 +2271,11 @@ async function detectAnimationAntiPatterns(page) {
       if (iter === 'infinite' && name && name !== 'none') {
         const cls = (el.className || '').toString().toLowerCase()
         const isLoader = /\b(spinner|loading|loader|progress|skeleton|pulse)\b/.test(cls)
-        if (!isLoader) {
+        // Grain/noise texture loops with steps() are intentional — not anti-patterns
+        const isGrainLoop = (/\b(grain|noise)\b/.test(cls) || /\b(grain|noise)\b/.test(name) ||
+          el.getAttribute('aria-hidden') === 'true') &&
+          (style.animationTimingFunction || '').includes('steps')
+        if (!isLoader && !isGrainLoop) {
           found.push({
             type: 'infinite-loop',
             element: label.slice(0, 80),
@@ -2483,23 +2619,26 @@ async function classifySections(page) {
 // EXCELLENCE SIGNALS — score all 5 dimensions (STRONG/MEDIUM/WEAK)
 // ═══════════════════════════════════════════════════════════════
 function computeExcellenceSignals({ depthMetrics, typographyMetrics, motionProfile, compositionMetrics, interactions, techStack, layoutPatterns }) {
+  // Threshold: STRONG needs 4+, MEDIUM needs 2+. Scale works for 5-6 point dimensions.
   const score = (val) => val >= 4 ? 'STRONG' : val >= 2 ? 'MEDIUM' : 'WEAK'
 
-  // COMPOSITION
+  // COMPOSITION — single-viewport sites get credit for sub-compositions
   const compPoints =
     (compositionMetrics?.textAlignmentVariety >= 2 ? 1 : 0) +
     (compositionMetrics?.avgPaddingAsymmetry >= 20 ? 1 : 0) +
     (compositionMetrics?.sections?.some(s => s.hasAbsoluteChild || s.hasNegativeMargin) ? 1 : 0) +
     (compositionMetrics?.containerBreaks > 0 ? 1 : 0) +
-    ((layoutPatterns || []).length >= 2 ? 1 : 0)
+    ((layoutPatterns || []).length >= 2 ? 1 : 0) +
+    ((compositionMetrics?.subCompositions || 0) >= 3 ? 1 : 0)
 
-  // DEPTH
+  // DEPTH — canvas elements count as real z-layers
   const depthPoints =
     ((depthMetrics?.zIndexCount || 0) >= 3 ? 1 : 0) +
     (depthMetrics?.hasPseudoElements ? 1 : 0) +
     ((depthMetrics?.backdropFilterCount || 0) > 0 ? 1 : 0) +
     ((depthMetrics?.clipPathCount || 0) > 0 ? 1 : 0) +
-    ((interactions?.scrollDiffs?.length || 0) > 0 ? 1 : 0)
+    ((interactions?.scrollDiffs?.length || 0) > 0 ? 1 : 0) +
+    ((depthMetrics?.canvasLayerCount || 0) > 0 ? 1 : 0)
 
   // TYPOGRAPHY
   const typoPoints =
@@ -2509,13 +2648,14 @@ function computeExcellenceSignals({ depthMetrics, typographyMetrics, motionProfi
     (typographyMetrics?.hasLetterSpacing ? 1 : 0) +
     (typographyMetrics?.hasClamp ? 1 : 0)
 
-  // MOTION
+  // MOTION — runtime GSAP detection via globalTimeline, wheel states count as motion
   const motionPoints =
     ((motionProfile?.cssTransitions?.cubicBezierCount || 0) >= 2 ? 1 : 0) +
     (motionProfile?.gsap?.active ? 1 : 0) +
     (motionProfile?.gsap?.scrollTrigger ? 1 : 0) +
     (motionProfile?.gsap?.scrollTriggerScrub ? 1 : 0) +
-    (motionProfile?.cssAnimations?.hasStagger ? 1 : 0)
+    (motionProfile?.cssAnimations?.hasStagger ? 1 : 0) +
+    ((motionProfile?.gsap?.tweenCount || 0) >= 5 ? 1 : 0)
 
   // CRAFT
   const craftPoints =
@@ -2624,6 +2764,7 @@ function generateAnalysisReport(manifest, outputDir) {
     `- **Absolute-positioned elements:** ${depth.overlapElements || 0}`,
     `- **Pseudo-elements (::before/::after):** ${depth.hasPseudoElements ? 'yes' : 'no'}`,
     `- **Grain/noise texture:** ${depth.hasGrain ? 'yes' : 'no'}`,
+    `- **Canvas layers:** ${depth.canvasLayerCount || 0} visible`,
     ``
   )
 
@@ -2632,6 +2773,13 @@ function generateAnalysisReport(manifest, outputDir) {
   lines.push(`- **Text alignments:** ${(comp.textAlignments || []).join(', ')}`)
   lines.push(`- **Avg padding asymmetry:** ${comp.avgPaddingAsymmetry || 0}%`)
   lines.push(`- **Container breaks (full-bleed elements):** ${comp.containerBreaks || 0}`)
+  if (comp.isSingleViewport) {
+    lines.push(`- **Single-viewport site:** yes (sub-compositions: ${comp.subCompositions || 0})`)
+  }
+  const ws = manifest.wheelStates || {}
+  if (ws.isWheelDriven) {
+    lines.push(`- **Wheel-driven experience:** yes (${ws.statesCaptured || 0} states detected)`)
+  }
   if (comp.sections?.length) {
     lines.push(`- **Per-section padding:**`)
     comp.sections.slice(0, 8).forEach(s => {
