@@ -7,7 +7,8 @@
     "sync:runs": "node ../scripts/sync-front-brain-runs.mjs",
     "dev": "npm run sync:runs && vite --port 4000",
     "build": "npm run sync:runs && vite build --emptyOutDir false",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "workspace": "bash ../scripts/start-workspace.sh"
   },
   "dependencies": {
     "gsap": "^3.12.5",
