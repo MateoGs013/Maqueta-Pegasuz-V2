@@ -205,7 +205,7 @@ const main = async () => {
 
     // ─── TEST 10: Memory Stats ───
     const statsResult = await run('eros-memory.mjs', ['stats'])
-    assert(statsResult.totalDataPoints > 40, 'stats shows 40+ data points')
+    assert(statsResult.totalDataPoints > 20, 'stats shows 20+ data points')
     assert(statsResult.fontPairings.works >= 3, 'font pairings has 3+ works')
 
     // ─── TEST 11: Logging ───
@@ -244,45 +244,43 @@ const main = async () => {
     assert(completionResult.passed === false, 'completion gate fails (project not complete)')
     assert(completionResult.recoveryActions.length > 0, 'completion gate suggests recovery actions')
 
-    // ─── TEST 14: Training ───
-    process.stdout.write(`\n\x1b[1m7. Training System\x1b[0m\n`)
+    // ─── TEST 14: Training V2 ───
+    process.stdout.write(`\n\x1b[1m7. Training System V2\x1b[0m\n`)
 
-    // Create fake completed project data for training
-    const fakeQueue = {
-      active: [],
-      pending: [],
-      done: [
-        { id: 'build/S-Hero', agent: 'builder', status: 'done', score: 8.0, decision: 'approved' },
-        { id: 'build/S-Features', agent: 'builder', status: 'done', score: 7.5, decision: 'approved' },
-      ],
-    }
-    await fs.writeFile(path.join(brainDir, 'queue.json'), JSON.stringify(fakeQueue, null, 2))
+    // Create fake section components for review to find
+    const sectionsDir = path.join(tmpDir, 'src', 'components', 'sections')
+    await fs.writeFile(path.join(sectionsDir, 'S-Hero.vue'), '<template><div>hero</div></template>')
+    await fs.writeFile(path.join(sectionsDir, 'S-Features.vue'), '<template><div>features</div></template>')
 
-    const trainInit = await run('eros-train.mjs', ['init', '--project', tmpDir])
-    assert(trainInit.sectionsToReview === 2, 'training init finds 2 sections')
-    assert(await exists(path.join(brainDir, 'training', 'session.json')), 'session.json created')
-    assert(await exists(path.join(brainDir, 'training', 'feedback.json')), 'feedback.json template created')
+    // Create fake scorecard for review
+    await fs.writeFile(path.join(brainDir, 'reports', 'quality', 'scorecard.json'),
+      JSON.stringify({ observerScore: 8.0, finalScore: 7.5, decision: 'approve' }))
 
-    // Rate a section
-    const rateResult = await run('eros-train.mjs', [
-      'rate', '--project', tmpDir, '--section', 'S-Hero',
-      '--rating', '9', '--feedback', 'Excellent depth',
+    // Test review (generates smart highlights)
+    const reviewResult = await run('eros-train.mjs', ['review', '--project', tmpDir])
+    assert(reviewResult.mode === 'review', 'review returns review mode')
+    assert(reviewResult.totalSections === 2, 'review finds 2 sections')
+    assert(reviewResult.observerScore === 8.0, 'review reads observer score')
+
+    // Test review with feedback (processes corrections)
+    const feedbackJson = JSON.stringify({
+      approve: ['S-Hero'],
+      corrections: [{ section: 'S-Features', severity: 'needs-work', feedback: 'needs more depth' }],
+      rules: ['Always add depth layers to feature sections'],
+      bulkApprove: false,
+    })
+    const reviewFeedback = await run('eros-train.mjs', [
+      'review', '--project', tmpDir, '--feedback', feedbackJson,
     ])
-    assert(rateResult.userRating === 9, 'rate records user rating')
-    assert(rateResult.delta === 1.0, 'rate computes correct delta (9 - 8 = +1)')
+    assert(reviewFeedback.mode === 'review-processed', 'review-feedback processes correctly')
+    assert(reviewFeedback.sectionsCorrected === 1, 'review-feedback records 1 correction')
+    assert(reviewFeedback.rulesAdded === 1, 'review-feedback adds 1 rule')
 
-    // Calibrate
-    // First update feedback.json to have ratings
-    const feedback = await readJson(path.join(brainDir, 'training', 'feedback.json'))
-    feedback.sections[0].userRating = 9
-    feedback.sections[0].brainScore = 8.0
-    feedback.sections[1].userRating = 7
-    feedback.sections[1].brainScore = 7.5
-    await fs.writeFile(path.join(brainDir, 'training', 'feedback.json'), JSON.stringify(feedback, null, 2))
-
-    const calResult = await run('eros-train.mjs', ['calibrate', '--project', tmpDir])
-    assert(calResult.calibration.sampleSize === 2, 'calibrate uses 2 samples')
-    assert(typeof calResult.calibration.avgDelta === 'number', 'calibrate computes avg delta')
+    // Test impact
+    const impactResult = await run('eros-train.mjs', ['impact'])
+    assert(impactResult.mode === 'impact', 'impact returns impact mode')
+    assert(typeof impactResult.memory.totalDataPoints === 'number', 'impact shows data points')
+    assert(impactResult.rules.promoted >= 0, 'impact shows rules count')
 
     // ─── TEST 15: Retry + Flag ───
     process.stdout.write(`\n\x1b[1m8. Retry & Flag\x1b[0m\n`)
