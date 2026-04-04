@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process'
+import { spawn, execFile as execFileCp } from 'node:child_process'
 import { promises as fsP, watch as fsWatch, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -163,8 +163,7 @@ export default function erosPlugin() {
 
       // Helper: run an eros-train.mjs subcommand and return JSON
       const runTrain = (trainArgs) => new Promise((resolve, reject) => {
-        const { execFile: ef } = require('node:child_process')
-        ef('node', [path.join(scriptsDir, 'eros-train.mjs'), ...trainArgs], { cwd: scriptsDir, timeout: 120000 }, (err, stdout, stderr) => {
+        execFileCp('node', [path.join(scriptsDir, 'eros-train.mjs'), ...trainArgs], { cwd: scriptsDir, timeout: 120000 }, (err, stdout, stderr) => {
           if (err) { reject(new Error(stderr || err.message)); return }
           try { resolve(JSON.parse(stdout)) } catch { resolve({ raw: stdout }) }
         })
