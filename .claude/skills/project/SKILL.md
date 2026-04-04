@@ -392,12 +392,16 @@ If any rules promoted, announce them.
 **Task: cleanup/delete-temp (CEO direct)**
 Delete `_ref-captures/` and `docs/review/` (if autonomous mode).
 
-### Initialize Training Session
+### Auto-Correct + Smart Review
 ```bash
-node "$SCRIPTS/eros-train.mjs" init --project "$PROJECT_DIR"
+# 1. Auto-learn from any manual edits
+node "$SCRIPTS/eros-train.mjs" correct --project "$PROJECT_DIR"
+
+# 2. Generate smart review (highlights 3-5 sections needing input)
+node "$SCRIPTS/eros-train.mjs" review --project "$PROJECT_DIR"
 ```
 
-Announce to user: "Training session ready at `.brain/training/session.json`. Rate sections when you're ready."
+Present highlights to user naturally. Translate response to feedback JSON. Submit. Show impact.
 
 Final report: project path, pages, sections, avg score, memory stats, promoted rules.
 
@@ -405,113 +409,62 @@ Final report: project path, pages, sections, avg score, memory stats, promoted r
 
 ## TRAINING MODE
 
-Triggers: "train", "entrenar", "training", "aprender de", "learn from"
+Triggers: "train", "entrenar", "training", "aprender de", "learn from", "study"
 
-### A) Project Training (rate what Eros built)
+### A) Post-Project Review (correct + review)
 
-When the user says "train" + project path:
+When the user finishes a project or says "train" + project:
 
-### Quick Rate (single section)
 ```bash
-node "$SCRIPTS/eros-train.mjs" rate --project "$PROJECT_DIR" --section "S-Hero" --rating 9 --feedback "Perfect depth"
+# 1. Auto-detect manual edits → learn revision patterns
+node "$SCRIPTS/eros-train.mjs" correct --project "$PROJECT_DIR"
+
+# 2. Smart review — highlights 3-5 sections needing input
+node "$SCRIPTS/eros-train.mjs" review --project "$PROJECT_DIR"
 ```
 
-### Full Training Session
+Present highlights naturally:
+"You edited S-Hero and S-Pricing. S-ContactForm scored lowest. Quick feedback? Or 'todo bien' to approve all."
 
-1. Initialize:
+Translate user response to feedback:
 ```bash
-node "$SCRIPTS/eros-train.mjs" init --project "$PROJECT_DIR"
+node "$SCRIPTS/eros-train.mjs" review --project "$PROJECT_DIR" --feedback '{
+  "approve": ["S-Hero"],
+  "corrections": [{"section": "S-Pricing", "severity": "needs-work", "feedback": "needs more whitespace"}],
+  "rules": ["Pricing sections need at least 40% whitespace"],
+  "bulkApprove": true
+}'
 ```
 
-2. Present each section to the user one by one:
-   - Show brain score, signature, techniques
-   - Ask for rating (1-10) and feedback
-   - Call `rate` for each
-
-3. Present each decision:
-   - Show choice and reasoning
-   - Ask: agree or disagree? If disagree, what would you change?
-
-4. Ask for new rules the user wants to add
-
-5. Ingest all feedback:
+If user says "todo bien" / "all good":
 ```bash
-node "$SCRIPTS/eros-train.mjs" ingest --project "$PROJECT_DIR"
+node "$SCRIPTS/eros-train.mjs" review --project "$PROJECT_DIR" --feedback '{"bulkApprove": true}'
 ```
 
-6. Calibrate:
+### B) Reference Study
+
+When the user says "aprender de [url]", "estudiar [url]", "learn from [url]":
+
 ```bash
-node "$SCRIPTS/eros-train.mjs" calibrate --project "$PROJECT_DIR"
+# 1. Analyze the reference
+node "$SCRIPTS/eros-train.mjs" study --url "{url}"
+
+# 2. Present analysis to user, ask what they liked
+
+# 3. Submit with feedback
+node "$SCRIPTS/eros-train.mjs" study --url "{url}" --feedback '{
+  "liked": ["typography hierarchy", "parallax depth"],
+  "overall": 9,
+  "mood": "editorial"
+}'
 ```
 
-7. Show calibration results: is the brain underscoring or overscoring?
+### C) Show Impact
 
-8. Promote rules:
 ```bash
-node "$SCRIPTS/eros-memory.mjs" promote
+node "$SCRIPTS/eros-train.mjs" impact
 ```
-
-9. Show updated memory stats:
-```bash
-node "$SCRIPTS/eros-memory.mjs" stats
-```
-
-### B) Reference Training (learn from external sites)
-
-When the user says "aprender de [url]", "learn from [url]", "entrenar con [url]", or shows a reference URL:
-
-1. Start session:
-```bash
-node "$SCRIPTS/eros-train-reference.mjs" session --url "{url}"
-```
-
-2. Read the output — it contains the analysis (sections, techniques, fonts, palette, excellence signals, borrow/avoid lists).
-
-3. Present the analysis to the user:
-   - Show detected techniques, fonts, palette
-   - Show excellence dimensions (Composition, Depth, Typography, Motion, Craft)
-   - Show borrow and avoid recommendations
-   - Ask: "What overall score would you give this site? (1-10)"
-   - Ask: "What mood does it have?" (e.g., dark cinematic, minimal editorial)
-   - Ask for notes on specific techniques
-
-4. Collect ratings and learn:
-```bash
-node "$SCRIPTS/eros-train-reference.mjs" learn \
-  --analysis "{analysisPath}" \
-  --ratings '{"overall":9,"mood":"dark cinematic","primarySectionType":"hero","fontNote":"...","paletteNote":"...","techniques":{"SplitText":9,"parallax":8}}'
-```
-
-5. Show what was written to memory:
-```bash
-node "$SCRIPTS/eros-memory.mjs" stats
-```
-
-### C) Reference Comparison (A/B learning)
-
-When the user wants to compare two sites:
-
-1. Analyze both:
-```bash
-node "$SCRIPTS/eros-train-reference.mjs" analyze --url "{urlA}"
-node "$SCRIPTS/eros-train-reference.mjs" analyze --url "{urlB}"
-```
-
-2. Compare:
-```bash
-node "$SCRIPTS/eros-train-reference.mjs" compare --a "{pathA}/analysis.json" --b "{pathB}/analysis.json"
-```
-
-3. Present comparison to user: which techniques, fonts, palettes are unique to each, which are shared.
-
-4. Ask: "Which site is better overall? What makes it better?"
-
-5. Learn from the winner with a high rating and from the loser with notes on what to avoid.
-
-### D) List training sessions
-```bash
-node "$SCRIPTS/eros-train-reference.mjs" list
-```
+Shows: memory stats, calibration accuracy, thresholds per section type, rules lifecycle.
 
 ---
 

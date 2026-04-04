@@ -4,15 +4,16 @@ import { fileURLToPath } from 'node:url'
 import { execFile } from 'node:child_process'
 
 // ---------------------------------------------------------------------------
-// eros-train.mjs — Training System
+// eros-train.mjs — Training System V2
 //
-// Handles the complete training loop:
-//   init      — generate review session from a completed project
-//   ingest    — process user feedback → propagate to memory
-//   rate      — quick single-section rating
-//   calibrate — compare brain scores vs user ratings
+// Three modes, minimal friction:
 //
-// Training is how the user teaches Eros their quality standard.
+//   correct  — automatic: detect manual edits via git diff → learn
+//   review   — post-project: smart highlight of 3-5 sections, bulk approve rest
+//   study    — reference: analyze a URL → learn from it
+//   impact   — show what training has changed
+//
+// The old init/ingest/rate/calibrate/auto are gone.
 // ---------------------------------------------------------------------------
 
 const __filename = fileURLToPath(import.meta.url)
@@ -22,662 +23,520 @@ const parseArgs = (argv) => {
   const args = { _: [] }
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i]
-    if (!token.startsWith('--')) {
-      args._.push(token)
-      continue
-    }
+    if (!token.startsWith('--')) { args._.push(token); continue }
     const key = token.slice(2)
     const next = argv[i + 1]
-    if (!next || next.startsWith('--')) {
-      args[key] = true
-      continue
-    }
+    if (!next || next.startsWith('--')) { args[key] = true; continue }
     args[key] = next
     i++
   }
   return args
 }
 
-const readJson = async (filePath) => {
-  try {
-    const raw = await fs.readFile(filePath, 'utf8')
-    return JSON.parse(raw)
-  } catch {
-    return null
-  }
-}
-
-const readText = async (filePath) => {
-  try {
-    return await fs.readFile(filePath, 'utf8')
-  } catch {
-    return null
-  }
-}
-
-const ensureDir = async (dirPath) => {
-  await fs.mkdir(dirPath, { recursive: true })
-}
-
-const writeJson = async (filePath, data) => {
-  await ensureDir(path.dirname(filePath))
-  await fs.writeFile(filePath, JSON.stringify(data, null, 2) + '\n', 'utf8')
-}
-
-const out = (obj) => {
-  process.stdout.write(JSON.stringify(obj, null, 2) + '\n')
-}
-
-const fail = (msg) => {
-  process.stderr.write(`Error: ${msg}\n`)
-  process.exit(1)
-}
-
+const readJson = async (p) => { try { return JSON.parse(await fs.readFile(p, 'utf8')) } catch { return null } }
+const readText = async (p) => { try { return await fs.readFile(p, 'utf8') } catch { return null } }
+const ensureDir = async (d) => { await fs.mkdir(d, { recursive: true }) }
+const writeJson = async (p, d) => { await ensureDir(path.dirname(p)); await fs.writeFile(p, JSON.stringify(d, null, 2) + '\n', 'utf8') }
+const out = (o) => process.stdout.write(JSON.stringify(o, null, 2) + '\n')
+const fail = (m) => { process.stderr.write(`Error: ${m}\n`); process.exit(1) }
 const today = () => new Date().toISOString().slice(0, 10)
 
-// Run eros-memory.mjs as a child process
-const callMemory = (subArgs) => {
-  return new Promise((resolve, reject) => {
-    const memoryScript = path.join(__dirname, 'eros-memory.mjs')
-    execFile('node', [memoryScript, ...subArgs], { cwd: __dirname }, (err, stdout, stderr) => {
-      if (err) {
-        reject(new Error(stderr || err.message))
-        return
+const callScript = (script, args) => new Promise((resolve, reject) => {
+  const p = path.join(__dirname, script)
+  execFile('node', [p, ...args], { cwd: __dirname, timeout: 60000 }, (err, stdout, stderr) => {
+    if (err) { reject(new Error(stderr || err.message)); return }
+    try { resolve(JSON.parse(stdout)) } catch { resolve({ raw: stdout }) }
+  })
+})
+
+const callMemory = (args) => callScript('eros-memory.mjs', args)
+
+const inferSectionType = (name) => {
+  const n = name.toLowerCase()
+  if (n.includes('hero')) return 'hero'
+  if (n.includes('cta')) return 'cta'
+  if (n.includes('footer')) return 'footer'
+  if (n.includes('pricing')) return 'pricing'
+  if (n.includes('testimonial')) return 'testimonial'
+  if (n.includes('contact')) return 'contact'
+  if (n.includes('work') || n.includes('project')) return 'portfolio'
+  if (n.includes('about')) return 'about'
+  if (n.includes('stat')) return 'stats'
+  if (n.includes('service')) return 'services'
+  return 'feature'
+}
+
+const findSections = async (project) => {
+  const sectionsDir = path.join(project, 'src', 'components', 'sections')
+  const results = []
+  const walk = async (dir, prefix = '') => {
+    let entries
+    try { entries = await fs.readdir(dir, { withFileTypes: true }) } catch { return }
+    for (const e of entries) {
+      if (e.isFile() && e.name.endsWith('.vue')) {
+        results.push(prefix + e.name.replace('.vue', ''))
+      } else if (e.isDirectory()) {
+        await walk(path.join(dir, e.name), e.name + '/')
       }
-      try {
-        resolve(JSON.parse(stdout))
-      } catch {
-        resolve({ raw: stdout })
-      }
-    })
-  })
+    }
+  }
+  await walk(sectionsDir)
+  return results
 }
 
 // ---------------------------------------------------------------------------
-// Subcommands
+// Calibration (shared)
 // ---------------------------------------------------------------------------
 
-/**
- * init — Generate a training session from a completed project.
- * Reads .brain/decisions.md, .brain/approvals.md, .brain/evaluations/,
- * .brain/reports/, queue.json
- */
-const cmdInit = async (args) => {
-  const project = args.project
-  if (!project) fail('--project is required')
-
-  const brainDir = path.join(project, '.brain')
-  const slug = path.basename(project)
-
-  // Read queue to find all build tasks and their scores
-  const queue = await readJson(path.join(brainDir, 'queue.json'))
-  if (!queue) fail('.brain/queue.json not found — is this a completed project?')
-
-  const allTasks = [...(queue.done || []), ...(queue.active || []), ...(queue.pending || [])]
-
-  // Extract build/S-* tasks for section review
-  const buildTasks = allTasks.filter((t) => t.id.startsWith('build/S-'))
-
-  const sections = []
-  for (const task of buildTasks) {
-    const sectionName = task.id.replace('build/', '')
-
-    // Try to read evaluation
-    const evalPath = path.join(brainDir, 'evaluations', `${sectionName}.md`)
-    const evalContent = await readText(evalPath)
-
-    // Try to read builder report
-    const reportPath = path.join(brainDir, 'reports', `${sectionName}.md`)
-    const reportContent = await readText(reportPath)
-
-    // Extract score and signature from report
-    let brainScore = task.score || null
-    let signature = null
-    let verdict = task.decision || (task.status === 'done' ? 'approved' : task.status)
-    let techniques = []
-
-    if (reportContent) {
-      const scoreMatch = reportContent.match(/Score:\s*([\d.]+)/i)
-      if (scoreMatch) brainScore = parseFloat(scoreMatch[1])
-
-      const sigMatch = reportContent.match(/Signature[^:]*:\s*(.+)/i)
-      if (sigMatch) signature = sigMatch[1].trim()
-
-      const techMatch = reportContent.match(/Key Technique[^:]*:\s*(.+)/i)
-      if (techMatch) techniques = techMatch[1].split(/[+,]/).map((t) => t.trim())
-    }
-
-    sections.push({
-      name: sectionName,
-      type: null, // User can fill in or we derive from context
-      brainScore,
-      verdict,
-      signature,
-      techniques,
-      userRating: null,
-      feedback: null,
-      keepSignature: null,
-    })
-  }
-
-  // Extract decisions from decisions.md
-  const decisionsContent = await readText(path.join(brainDir, 'decisions.md'))
-  const decisions = []
-
-  if (decisionsContent) {
-    const decisionBlocks = decisionsContent.split(/^## /m).slice(1)
-    for (const block of decisionBlocks) {
-      const headerMatch = block.match(/^(D-\d+)\s*\|\s*(.+?)\s*\|/)
-      if (!headerMatch) continue
-
-      const choiceMatch = block.match(/\*\*Choice:\*\*\s*(.+)/i)
-
-      decisions.push({
-        id: headerMatch[1],
-        topic: headerMatch[2].trim(),
-        choice: choiceMatch ? choiceMatch[1].trim() : '—',
-        agree: null,
-        note: null,
-      })
-    }
-  }
-
-  // Build session
-  const session = {
-    generatedAt: new Date().toISOString(),
-    projectSlug: slug,
-    projectName: slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-    sections,
-    decisions,
-    newRules: [],
-  }
-
-  // Write session file
-  const trainingDir = path.join(brainDir, 'training')
-  const sessionPath = path.join(trainingDir, 'session.json')
-  await writeJson(sessionPath, session)
-
-  // Also write an empty feedback template
-  const feedbackPath = path.join(trainingDir, 'feedback.json')
-  const existingFeedback = await readJson(feedbackPath)
-  if (!existingFeedback) {
-    const feedbackTemplate = {
-      projectSlug: slug,
-      overallRating: null,
-      overallFeedback: null,
-      sections: sections.map((s) => ({
-        name: s.name,
-        brainScore: s.brainScore,
-        userRating: null,
-        feedback: null,
-        keepSignature: null,
-      })),
-      decisions: decisions.map((d) => ({
-        id: d.id,
-        agree: null,
-        note: null,
-      })),
-      newRules: [],
-    }
-    await writeJson(feedbackPath, feedbackTemplate)
-  }
-
-  out({
-    sessionFile: path.relative(project, sessionPath),
-    feedbackFile: path.relative(project, feedbackPath),
-    sectionsToReview: sections.length,
-    decisionsToReview: decisions.length,
-  })
-}
-
-/**
- * ingest — Process completed feedback.json → propagate to memory.
- */
-const cmdIngest = async (args) => {
-  const project = args.project
-  if (!project) fail('--project is required')
-
-  const feedbackPath = path.join(project, '.brain', 'training', 'feedback.json')
-  const feedback = await readJson(feedbackPath)
-  if (!feedback) fail('.brain/training/feedback.json not found')
-
-  const slug = feedback.projectSlug || path.basename(project)
-  let memoryUpdates = 0
-  const errors = []
-
-  // Process section ratings
-  for (const section of feedback.sections || []) {
-    if (section.userRating === null) continue
-
-    // Learn section with user rating
-    try {
-      await callMemory([
-        'learn',
-        '--event',
-        'section_approved',
-        '--data',
-        JSON.stringify({
-          project: slug,
-          section: section.name,
-          sectionType: section.type || 'unknown',
-          score: section.brainScore,
-          userRating: section.userRating,
-          layout: '',
-          motion: '',
-          technique: '',
-          signature: '',
-          feedback: section.feedback || '',
-        }),
-      ])
-      memoryUpdates++
-    } catch (err) {
-      errors.push({ section: section.name, error: err.message })
-    }
-  }
-
-  // Process new rules from user
-  for (const rule of feedback.newRules || []) {
-    if (!rule) continue
-    try {
-      await callMemory([
-        'learn',
-        '--event',
-        'rule_discovered',
-        '--data',
-        JSON.stringify({
-          text: rule,
-          source: `user-training/${slug}`,
-        }),
-      ])
-      memoryUpdates++
-    } catch (err) {
-      errors.push({ rule, error: err.message })
-    }
-  }
-
-  // Process disagreed decisions → revision patterns
-  for (const decision of feedback.decisions || []) {
-    if (decision.agree !== false || !decision.note) continue
-    try {
-      await callMemory([
-        'learn',
-        '--event',
-        'user_change',
-        '--data',
-        JSON.stringify({
-          project: slug,
-          phase: 'Training review',
-          whatChanged: `Decision ${decision.id} disagreed`,
-          original: 'Brain decision',
-          revised: decision.note,
-          pattern: decision.note,
-        }),
-      ])
-      memoryUpdates++
-    } catch (err) {
-      errors.push({ decision: decision.id, error: err.message })
-    }
-  }
-
-  // Update calibration data
-  await updateCalibration(project, feedback)
-
-  // Try to promote rules
-  let promotions = []
-  try {
-    const promoteResult = await callMemory(['promote'])
-    promotions = promoteResult.promoted || []
-  } catch {
-    // Non-fatal
-  }
-
-  // Write report
-  const report = {
-    processed: (feedback.sections || []).filter((s) => s.userRating !== null).length,
-    memoryUpdates,
-    rulesPromoted: promotions.length,
-    promotions,
-    errors: errors.length > 0 ? errors : undefined,
-  }
-
-  const reportPath = path.join(project, '.brain', 'training', 'report.json')
-  await writeJson(reportPath, report)
-
-  out(report)
-}
-
-/**
- * rate — Quick single-section rating.
- */
-const cmdRate = async (args) => {
-  const project = args.project
-  if (!project) fail('--project is required')
-  const section = args.section
-  if (!section) fail('--section is required')
-  const rating = parseFloat(args.rating)
-  if (isNaN(rating)) fail('--rating must be a number')
-
-  const feedback = args.feedback || ''
-  const slug = path.basename(project)
-
-  // Read existing queue to find brain score
-  const queue = await readJson(path.join(project, '.brain', 'queue.json'))
-  let brainScore = null
-  if (queue) {
-    const allTasks = [...(queue.done || []), ...(queue.active || [])]
-    const task = allTasks.find((t) => t.id === `build/${section}`)
-    if (task) brainScore = task.score || null
-  }
-
-  // Update feedback.json if it exists
-  const feedbackPath = path.join(project, '.brain', 'training', 'feedback.json')
-  const existingFeedback = await readJson(feedbackPath)
-  if (existingFeedback) {
-    const sectionEntry = existingFeedback.sections.find((s) => s.name === section)
-    if (sectionEntry) {
-      sectionEntry.userRating = rating
-      sectionEntry.feedback = feedback
-    } else {
-      existingFeedback.sections.push({
-        name: section,
-        brainScore,
-        userRating: rating,
-        feedback,
-        keepSignature: null,
-      })
-    }
-    await writeJson(feedbackPath, existingFeedback)
-  }
-
-  const delta = brainScore !== null ? rating - brainScore : null
-
-  out({
-    section,
-    brainScore,
-    userRating: rating,
-    delta,
-    feedback,
-  })
-}
-
-/**
- * calibrate — Compare brain scores vs user ratings across the project.
- */
-const cmdCalibrate = async (args) => {
-  const project = args.project
-  if (!project) fail('--project is required')
-
-  const feedbackPath = path.join(project, '.brain', 'training', 'feedback.json')
-  const feedback = await readJson(feedbackPath)
-  if (!feedback) fail('.brain/training/feedback.json not found')
-
-  const scored = (feedback.sections || []).filter(
-    (s) => s.userRating !== null && s.brainScore !== null
-  )
-
-  if (scored.length === 0) {
-    out({ calibration: { avgDelta: 0, bias: 'no rated sections', sections: [] } })
-    return
-  }
-
-  const sections = scored.map((s) => ({
-    name: s.name,
-    brainScore: s.brainScore,
-    userRating: s.userRating,
-    delta: s.userRating - s.brainScore,
-  }))
-
-  const avgDelta = sections.reduce((sum, s) => sum + s.delta, 0) / sections.length
-  const biasDirection =
-    avgDelta > 0.3
-      ? `brain underscores by ${avgDelta.toFixed(1)}`
-      : avgDelta < -0.3
-        ? `brain overscores by ${Math.abs(avgDelta).toFixed(1)}`
-        : 'brain is calibrated'
-
-  const calibration = {
-    avgDelta: parseFloat(avgDelta.toFixed(2)),
-    bias: biasDirection,
-    sections,
-    sampleSize: sections.length,
-  }
-
-  // Update calibration file
-  await updateCalibration(project, feedback)
-
-  out({ calibration })
-}
-
-// ---------------------------------------------------------------------------
-// Calibration tracking
-// ---------------------------------------------------------------------------
-
-const updateCalibration = async (project, feedback) => {
+const updateCalibration = async (slug, sections) => {
   const memDir = path.join(__dirname, '..', '.claude', 'memory', 'design-intelligence')
   const calPath = path.join(memDir, 'training-calibration.json')
-  const cal = (await readJson(calPath)) || {
-    projects: [],
-    globalBias: 0.0,
-    thresholdAdjustment: 0.0,
-  }
+  const cal = (await readJson(calPath)) || { projects: [], globalBias: 0, thresholdAdjustment: 0 }
 
-  const slug = feedback.projectSlug || path.basename(project)
-
-  const scored = (feedback.sections || []).filter(
-    (s) => s.userRating !== null && s.brainScore !== null
-  )
-
+  const scored = sections.filter(s => s.brainScore != null && s.userRating != null)
   if (scored.length === 0) return
 
-  const sections = scored.map((s) => ({
+  const mapped = scored.map(s => ({
     name: s.name,
     brainScore: s.brainScore,
     userRating: s.userRating,
     delta: parseFloat((s.userRating - s.brainScore).toFixed(2)),
   }))
 
-  const avgDelta = sections.reduce((sum, s) => sum + s.delta, 0) / sections.length
+  const avgDelta = mapped.reduce((sum, s) => sum + s.delta, 0) / mapped.length
 
-  // Remove existing entry for this project (update mode)
-  cal.projects = cal.projects.filter((p) => p.slug !== slug)
+  cal.projects = cal.projects.filter(p => p.slug !== slug)
   cal.projects.push({
     slug,
     date: today(),
-    sections,
+    sections: mapped,
     avgDelta: parseFloat(avgDelta.toFixed(2)),
-    bias:
-      avgDelta > 0.3
-        ? `brain underscores by ${avgDelta.toFixed(1)}`
-        : avgDelta < -0.3
-          ? `brain overscores by ${Math.abs(avgDelta).toFixed(1)}`
-          : 'calibrated',
+    bias: avgDelta > 0.3 ? `underscores by ${avgDelta.toFixed(1)}` :
+          avgDelta < -0.3 ? `overscores by ${Math.abs(avgDelta).toFixed(1)}` : 'calibrated',
   })
 
-  // Recompute global bias across all projects
   if (cal.projects.length > 0) {
-    const allDeltas = cal.projects.map((p) => p.avgDelta)
-    cal.globalBias = parseFloat(
-      (allDeltas.reduce((a, b) => a + b, 0) / allDeltas.length).toFixed(2)
-    )
-    // Damped adjustment: 50% of bias to avoid oscillation
+    const allDeltas = cal.projects.map(p => p.avgDelta)
+    cal.globalBias = parseFloat((allDeltas.reduce((a, b) => a + b, 0) / allDeltas.length).toFixed(2))
     cal.thresholdAdjustment = parseFloat((cal.globalBias * 0.5).toFixed(2))
   }
 
   await writeJson(calPath, cal)
+  return cal
 }
 
-/**
- * auto — Automatic training from observer scores.
- * Uses the observer's finalScore as the rating for each section.
- * No manual rating needed — just run it and the project's quality
- * data flows into memory.
- *
- * Optional: --override "S-Hero:9,S-CTA:6" to override specific sections
- * Optional: --min-score 5 to skip sections below a threshold
- */
-const cmdAuto = async (args) => {
+// ---------------------------------------------------------------------------
+// correct — Automatic learning from git diffs
+// ---------------------------------------------------------------------------
+
+const cmdCorrect = async (args) => {
+  const project = args.project
+  if (!project) fail('--project is required')
+
+  const slug = path.basename(project)
+  let detectResult = null
+
+  // Run eros-detect-changes.mjs
+  try {
+    detectResult = await callScript('eros-detect-changes.mjs', [
+      '--project', project,
+      ...(args['dry-run'] ? ['--dry-run'] : []),
+    ])
+  } catch (err) {
+    // Not a git repo or no changes — that's fine
+    detectResult = { changes: [], error: err.message }
+  }
+
+  const changes = detectResult?.changes || []
+
+  // Get memory stats before and after
+  const statsBefore = await callMemory(['stats'])
+
+  out({
+    project: slug,
+    mode: 'correct',
+    changesDetected: changes.length,
+    memoryWritten: detectResult?.memoryWrites || 0,
+    dryRun: !!args['dry-run'],
+    changes: changes.slice(0, 10),
+    dataPointsBefore: statsBefore?.totalDataPoints || 0,
+  })
+}
+
+// ---------------------------------------------------------------------------
+// review — Smart post-project review
+// ---------------------------------------------------------------------------
+
+const cmdReview = async (args) => {
   const project = args.project
   if (!project) fail('--project is required')
 
   const slug = path.basename(project)
   const brainDir = path.join(project, '.brain')
 
-  // Read scorecard for the overall score
+  // Read scorecard
   const scorecard = await readJson(path.join(brainDir, 'reports', 'quality', 'scorecard.json'))
-  const observerJson = await readJson(path.join(brainDir, 'reports', 'quality', 'observer.json'))
   const manifest = await readJson(path.join(brainDir, 'observer', 'localhost', 'manifest.json'))
+  const observerScore = scorecard?.observerScore || scorecard?.finalScore || 0
+  const finalScore = scorecard?.finalScore || 0
+  const excellence = manifest?.excellenceSignals || {}
 
-  const overallScore = scorecard?.finalScore || scorecard?.observerScore || 0
-  if (overallScore === 0) fail('No observer scores found. Run observer + refresh-quality first.')
+  // Find all sections
+  const allSections = await findSections(project)
+  if (allSections.length === 0) fail('No sections found in src/components/sections/')
 
-  // Get excellence signals
-  const signals = manifest?.excellenceSignals || observerJson?.dimensions || {}
-  const rawScores = manifest?.excellenceSignals?._scores || {}
-
-  // Parse overrides: "S-Hero:9,S-CTA:6"
-  const overrides = {}
-  if (args.override) {
-    args.override.split(',').forEach(pair => {
-      const [name, score] = pair.split(':')
-      if (name && score) overrides[name.trim()] = parseFloat(score)
-    })
+  // If --feedback provided, process it
+  if (args.feedback) {
+    return processReviewFeedback(project, slug, allSections, observerScore, args.feedback)
   }
 
-  const minScore = parseFloat(args['min-score'] || '0')
+  // Otherwise, generate the smart review
 
-  // Find all section components
-  const sectionsDir = path.join(project, 'src', 'components', 'sections')
-  let sectionFiles = []
+  // Detect which sections the user edited (git diff)
+  let editedSections = []
   try {
-    const readSectionsRecursive = async (dir, prefix = '') => {
-      const entries = await fs.readdir(dir, { withFileTypes: true })
-      for (const e of entries) {
-        if (e.isFile() && e.name.endsWith('.vue')) {
-          sectionFiles.push(prefix + e.name.replace('.vue', ''))
-        } else if (e.isDirectory()) {
-          await readSectionsRecursive(path.join(dir, e.name), e.name + '/')
-        }
-      }
+    const detectResult = await callScript('eros-detect-changes.mjs', ['--project', project, '--dry-run'])
+    editedSections = (detectResult?.changes || []).map(c => c.section).filter(Boolean)
+  } catch { /* no git or no changes */ }
+
+  // Build section list with metadata
+  const sections = allSections.map(name => {
+    const sectionName = name.includes('/') ? name.split('/').pop() : name
+    return {
+      name: sectionName,
+      fullPath: name,
+      type: inferSectionType(sectionName),
+      brainScore: observerScore,
+      edited: editedSections.includes(sectionName),
     }
-    await readSectionsRecursive(sectionsDir)
-  } catch { /* no sections dir */ }
+  })
 
-  if (sectionFiles.length === 0) fail('No section components found in src/components/sections/')
+  // Smart selection: pick 3-5 sections that need attention
+  const highlights = []
+  const bulk = []
 
-  // Use observer score as the rating for all sections
-  // Individual sections don't have per-section scores from the observer,
-  // so we use the overall observer score as the baseline
-  const observerScore = scorecard?.observerScore || overallScore
-  let memoryUpdates = 0
-  const processed = []
-  const skipped = []
+  // 1. Sections the user edited — most valuable feedback
+  const edited = sections.filter(s => s.edited)
+  highlights.push(...edited.map(s => ({ ...s, reason: 'You edited this section' })))
 
-  for (const section of sectionFiles) {
-    const sectionName = section.includes('/') ? section.split('/').pop() : section
-    const rating = overrides[sectionName] ?? overrides[section] ?? observerScore
-
-    if (rating < minScore) {
-      skipped.push({ section, reason: `score ${rating} < min ${minScore}` })
-      continue
-    }
-
-    // Derive section type from name
-    const nameLower = sectionName.toLowerCase()
-    const sectionType = nameLower.includes('hero') ? 'hero' :
-      nameLower.includes('cta') ? 'cta' :
-      nameLower.includes('footer') ? 'footer' :
-      nameLower.includes('pricing') ? 'pricing' :
-      nameLower.includes('testimonial') ? 'testimonial' :
-      nameLower.includes('contact') ? 'contact' :
-      nameLower.includes('work') || nameLower.includes('project') ? 'portfolio' :
-      nameLower.includes('about') ? 'about' : 'feature'
-
-    try {
-      await callMemory([
-        'learn', '--event', 'section_approved',
-        '--data', JSON.stringify({
-          project: slug,
-          section: sectionName,
-          sectionType,
-          score: rating,
-          userRating: rating,
-          layout: '',
-          motion: '',
-          technique: '',
-          signature: '',
-          feedback: `Auto-trained from observer score ${observerScore}`,
-        }),
-      ])
-      memoryUpdates++
-      processed.push({ section: sectionName, type: sectionType, rating })
-    } catch (err) {
-      skipped.push({ section, reason: err.message })
-    }
+  // 2. New section types (types with < 3 entries in memory)
+  const memStats = await callMemory(['stats'])
+  const knownPatterns = memStats?.sectionPatterns || 0
+  if (knownPatterns < 30) {
+    // If memory is small, highlight novel types
+    const typeCounts = {}
+    sections.forEach(s => { typeCounts[s.type] = (typeCounts[s.type] || 0) + 1 })
+    const novelTypes = Object.entries(typeCounts).filter(([, c]) => c <= 1).map(([t]) => t)
+    const novel = sections.filter(s => novelTypes.includes(s.type) && !s.edited).slice(0, 2)
+    highlights.push(...novel.map(s => ({ ...s, reason: `New section type: ${s.type}` })))
   }
 
-  // Learn the font pairing if DESIGN.md exists
-  const designMd = await readText(path.join(project, 'DESIGN.md'))
-  if (designMd) {
-    // Try to extract font info
-    const fontMatch = designMd.match(/display.*?[:\s]+['"]?([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)/i)
-    const bodyMatch = designMd.match(/body.*?[:\s]+['"]?([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)/i)
-    if (fontMatch) {
-      try {
-        await callMemory([
-          'learn', '--event', 'font_selected',
-          '--data', JSON.stringify({
-            project: slug,
-            mood: 'auto-detected',
-            display: fontMatch[1],
-            body: bodyMatch?.[1] || '—',
-            reaction: `auto-trained (score: ${overallScore})`,
-            lesson: `From ${slug} auto-training`,
-          }),
-        ])
-        memoryUpdates++
-      } catch { /* non-fatal */ }
-    }
+  // Cap highlights at 5
+  const highlightNames = new Set(highlights.slice(0, 5).map(h => h.name))
+  sections.forEach(s => {
+    if (!highlightNames.has(s.name)) bulk.push(s)
+  })
+
+  // Questions the brain wants answered
+  const questions = []
+  if (excellence.motion === 'WEAK') questions.push('Motion scored WEAK — do you think the animations are sufficient?')
+  if (excellence.composition === 'WEAK' || excellence.composition === 'MEDIUM') {
+    questions.push('Composition is ' + excellence.composition + ' — is the layout variety acceptable?')
   }
-
-  // Update calibration
-  const feedbackPath = path.join(brainDir, 'training', 'feedback.json')
-  const existingFeedback = (await readJson(feedbackPath)) || { projectSlug: slug, sections: [] }
-  existingFeedback.sections = processed.map(p => ({
-    name: p.section,
-    brainScore: observerScore,
-    userRating: p.rating,
-    feedback: null,
-    keepSignature: null,
-  }))
-  existingFeedback.overallRating = overallScore
-  await writeJson(feedbackPath, existingFeedback)
-  await updateCalibration(project, existingFeedback)
-
-  // Promote rules
-  let promotions = []
-  try {
-    const promoteResult = await callMemory(['promote'])
-    promotions = promoteResult.promoted || []
-  } catch { /* non-fatal */ }
-
-  // Get updated stats
-  let stats = null
-  try {
-    stats = await callMemory(['stats'])
-  } catch { /* non-fatal */ }
 
   out({
     project: slug,
+    mode: 'review',
     observerScore,
-    overallScore,
-    sectionsProcessed: processed.length,
-    sectionsSkipped: skipped.length,
+    finalScore,
+    excellence,
+    highlights: highlights.slice(0, 5),
+    bulkCount: bulk.length,
+    bulkAvgScore: observerScore,
+    questions,
+    totalSections: allSections.length,
+    instruction: 'Respond with --feedback JSON or let the CEO translate your natural language to feedback.',
+  })
+}
+
+const processReviewFeedback = async (project, slug, allSections, observerScore, feedbackRaw) => {
+  let feedback
+  try { feedback = JSON.parse(feedbackRaw) } catch { fail('--feedback must be valid JSON') }
+
+  const approved = feedback.approve || []
+  const corrections = feedback.corrections || []
+  const rules = feedback.rules || []
+  const bulkApprove = feedback.bulkApprove !== false // default true
+  const overall = feedback.overall || 'good'
+
+  const statsBefore = await callMemory(['stats'])
+  let memoryUpdates = 0
+
+  // Process approved sections — confirm brain score as user rating
+  const approvedSet = new Set(approved)
+  const correctedSet = new Set(corrections.map(c => c.section))
+
+  for (const name of allSections) {
+    const sectionName = name.includes('/') ? name.split('/').pop() : name
+    const isApproved = approvedSet.has(sectionName)
+    const correction = corrections.find(c => c.section === sectionName)
+    const isBulk = !isApproved && !correction && bulkApprove
+
+    if (isApproved || isBulk) {
+      // Confirm brain score — but with a slight user bump (+0.3) to avoid delta=0
+      const userRating = Math.min(10, observerScore + 0.3)
+      try {
+        await callMemory(['learn', '--event', 'section_approved', '--data', JSON.stringify({
+          project: slug,
+          section: sectionName,
+          sectionType: inferSectionType(sectionName),
+          score: observerScore,
+          userRating,
+          layout: '', motion: '', technique: '', signature: '',
+          feedback: isApproved ? 'Explicitly approved by user' : 'Bulk approved',
+        })])
+        memoryUpdates++
+      } catch { /* non-fatal */ }
+    }
+
+    if (correction) {
+      // Score penalty based on severity
+      const penalty = correction.severity === 'bad' ? -2 : correction.severity === 'needs-work' ? -0.5 : 0
+      const userRating = Math.max(1, observerScore + penalty)
+
+      try {
+        await callMemory(['learn', '--event', 'section_approved', '--data', JSON.stringify({
+          project: slug,
+          section: sectionName,
+          sectionType: inferSectionType(sectionName),
+          score: observerScore,
+          userRating,
+          layout: '', motion: '', technique: '', signature: '',
+          feedback: correction.feedback || '',
+        })])
+        memoryUpdates++
+      } catch { /* non-fatal */ }
+
+      // Also write as revision pattern
+      if (correction.feedback) {
+        try {
+          await callMemory(['learn', '--event', 'user_change', '--data', JSON.stringify({
+            project: slug,
+            phase: 'Training review',
+            whatChanged: `${sectionName}: ${correction.feedback}`,
+            original: `Brain score ${observerScore}`,
+            revised: correction.feedback,
+            pattern: correction.feedback,
+          })])
+          memoryUpdates++
+        } catch { /* non-fatal */ }
+      }
+    }
+  }
+
+  // Process new rules
+  for (const rule of rules) {
+    if (!rule || rule.length < 5) continue
+    try {
+      await callMemory(['learn', '--event', 'rule_discovered', '--data', JSON.stringify({
+        text: rule,
+        source: `review/${slug}`,
+      })])
+      memoryUpdates++
+    } catch { /* non-fatal */ }
+  }
+
+  // Calibrate
+  const calSections = allSections.map(name => {
+    const sectionName = name.includes('/') ? name.split('/').pop() : name
+    const correction = corrections.find(c => c.section === sectionName)
+    const penalty = correction ? (correction.severity === 'bad' ? -2 : -0.5) : 0.3
+    return {
+      name: sectionName,
+      brainScore: observerScore,
+      userRating: Math.max(1, Math.min(10, observerScore + penalty)),
+    }
+  })
+  const cal = await updateCalibration(slug, calSections)
+
+  // Promote rules
+  let promotions = []
+  try { promotions = (await callMemory(['promote'])).promoted || [] } catch {}
+
+  // Get stats after
+  const statsAfter = await callMemory(['stats'])
+
+  out({
+    project: slug,
+    mode: 'review-processed',
+    sectionsApproved: approved.length + (bulkApprove ? allSections.length - approved.length - corrections.length : 0),
+    sectionsCorrected: corrections.length,
+    rulesAdded: rules.length,
     memoryUpdates,
     rulesPromoted: promotions.length,
-    sections: processed,
-    skipped: skipped.length > 0 ? skipped : undefined,
-    excellence: signals,
-    stats: stats ? { totalDataPoints: stats.totalDataPoints, calibrationBias: stats.calibration?.globalBias } : undefined,
+    calibration: {
+      before: statsBefore?.calibration?.globalBias || 0,
+      after: cal?.globalBias || 0,
+    },
+    memory: {
+      before: statsBefore?.totalDataPoints || 0,
+      after: statsAfter?.totalDataPoints || 0,
+      growth: (statsAfter?.totalDataPoints || 0) - (statsBefore?.totalDataPoints || 0),
+    },
+  })
+}
+
+// ---------------------------------------------------------------------------
+// study — Learn from a reference URL
+// ---------------------------------------------------------------------------
+
+const cmdStudy = async (args) => {
+  const url = args.url
+  if (!url) fail('--url is required')
+
+  const statsBefore = await callMemory(['stats'])
+
+  // If --feedback provided, go straight to learning
+  if (args.feedback) {
+    // Find existing analysis
+    const maquetaDir = path.resolve(__dirname, '..')
+    const slug = url.replace(/https?:\/\//, '').replace(/[^a-z0-9]+/gi, '-').replace(/-+$/, '')
+    const analysisPath = path.join(maquetaDir, '_training-refs', slug, 'analysis.json')
+    const analysis = await readJson(analysisPath)
+
+    if (!analysis) fail(`No analysis found for ${url}. Run without --feedback first to analyze.`)
+
+    // Process feedback
+    let feedback
+    try { feedback = JSON.parse(args.feedback) } catch { fail('--feedback must be valid JSON') }
+
+    return processStudyFeedback(analysis, feedback, statsBefore)
+  }
+
+  // Step 1: Analyze
+  process.stderr.write(`Analyzing ${url}...\n`)
+
+  let sessionResult
+  try {
+    sessionResult = await callScript('eros-train-reference.mjs', ['session', '--url', url])
+  } catch (err) {
+    fail(`Reference analysis failed: ${err.message}`)
+  }
+
+  out({
+    mode: 'study',
+    url,
+    status: 'analyzed',
+    analysis: sessionResult.analysis || {},
+    analysisPath: sessionResult.analysisPath,
+    instruction: 'Tell the CEO what you liked about this site. Or provide --feedback JSON.',
+  })
+}
+
+const processStudyFeedback = async (analysis, feedback, statsBefore) => {
+  let memoryUpdates = 0
+
+  // Learn via eros-train-reference.mjs learn
+  try {
+    const result = await callScript('eros-train-reference.mjs', [
+      'learn',
+      '--analysis', analysis.refDir ? path.join(analysis.refDir, 'analysis.json') : '',
+      '--ratings', JSON.stringify({
+        overall: feedback.overall || feedback.score || 8,
+        mood: feedback.mood || 'reference',
+        techniques: feedback.techniques || {},
+        fontNote: feedback.fontNote || '',
+        paletteNote: feedback.paletteNote || '',
+        primarySectionType: feedback.primaryType || 'hero',
+        ...feedback,
+      }),
+    ])
+    memoryUpdates = result.totalWrites || 0
+  } catch (err) {
+    process.stderr.write(`Warning: reference learn failed: ${err.message}\n`)
+  }
+
+  // Learn liked techniques as high-confidence
+  for (const item of (feedback.liked || [])) {
+    try {
+      await callMemory(['learn', '--event', 'rule_discovered', '--data', JSON.stringify({
+        text: `${item} (from ${analysis.url || 'reference'}) works well`,
+        source: `study/${analysis.slug || 'ref'}`,
+      })])
+      memoryUpdates++
+    } catch { /* non-fatal */ }
+  }
+
+  const statsAfter = await callMemory(['stats'])
+
+  out({
+    mode: 'study-processed',
+    url: analysis.url,
+    memoryUpdates,
+    memory: {
+      before: statsBefore?.totalDataPoints || 0,
+      after: statsAfter?.totalDataPoints || 0,
+      growth: (statsAfter?.totalDataPoints || 0) - (statsBefore?.totalDataPoints || 0),
+    },
+  })
+}
+
+// ---------------------------------------------------------------------------
+// impact — Show what training has changed
+// ---------------------------------------------------------------------------
+
+const cmdImpact = async () => {
+  const stats = await callMemory(['stats'])
+  const memDir = path.join(__dirname, '..', '.claude', 'memory', 'design-intelligence')
+  const cal = await readJson(path.join(memDir, 'training-calibration.json'))
+  const rules = await readJson(path.join(memDir, 'rules.json'))
+
+  // Compute threshold examples
+  const thresholds = {}
+  for (const type of ['hero', 'feature', 'cta', 'portfolio', 'pricing', 'contact']) {
+    try {
+      const t = await callMemory(['threshold', '--section-type', type])
+      thresholds[type] = { min: t.scoreMinimum, avg: t.historicalAvg, data: t.dataPoints }
+    } catch { /* skip */ }
+  }
+
+  // Recent calibration trend
+  const projects = (cal?.projects || []).slice(-5)
+  const trend = projects.map(p => ({
+    project: p.slug,
+    date: p.date,
+    bias: p.avgDelta,
+    verdict: p.bias,
+  }))
+
+  // Rules lifecycle
+  const promoted = (rules?.rules || []).filter(r => r.status === 'PROMOTED')
+  const candidates = (rules?.rules || []).filter(r => r.status === 'CANDIDATE')
+
+  out({
+    mode: 'impact',
+    memory: {
+      totalDataPoints: stats?.totalDataPoints || 0,
+      signatures: stats?.signatures?.approved || 0,
+      patterns: stats?.sectionPatterns || 0,
+      techniques: stats?.techniqueScores || 0,
+      revisions: stats?.revisionPatterns || 0,
+      fonts: stats?.fontPairings?.works || 0,
+      palettes: stats?.colorPalettes?.works || 0,
+    },
+    calibration: {
+      globalBias: cal?.globalBias || 0,
+      thresholdAdjustment: cal?.thresholdAdjustment || 0,
+      accuracy: cal?.globalBias != null ? `${Math.max(0, 100 - Math.abs(cal.globalBias) * 10).toFixed(0)}%` : 'unknown',
+      trend,
+    },
+    thresholds,
+    rules: {
+      promoted: promoted.length,
+      candidates: candidates.length,
+      promotedList: promoted.map(r => r.text),
+      candidateList: candidates.map(r => `${r.text} (${r.validations}/3 validations)`),
+    },
   })
 }
 
@@ -691,17 +550,23 @@ const main = async () => {
   const args = parseArgs(rawArgs.slice(1))
 
   const commands = {
-    init: cmdInit,
-    ingest: cmdIngest,
-    rate: cmdRate,
-    calibrate: cmdCalibrate,
-    auto: cmdAuto,
+    correct: cmdCorrect,
+    review: cmdReview,
+    study: cmdStudy,
+    impact: cmdImpact,
   }
 
   const handler = commands[subcommand]
   if (!handler) {
     fail(
-      `Unknown subcommand: ${subcommand}\nUsage: node eros-train.mjs <init|ingest|rate|calibrate|auto> [options]`
+      `Unknown subcommand: ${subcommand}\n\n` +
+      `Usage: node eros-train.mjs <correct|review|study|impact> [options]\n\n` +
+      `  correct  --project <path>              Auto-learn from git diffs\n` +
+      `  review   --project <path>              Smart review (highlights 3-5 sections)\n` +
+      `  review   --project <path> --feedback '{ "approve": [...], "corrections": [...], "rules": [...] }'\n` +
+      `  study    --url <url>                   Learn from a reference site\n` +
+      `  study    --url <url> --feedback '{ "liked": [...], "overall": 9 }'\n` +
+      `  impact                                 Show training effects\n`
     )
   }
 

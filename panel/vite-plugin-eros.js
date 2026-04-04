@@ -161,7 +161,16 @@ export default function erosPlugin() {
         }
       })
 
-      // REST: training sessions — list projects with .brain/training/
+      // Helper: run an eros-train.mjs subcommand and return JSON
+      const runTrain = (trainArgs) => new Promise((resolve, reject) => {
+        const { execFile: ef } = require('node:child_process')
+        ef('node', [path.join(scriptsDir, 'eros-train.mjs'), ...trainArgs], { cwd: scriptsDir, timeout: 120000 }, (err, stdout, stderr) => {
+          if (err) { reject(new Error(stderr || err.message)); return }
+          try { resolve(JSON.parse(stdout)) } catch { resolve({ raw: stdout }) }
+        })
+      })
+
+      // REST: list projects with .brain/ (any project on Desktop)
       server.middlewares.use('/__eros/training/projects', async (req, res) => {
         try {
           const os = await import('node:os')
@@ -170,12 +179,19 @@ export default function erosPlugin() {
           const projects = []
           for (const e of entries) {
             if (!e.isDirectory() || e.name === 'maqueta') continue
-            const sessionPath = path.join(desktopDir, e.name, '.brain', 'training', 'session.json')
+            const brainDir = path.join(desktopDir, e.name, '.brain')
             try {
-              const raw = await fsP.readFile(sessionPath, 'utf8')
-              const session = JSON.parse(raw)
-              projects.push({ slug: e.name, ...session })
-            } catch { /* no training session */ }
+              await fsP.access(brainDir)
+              const state = JSON.parse(await fsP.readFile(path.join(brainDir, 'state.json'), 'utf8').catch(() => '{}'))
+              const scorecard = JSON.parse(await fsP.readFile(path.join(brainDir, 'reports', 'quality', 'scorecard.json'), 'utf8').catch(() => '{}'))
+              const sections = await fsP.readdir(path.join(desktopDir, e.name, 'src', 'components', 'sections')).catch(() => [])
+              projects.push({
+                slug: e.name,
+                projectName: state.project?.name || e.name,
+                score: scorecard.finalScore || null,
+                sections: sections.filter(f => f.endsWith('.vue')),
+              })
+            } catch { /* no .brain */ }
           }
           res.writeHead(200, { 'Content-Type': 'application/json' })
           res.end(JSON.stringify(projects))
@@ -185,36 +201,36 @@ export default function erosPlugin() {
         }
       })
 
-      // REST: get feedback for a project
-      server.middlewares.use('/__eros/training/feedback', async (req, res) => {
+      // REST: smart review for a project
+      server.middlewares.use('/__eros/training/review', async (req, res) => {
         const url = new URL(req.url, `http://${req.headers.host}`)
         const slug = url.searchParams.get('project')
         if (!slug) { res.writeHead(400); res.end('{"error":"?project= required"}'); return }
         try {
           const os = await import('node:os')
-          const fbPath = path.join(os.default.homedir(), 'Desktop', slug, '.brain', 'training', 'feedback.json')
-          const raw = await fsP.readFile(fbPath, 'utf8')
+          const projectDir = path.join(os.default.homedir(), 'Desktop', slug)
+          const result = await runTrain(['review', '--project', projectDir])
           res.writeHead(200, { 'Content-Type': 'application/json' })
-          res.end(raw)
+          res.end(JSON.stringify(result))
         } catch (e) {
-          res.writeHead(404, { 'Content-Type': 'application/json' })
+          res.writeHead(500, { 'Content-Type': 'application/json' })
           res.end(JSON.stringify({ error: e.message }))
         }
       })
 
-      // REST: save feedback for a project
-      server.middlewares.use('/__eros/training/save-feedback', async (req, res) => {
+      // REST: submit review feedback
+      server.middlewares.use('/__eros/training/review-feedback', async (req, res) => {
         if (req.method !== 'POST') { res.writeHead(405); res.end(); return }
         let body = ''
-        req.on('data', (c) => { body += c })
+        req.on('data', c => { body += c })
         req.on('end', async () => {
           try {
-            const data = JSON.parse(body)
+            const { slug, feedback } = JSON.parse(body)
             const os = await import('node:os')
-            const fbPath = path.join(os.default.homedir(), 'Desktop', data.projectSlug, '.brain', 'training', 'feedback.json')
-            await fsP.writeFile(fbPath, JSON.stringify(data, null, 2) + '\n', 'utf8')
+            const projectDir = path.join(os.default.homedir(), 'Desktop', slug)
+            const result = await runTrain(['review', '--project', projectDir, '--feedback', JSON.stringify(feedback)])
             res.writeHead(200, { 'Content-Type': 'application/json' })
-            res.end(JSON.stringify({ ok: true }))
+            res.end(JSON.stringify(result))
           } catch (e) {
             res.writeHead(500, { 'Content-Type': 'application/json' })
             res.end(JSON.stringify({ error: e.message }))
@@ -222,26 +238,54 @@ export default function erosPlugin() {
         })
       })
 
-      // REST: ingest training feedback
-      server.middlewares.use('/__eros/training/ingest', async (req, res) => {
+      // REST: auto-correct from git diffs
+      server.middlewares.use('/__eros/training/correct', async (req, res) => {
         if (req.method !== 'POST') { res.writeHead(405); res.end(); return }
         let body = ''
-        req.on('data', (c) => { body += c })
+        req.on('data', c => { body += c })
         req.on('end', async () => {
           try {
             const { slug } = JSON.parse(body)
             const os = await import('node:os')
             const projectDir = path.join(os.default.homedir(), 'Desktop', slug)
-            const { execFile: execFileCb } = await import('node:child_process')
-            execFileCb('node', [path.join(scriptsDir, 'eros-train.mjs'), 'ingest', '--project', projectDir], { cwd: scriptsDir }, (err, stdout) => {
-              res.writeHead(200, { 'Content-Type': 'application/json' })
-              res.end(err ? JSON.stringify({ error: err.message }) : stdout)
-            })
+            const result = await runTrain(['correct', '--project', projectDir])
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify(result))
           } catch (e) {
             res.writeHead(500, { 'Content-Type': 'application/json' })
             res.end(JSON.stringify({ error: e.message }))
           }
         })
+      })
+
+      // REST: study a reference URL
+      server.middlewares.use('/__eros/training/study', async (req, res) => {
+        if (req.method !== 'POST') { res.writeHead(405); res.end(); return }
+        let body = ''
+        req.on('data', c => { body += c })
+        req.on('end', async () => {
+          try {
+            const { url: refUrl } = JSON.parse(body)
+            const result = await runTrain(['study', '--url', refUrl])
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify(result))
+          } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ error: e.message }))
+          }
+        })
+      })
+
+      // REST: training impact
+      server.middlewares.use('/__eros/training/impact', async (req, res) => {
+        try {
+          const result = await runTrain(['impact'])
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify(result))
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: e.message }))
+        }
       })
 
       // Watch runs.generated.json for changes → push to data SSE clients
