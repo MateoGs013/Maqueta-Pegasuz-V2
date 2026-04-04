@@ -356,13 +356,40 @@ const cmdPost = async (args) => {
     const scoreMatch = report.match(/Score:\s*([\d.]+)/i)
     const score = scoreMatch ? parseFloat(scoreMatch[1]) : null
 
-    // Extract excellence dimensions
-    const dimensions = {}
+    // Extract excellence dimensions from builder report (self-assessment)
+    const builderDimensions = {}
     const dimPattern = /\*\*(Composition|Depth|Typography|Motion|Craft|Signature)\*\*[:\s]+(\w+)/gi
     let dimMatch
     while ((dimMatch = dimPattern.exec(report)) !== null) {
-      dimensions[dimMatch[1].toLowerCase()] = dimMatch[2].toUpperCase()
+      builderDimensions[dimMatch[1].toLowerCase()] = dimMatch[2].toUpperCase()
     }
+
+    // Try to read observer output — independent quality signal that overrides
+    // the builder's self-assessment when available
+    const observerManifest = await readJson(path.join(brainDir, 'observer', 'localhost', 'manifest.json'))
+    const observerDimensions = observerManifest?.excellenceSignals || {}
+    let observerScore = null
+    const observerScorecard = await readJson(path.join(brainDir, 'reports', 'quality', 'scorecard.json'))
+    if (observerScorecard?.observerScore > 0) {
+      observerScore = observerScorecard.observerScore
+    }
+
+    // Use observer dimensions when available (trusted), fall back to builder (self-report)
+    const hasObserver = Object.keys(observerDimensions).length > 0 &&
+      observerDimensions.composition && observerDimensions.composition !== 'undefined'
+    const dimensions = {}
+    for (const dim of ['composition', 'depth', 'typography', 'motion', 'craft']) {
+      if (hasObserver && observerDimensions[dim]) {
+        dimensions[dim] = observerDimensions[dim]
+      } else if (builderDimensions[dim]) {
+        dimensions[dim] = builderDimensions[dim]
+      }
+    }
+
+    // Use the LOWER of builder score vs observer score (conservative)
+    const effectiveScore = (observerScore !== null && score !== null)
+      ? Math.min(score, observerScore)
+      : score ?? observerScore
 
     // Check for WEAK dimensions
     const weakDimensions = Object.entries(dimensions)
@@ -376,14 +403,14 @@ const cmdPost = async (args) => {
     let verdict = 'APPROVE'
     const reasons = []
 
-    if (score !== null && score < scoreMinimum) {
+    if (effectiveScore !== null && effectiveScore < scoreMinimum) {
       verdict = 'RETRY'
-      reasons.push(`score ${score} < threshold ${scoreMinimum}`)
+      reasons.push(`score ${effectiveScore} < threshold ${scoreMinimum}${observerScore !== null ? ` (observer: ${observerScore}, builder: ${score})` : ''}`)
     }
 
     if (weakDimensions.length >= 3) {
       verdict = 'FLAG'
-      reasons.push(`3+ WEAK dimensions: ${weakDimensions.join(', ')}`)
+      reasons.push(`3+ WEAK dimensions: ${weakDimensions.join(', ')}${hasObserver ? ' (from observer)' : ' (from builder self-report)'}`)
     } else if (weakDimensions.length > 0) {
       if (verdict !== 'FLAG') verdict = 'RETRY'
       reasons.push(`WEAK dimensions: ${weakDimensions.join(', ')}`)
@@ -398,10 +425,13 @@ const cmdPost = async (args) => {
       pass: verdict === 'APPROVE',
       task: taskId,
       verdict,
-      score,
+      score: effectiveScore,
+      builderScore: score,
+      observerScore,
       threshold: scoreMinimum,
       thresholdDefault: thresholdData.isDefault,
       dimensions,
+      dimensionSource: hasObserver ? 'observer' : 'builder-self-report',
       weakDimensions,
       hasSignature,
       reasons: reasons.length > 0 ? reasons : undefined,

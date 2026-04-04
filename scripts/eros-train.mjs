@@ -316,18 +316,17 @@ const processReviewFeedback = async (project, slug, allSections, observerScore, 
     } catch { /* non-fatal */ }
   }
 
-  // Calibrate
-  const calSections = allSections.map(name => {
-    const sectionName = name.includes('/') ? name.split('/').pop() : name
-    const correction = corrections.find(c => c.section === sectionName)
-    const penalty = correction ? (correction.severity === 'bad' ? -2 : -0.5) : 0.3
-    return {
-      name: sectionName,
+  // Calibrate — ONLY sections with explicit user feedback (corrections).
+  // Bulk-approved sections have no real user signal — writing fake +0.3 delta
+  // for all of them produces meaningless calibration data.
+  const calSections = corrections
+    .filter(c => c.feedback || c.severity)
+    .map(c => ({
+      name: c.section,
       brainScore: observerScore,
-      userRating: Math.max(1, Math.min(10, observerScore + penalty)),
-    }
-  })
-  const cal = await updateCalibration(slug, calSections)
+      userRating: Math.max(1, observerScore + (c.severity === 'bad' ? -2 : c.severity === 'needs-work' ? -0.5 : 0)),
+    }))
+  const cal = calSections.length > 0 ? await updateCalibration(slug, calSections) : null
 
   // Promote rules
   let promotions = []

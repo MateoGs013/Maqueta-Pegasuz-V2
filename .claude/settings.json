@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'echo \"\"; echo \"═══ PIPELINE STATE RECOVERY (post-compaction) ═══\"; found=0; for f in /c/Users/mateo/Desktop/*/.pipeline-state.md; do if [ -f \"$f\" ]; then echo \"\"; cat \"$f\"; found=1; fi; done; if [ $found -eq 0 ]; then echo \"No active pipeline found.\"; fi; echo \"═══════════════════════════════════════════════\"'"
+            "command": "bash -c 'echo \"\"; echo \"═══ EROS STATE RECOVERY (post-compaction) ═══\"; found=0; for f in /c/Users/mateo/Desktop/*/.brain/state.md; do if [ -f \"$f\" ]; then proj=$(dirname $(dirname \"$f\")); echo \"\"; echo \"Project: $(basename $proj)\"; cat \"$f\"; found=1; fi; done; if [ $found -eq 0 ]; then echo \"No active projects found.\"; fi; echo \"═══════════════════════════════════════════════\"'"
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'for f in /c/Users/mateo/Desktop/*/.pipeline-state.md; do if [ -f \"$f\" ]; then echo \"\"; echo \"═══ ACTIVE PIPELINE DETECTED ═══\"; cat \"$f\"; echo \"═══════════════════════════════\"; fi; done'"
+            "command": "bash -c 'for f in /c/Users/mateo/Desktop/*/.brain/state.md; do if [ -f \"$f\" ]; then proj=$(dirname $(dirname \"$f\")); echo \"\"; echo \"═══ ACTIVE PROJECT: $(basename $proj) ═══\"; cat \"$f\"; echo \"═══════════════════════════════\"; fi; done'"
           }
         ]
       }

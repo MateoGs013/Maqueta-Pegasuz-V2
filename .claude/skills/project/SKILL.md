@@ -507,4 +507,4 @@ node "$SCRIPTS/eros-memory.mjs" learn --event pipeline_issue \
 | `eros-gate.mjs` | Gate enforcement | `pre`, `post`, `designer`, `completion` |
 | `eros-context.mjs` | Context builder | `design-brief`, `section`, `evaluate`, `motion`, `atmosphere` |
 | `eros-log.mjs` | Logging | `approve`, `flag`, `decision`, `quality-gate` |
-| `eros-train.mjs` | Training system | `init`, `ingest`, `rate`, `calibrate` |
+| `eros-train.mjs` | Training system | `correct`, `review`, `study`, `impact` |
