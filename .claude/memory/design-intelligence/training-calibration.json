@@ -1,46 +1,140 @@
 {
   "projects": [
     {
-      "slug": "eros-test-1775245405451",
-      "date": "2026-04-03",
+      "slug": "coque",
+      "date": "2026-04-04",
       "sections": [
         {
-          "name": "S-Hero",
-          "brainScore": 8,
-          "userRating": 9,
-          "delta": 1
+          "name": "S-About",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
         },
         {
-          "name": "S-Features",
-          "brainScore": 7.5,
-          "userRating": 7,
-          "delta": -0.5
-        }
-      ],
-      "avgDelta": 0.25,
-      "bias": "calibrated"
-    },
-    {
-      "slug": "eros-test-1775245625601",
-      "date": "2026-04-03",
-      "sections": [
-        {
-          "name": "S-Hero",
-          "brainScore": 8,
-          "userRating": 9,
-          "delta": 1
+          "name": "S-AboutCTA",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
         },
         {
-          "name": "S-Features",
-          "brainScore": 7.5,
-          "userRating": 7,
-          "delta": -0.5
+          "name": "S-AboutHero",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-Availability",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-ContactFooter",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-ContactForm",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-ContactHero",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-CTA",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-FeaturedWork",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-Hero",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-Marquee",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-Personal",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-Philosophy",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-Process",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-ProjectGrid",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-Services",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-Skills",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-Timeline",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-WorkCTA",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-WorkHero",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
+        },
+        {
+          "name": "S-WorkStats",
+          "brainScore": 8.4,
+          "userRating": 8.700000000000001,
+          "delta": 0.3
         }
       ],
-      "avgDelta": 0.25,
+      "avgDelta": 0.3,
       "bias": "calibrated"
     }
   ],
-  "globalBias": 0.25,
-  "thresholdAdjustment": 0.13
+  "globalBias": 0.3,
+  "thresholdAdjustment": 0.15
 }
