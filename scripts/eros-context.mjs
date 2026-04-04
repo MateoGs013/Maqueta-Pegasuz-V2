@@ -30,6 +30,65 @@ import {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const maquetaDir = path.resolve(__dirname, '..')
+const MEMORY_DIR = path.resolve(__dirname, '..', '.claude', 'memory', 'design-intelligence')
+
+// Read personality.json and format as markdown block
+const readPersonality = async () => {
+  const p = await readJson(path.join(MEMORY_DIR, 'personality.json'))
+  if (!p) return null
+
+  const lines = ['## Eros Personality', '']
+
+  // Values
+  if (p.values?.core?.length) {
+    lines.push('### Values')
+    for (const v of p.values.core) {
+      const strength = v.strength >= 0.8 ? 'HIGH' : v.strength >= 0.5 ? 'MEDIUM' : 'LOW'
+      lines.push(`- ${v.value} (${strength} conviction)`)
+    }
+    lines.push('')
+  }
+
+  // Relevant opinions (top 5)
+  if (p.voice?.opinions?.length) {
+    lines.push('### Opinions')
+    for (const o of p.voice.opinions.slice(0, 5)) {
+      const conv = o.conviction >= 0.8 ? 'HIGH' : o.conviction >= 0.5 ? 'MEDIUM' : 'LOW'
+      lines.push(`- **${o.topic}:** ${o.opinion} (${conv} conviction)`)
+    }
+    lines.push('')
+  }
+
+  // Aesthetic direction
+  if (p.aesthetic) {
+    lines.push('### Aesthetic Direction')
+    const prefs = p.aesthetic.compositionPreferences || {}
+    const topComps = Object.entries(prefs).sort((a, b) => b[1].weight - a[1].weight).slice(0, 3)
+    if (topComps.length) {
+      lines.push(`- Preferred layouts: ${topComps.map(([k, v]) => `${k} (${v.weight})`).join(', ')}`)
+    }
+    const motions = p.aesthetic.motionPreferences || {}
+    const topMotions = Object.entries(motions).sort((a, b) => b[1].weight - a[1].weight).slice(0, 3)
+    if (topMotions.length) {
+      lines.push(`- Preferred motion: ${topMotions.map(([k, v]) => `${k} (${v.evidence} uses)`).join(', ')}`)
+    }
+    // Experiment suggestion (20% budget)
+    if (p.aesthetic.experimentBudget > 0) {
+      const weakMotions = Object.entries(motions).filter(([, v]) => v.evidence <= 1).slice(0, 2)
+      if (weakMotions.length) {
+        lines.push(`- Experiment: try ${weakMotions.map(([k]) => k).join(' or ')} (low evidence, explore)`)
+      }
+    }
+    lines.push('')
+  }
+
+  // Philosophy
+  if (p.voice?.philosophy) {
+    lines.push('### Philosophy', '', p.voice.philosophy, '')
+  }
+
+  return lines.join('\n')
+}
 
 // Call eros-memory.mjs interpret
 const callInterpret = (taskType, extraArgs = []) => {
@@ -207,16 +266,24 @@ const cmdDesignBrief = async (args) => {
   const interpretArgs = mood ? ['--mood', mood] : []
   const memory = await callInterpret('design', interpretArgs)
 
+  // Read personality
+  const personalityBlock = await readPersonality()
+
   // Assemble context
   const parts = [
     '# Context: Design Brief',
     '',
     memory.insightsMarkdown,
+  ]
+
+  if (personalityBlock) parts.push('', personalityBlock)
+
+  parts.push(
     '',
     '## Project Identity',
     '',
     identity,
-  ]
+  )
 
   if (refAnalysis) {
     parts.push('', '## Reference Analysis', '', refAnalysis)
@@ -241,6 +308,7 @@ const cmdDesignBrief = async (args) => {
   out({
     written: path.relative(project, contextPath),
     insightsInjected: true,
+    personalityInjected: !!personalityBlock,
     observatoryInjected: observatory !== null,
     referenceAnalysisInjected: refAnalysis !== null,
     librarySnippets: snippets.length,
@@ -273,6 +341,9 @@ const cmdSection = async (args) => {
   // Library snippets relevant to this section type
   const snippets = await loadLibrarySnippets(sectionType)
 
+  // Read personality
+  const personalityBlock = await readPersonality()
+
   // Assemble
   const parts = [
     `# Context: ${section}`,
@@ -284,6 +355,8 @@ const cmdSection = async (args) => {
     '',
     memory.insightsMarkdown,
   ]
+
+  if (personalityBlock) parts.push('', personalityBlock)
 
   if (tokens) {
     parts.push('', '## Tokens', '', tokens)
@@ -327,6 +400,7 @@ const cmdSection = async (args) => {
     threshold: threshold.scoreMinimum,
     thresholdDefault: threshold.isDefault,
     insightsInjected: true,
+    personalityInjected: !!personalityBlock,
     observatoryInjected: observatory !== null,
     recipeFound: recipe !== null,
     librarySnippets: snippets.length,
@@ -417,10 +491,17 @@ const cmdMotion = async (args) => {
     }
   } catch { /* empty */ }
 
+  const personalityBlock = await readPersonality()
+
   const parts = [
     '# Context: Motion & Polish',
     '',
     memory.insightsMarkdown,
+  ]
+
+  if (personalityBlock) parts.push('', personalityBlock)
+
+  parts.push(
     '',
     '## Sections to Polish',
     '',
@@ -447,6 +528,7 @@ const cmdMotion = async (args) => {
   out({
     written: path.relative(project, contextPath),
     insightsInjected: true,
+    personalityInjected: !!personalityBlock,
     sectionCount: sectionList.length,
   })
 }
@@ -459,12 +541,17 @@ const cmdAtmosphere = async (args) => {
   const tokens = await extractRelevantTokens(project)
   const memory = await callInterpret('build', ['--section-type', 'atmosphere'])
 
+  const personalityBlock = await readPersonality()
+
   const parts = [
     '# Context: Atmosphere Canvas',
     '',
     memory.insightsMarkdown,
-    '',
   ]
+
+  if (personalityBlock) parts.push('', personalityBlock)
+
+  parts.push('')
 
   if (tokens) {
     parts.push('## Tokens', '', tokens, '')
@@ -481,6 +568,7 @@ const cmdAtmosphere = async (args) => {
   out({
     written: path.relative(project, contextPath),
     insightsInjected: true,
+    personalityInjected: !!personalityBlock,
   })
 }
 
