@@ -9,95 +9,118 @@ const router = useRouter()
 const slug = computed(() => route.params.slug)
 const run = computed(() => getRunById(slug.value))
 
-// Fetch observer V2 data when project changes
 watch(slug, (s) => { if (s) fetchObserver(s) }, { immediate: true })
 
 const nav = computed(() => [
   { to: `/projects/${slug.value}`, label: 'Resumen', exact: true },
   { to: `/projects/${slug.value}/calidad`, label: 'Calidad' },
-  { to: `/projects/${slug.value}/observer`, label: 'Observer' },
 ])
 
-const isActive = (item) => {
-  if (item.exact) return route.path === item.to
-  return route.path.startsWith(item.to)
-}
+const isActive = (item) => item.exact ? route.path === item.to : route.path.startsWith(item.to)
+const scoreTone = (v) => v >= 8 ? 'ok' : v >= 5 ? 'mid' : 'low'
+const decLabel = { approve: 'Aprobado', retry: 'Reintentar', flag: 'Revisar', pending: 'Pendiente' }
 </script>
 
 <template>
-  <div class="pshell">
-    <header class="pshell-header">
-      <button class="pshell-back" @click="router.push('/projects')">← Proyectos</button>
-      <div class="pshell-meta">
-        <span class="pshell-score" :class="(run?.scorecard?.finalScore || 0) >= 8 ? 'c-ok' : (run?.scorecard?.finalScore || 0) >= 5 ? 'c-mid' : 'c-low'">
-          {{ (run?.scorecard?.finalScore || 0).toFixed(1) }}
-        </span>
-        <div>
-          <h1 class="pshell-name">{{ run?.project?.name || slug }}</h1>
-          <p class="pshell-type">{{ run?.project?.type || '—' }}</p>
+  <div class="ps">
+    <!-- Top bar -->
+    <header class="ps-bar">
+      <button class="ps-back" @click="router.push('/projects')">
+        <span class="ps-back-arrow">←</span>
+        <span class="ps-back-label">Proyectos</span>
+      </button>
+
+      <div class="ps-identity">
+        <h1 class="ps-name">{{ run?.project?.name || slug }}</h1>
+        <div class="ps-meta-row">
+          <span class="ps-type">{{ run?.project?.type || '—' }}</span>
+          <span class="ps-dot">·</span>
+          <span class="ps-phase">{{ run?.currentPhase || '—' }}</span>
+          <span class="ps-dot">·</span>
+          <span class="pill" :class="`pill--${scoreTone(run?.scorecard?.finalScore) === 'ok' ? 'strong' : scoreTone(run?.scorecard?.finalScore) === 'mid' ? 'accent' : 'weak'}`">
+            {{ decLabel[run?.scorecard?.decision] || run?.scorecard?.decision }}
+          </span>
         </div>
       </div>
-      <nav class="pshell-nav">
-        <router-link
-          v-for="item in nav" :key="item.to"
-          :to="item.to"
-          class="pshell-link"
-          :class="{ active: isActive(item) }"
-        >{{ item.label }}</router-link>
-      </nav>
+
+      <div class="ps-score-block">
+        <span class="ps-score" :class="`sc-${scoreTone(run?.scorecard?.finalScore)}`">
+          {{ (run?.scorecard?.finalScore || 0).toFixed(1) }}
+        </span>
+        <span class="ps-score-label">score</span>
+      </div>
     </header>
-    <main class="pshell-main">
+
+    <!-- Tab nav -->
+    <nav class="ps-tabs">
+      <router-link
+        v-for="item in nav" :key="item.to"
+        :to="item.to" class="ps-tab"
+        :class="{ active: isActive(item) }"
+      >{{ item.label }}</router-link>
+    </nav>
+
+    <!-- Content -->
+    <main class="ps-main">
       <RouterView :run="run" :slug="slug" />
     </main>
   </div>
 </template>
 
 <style scoped>
-.pshell { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.ps { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-.pshell-header {
-  display: flex; align-items: center; gap: 24px;
-  padding: 12px 32px; border-bottom: 1px solid var(--line);
-  background: var(--bg); flex-shrink: 0;
+.ps-bar {
+  display: flex; align-items: center; gap: 20px;
+  padding: 16px 32px; background: var(--bg);
+  border-bottom: 1px solid var(--line); flex-shrink: 0;
 }
 
-.pshell-back {
+.ps-back {
+  display: flex; align-items: center; gap: 6px;
   background: none; border: 1px solid var(--line); padding: 6px 12px;
-  color: var(--text-muted); font: 500 10px var(--font-mono);
-  letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer;
-  transition: all 0.15s;
+  color: var(--text-muted); cursor: pointer;
+  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.pshell-back:hover { color: var(--text); border-color: var(--accent); }
+.ps-back:hover { color: var(--accent); border-color: var(--line-accent); background: var(--accent-ember); }
+.ps-back:hover .ps-back-arrow { transform: translateX(-2px); }
+.ps-back-arrow { font: 500 14px var(--font-display); transition: transform 150ms; }
+.ps-back-label { font: 600 9px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
 
-.pshell-meta { display: flex; align-items: center; gap: 12px; flex: 1; }
-.pshell-score {
-  font: 700 28px var(--font-display); letter-spacing: -0.04em; line-height: 1;
-}
-.c-ok { color: var(--success); }
-.c-mid { color: var(--accent); }
-.c-low { color: var(--error); }
-.pshell-name { font: 600 14px/1.2 var(--font-display); color: var(--text); }
-.pshell-type { font: 400 10px var(--font-body); color: var(--text-muted); margin-top: 2px; }
+.ps-identity { flex: 1; display: grid; gap: 3px; }
+.ps-name { font: 600 16px/1.2 var(--font-display); color: var(--text); letter-spacing: -0.02em; }
+.ps-meta-row { display: flex; align-items: center; gap: 8px; }
+.ps-type { font: 400 10px var(--font-body); color: var(--text-muted); text-transform: capitalize; }
+.ps-phase { font: 500 10px var(--font-mono); color: var(--text-muted); letter-spacing: 0.04em; }
+.ps-dot { color: var(--text-dim); }
 
-.pshell-nav { display: flex; gap: 0; }
-.pshell-link {
-  padding: 8px 16px; border: 1px solid var(--line); margin-left: -1px;
-  color: var(--text-muted); font: 600 10px var(--font-mono);
-  letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none;
-  transition: all 0.15s;
-}
-.pshell-link:first-child { margin-left: 0; }
-.pshell-link:hover { color: var(--text); }
-.pshell-link.active {
-  color: var(--accent); border-color: var(--line-accent);
-  background: var(--accent-ember); z-index: 1; position: relative;
-}
+.ps-score-block { display: grid; gap: 1px; text-align: center; }
+.ps-score { font: 700 32px var(--font-display); letter-spacing: -0.04em; line-height: 1; }
+.ps-score-label { font: 500 8px var(--font-mono); color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+.sc-ok { color: var(--success); }
+.sc-mid { color: var(--accent); }
+.sc-low { color: var(--error); }
 
-.pshell-main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.ps-tabs {
+  display: flex; gap: 0; padding: 0 32px;
+  background: var(--bg); border-bottom: 1px solid var(--line); flex-shrink: 0;
+}
+.ps-tab {
+  padding: 10px 20px; text-decoration: none;
+  color: var(--text-dim); font: 600 10px var(--font-mono);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: all 150ms;
+}
+.ps-tab:hover { color: var(--text-muted); }
+.ps-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.ps-main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 
 @media (max-width: 768px) {
-  .pshell-header { flex-wrap: wrap; padding: 12px 16px; gap: 12px; }
-  .pshell-nav { width: 100%; }
-  .pshell-link { flex: 1; text-align: center; }
+  .ps-bar { flex-wrap: wrap; padding: 12px 16px; gap: 12px; }
+  .ps-score-block { display: flex; align-items: baseline; gap: 6px; }
+  .ps-tabs { padding: 0 16px; overflow-x: auto; }
+  .ps-tab { flex-shrink: 0; }
 }
 </style>
