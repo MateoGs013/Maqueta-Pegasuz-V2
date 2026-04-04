@@ -962,11 +962,62 @@ async function captureScreenshots(page, sections, outDir, label) {
   const vp = label === 'desktop' ? VP_DESKTOP : VP_MOBILE
   const frames = []
 
+  // Find the real scroll container and disable smooth scroll
+  const scrollContainerSelector = await page.evaluate(() => {
+    // Kill Lenis instance
+    if (window.lenis) { try { window.lenis.destroy() } catch {} }
+    if (window.locomotiveScroll) { try { window.locomotiveScroll.destroy() } catch {} }
+
+    // Find scroll container: a div with scrollHeight > viewport that scrolls
+    const candidates = [...document.querySelectorAll('div, main')]
+    const container = candidates.find(el => {
+      const s = getComputedStyle(el)
+      return el.scrollHeight > window.innerHeight * 1.5 &&
+        el.offsetHeight <= window.innerHeight * 1.2 &&
+        (s.overflow === 'auto' || s.overflow === 'hidden auto' || s.overflowY === 'auto' || s.overflowY === 'scroll')
+    })
+
+    if (container) {
+      // Mark it for later
+      container.setAttribute('data-eros-scroll', 'true')
+      container.style.scrollBehavior = 'auto'
+
+      // Reset html/body to allow the container to be the scroller
+      document.documentElement.style.scrollBehavior = 'auto'
+      document.body.style.scrollBehavior = 'auto'
+
+      return '[data-eros-scroll]'
+    }
+
+    // No special container — use native scroll
+    document.documentElement.style.scrollBehavior = 'auto'
+    document.body.style.scrollBehavior = 'auto'
+    document.documentElement.style.overflow = 'auto'
+    document.body.style.overflow = 'auto'
+    if (getComputedStyle(document.documentElement).position === 'fixed') document.documentElement.style.position = 'static'
+    if (getComputedStyle(document.body).position === 'fixed') document.body.style.position = 'static'
+    document.body.style.height = 'auto'
+    document.documentElement.style.height = 'auto'
+
+    return null
+  })
+  await delay(300)
+
   for (let i = 0; i < sections.length; i++) {
     const sec = sections[i]
     const scrollTarget = Math.max(0, sec.top - 40)
-    await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), scrollTarget)
-    await delay(600)
+
+    // Scroll — use the detected container or window
+    await page.evaluate(({ y, sel }) => {
+      if (sel) {
+        const container = document.querySelector(sel)
+        if (container) { container.scrollTop = y; return }
+      }
+      window.scrollTo(0, y)
+      document.documentElement.scrollTop = y
+      document.body.scrollTop = y
+    }, { y: scrollTarget, sel: scrollContainerSelector })
+    await delay(500)
 
     const filename = `frame-${String(i).padStart(3, '0')}.png`
     await page.screenshot({ path: join(outDir, filename), type: 'png', clip: { x: 0, y: 0, width: vp.width, height: vp.height } })
@@ -1461,19 +1512,52 @@ async function observePage(browser, url, outputBase, options = {}) {
     if (!local) await dismissCookieBanner(page)
     if (!local) await waitForPreloader(page)
 
-    // ── Detect sections ──
+    // ── Kill smooth scroll BEFORE section detection and screenshots ──
+    await page.evaluate(() => {
+      if (window.lenis) { try { window.lenis.destroy() } catch {} }
+      if (window.locomotiveScroll) { try { window.locomotiveScroll.destroy() } catch {} }
+      document.documentElement.style.scrollBehavior = 'auto'
+      document.body.style.scrollBehavior = 'auto'
+      document.documentElement.style.overflow = 'auto'
+      document.body.style.overflow = 'auto'
+      const htmlS = getComputedStyle(document.documentElement)
+      const bodyS = getComputedStyle(document.body)
+      if (htmlS.position === 'fixed' || htmlS.position === 'sticky') document.documentElement.style.position = 'static'
+      if (bodyS.position === 'fixed' || bodyS.position === 'sticky') document.body.style.position = 'static'
+      document.body.style.height = 'auto'
+      document.documentElement.style.height = 'auto'
+    })
+    await delay(500)
+
+    // ── Full-page desktop — expand any fixed containers first ──
+    await page.evaluate(() => {
+      // If html/body are fixed with 100vh, expand them so fullPage works
+      const container = document.querySelector('[data-eros-scroll]')
+      if (container) {
+        // Move content out of the scroll container into the body flow
+        const h = container.scrollHeight
+        document.documentElement.style.position = 'static'
+        document.documentElement.style.overflow = 'visible'
+        document.documentElement.style.height = 'auto'
+        document.body.style.position = 'static'
+        document.body.style.overflow = 'visible'
+        document.body.style.height = h + 'px'
+        container.style.overflow = 'visible'
+        container.style.height = h + 'px'
+        container.style.position = 'static'
+      }
+    })
+    await delay(300)
+    await page.screenshot({ path: join(dir, 'full-page-desktop.png'), fullPage: true, type: 'png' })
+    console.log('[eros] Full-page desktop captured')
+
+    // ── Detect sections (after smooth scroll killed) ──
     const sections = await detectSections(page)
     console.log(`[eros] Found ${sections.length} sections`)
 
     // ── Desktop screenshots ──
     console.log('[eros] -- Desktop screenshots --')
     const desktopFrames = await captureScreenshots(page, sections, desktopDir, 'desktop')
-
-    // Full-page desktop
-    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
-    await delay(300)
-    await page.screenshot({ path: join(dir, 'full-page-desktop.png'), fullPage: true, type: 'png' })
-    console.log('[eros] Full-page desktop captured')
 
     // ── Run 6 analysis layers ──
     console.log('[eros] -- Layer 1: Geometry --')
