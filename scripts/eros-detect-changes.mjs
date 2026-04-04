@@ -18,47 +18,17 @@ import { execFile as execFileCb } from 'node:child_process'
 import { promisify } from 'node:util'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  parseArgs,
+  out as output,
+  fail,
+} from './eros-utils.mjs'
 
 const execFile = promisify(execFileCb)
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const MEMORY_SCRIPT = path.join(__dirname, 'eros-memory.mjs')
-
-// ---------------------------------------------------------------------------
-// Arg parsing
-// ---------------------------------------------------------------------------
-
-function parseArgs(argv) {
-  const args = {}
-  let i = 0
-  while (i < argv.length) {
-    const token = argv[i]
-    if (token.startsWith('--')) {
-      const key = token.slice(2)
-      const next = argv[i + 1]
-      if (next && !next.startsWith('--')) {
-        args[key] = next
-        i += 2
-      } else {
-        args[key] = true
-        i += 1
-      }
-    } else {
-      i += 1
-    }
-  }
-  return args
-}
-
-function fail(msg) {
-  process.stderr.write(`Error: ${msg}\n`)
-  process.exit(1)
-}
-
-function output(obj) {
-  process.stdout.write(JSON.stringify(obj, null, 2) + '\n')
-}
 
 // ---------------------------------------------------------------------------
 // Git helpers

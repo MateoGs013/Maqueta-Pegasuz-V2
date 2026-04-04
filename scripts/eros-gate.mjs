@@ -2,6 +2,16 @@ import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFile } from 'node:child_process'
+import {
+  parseArgs,
+  exists,
+  ensureDir,
+  readJson,
+  readText,
+  writeJson,
+  out,
+  fail,
+} from './eros-utils.mjs'
 
 // ---------------------------------------------------------------------------
 // eros-gate.mjs — Gate Engine
@@ -20,58 +30,9 @@ import { execFile } from 'node:child_process'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const parseArgs = (argv) => {
-  const args = { _: [] }
-  for (let i = 0; i < argv.length; i++) {
-    const token = argv[i]
-    if (!token.startsWith('--')) {
-      args._.push(token)
-      continue
-    }
-    const key = token.slice(2)
-    const next = argv[i + 1]
-    if (!next || next.startsWith('--')) {
-      args[key] = true
-      continue
-    }
-    args[key] = next
-    i++
-  }
-  return args
-}
-
-const exists = async (filePath) => {
-  try {
-    await fs.access(filePath)
-    return true
-  } catch {
-    return false
-  }
-}
-
-const readJson = async (filePath) => {
-  try {
-    return JSON.parse(await fs.readFile(filePath, 'utf8'))
-  } catch {
-    return null
-  }
-}
-
-const readText = async (filePath) => {
-  try {
-    return await fs.readFile(filePath, 'utf8')
-  } catch {
-    return null
-  }
-}
-
 const isNonEmpty = async (filePath) => {
   const content = await readText(filePath)
   return content !== null && content.trim().length > 0
-}
-
-const ensureDir = async (dirPath) => {
-  await fs.mkdir(dirPath, { recursive: true })
 }
 
 const writeGateResult = async (project, taskId, result) => {
@@ -79,16 +40,7 @@ const writeGateResult = async (project, taskId, result) => {
   await ensureDir(gateDir)
   const fileName = taskId.replace(/\//g, '--') + '.json'
   const filePath = path.join(gateDir, fileName)
-  await fs.writeFile(filePath, JSON.stringify(result, null, 2) + '\n', 'utf8')
-}
-
-const out = (obj) => {
-  process.stdout.write(JSON.stringify(obj, null, 2) + '\n')
-}
-
-const fail = (msg) => {
-  process.stderr.write(`Error: ${msg}\n`)
-  process.exit(1)
+  await writeJson(filePath, result)
 }
 
 // Call eros-memory.mjs to get dynamic threshold

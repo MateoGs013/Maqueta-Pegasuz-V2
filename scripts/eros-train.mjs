@@ -2,6 +2,16 @@ import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFile } from 'node:child_process'
+import {
+  parseArgs,
+  readJson,
+  readText,
+  ensureDir,
+  writeJson,
+  out,
+  fail,
+  today,
+} from './eros-utils.mjs'
 
 // ---------------------------------------------------------------------------
 // eros-train.mjs — Training System V2
@@ -18,28 +28,6 @@ import { execFile } from 'node:child_process'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-
-const parseArgs = (argv) => {
-  const args = { _: [] }
-  for (let i = 0; i < argv.length; i++) {
-    const token = argv[i]
-    if (!token.startsWith('--')) { args._.push(token); continue }
-    const key = token.slice(2)
-    const next = argv[i + 1]
-    if (!next || next.startsWith('--')) { args[key] = true; continue }
-    args[key] = next
-    i++
-  }
-  return args
-}
-
-const readJson = async (p) => { try { return JSON.parse(await fs.readFile(p, 'utf8')) } catch { return null } }
-const readText = async (p) => { try { return await fs.readFile(p, 'utf8') } catch { return null } }
-const ensureDir = async (d) => { await fs.mkdir(d, { recursive: true }) }
-const writeJson = async (p, d) => { await ensureDir(path.dirname(p)); await fs.writeFile(p, JSON.stringify(d, null, 2) + '\n', 'utf8') }
-const out = (o) => process.stdout.write(JSON.stringify(o, null, 2) + '\n')
-const fail = (m) => { process.stderr.write(`Error: ${m}\n`); process.exit(1) }
-const today = () => new Date().toISOString().slice(0, 10)
 
 const callScript = (script, args) => new Promise((resolve, reject) => {
   const p = path.join(__dirname, script)

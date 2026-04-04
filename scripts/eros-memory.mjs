@@ -21,6 +21,12 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  parseArgs,
+  out as output,
+  fail,
+  today,
+} from './eros-utils.mjs';
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -46,10 +52,8 @@ function jsonPath(base) { return path.join(MEMORY_DIR, `${base}.json`); }
 function mdPath(base)   { return path.join(MEMORY_DIR, `${base}.md`); }
 
 // ---------------------------------------------------------------------------
-// Utilities
+// Memory-specific file helpers (use base name, not full path)
 // ---------------------------------------------------------------------------
-
-function today() { return new Date().toISOString().slice(0, 10); }
 
 async function readJSON(base) {
   try {
@@ -62,37 +66,6 @@ async function readJSON(base) {
 
 async function writeJSON(base, data) {
   await fs.writeFile(jsonPath(base), JSON.stringify(data, null, 2), 'utf-8');
-}
-
-function parseArgs(argv) {
-  const args = {};
-  let i = 0;
-  while (i < argv.length) {
-    const key = argv[i];
-    if (key.startsWith('--')) {
-      const name = key.slice(2);
-      const next = argv[i + 1];
-      if (next && !next.startsWith('--')) {
-        args[name] = next;
-        i += 2;
-      } else {
-        args[name] = true;
-        i += 1;
-      }
-    } else {
-      i += 1;
-    }
-  }
-  return args;
-}
-
-function fail(msg) {
-  process.stderr.write(`Error: ${msg}\n`);
-  process.exit(1);
-}
-
-function output(obj) {
-  process.stdout.write(JSON.stringify(obj, null, 2) + '\n');
 }
 
 // ---------------------------------------------------------------------------

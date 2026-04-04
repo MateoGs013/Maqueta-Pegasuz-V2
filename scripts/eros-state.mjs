@@ -9,8 +9,17 @@
  * Subcommands: query, start, advance, retry, flag, init-sections, check-gate
  */
 
-import { promises as fs } from 'node:fs'
 import path from 'node:path'
+import {
+  parseArgs,
+  exists,
+  ensureDir,
+  readJson,
+  writeJson,
+  writeText,
+  out as outputJson,
+  fail,
+} from './eros-utils.mjs'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -41,87 +50,6 @@ const SECTION_TASK_AGENTS = {
   build: 'builder',
   observe: 'ceo',
   evaluate: 'evaluator',
-}
-
-// ---------------------------------------------------------------------------
-// Arg parser (same pattern as bootstrap-front-brain.mjs)
-// ---------------------------------------------------------------------------
-
-const parseArgs = (argv) => {
-  const args = {}
-
-  for (let index = 0; index < argv.length; index += 1) {
-    const token = argv[index]
-
-    if (!token.startsWith('--')) {
-      if (!args._command) {
-        args._command = token
-      }
-      continue
-    }
-
-    const key = token.slice(2)
-    const next = argv[index + 1]
-
-    if (!next || next.startsWith('--')) {
-      args[key] = true
-      continue
-    }
-
-    args[key] = next
-    index += 1
-  }
-
-  return args
-}
-
-// ---------------------------------------------------------------------------
-// File helpers
-// ---------------------------------------------------------------------------
-
-const exists = async (targetPath) => {
-  try {
-    await fs.access(targetPath)
-    return true
-  } catch {
-    return false
-  }
-}
-
-const ensureDir = async (targetPath) => {
-  await fs.mkdir(targetPath, { recursive: true })
-}
-
-const readJson = async (targetPath, fallback = null) => {
-  try {
-    const content = await fs.readFile(targetPath, 'utf8')
-    return JSON.parse(content)
-  } catch {
-    return fallback
-  }
-}
-
-const writeJson = async (targetPath, value) => {
-  await ensureDir(path.dirname(targetPath))
-  await fs.writeFile(targetPath, `${JSON.stringify(value, null, 2)}\n`, 'utf8')
-}
-
-const writeText = async (targetPath, content) => {
-  await ensureDir(path.dirname(targetPath))
-  await fs.writeFile(targetPath, content.trimEnd() + '\n', 'utf8')
-}
-
-// ---------------------------------------------------------------------------
-// Output helpers
-// ---------------------------------------------------------------------------
-
-const outputJson = (value) => {
-  process.stdout.write(JSON.stringify(value, null, 2) + '\n')
-}
-
-const fail = (message) => {
-  process.stderr.write(`Error: ${message}\n`)
-  process.exit(1)
 }
 
 // ---------------------------------------------------------------------------
@@ -167,7 +95,7 @@ const brainPaths = (projectDir) => ({
 
 const loadState = async (projectDir) => {
   const paths = brainPaths(projectDir)
-  const stateJson = await readJson(paths.stateJson, {
+  const stateJson = (await readJson(paths.stateJson)) ?? {
     project: { name: 'Unknown', slug: 'unknown', type: 'unknown' },
     mode: 'autonomous',
     currentPhase: 'unknown',
@@ -183,12 +111,12 @@ const loadState = async (projectDir) => {
     blocker: null,
     nextAction: null,
     lastUpdated: null,
-  })
-  const queueJson = await readJson(paths.queueJson, {
+  }
+  const queueJson = (await readJson(paths.queueJson)) ?? {
     active: [],
     pending: [],
     done: [],
-  })
+  }
 
   return { stateJson, queueJson, paths }
 }
@@ -427,7 +355,7 @@ const cmdAdvance = async (projectDir, taskId, score, decision, gateResult) => {
 
   // Gate enforcement: verify gate result file exists and matches
   const gateFile = path.join(projectDir, '.brain', 'gates', `${taskId.replace(/\//g, '--')}.json`)
-  const gateData = await readJson(gateFile, null)
+  const gateData = await readJson(gateFile)
 
   if (!gateData) {
     fail(
@@ -679,7 +607,7 @@ const cmdCheckGate = async (projectDir) => {
 
   // Check 2: quality refreshed — scorecard.json must exist
   const scorecardPath = path.join(projectDir, '.brain', 'reports', 'quality', 'scorecard.json')
-  const scorecard = await readJson(scorecardPath, null)
+  const scorecard = await readJson(scorecardPath)
   if (scorecard) {
     checks.qualityRefreshed = { pass: true, detail: 'scorecard.json found' }
   } else {

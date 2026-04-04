@@ -1,5 +1,12 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
+import {
+  parseArgs,
+  ensureDir,
+  readText,
+  out,
+  fail,
+} from './eros-utils.mjs'
 
 // ---------------------------------------------------------------------------
 // eros-log.mjs — Decision & Approval Logger
@@ -14,38 +21,6 @@ import path from 'node:path'
 //   quality-gate — log Phase 5 completion gate result
 // ---------------------------------------------------------------------------
 
-const parseArgs = (argv) => {
-  const args = { _: [] }
-  for (let i = 0; i < argv.length; i++) {
-    const token = argv[i]
-    if (!token.startsWith('--')) {
-      args._.push(token)
-      continue
-    }
-    const key = token.slice(2)
-    const next = argv[i + 1]
-    if (!next || next.startsWith('--')) {
-      args[key] = true
-      continue
-    }
-    args[key] = next
-    i++
-  }
-  return args
-}
-
-const ensureDir = async (dirPath) => {
-  await fs.mkdir(dirPath, { recursive: true })
-}
-
-const readText = async (filePath) => {
-  try {
-    return await fs.readFile(filePath, 'utf8')
-  } catch {
-    return null
-  }
-}
-
 const appendLine = async (filePath, line) => {
   await ensureDir(path.dirname(filePath))
   const existing = await readText(filePath)
@@ -58,15 +33,6 @@ const appendLine = async (filePath, line) => {
 
 const timestamp = () => new Date().toISOString().slice(0, 19).replace('T', ' ')
 const dateStamp = () => new Date().toISOString().slice(0, 10)
-
-const out = (obj) => {
-  process.stdout.write(JSON.stringify(obj, null, 2) + '\n')
-}
-
-const fail = (msg) => {
-  process.stderr.write(`Error: ${msg}\n`)
-  process.exit(1)
-}
 
 // ---------------------------------------------------------------------------
 // Subcommands
