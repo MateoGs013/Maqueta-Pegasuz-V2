@@ -77,15 +77,15 @@ const pct = (done, total) => total > 0 ? Math.round(done / total * 100) : 0
 </template>
 
 <style scoped>
-.list-page { flex: 1; overflow-y: auto; }
+.list-page { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  max-width: 1200px;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  flex: 1;
   gap: 1px;
   background: var(--line);
-  margin: 0;
 }
 
 .card {
@@ -93,7 +93,6 @@ const pct = (done, total) => total > 0 ? Math.round(done / total * 100) : 0
   background: var(--bg);
   text-decoration: none; color: inherit;
   transition: background 150ms;
-  min-height: 160px;
 }
 .card:hover { background: var(--surface); }
 .card:hover .card-name { color: var(--accent); }
@@ -170,6 +169,6 @@ const pct = (done, total) => total > 0 ? Math.round(done / total * 100) : 0
 .empty-msg { font: 600 16px var(--font-display); color: var(--text-muted); margin-bottom: 8px; }
 .empty code { padding: 1px 4px; background: var(--surface); color: var(--accent); font: 500 11px var(--font-mono); }
 
-@media (max-width: 700px) { .cards { grid-template-columns: 1fr; } }
-@media (min-width: 1400px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .cards { grid-template-columns: 1fr; } }
 </style>
