@@ -10,6 +10,7 @@
  */
 
 import path from 'node:path'
+import { execFile } from 'node:child_process'
 import {
   parseArgs,
   exists,
@@ -305,23 +306,20 @@ const cmdQuery = async (projectDir) => {
 // Subcommand: start
 // ---------------------------------------------------------------------------
 
-const cmdStart = async (projectDir, taskId) => {
-  if (!taskId) fail('Missing --task argument.')
-
+// Internal version: mutates state+queue, persists, returns result (no stdout)
+const startInternal = async (projectDir, taskId) => {
   const { stateJson, queueJson } = await loadState(projectDir)
 
   const found = findTaskInQueue(queueJson, taskId)
   if (!found) fail(`Task "${taskId}" not found in queue.`)
   if (found.list !== 'pending') fail(`Task "${taskId}" is ${found.task.status}, expected pending.`)
 
-  // Move from pending to active
   const task = removeTaskFromList(queueJson, 'pending', found.index)
   task.status = 'in_progress'
   task.attempt = 1
   task.startedAt = new Date().toISOString()
   queueJson.active.push(task)
 
-  // Update state
   const phase = detectPhase(taskId, queueJson)
   stateJson.currentPhase = phase
   stateJson.currentTask = taskId
@@ -332,21 +330,19 @@ const cmdStart = async (projectDir, taskId) => {
   stateJson.nextAction = describeNextAction(task)
 
   await persistAll(projectDir, stateJson, queueJson)
+  return { taskId: task.id, status: 'in_progress', attempt: 1 }
+}
 
-  outputJson({
-    taskId: task.id,
-    status: 'in_progress',
-    attempt: 1,
-  })
+const cmdStart = async (projectDir, taskId) => {
+  if (!taskId) fail('Missing --task argument.')
+  outputJson(await startInternal(projectDir, taskId))
 }
 
 // ---------------------------------------------------------------------------
 // Subcommand: advance
 // ---------------------------------------------------------------------------
 
-const cmdAdvance = async (projectDir, taskId, score, decision, gateResult) => {
-  if (!taskId) fail('Missing --task argument.')
-
+const advanceInternal = async (projectDir, taskId, score, decision, gateResult) => {
   const { stateJson, queueJson } = await loadState(projectDir)
 
   const found = findTaskInQueue(queueJson, taskId)
@@ -371,7 +367,6 @@ const cmdAdvance = async (projectDir, taskId, score, decision, gateResult) => {
     )
   }
 
-  // Only allow advance if gate verdict is APPROVE or task is being flagged
   if (gateData.verdict !== 'APPROVE' && decision !== 'flagged') {
     fail(
       `Gate enforcement: gate verdict is "${gateData.verdict}", not APPROVE. ` +
@@ -379,7 +374,6 @@ const cmdAdvance = async (projectDir, taskId, score, decision, gateResult) => {
     )
   }
 
-  // Move from active to done
   const task = removeTaskFromList(queueJson, 'active', found.index)
   task.status = 'done'
   task.completedAt = new Date().toISOString()
@@ -387,13 +381,11 @@ const cmdAdvance = async (projectDir, taskId, score, decision, gateResult) => {
   if (decision) task.decision = decision
   queueJson.done.push(task)
 
-  // Find next pending task
   const nextTask = nextPendingTask(queueJson)
   const previousPhase = detectPhase(taskId, queueJson)
   const newPhase = nextTask ? detectPhase(nextTask.id, queueJson) : previousPhase
   const phaseTransitioned = previousPhase !== newPhase
 
-  // Update state
   stateJson.currentPhase = newPhase
   stateJson.currentTask = nextTask ? nextTask.id : null
   stateJson.taskStatus = nextTask ? 'pending' : 'idle'
@@ -404,21 +396,19 @@ const cmdAdvance = async (projectDir, taskId, score, decision, gateResult) => {
 
   await persistAll(projectDir, stateJson, queueJson)
 
-  outputJson({
-    previousTask: taskId,
-    newTask: nextTask ? nextTask.id : null,
-    phase: newPhase,
-    phaseTransitioned,
-  })
+  return { previousTask: taskId, newTask: nextTask ? nextTask.id : null, phase: newPhase, phaseTransitioned }
+}
+
+const cmdAdvance = async (projectDir, taskId, score, decision, gateResult) => {
+  if (!taskId) fail('Missing --task argument.')
+  outputJson(await advanceInternal(projectDir, taskId, score, decision, gateResult))
 }
 
 // ---------------------------------------------------------------------------
 // Subcommand: retry
 // ---------------------------------------------------------------------------
 
-const cmdRetry = async (projectDir, taskId, reason) => {
-  if (!taskId) fail('Missing --task argument.')
-
+const retryInternal = async (projectDir, taskId, reason) => {
   const { stateJson, queueJson } = await loadState(projectDir)
 
   const found = findTaskInQueue(queueJson, taskId)
@@ -430,53 +420,44 @@ const cmdRetry = async (projectDir, taskId, reason) => {
   const escalated = newAttempt > RETRY_MAX
 
   if (escalated) {
-    // Auto-escalate to flag
-    return cmdFlag(projectDir, taskId, reason || `${RETRY_MAX} retries exhausted`)
+    return flagInternal(projectDir, taskId, reason || `${RETRY_MAX} retries exhausted`)
   }
 
-  // Update attempt counter
   task.attempt = newAttempt
   task.status = 'in_progress'
   if (reason) task.lastRetryReason = reason
 
-  // Update state
   stateJson.attempt = newAttempt
   stateJson.taskStatus = 'in_progress'
   stateJson.retriesUsed = (stateJson.retriesUsed || 0) + 1
 
   await persistAll(projectDir, stateJson, queueJson)
 
-  outputJson({
-    taskId: task.id,
-    attempt: newAttempt,
-    maxRetries: RETRY_MAX,
-    escalated: false,
-  })
+  return { taskId: task.id, attempt: newAttempt, maxRetries: RETRY_MAX, escalated: false }
+}
+
+const cmdRetry = async (projectDir, taskId, reason) => {
+  if (!taskId) fail('Missing --task argument.')
+  outputJson(await retryInternal(projectDir, taskId, reason))
 }
 
 // ---------------------------------------------------------------------------
 // Subcommand: flag
 // ---------------------------------------------------------------------------
 
-const cmdFlag = async (projectDir, taskId, reason) => {
-  if (!taskId) fail('Missing --task argument.')
-
+const flagInternal = async (projectDir, taskId, reason) => {
   const { stateJson, queueJson } = await loadState(projectDir)
 
   const found = findTaskInQueue(queueJson, taskId)
   if (!found) fail(`Task "${taskId}" not found in queue.`)
 
-  // Remove from current list
   const task = removeTaskFromList(queueJson, found.list, found.index)
   task.status = 'flagged'
   task.completedAt = new Date().toISOString()
   if (reason) task.reason = reason
   queueJson.done.push(task)
 
-  // Find next pending task
   const nextTask = nextPendingTask(queueJson)
-
-  // Update state
   const newPhase = nextTask ? detectPhase(nextTask.id, queueJson) : stateJson.currentPhase
   stateJson.currentPhase = newPhase
   stateJson.currentTask = nextTask ? nextTask.id : null
@@ -488,12 +469,12 @@ const cmdFlag = async (projectDir, taskId, reason) => {
 
   await persistAll(projectDir, stateJson, queueJson)
 
-  outputJson({
-    taskId: task.id,
-    status: 'flagged',
-    reason: reason || null,
-    newTask: nextTask ? nextTask.id : null,
-  })
+  return { taskId: task.id, status: 'flagged', reason: reason || null, newTask: nextTask ? nextTask.id : null }
+}
+
+const cmdFlag = async (projectDir, taskId, reason) => {
+  if (!taskId) fail('Missing --task argument.')
+  outputJson(await flagInternal(projectDir, taskId, reason))
 }
 
 // ---------------------------------------------------------------------------
@@ -684,6 +665,205 @@ const cmdCheckGate = async (projectDir) => {
 }
 
 // ---------------------------------------------------------------------------
+// Helper: call another eros script via execFile (returns parsed JSON)
+// ---------------------------------------------------------------------------
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'))
+
+const callScript = (script, args) => {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.join(__dirname, script)
+    execFile('node', [scriptPath, ...args], { cwd: __dirname }, (err, stdout, stderr) => {
+      if (err) {
+        reject(new Error(`${script} ${args.join(' ')}: ${stderr || err.message}`))
+        return
+      }
+      try {
+        resolve(JSON.parse(stdout))
+      } catch {
+        resolve({ raw: stdout })
+      }
+    })
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Subcommand: next — V8 orchestrator entry point (read-only)
+// ---------------------------------------------------------------------------
+
+const cmdNext = async (projectDir) => {
+  const { stateJson, queueJson } = await loadState(projectDir)
+
+  // Determine current task: active first, then next pending
+  let taskId = null
+  const activeTask = (queueJson.active || [])[0]
+  const pendingTask = nextPendingTask(queueJson)
+
+  if (activeTask) {
+    taskId = activeTask.id
+  } else if (pendingTask) {
+    taskId = pendingTask.id
+    // Auto-start the pending task so Claude doesn't need a separate start call
+    await startInternal(projectDir, taskId)
+    // Reload state after start
+    const reloaded = await loadState(projectDir)
+    Object.assign(stateJson, reloaded.stateJson)
+    Object.assign(queueJson, reloaded.queueJson)
+  }
+
+  if (!taskId) {
+    outputJson({ action: 'complete', plan: 'All tasks finished.', step: 0, totalSteps: 0 })
+    return
+  }
+
+  // Dynamically import the orchestrator and resolve the action
+  const { resolveAction } = await import('./eros-orchestrator.mjs')
+  const action = resolveAction(taskId, stateJson, queueJson, projectDir)
+
+  outputJson(action)
+}
+
+// ---------------------------------------------------------------------------
+// Subcommand: done — V8 verify + gate + memory + advance in one call
+// ---------------------------------------------------------------------------
+
+const cmdDone = async (projectDir, resultArg) => {
+  const { stateJson, queueJson } = await loadState(projectDir)
+
+  // Find the current active task
+  const activeTask = (queueJson.active || [])[0]
+  if (!activeTask) {
+    fail('No active task to complete. Call "next" first.')
+  }
+  const taskId = activeTask.id
+
+  // Parse result
+  let result = { success: true }
+  if (resultArg && resultArg !== true) {
+    try {
+      result = JSON.parse(resultArg)
+    } catch {
+      result = { success: true, note: resultArg }
+    }
+  }
+
+  // Import orchestrator functions
+  const { resolveAction, verifyOutputs, resolveMemoryHooks, needsGate, resolveRecovery } =
+    await import('./eros-orchestrator.mjs')
+
+  // Get the action definition to know expected outputs
+  const actionDef = resolveAction(taskId, stateJson, queueJson, projectDir)
+  const expectedOutputs = actionDef.expectedOutputs || []
+
+  // Step 1: Verify outputs (deterministic file check)
+  const verification = await verifyOutputs(projectDir, expectedOutputs)
+
+  if (!verification.passed && expectedOutputs.length > 0) {
+    // Outputs missing or invalid → auto-retry without touching gate
+    const attempt = activeTask.attempt || 1
+    const recovery = resolveRecovery(taskId, {
+      reason: 'Output verification failed',
+      missingOutputs: verification.details.filter((d) => !d.passed).map((d) => d.file),
+    }, attempt)
+
+    if (recovery.escalateToFlag) {
+      // Max retries reached, flag it
+      try { await callScript('eros-log.mjs', ['flag', '--project', projectDir, '--task', taskId, '--reason', 'Output verification failed after max retries']) } catch { /* best effort */ }
+      await flagInternal(projectDir, taskId, 'Output verification failed after max retries')
+      const reloaded = await loadState(projectDir)
+      const nextAction = resolveAction(reloaded.stateJson.currentTask, reloaded.stateJson, reloaded.queueJson, projectDir)
+      outputJson({ result: { verdict: 'FLAG', reason: 'Output verification failed' }, next: nextAction })
+    } else {
+      await retryInternal(projectDir, taskId, 'Output verification failed')
+      // Return same action with recovery context
+      const retryAction = resolveAction(taskId, stateJson, queueJson, projectDir)
+      retryAction.retryContext = recovery.retryContext
+      outputJson({ result: { verdict: 'RETRY', reason: 'Output verification failed', details: verification.details }, next: retryAction })
+    }
+    return
+  }
+
+  // Step 2: Run gate (if applicable)
+  let gateVerdict = 'APPROVE'
+  let gateScore = null
+  let gateReason = null
+
+  if (needsGate(taskId)) {
+    try {
+      const gateResult = await callScript('eros-gate.mjs', ['post', '--project', projectDir, '--task', taskId])
+      gateVerdict = gateResult.verdict || 'APPROVE'
+      gateScore = gateResult.score ?? null
+      gateReason = gateResult.reason || null
+    } catch (err) {
+      // Gate script failed — treat as APPROVE to not block pipeline
+      gateVerdict = 'APPROVE'
+      gateReason = `Gate script error: ${err.message}`
+    }
+  }
+
+  // Step 3: Act on verdict
+  if (gateVerdict === 'APPROVE') {
+    // Log approval
+    const logArgs = ['approve', '--project', projectDir, '--task', taskId]
+    if (gateScore != null) logArgs.push('--score', String(gateScore))
+    if (result.signature) logArgs.push('--signature', result.signature)
+    try { await callScript('eros-log.mjs', logArgs) } catch { /* best effort */ }
+
+    // Fire memory hooks
+    const hooks = resolveMemoryHooks(taskId, { ...result, verdict: 'APPROVE', score: gateScore }, stateJson)
+    for (const hook of hooks) {
+      try {
+        await callScript('eros-memory.mjs', ['learn', '--event', hook.event, '--data', JSON.stringify(hook.data)])
+      } catch { /* best effort — memory hooks should not block pipeline */ }
+    }
+
+    // Advance state (write gate file first so advance doesn't complain)
+    const gateFilePath = path.join(projectDir, '.brain', 'gates', `${taskId.replace(/\//g, '--')}.json`)
+    await ensureDir(path.dirname(gateFilePath))
+    await writeJson(gateFilePath, { verdict: 'APPROVE', score: gateScore, reason: gateReason, timestamp: new Date().toISOString() })
+
+    await advanceInternal(projectDir, taskId, gateScore, 'approved')
+
+    // Compute next action
+    const reloaded = await loadState(projectDir)
+    const nextAction = resolveAction(reloaded.stateJson.currentTask, reloaded.stateJson, reloaded.queueJson, projectDir)
+
+    outputJson({ result: { verdict: 'APPROVE', score: gateScore }, next: nextAction })
+
+  } else if (gateVerdict === 'RETRY') {
+    const attempt = activeTask.attempt || 1
+    const recovery = resolveRecovery(taskId, {
+      reason: gateReason,
+      score: gateScore,
+      threshold: result.threshold,
+      weakDimensions: result.weakDimensions,
+      missingSignature: result.missingSignature,
+    }, attempt)
+
+    if (recovery.escalateToFlag) {
+      try { await callScript('eros-log.mjs', ['flag', '--project', projectDir, '--task', taskId, '--reason', gateReason || 'Gate retry limit reached']) } catch { /* best effort */ }
+      await flagInternal(projectDir, taskId, gateReason || 'Gate retry limit reached')
+      const reloaded = await loadState(projectDir)
+      const nextAction = resolveAction(reloaded.stateJson.currentTask, reloaded.stateJson, reloaded.queueJson, projectDir)
+      outputJson({ result: { verdict: 'FLAG', score: gateScore, reason: gateReason }, next: nextAction })
+    } else {
+      await retryInternal(projectDir, taskId, gateReason || 'Gate returned RETRY')
+      const retryAction = resolveAction(taskId, stateJson, queueJson, projectDir)
+      retryAction.retryContext = recovery.retryContext
+      outputJson({ result: { verdict: 'RETRY', score: gateScore, reason: gateReason }, next: retryAction })
+    }
+
+  } else {
+    // FLAG
+    try { await callScript('eros-log.mjs', ['flag', '--project', projectDir, '--task', taskId, '--reason', gateReason || 'Gate returned FLAG']) } catch { /* best effort */ }
+    await flagInternal(projectDir, taskId, gateReason || 'Gate returned FLAG')
+    const reloaded = await loadState(projectDir)
+    const nextAction = resolveAction(reloaded.stateJson.currentTask, reloaded.stateJson, reloaded.queueJson, projectDir)
+    outputJson({ result: { verdict: 'FLAG', score: gateScore, reason: gateReason }, next: nextAction })
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main dispatcher
 // ---------------------------------------------------------------------------
 
@@ -715,6 +895,14 @@ const COMMANDS = {
   'check-gate': async (args) => {
     const projectDir = resolveProjectDir(args)
     await cmdCheckGate(projectDir)
+  },
+  next: async (args) => {
+    const projectDir = resolveProjectDir(args)
+    await cmdNext(projectDir)
+  },
+  done: async (args) => {
+    const projectDir = resolveProjectDir(args)
+    await cmdDone(projectDir, args.result)
   },
 }
 
