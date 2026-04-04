@@ -107,7 +107,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
         </button>
       </div>
 
-      <div class="sb-foot"><span>.claude/ — v7</span></div>
+      <div class="sb-foot"><span>.claude/ — v8</span></div>
     </aside>
 
     <div class="main-area">

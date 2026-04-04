@@ -108,6 +108,40 @@ const activeRun = computed(() => {
   return safeRun(raw)
 })
 
+// ── Observer V2 data (6 layers) ──
+
+const observerV2 = shallowRef(null)
+
+const fetchObserverV2 = async (slug) => {
+  if (!slug) return
+  try {
+    const res = await fetch(`/__eros/observer?project=${slug}`)
+    if (res.ok) observerV2.value = await res.json()
+  } catch { /* not available */ }
+}
+
+export const observerManifest = computed(() => observerV2.value)
+export const observerGeometry = computed(() => observerV2.value?.geometry || null)
+export const observerAesthetics = computed(() => observerV2.value?.aesthetics || null)
+export const observerSemantic = computed(() => observerV2.value?.semantic || null)
+export const observerAntiTemplate = computed(() => observerV2.value?.antiTemplate || null)
+export const observerExcellence = computed(() => {
+  const s = observerV2.value?.excellenceSignals
+  if (!s) return null
+  return {
+    composition: { score: s._scores?.composition, signal: s.composition },
+    depth: { score: s._scores?.depth, signal: s.depth },
+    typography: { score: s._scores?.typography, signal: s.typography },
+    motion: { score: s._scores?.motion, signal: s.motion },
+    craft: { score: s._scores?.craft, signal: s.craft },
+  }
+})
+export const observerQualityGates = computed(() => observerV2.value?.qualityGates || null)
+export const refreshObserverV2 = fetchObserverV2
+
+// Auto-fetch observer V2 for the active run
+try { fetchObserverV2(requestedRunId || runtimeCache.value?.defaultRunId || runtimeCache.value?.runs?.[0]?.id) } catch {}
+
 // ── Derived reactive state ──
 
 export const activeRunId = computed(() => activeRun.value.id)

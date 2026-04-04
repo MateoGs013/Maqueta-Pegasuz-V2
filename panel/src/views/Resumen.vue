@@ -1,11 +1,24 @@
 <script setup>
+import { computed } from 'vue'
 import {
   healthCards,
   observerSignals,
+  observerExcellence,
+  observerGeometry,
+  observerAesthetics,
   runOverview,
   queueColumns,
   timeline,
 } from '@/data/frontBrain.js'
+
+const hasV2 = computed(() => observerExcellence.value !== null)
+const v2Dims = computed(() => {
+  const e = observerExcellence.value
+  if (!e) return []
+  return ['composition', 'depth', 'typography', 'motion', 'craft'].map(k => ({
+    key: k, score: e[k]?.score, signal: e[k]?.signal,
+  }))
+})
 
 const phase = {
   discovery: 'Descubrimiento', creative: 'Creativo', scaffold: 'Estructura',
@@ -47,10 +60,15 @@ const hl = { 'Health Index': 'Salud', Maturity: 'Madurez', 'Visual Debt': 'Deuda
       </div>
     </div>
 
-    <!-- SIGNALS -->
+    <!-- SIGNALS: V2 continuous or V1 binary -->
     <div class="cell signals-cell">
-      <p class="label">Observer</p>
-      <div class="pills">
+      <p class="label">Observer{{ hasV2 ? ' V2' : '' }}</p>
+      <div v-if="hasV2" class="pills">
+        <span v-for="d in v2Dims" :key="d.key" class="pill" :class="`pill--${d.score >= 8 ? 'strong' : d.score >= 5 ? 'medium' : 'weak'}`">
+          {{ d.key }}: {{ d.score?.toFixed(1) }}
+        </span>
+      </div>
+      <div v-else class="pills">
         <span v-for="s in observerSignals" :key="s.id" class="pill" :class="`pill--${s.tone}`">
           {{ s.label }}: {{ s.value }}
         </span>

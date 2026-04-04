@@ -113,6 +113,23 @@ export default function erosPlugin() {
         res.end(JSON.stringify({ watchActive: !!watchProcess, logCount: logs.length }))
       })
 
+      // REST: observer V2 manifest for a project
+      server.middlewares.use('/__eros/observer', async (req, res) => {
+        const url = new URL(req.url, `http://${req.headers.host}`)
+        const slug = url.searchParams.get('project')
+        if (!slug) { res.writeHead(400); res.end('{"error":"?project= required"}'); return }
+        try {
+          const os = await import('node:os')
+          const manifestPath = path.join(os.default.homedir(), 'Desktop', slug, '.brain', 'observer', 'localhost', 'manifest.json')
+          const raw = await fsP.readFile(manifestPath, 'utf8')
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(raw)
+        } catch (e) {
+          res.writeHead(404, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: e.message }))
+        }
+      })
+
       // REST: full memory data (all design-intelligence JSON files)
       server.middlewares.use('/__eros/memory-data', async (req, res) => {
         const memDir = path.resolve(__dirname, '..', '.claude', 'memory', 'design-intelligence')

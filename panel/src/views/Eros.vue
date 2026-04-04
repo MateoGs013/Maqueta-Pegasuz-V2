@@ -6,7 +6,10 @@ import {
   erosMemoryRules,
   memoryTechniques,
   memoryFonts,
+  observerExcellence,
 } from '@/data/frontBrain.js'
+
+const hasV2 = computed(() => observerExcellence.value !== null)
 
 const maxScore = computed(() => {
   const scores = memoryTechniques.value.map((t) => t.score)
