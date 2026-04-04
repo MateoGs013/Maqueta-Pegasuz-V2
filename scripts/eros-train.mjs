@@ -506,6 +506,181 @@ const updateCalibration = async (project, feedback) => {
   await writeJson(calPath, cal)
 }
 
+/**
+ * auto — Automatic training from observer scores.
+ * Uses the observer's finalScore as the rating for each section.
+ * No manual rating needed — just run it and the project's quality
+ * data flows into memory.
+ *
+ * Optional: --override "S-Hero:9,S-CTA:6" to override specific sections
+ * Optional: --min-score 5 to skip sections below a threshold
+ */
+const cmdAuto = async (args) => {
+  const project = args.project
+  if (!project) fail('--project is required')
+
+  const slug = path.basename(project)
+  const brainDir = path.join(project, '.brain')
+
+  // Read scorecard for the overall score
+  const scorecard = await readJson(path.join(brainDir, 'reports', 'quality', 'scorecard.json'))
+  const observerJson = await readJson(path.join(brainDir, 'reports', 'quality', 'observer.json'))
+  const manifest = await readJson(path.join(brainDir, 'observer', 'localhost', 'manifest.json'))
+
+  const overallScore = scorecard?.finalScore || scorecard?.observerScore || 0
+  if (overallScore === 0) fail('No observer scores found. Run observer + refresh-quality first.')
+
+  // Get excellence signals
+  const signals = manifest?.excellenceSignals || observerJson?.dimensions || {}
+  const rawScores = manifest?.excellenceSignals?._scores || {}
+
+  // Parse overrides: "S-Hero:9,S-CTA:6"
+  const overrides = {}
+  if (args.override) {
+    args.override.split(',').forEach(pair => {
+      const [name, score] = pair.split(':')
+      if (name && score) overrides[name.trim()] = parseFloat(score)
+    })
+  }
+
+  const minScore = parseFloat(args['min-score'] || '0')
+
+  // Find all section components
+  const sectionsDir = path.join(project, 'src', 'components', 'sections')
+  let sectionFiles = []
+  try {
+    const readSectionsRecursive = async (dir, prefix = '') => {
+      const entries = await fs.readdir(dir, { withFileTypes: true })
+      for (const e of entries) {
+        if (e.isFile() && e.name.endsWith('.vue')) {
+          sectionFiles.push(prefix + e.name.replace('.vue', ''))
+        } else if (e.isDirectory()) {
+          await readSectionsRecursive(path.join(dir, e.name), e.name + '/')
+        }
+      }
+    }
+    await readSectionsRecursive(sectionsDir)
+  } catch { /* no sections dir */ }
+
+  if (sectionFiles.length === 0) fail('No section components found in src/components/sections/')
+
+  // Use observer score as the rating for all sections
+  // Individual sections don't have per-section scores from the observer,
+  // so we use the overall observer score as the baseline
+  const observerScore = scorecard?.observerScore || overallScore
+  let memoryUpdates = 0
+  const processed = []
+  const skipped = []
+
+  for (const section of sectionFiles) {
+    const sectionName = section.includes('/') ? section.split('/').pop() : section
+    const rating = overrides[sectionName] ?? overrides[section] ?? observerScore
+
+    if (rating < minScore) {
+      skipped.push({ section, reason: `score ${rating} < min ${minScore}` })
+      continue
+    }
+
+    // Derive section type from name
+    const nameLower = sectionName.toLowerCase()
+    const sectionType = nameLower.includes('hero') ? 'hero' :
+      nameLower.includes('cta') ? 'cta' :
+      nameLower.includes('footer') ? 'footer' :
+      nameLower.includes('pricing') ? 'pricing' :
+      nameLower.includes('testimonial') ? 'testimonial' :
+      nameLower.includes('contact') ? 'contact' :
+      nameLower.includes('work') || nameLower.includes('project') ? 'portfolio' :
+      nameLower.includes('about') ? 'about' : 'feature'
+
+    try {
+      await callMemory([
+        'learn', '--event', 'section_approved',
+        '--data', JSON.stringify({
+          project: slug,
+          section: sectionName,
+          sectionType,
+          score: rating,
+          userRating: rating,
+          layout: '',
+          motion: '',
+          technique: '',
+          signature: '',
+          feedback: `Auto-trained from observer score ${observerScore}`,
+        }),
+      ])
+      memoryUpdates++
+      processed.push({ section: sectionName, type: sectionType, rating })
+    } catch (err) {
+      skipped.push({ section, reason: err.message })
+    }
+  }
+
+  // Learn the font pairing if DESIGN.md exists
+  const designMd = await readText(path.join(project, 'DESIGN.md'))
+  if (designMd) {
+    // Try to extract font info
+    const fontMatch = designMd.match(/display.*?[:\s]+['"]?([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)/i)
+    const bodyMatch = designMd.match(/body.*?[:\s]+['"]?([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)/i)
+    if (fontMatch) {
+      try {
+        await callMemory([
+          'learn', '--event', 'font_selected',
+          '--data', JSON.stringify({
+            project: slug,
+            mood: 'auto-detected',
+            display: fontMatch[1],
+            body: bodyMatch?.[1] || '—',
+            reaction: `auto-trained (score: ${overallScore})`,
+            lesson: `From ${slug} auto-training`,
+          }),
+        ])
+        memoryUpdates++
+      } catch { /* non-fatal */ }
+    }
+  }
+
+  // Update calibration
+  const feedbackPath = path.join(brainDir, 'training', 'feedback.json')
+  const existingFeedback = (await readJson(feedbackPath)) || { projectSlug: slug, sections: [] }
+  existingFeedback.sections = processed.map(p => ({
+    name: p.section,
+    brainScore: observerScore,
+    userRating: p.rating,
+    feedback: null,
+    keepSignature: null,
+  }))
+  existingFeedback.overallRating = overallScore
+  await writeJson(feedbackPath, existingFeedback)
+  await updateCalibration(project, existingFeedback)
+
+  // Promote rules
+  let promotions = []
+  try {
+    const promoteResult = await callMemory(['promote'])
+    promotions = promoteResult.promoted || []
+  } catch { /* non-fatal */ }
+
+  // Get updated stats
+  let stats = null
+  try {
+    stats = await callMemory(['stats'])
+  } catch { /* non-fatal */ }
+
+  out({
+    project: slug,
+    observerScore,
+    overallScore,
+    sectionsProcessed: processed.length,
+    sectionsSkipped: skipped.length,
+    memoryUpdates,
+    rulesPromoted: promotions.length,
+    sections: processed,
+    skipped: skipped.length > 0 ? skipped : undefined,
+    excellence: signals,
+    stats: stats ? { totalDataPoints: stats.totalDataPoints, calibrationBias: stats.calibration?.globalBias } : undefined,
+  })
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -520,12 +695,13 @@ const main = async () => {
     ingest: cmdIngest,
     rate: cmdRate,
     calibrate: cmdCalibrate,
+    auto: cmdAuto,
   }
 
   const handler = commands[subcommand]
   if (!handler) {
     fail(
-      `Unknown subcommand: ${subcommand}\nUsage: node eros-train.mjs <init|ingest|rate|calibrate> [options]`
+      `Unknown subcommand: ${subcommand}\nUsage: node eros-train.mjs <init|ingest|rate|calibrate|auto> [options]`
     )
   }
 
