@@ -127,20 +127,24 @@ export const observerSemantic = computed(() => observerV2.value?.semantic || nul
 export const observerAntiTemplate = computed(() => observerV2.value?.antiTemplate || null)
 export const observerExcellence = computed(() => {
   const s = observerV2.value?.excellenceSignals
-  if (!s) return null
+  if (!s || !s._scores) return null
+  const scores = s._scores
+  const signals = scores.signals || s
   return {
-    composition: { score: s._scores?.composition, signal: s.composition },
-    depth: { score: s._scores?.depth, signal: s.depth },
-    typography: { score: s._scores?.typography, signal: s.typography },
-    motion: { score: s._scores?.motion, signal: s.motion },
-    craft: { score: s._scores?.craft, signal: s.craft },
+    composition: { score: scores.composition, signal: signals.composition || s.composition },
+    depth: { score: scores.depth, signal: signals.depth || s.depth },
+    typography: { score: scores.typography, signal: signals.typography || s.typography },
+    motion: { score: scores.motion, signal: signals.motion || s.motion },
+    craft: { score: scores.craft, signal: signals.craft || s.craft },
   }
 })
 export const observerQualityGates = computed(() => observerV2.value?.qualityGates || null)
 export const refreshObserverV2 = fetchObserverV2
 
 // Auto-fetch observer V2 for the active run
-try { fetchObserverV2(requestedRunId || runtimeCache.value?.defaultRunId || runtimeCache.value?.runs?.[0]?.id) } catch {}
+// Try all projects until one has V2 data
+const activeSlug = requestedRunId || runtimeCache.value?.defaultRunId || runtimeCache.value?.runs?.[0]?.id
+fetchObserverV2(activeSlug)
 
 // ── Derived reactive state ──
 
