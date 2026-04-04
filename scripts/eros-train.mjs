@@ -282,42 +282,12 @@ const processReviewFeedback = async (project, slug, allSections, observerScore, 
     const correction = corrections.find(c => c.section === sectionName)
     const isBulk = !isApproved && !correction && bulkApprove
 
-    if (isApproved || isBulk) {
-      // Confirm brain score — but with a slight user bump (+0.3) to avoid delta=0
-      const userRating = Math.min(10, observerScore + 0.3)
-      try {
-        await callMemory(['learn', '--event', 'section_approved', '--data', JSON.stringify({
-          project: slug,
-          section: sectionName,
-          sectionType: inferSectionType(sectionName),
-          score: observerScore,
-          userRating,
-          layout: '', motion: '', technique: '', signature: '',
-          feedback: isApproved ? 'Explicitly approved by user' : 'Bulk approved',
-        })])
-        memoryUpdates++
-      } catch { /* non-fatal */ }
-    }
+    // Approved/bulk sections: only update calibration (no empty patterns).
+    // Patterns are learned during project BUILD (with real layout/motion/technique),
+    // not during review. Writing empty entries here was polluting memory.
 
     if (correction) {
-      // Score penalty based on severity
-      const penalty = correction.severity === 'bad' ? -2 : correction.severity === 'needs-work' ? -0.5 : 0
-      const userRating = Math.max(1, observerScore + penalty)
-
-      try {
-        await callMemory(['learn', '--event', 'section_approved', '--data', JSON.stringify({
-          project: slug,
-          section: sectionName,
-          sectionType: inferSectionType(sectionName),
-          score: observerScore,
-          userRating,
-          layout: '', motion: '', technique: '', signature: '',
-          feedback: correction.feedback || '',
-        })])
-        memoryUpdates++
-      } catch { /* non-fatal */ }
-
-      // Also write as revision pattern
+      // Corrections: write as revision pattern (this IS useful learning)
       if (correction.feedback) {
         try {
           await callMemory(['learn', '--event', 'user_change', '--data', JSON.stringify({
