@@ -439,10 +439,16 @@ const ACTION_MAP = [
     test: /^cleanup\/retrospective$/,
     resolve: (taskId, state, queue, project) => ({
       action: 'run-script',
-      command: `node "${p(SCRIPTS, 'eros-memory.mjs')}" stats && node "${p(SCRIPTS, 'eros-train.mjs')}" correct --project "${project}" && node "${p(SCRIPTS, 'eros-train.mjs')}" review --project "${project}"`,
+      command: [
+        `node "${p(SCRIPTS, 'eros-memory.mjs')}" stats`,
+        `node "${p(SCRIPTS, 'eros-train.mjs')}" correct --project "${project}"`,
+        `node "${p(SCRIPTS, 'eros-train.mjs')}" review --project "${project}"`,
+        `node "${p(SCRIPTS, 'eros-meta.mjs')}" reflect --project "${project}"`,
+        `node "${p(SCRIPTS, 'eros-meta.mjs')}" personality`,
+      ].join(' && '),
       expectedOutputs: [],
       onFailure: 'flag',
-      plan: 'Phase 6: Retrospective. Running memory stats, auto-correct from diffs, and smart review.',
+      plan: 'Phase 6: Retrospective. Running memory stats, auto-correct, smart review, reflect, and personality evolution.',
     }),
   },
   {
