@@ -307,6 +307,74 @@ const main = async () => {
     ])
     assert(retryResult2.status === 'flagged', 'retry auto-escalates to flag after max retries')
 
+    // ══════════════════════════════════════════════════
+    // 9. Orchestrator V8 (next + done)
+    // ══════════════════════════════════════════════════
+    process.stdout.write(`\n\x1b[1m9. Orchestrator V8\x1b[0m\n`)
+
+    // Reset state for orchestrator tests
+    await fs.writeFile(path.join(brainDir, 'state.json'), JSON.stringify({
+      project: { name: 'Test Project', slug: 'test-project', type: 'portfolio' },
+      mode: 'autonomous',
+      currentPhase: 'creative',
+      currentTask: null,
+      taskStatus: 'idle',
+      attempt: 0,
+      healthIndex: 50,
+      maturityScore: 0,
+      retriesUsed: 0,
+      retryBudget: 6,
+      filesCreated: 0,
+      sections: { done: 0, total: 0 },
+      blocker: null,
+      nextAction: null,
+    }, null, 2))
+
+    await fs.writeFile(path.join(brainDir, 'queue.json'), JSON.stringify({
+      active: [],
+      pending: [
+        { id: 'design/brief', agent: 'ceo', status: 'pending' },
+        { id: 'design/tokens', agent: 'designer', status: 'pending' },
+        { id: 'review/creative', agent: 'ceo', status: 'pending' },
+      ],
+      done: [{ id: 'setup/identity', agent: 'ceo', status: 'done' }],
+    }, null, 2))
+
+    // Test next returns valid action JSON
+    const nextResult = await run('eros-state.mjs', ['next', '--project', tmpDir])
+    assert(nextResult.action === 'run-script', 'next returns action type')
+    assert(nextResult.task === 'design/brief', 'next identifies correct task')
+    assert(typeof nextResult.plan === 'string', 'next includes plan context')
+    assert(nextResult.step > 0, 'next includes step number')
+    assert(nextResult.totalSteps > 0, 'next includes totalSteps')
+    assert(nextResult.phase === 'creative', 'next resolves correct phase')
+
+    // Test next for spawn-agent task
+    // Complete design/brief first (write the expected output)
+    await fs.writeFile(
+      path.join(brainDir, 'context', 'design-brief.md'),
+      'Design brief with memory insights, reference observatory, and identity data. This file has enough content to pass size check.\n'
+    )
+    const doneResult1 = await run('eros-state.mjs', ['done', '--project', tmpDir, '--result', '{"success":true}'])
+    assert(doneResult1.result.verdict === 'APPROVE', 'done approves no-gate task with valid output')
+    assert(doneResult1.next != null, 'done returns next action')
+    assert(doneResult1.next.task === 'design/tokens', 'done advances to next task')
+    assert(doneResult1.next.agent === 'designer', 'done identifies correct agent for next task')
+
+    // Test done with missing outputs → RETRY
+    const doneResult2 = await run('eros-state.mjs', ['next', '--project', tmpDir])
+    // design/tokens is now active but has no outputs → done should retry
+    const doneRetry = await run('eros-state.mjs', ['done', '--project', tmpDir, '--result', '{"success":true}'])
+    assert(doneRetry.result.verdict === 'RETRY', 'done retries when outputs missing')
+    assert(typeof doneRetry.next.retryContext === 'string', 'done includes retryContext on retry')
+
+    // Test autonomous review/creative → auto-approve
+    // Flag the tokens task to skip it, then test review/creative
+    await run('eros-state.mjs', ['flag', '--project', tmpDir, '--task', 'design/tokens', '--reason', 'skip for test'])
+    const nextReview = await run('eros-state.mjs', ['next', '--project', tmpDir])
+    assert(nextReview.task === 'review/creative', 'next picks review/creative after flag')
+    assert(nextReview.action === 'auto-approve', 'autonomous mode returns auto-approve for review')
+
     // ─── RESULTS ───
     process.stdout.write(`\n${'═'.repeat(50)}\n`)
     process.stdout.write(`\x1b[1mResults: ${passed} passed, ${failed} failed\x1b[0m\n`)
