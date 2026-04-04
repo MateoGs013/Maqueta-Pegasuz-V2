@@ -66,7 +66,6 @@ if (isPreview) {
   <!-- ── Panel mode: router handles shell selection ── -->
   <template v-else>
     <RouterView />
-    <PanelSwitcher />
   </template>
 </template>
 

@@ -3,29 +3,34 @@ import { createRouter, createWebHistory } from 'vue-router'
 export default createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', redirect: '/eros' },
+    { path: '/', redirect: '/projects' },
 
-    // ── Eros panel ──
+    // ── Main shell (sidebar: Projects / Eros / Workshop) ──
     {
-      path: '/eros',
-      component: () => import('@/components/ErosShell.vue'),
+      path: '/',
+      component: () => import('@/components/MainShell.vue'),
       children: [
-        { path: '', component: () => import('@/views/Resumen.vue') },
-        { path: 'calidad', component: () => import('@/views/Calidad.vue') },
-        { path: 'componentes', component: () => import('@/views/Componentes.vue') },
-        { path: 'system', component: () => import('@/views/Eros.vue') },
-        { path: 'training', component: () => import('@/views/Training.vue') },
+        // Projects list
+        { path: 'projects', component: () => import('@/views/projects/ProjectList.vue') },
+
+        // Eros brain
+        { path: 'eros', component: () => import('@/views/eros/ErosBrain.vue') },
+        { path: 'eros/training', component: () => import('@/views/Training.vue') },
+
+        // Workshop
+        { path: 'workshop', component: () => import('@/views/workshop/WorkshopHome.vue') },
+        { path: 'workshop/tokens', component: () => import('@/views/workshop/TokenEditor.vue') },
+        { path: 'workshop/components', component: () => import('@/views/workshop/ComponentEditor.vue') },
       ],
     },
 
-    // ── Workshop panel ──
+    // ── Per-project shell (header: Resumen / Calidad / Observer) ──
     {
-      path: '/workshop',
-      component: () => import('@/components/WorkshopShell.vue'),
+      path: '/projects/:slug',
+      component: () => import('@/views/projects/ProjectShell.vue'),
       children: [
-        { path: '', component: () => import('@/views/workshop/WorkshopHome.vue') },
-        { path: 'tokens', component: () => import('@/views/workshop/TokenEditor.vue') },
-        { path: 'components', component: () => import('@/views/workshop/ComponentEditor.vue') },
+        { path: '', component: () => import('@/views/projects/ProjectResumen.vue') },
+        { path: 'calidad', component: () => import('@/views/projects/ProjectCalidad.vue') },
       ],
     },
   ],
