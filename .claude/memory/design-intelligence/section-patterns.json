@@ -89,6 +89,36 @@
       "keyTechnique": "Contra-scroll speed differential",
       "score": 7.8,
       "userRating": null
+    },
+    {
+      "date": "2026-04-04",
+      "project": "peritas-tech",
+      "sectionType": "hero",
+      "layout": "KineticGrid 3x3 named grid",
+      "motion": "SplitText chars + clipPath index wipe + parallax",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-04",
+      "project": "peritas-tech",
+      "sectionType": "bento",
+      "layout": "Bento asymmetric 1.4fr 1fr 0.6fr",
+      "motion": "Stagger cascade 120ms",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-04",
+      "project": "peritas-tech",
+      "sectionType": "feature",
+      "layout": "Split 1fr 1.4fr with terminal overlap",
+      "motion": "Line-by-line typing + tilt interaction",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
     }
   ]
 }
