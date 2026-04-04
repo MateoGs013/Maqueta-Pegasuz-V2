@@ -375,6 +375,44 @@ const main = async () => {
     assert(nextReview.task === 'review/creative', 'next picks review/creative after flag')
     assert(nextReview.action === 'auto-approve', 'autonomous mode returns auto-approve for review')
 
+    // ══════════════════════════════════════════════════
+    // 10. Soul: Metacognition + Practice
+    // ══════════════════════════════════════════════════
+    process.stdout.write(`\n\x1b[1m10. Soul: Metacognition + Practice\x1b[0m\n`)
+
+    // Test gaps
+    const gapsResult = await run('eros-meta.mjs', ['gaps'])
+    assert(Array.isArray(gapsResult.weakSectionTypes), 'gaps returns weakSectionTypes array')
+    assert(Array.isArray(gapsResult.untouchedTechniques), 'gaps returns untouchedTechniques array')
+    assert(typeof gapsResult.suggestion === 'string', 'gaps returns suggestion string')
+    assert(gapsResult.totalDataPoints >= 0, 'gaps reports total data points')
+
+    // Test personality
+    const personalityResult = await run('eros-meta.mjs', ['personality'])
+    assert(personalityResult.identity?.name === 'Eros', 'personality has Eros identity')
+    assert(typeof personalityResult.aesthetic === 'object', 'personality has aesthetic preferences')
+    assert(personalityResult.aesthetic?.experimentBudget === 0.2, 'personality has 20% experiment budget')
+    assert(typeof personalityResult.voice?.philosophy === 'string', 'personality has philosophy')
+    assert(Array.isArray(personalityResult.values?.core), 'personality has core values')
+
+    // Test reflect (with the test project — should work even with minimal data)
+    const reflectResult = await run('eros-meta.mjs', ['reflect', '--project', tmpDir])
+    assert(typeof reflectResult.project === 'string', 'reflect returns project name')
+    assert(typeof reflectResult.tasksCompleted === 'number', 'reflect counts completed tasks')
+    assert(Array.isArray(reflectResult.whatWorked), 'reflect reports what worked')
+    assert(Array.isArray(reflectResult.whatFailed), 'reflect reports what failed')
+
+    // Test practice generate
+    const practiceResult = await run('eros-practice.mjs', ['generate'])
+    assert(typeof practiceResult.brief === 'object', 'practice generates brief object')
+    assert(practiceResult.brief.sections?.length >= 3, 'practice brief has at least 3 sections')
+    assert(typeof practiceResult.brief.mood === 'string', 'practice brief has mood')
+    assert(typeof practiceResult.brief.techniqueChallenge === 'string', 'practice brief has technique challenge')
+
+    // Test practice history
+    const historyResult = await run('eros-practice.mjs', ['history'])
+    assert(historyResult.totalRuns >= 1, 'practice history tracks runs')
+
     // ─── RESULTS ───
     process.stdout.write(`\n${'═'.repeat(50)}\n`)
     process.stdout.write(`\x1b[1mResults: ${passed} passed, ${failed} failed\x1b[0m\n`)
