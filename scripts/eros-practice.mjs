@@ -78,7 +78,7 @@ const cmdGenerate = async () => {
   }
 
   // Pick sections (target weakest types, at least 3)
-  const weakTypes = gaps.weakSectionTypes || []
+  const weakTypes = (gaps.weakSectionTypes || []).map(t => typeof t === 'string' ? t : t.type)
   const selectedSections = ['hero'] // Always include hero
   for (const type of weakTypes) {
     if (type !== 'hero' && selectedSections.length < 4 && !lastSections.includes(type)) {
@@ -93,7 +93,8 @@ const cmdGenerate = async () => {
   }
 
   // Pick technique challenge (untouched or low-evidence)
-  const techniqueChallenge = gaps.untouchedTechniques?.[0] || 'Stagger cascade'
+  const rawTech = gaps.untouchedTechniques?.[0]
+  const techniqueChallenge = (typeof rawTech === 'string' ? rawTech : rawTech?.name) || 'Stagger cascade'
 
   // Generate practice ID
   const id = `practice-${Date.now()}`
