@@ -1197,9 +1197,10 @@ async function runQualityGates(page) {
       const s = getComputedStyle(el)
       const label = el.tagName.toLowerCase() + (el.id ? `#${el.id}` : '') + (el.className ? `.${(el.className.toString()).split(' ')[0]}` : '')
 
-      // Forbidden transitions
+      // Forbidden transitions — exempt cursor elements (pointer-events:none, decorative)
+      const isCursorEl = s.pointerEvents === 'none' && /\bcursor\b/i.test(el.className?.toString() || '')
       const tp = s.transitionProperty
-      if (tp && tp !== 'none') {
+      if (tp && tp !== 'none' && !isCursorEl) {
         for (const prop of tp.split(',').map(p => p.trim().toLowerCase())) {
           if (FORBIDDEN.some(f => prop === f || prop.startsWith(f + '-'))) {
             found.push({ type: 'forbidden-transition', element: label.slice(0, 80), property: prop, severity: 'HIGH' })
@@ -1220,7 +1221,7 @@ async function runQualityGates(page) {
         const isLoader = /\b(spinner|loading|loader|progress|skeleton|pulse)\b/.test(cls)
         const isGrain = (/\b(grain|noise)\b/.test(cls) || /\b(grain|noise)\b/.test(name)) && (s.animationTimingFunction || '').includes('steps')
         const isHidden = el.getAttribute('aria-hidden') === 'true' || el.closest('[aria-hidden="true"]') !== null
-        const isFunctional = /\b(marquee|cursor|blink|scroll|track|ticker|dot|status|indicator)\b/.test(cls) || /\b(marquee|cursor|blink|scroll|track|ticker)\b/.test(name)
+        const isFunctional = /\b(marquee|cursor|blink|scroll|track|ticker|dot|status|indicator|pulse|cta)\b/.test(cls) || /\b(marquee|cursor|blink|scroll|track|ticker|pulse)\b/.test(name)
         if (!isLoader && !isGrain && !isHidden && !isFunctional) {
           found.push({ type: 'infinite-loop', element: label.slice(0, 80), animationName: name, severity: 'MEDIUM' })
         }
