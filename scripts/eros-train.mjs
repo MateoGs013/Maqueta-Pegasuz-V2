@@ -29,9 +29,9 @@ import {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const callScript = (script, args) => new Promise((resolve, reject) => {
+const callScript = (script, args, timeoutMs = 60000) => new Promise((resolve, reject) => {
   const p = path.join(__dirname, script)
-  execFile('node', [p, ...args], { cwd: __dirname, timeout: 60000 }, (err, stdout, stderr) => {
+  execFile('node', [p, ...args], { cwd: __dirname, timeout: timeoutMs }, (err, stdout, stderr) => {
     if (err) { reject(new Error(stderr || err.message)); return }
     try { resolve(JSON.parse(stdout)) } catch { resolve({ raw: stdout }) }
   })
@@ -385,7 +385,7 @@ const cmdStudy = async (args) => {
 
   let sessionResult
   try {
-    sessionResult = await callScript('eros-train-reference.mjs', ['session', '--url', url])
+    sessionResult = await callScript('eros-train-reference.mjs', ['session', '--url', url], 300000)
   } catch (err) {
     fail(`Reference analysis failed: ${err.message}`)
   }

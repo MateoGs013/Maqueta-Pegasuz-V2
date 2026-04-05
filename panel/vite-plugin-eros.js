@@ -180,7 +180,7 @@ export default function erosPlugin() {
 
       // Helper: run an eros-train.mjs subcommand and return JSON
       const runTrain = (trainArgs) => new Promise((resolve, reject) => {
-        execFileCp('node', [path.join(scriptsDir, 'eros-train.mjs'), ...trainArgs], { cwd: scriptsDir, timeout: 120000 }, (err, stdout, stderr) => {
+        execFileCp('node', [path.join(scriptsDir, 'eros-train.mjs'), ...trainArgs], { cwd: scriptsDir, timeout: 300000 }, (err, stdout, stderr) => {
           if (err) { reject(new Error(stderr || err.message)); return }
           try { resolve(JSON.parse(stdout)) } catch { resolve({ raw: stdout }) }
         })
