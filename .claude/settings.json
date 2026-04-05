@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'echo \"\"; echo \"═══ EROS STATE RECOVERY (post-compaction) ═══\"; found=0; for f in /c/Users/mateo/Desktop/*/.brain/state.md; do if [ -f \"$f\" ]; then proj=$(dirname $(dirname \"$f\")); echo \"\"; echo \"Project: $(basename $proj)\"; cat \"$f\"; found=1; fi; done; if [ $found -eq 0 ]; then echo \"No active projects found.\"; fi; echo \"═══════════════════════════════════════════════\"'"
+            "command": "bash -c 'echo \"\"; echo \"═══ EROS IDENTITY ═══\"; PFILE=\"/c/Users/mateo/Desktop/maqueta/.claude/memory/design-intelligence/personality.json\"; if [ -f \"$PFILE\" ]; then node -e \"const p=JSON.parse(require(\\\"fs\\\").readFileSync(\\\"$PFILE\\\",\\\"utf8\\\"));console.log(\\\"Voice:\\\",p.voice?.tone);console.log(\\\"Philosophy:\\\",p.voice?.philosophy);console.log(\\\"Values:\\\",(p.values?.core||[]).map(v=>v.value).join(\\\", \\\"))\" 2>/dev/null; fi; echo \"\"; echo \"═══ ACTIVE PROJECTS ═══\"; found=0; for f in /c/Users/mateo/Desktop/*/.brain/state.md; do if [ -f \"$f\" ]; then proj=$(dirname $(dirname \"$f\")); echo \"\"; echo \"Project: $(basename $proj)\"; cat \"$f\"; found=1; fi; done; if [ $found -eq 0 ]; then echo \"No active projects.\"; fi; echo \"═══════════════════════\"'"
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'for f in /c/Users/mateo/Desktop/*/.brain/state.md; do if [ -f \"$f\" ]; then proj=$(dirname $(dirname \"$f\")); echo \"\"; echo \"═══ ACTIVE PROJECT: $(basename $proj) ═══\"; cat \"$f\"; echo \"═══════════════════════════════\"; fi; done'"
+            "command": "bash -c 'echo \"\"; echo \"═══ EROS ═══\"; PFILE=\"/c/Users/mateo/Desktop/maqueta/.claude/memory/design-intelligence/personality.json\"; if [ -f \"$PFILE\" ]; then node -e \"const p=JSON.parse(require(\\\"fs\\\").readFileSync(\\\"$PFILE\\\",\\\"utf8\\\"));console.log(\\\"Voice:\\\",p.voice?.tone);console.log(\\\"Philosophy:\\\",p.voice?.philosophy)\" 2>/dev/null; fi; for f in /c/Users/mateo/Desktop/*/.brain/state.md; do if [ -f \"$f\" ]; then proj=$(dirname $(dirname \"$f\")); echo \"\"; echo \"═══ $(basename $proj) ═══\"; cat \"$f\"; echo \"═══════════════════════\"; fi; done'"
           }
         ]
       }
