@@ -335,17 +335,13 @@ const deriveObserverFromManifest = ({ manifest = null, analysisMarkdown = '', st
     })
   }
 
-  const observerScore = Number(
-    (
-      (dimensionScores.composition +
-        dimensionScores.depth +
-        dimensionScores.typography +
-        dimensionScores.motion +
-        dimensionScores.craft) /
-      5 *
-      2
-    ).toFixed(2),
-  )
+  // Observer score: average of 5 dimensions, clamped to 0-10.
+  // V1 scores were 0-5 (needed *2), V2 scores are already 0-10.
+  // Detect range: if any score > 5, assume 0-10 range (V2).
+  const dimValues = [dimensionScores.composition, dimensionScores.depth, dimensionScores.typography, dimensionScores.motion, dimensionScores.craft]
+  const isV2Range = dimValues.some(v => v > 5)
+  const avg = dimValues.reduce((a, b) => a + b, 0) / 5
+  const observerScore = Number(Math.max(0, Math.min(10, isV2Range ? avg : avg * 2)).toFixed(2))
 
   return {
     observer: {

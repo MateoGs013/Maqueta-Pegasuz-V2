@@ -55,7 +55,6 @@ const inferSectionType = (name) => {
 }
 
 const findSections = async (project) => {
-  const sectionsDir = path.join(project, 'src', 'components', 'sections')
   const results = []
   const walk = async (dir, prefix = '') => {
     let entries
@@ -68,7 +67,18 @@ const findSections = async (project) => {
       }
     }
   }
-  await walk(sectionsDir)
+  // Search multiple possible locations
+  const searchDirs = [
+    path.join(project, 'src', 'components', 'sections'),
+    path.join(project, 'src', 'pages'),
+  ]
+  for (const dir of searchDirs) {
+    await walk(dir)
+  }
+  // If still empty, try src/components/ (broader search)
+  if (results.length === 0) {
+    await walk(path.join(project, 'src', 'components'))
+  }
   return results
 }
 

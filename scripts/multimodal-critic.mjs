@@ -170,7 +170,7 @@ const deriveHeuristicCritic = ({ observer, observerScore, rulesConfig, blueprint
         source: 'heuristic',
       },
     ),
-    criticScore: Number(score.toFixed(2)),
+    criticScore: Number(Math.max(0, Math.min(10, score)).toFixed(2)),
   }
 }
 
