@@ -194,6 +194,18 @@ const main = async () => {
   log(`Memory before: ${statsBefore?.totalDataPoints || '?'} data points`)
   log('')
 
+  // Phase 0: Discover + study Awwwards references before practicing
+  if (!dryRun) {
+    log('──── Phase 0: Reference Discovery ────')
+    try {
+      const discovery = await callScript('eros-discover.mjs', ['--study', '--count', '2'], 600000)
+      log(`Discovered ${discovery.discovered || 0} sites, studied ${discovery.studied || 0}`)
+    } catch (err) {
+      log(`Discovery skipped: ${err.message?.slice(0, 60)}`)
+    }
+    log('')
+  }
+
   for (let i = 1; i <= count; i++) {
     log(`──── Session ${i}/${count} ────`)
 
