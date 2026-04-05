@@ -393,7 +393,7 @@ const cmdStudy = async (args) => {
   const analysis = sessionResult.analysis || {}
 
   // Step 2: Auto-learn (no explicit feedback needed)
-  const statsBefore = await callMemory(['stats']).catch(() => null)
+  // statsBefore already declared at top of cmdStudy
   let memoryUpdates = 0
 
   // Auto-rate based on Awwwards = high quality (8+)
