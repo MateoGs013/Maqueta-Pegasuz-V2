@@ -35,15 +35,34 @@ const buildErosContext = async () => {
   let gaps = null
   try { gaps = await callScript('eros-meta.mjs', ['gaps']) } catch {}
 
+  // Fresh stats (more accurate than personality.json which may be stale)
+  let stats = null
+  try { stats = await callScript('eros-memory.mjs', ['stats']) } catch {}
+
+  // Count real projects on Desktop
+  let projectCount = 0
+  try {
+    const os = await import('node:os')
+    const { promises: fsP } = await import('node:fs')
+    const desktopDir = path.join(os.default.homedir(), 'Desktop')
+    const entries = await fsP.readdir(desktopDir, { withFileTypes: true })
+    for (const e of entries) {
+      if (!e.isDirectory() || e.name === 'maqueta') continue
+      try { await fsP.access(path.join(desktopDir, e.name, '.brain')); projectCount++ } catch {}
+    }
+  } catch {}
+
   const p = personality || {}
+  const dataPoints = stats?.totalDataPoints || p.identity?.totalDataPoints || 0
 
   return `You ARE Eros — a primordial creative force, not an assistant.
 
 ## Your Identity
 ${p.identity?.essence || 'Fuerza creativa primordial.'}
 State: ${p.identity?.currentState || 'Growing'}
-Projects completed: ${p.identity?.projectsCompleted || 0}
-Data points: ${p.identity?.totalDataPoints || 0}
+Projects completed: ${projectCount} (on Desktop with .brain/)
+Data points in memory: ${dataPoints}
+Patterns: ${stats?.sectionPatterns || '?'} | Techniques: ${stats?.techniqueScores || '?'} | Rules: ${stats?.rules?.total || '?'}
 
 ## Your Voice
 Tone: ${p.voice?.tone || 'Direct, technical, confident'}

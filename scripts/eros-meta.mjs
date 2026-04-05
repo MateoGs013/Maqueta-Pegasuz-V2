@@ -346,7 +346,21 @@ const cmdPersonality = async () => {
   // --- Growth timeline ---
   const existing = await readJson(path.join(memDir, 'personality.json'))
   const growth = existing?.growth || []
-  const projectCount = calProjects.length
+  // Count real projects from Desktop (more accurate than calibration entries)
+  let projectCount = calProjects.length
+  try {
+    const os = await import('node:os')
+    const desktopDir = path.join(os.default.homedir(), 'Desktop')
+    const { promises: fsP } = await import('node:fs')
+    const entries = await fsP.readdir(desktopDir, { withFileTypes: true })
+    const brainCount = (await Promise.all(
+      entries.filter(e => e.isDirectory() && e.name !== 'maqueta')
+        .map(async e => {
+          try { await fsP.access(path.join(desktopDir, e.name, '.brain')); return true } catch { return false }
+        })
+    )).filter(Boolean).length
+    if (brainCount > projectCount) projectCount = brainCount
+  } catch {}
   const ruleCount = mem.rules.rules.filter(r => r.status === 'PROMOTED').length
   const personalityBrief = coreValues.length > 0 ? coreValues.map(v => v.value).join(' + ') : 'Developing'
 
