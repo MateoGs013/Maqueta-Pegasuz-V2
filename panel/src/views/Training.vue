@@ -100,7 +100,7 @@ const setHighlightVerdict = (idx, verdict) => {
   if (review.value?.highlights?.[idx]) review.value.highlights[idx].verdict = verdict
 }
 
-onMounted(() => { loadProjects(); loadImpact(); loadAwwwards() })
+onMounted(() => { loadProjects(); loadImpact() })
 </script>
 
 <template>
@@ -188,8 +188,8 @@ onMounted(() => { loadProjects(); loadImpact(); loadAwwwards() })
             </button>
           </div>
         </div>
-        <p v-else-if="loadingAwwwards" class="body-sm dim">Buscando en Awwwards...</p>
-        <p v-else class="body-sm dim">Sin resultados. Clickeá ↻ para buscar.</p>
+        <p v-else-if="loadingAwwwards" class="body-sm dim">Buscando en Awwwards... (puede tardar 1 min)</p>
+        <p v-else class="body-sm dim">Clickeá ↻ para cargar los últimos ganadores.</p>
       </div>
     </div>
 
