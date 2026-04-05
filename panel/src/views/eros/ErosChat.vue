@@ -1,19 +1,14 @@
 <script setup>
 import { ref, nextTick, onMounted, watch } from 'vue'
+import { useChat } from '@/composables/useChat.js'
 
-const messages = ref([])
+const { messages } = useChat()
 const input = ref('')
 const sending = ref(false)
 const elapsed = ref(0)
 const chatBody = ref(null)
 const inputEl = ref(null)
 let timer = null
-
-const WELCOME = {
-  from: 'eros',
-  text: 'Soy Eros. Preguntame lo que quieras — sobre mis técnicas, debilidades, filosofía, proyectos, o lo que se te ocurra.',
-  mood: 'open',
-}
 
 const formatText = (text) => {
   return (text || '')
@@ -105,7 +100,7 @@ const quickQuestions = [
 const askQuick = (q) => { input.value = q; send() }
 
 watch(input, () => nextTick(autoResize))
-onMounted(() => { messages.value.push(WELCOME) })
+onMounted(() => scrollBottom())
 </script>
 
 <template>
