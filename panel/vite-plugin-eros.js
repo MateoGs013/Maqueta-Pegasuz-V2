@@ -314,7 +314,7 @@ export default function erosPlugin() {
       // REST: Awwwards discovery
       server.middlewares.use('/__eros/discover', async (req, res) => {
         try {
-          execFileCp('node', [path.join(scriptsDir, 'eros-discover.mjs'), '--list'], { cwd: scriptsDir, timeout: 120000 }, (err, stdout) => {
+          execFileCp('node', [path.join(scriptsDir, 'eros-discover.mjs'), '--list'], { cwd: scriptsDir, timeout: 180000 }, (err, stdout) => {
             res.writeHead(200, { 'Content-Type': 'application/json' })
             res.end(err ? JSON.stringify({ sites: [], error: err.message }) : stdout)
           })

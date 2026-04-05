@@ -171,9 +171,11 @@ const main = async () => {
   await writeJson(discoveryFile, history)
 
   if (listOnly || !doStudy) {
+    // Return ALL known sites (newest first), not just new ones
+    const allSites = [...history.sites].reverse().slice(0, 15)
     out({
       discovered: newSites.length,
-      sites: newSites.map(s => ({ title: s.title, url: s.siteUrl, tags: s.tags })),
+      sites: allSites.map(s => ({ title: s.title, url: s.siteUrl, tags: s.tags, new: newSites.some(n => n.siteUrl === s.siteUrl) })),
       totalKnown: history.sites.length,
     })
     return
