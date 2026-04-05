@@ -98,12 +98,14 @@ const cmdAnalyze = async (args) => {
   // Step 1: Capture screenshots using capture-refs.mjs
   try {
     const captureScript = path.join(__dirname, 'capture-refs.mjs')
-    await execFile('node', [captureScript, '--batch', url, '--out', refDir], {
+    // Use eros-observer.mjs (V2, Playwright) — faster and more reliable
+    const observerScript = path.join(__dirname, 'eros-observer.mjs')
+    await execFile('node', [observerScript, '--no-discover', url, refDir], {
       cwd: __dirname,
-      timeout: 120000,
+      timeout: 180000,
     })
   } catch (e) {
-    fail(`capture-refs failed: ${e.message}`)
+    fail(`observer failed: ${e.message}`)
   }
 
   // Step 2: Read the analysis.md that capture-refs generates
@@ -443,12 +445,12 @@ const cmdSession = async (args) => {
     // Capture
     try {
       const captureScript = path.join(__dirname, 'capture-refs.mjs')
-      await execFile('node', [captureScript, '--batch', url, '--out', refDir], {
+      await execFile('node', [captureScript, '--no-discover', url, refDir], {
         cwd: __dirname,
         timeout: 120000,
       })
     } catch (e) {
-      fail(`capture-refs failed: ${e.message}`)
+      fail(`observer failed: ${e.message}`)
     }
 
     const analysisMd = await readText(path.join(refDir, slug, 'analysis.md'))
