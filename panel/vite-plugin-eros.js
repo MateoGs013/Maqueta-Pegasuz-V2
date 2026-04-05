@@ -300,7 +300,7 @@ export default function erosPlugin() {
         req.on('end', async () => {
           try {
             const { message } = JSON.parse(body)
-            execFileCp('node', [path.join(scriptsDir, 'eros-chat.mjs'), '--message', message], { cwd: scriptsDir, timeout: 15000 }, (err, stdout) => {
+            execFileCp('node', [path.join(scriptsDir, 'eros-chat.mjs'), '--message', message], { cwd: scriptsDir, timeout: 120000 }, (err, stdout) => {
               res.writeHead(200, { 'Content-Type': 'application/json' })
               res.end(err ? JSON.stringify({ response: 'No pude procesar eso. Probá preguntándome sobre mis técnicas, debilidades, o filosofía.', mood: 'confused' }) : stdout)
             })
