@@ -390,13 +390,62 @@ const cmdStudy = async (args) => {
     fail(`Reference analysis failed: ${err.message}`)
   }
 
+  const analysis = sessionResult.analysis || {}
+
+  // Step 2: Auto-learn (no explicit feedback needed)
+  const statsBefore = await callMemory(['stats']).catch(() => null)
+  let memoryUpdates = 0
+
+  // Auto-rate based on Awwwards = high quality (8+)
+  const autoRating = 8.5
+  try {
+    const result = await callScript('eros-train-reference.mjs', [
+      'learn',
+      '--analysis', sessionResult.analysisPath || '',
+      '--ratings', JSON.stringify({
+        overall: autoRating,
+        mood: 'reference',
+        primarySectionType: 'hero',
+      }),
+    ], 60000)
+    memoryUpdates = result.totalWrites || 0
+  } catch { /* non-fatal */ }
+
+  const statsAfter = await callMemory(['stats']).catch(() => null)
+
+  // Step 3: Read observer manifest for rich data (screenshots, excellence, etc.)
+  let manifest = null
+  const slugDir = url.replace(/https?:\/\//, '').replace(/[^a-z0-9]+/gi, '-').replace(/-+$/, '')
+  const maquetaDir = path.resolve(__dirname, '..')
+  const manifestPath = path.join(maquetaDir, '_training-refs', slugDir, slugDir, 'manifest.json')
+  manifest = await readJson(manifestPath)
+  // Try alternate path
+  if (!manifest) {
+    const altPath = path.join(maquetaDir, '_training-refs', slugDir, 'manifest.json')
+    manifest = await readJson(altPath)
+  }
+
   out({
     mode: 'study',
     url,
-    status: 'analyzed',
-    analysis: sessionResult.analysis || {},
-    analysisPath: sessionResult.analysisPath,
-    instruction: 'Tell the CEO what you liked about this site. Or provide --feedback JSON.',
+    status: 'learned',
+    autoRating,
+    memoryUpdates,
+    memory: {
+      before: statsBefore?.totalDataPoints || 0,
+      after: statsAfter?.totalDataPoints || 0,
+      growth: (statsAfter?.totalDataPoints || 0) - (statsBefore?.totalDataPoints || 0),
+    },
+    analysis: {
+      ...analysis,
+      excellence: manifest?.excellenceSignals || {},
+      scores: manifest?.excellenceSignals?._scores || {},
+    },
+    screenshots: {
+      dir: sessionResult.screenshotsDir,
+      desktop: manifest?.screenshots?.desktop || 0,
+      mobile: manifest?.screenshots?.mobile || 0,
+    },
   })
 }
 

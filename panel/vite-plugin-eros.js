@@ -311,6 +311,19 @@ export default function erosPlugin() {
         })
       })
 
+      // REST: Awwwards discovery
+      server.middlewares.use('/__eros/discover', async (req, res) => {
+        try {
+          execFileCp('node', [path.join(scriptsDir, 'eros-discover.mjs'), '--list'], { cwd: scriptsDir, timeout: 120000 }, (err, stdout) => {
+            res.writeHead(200, { 'Content-Type': 'application/json' })
+            res.end(err ? JSON.stringify({ sites: [], error: err.message }) : stdout)
+          })
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: e.message }))
+        }
+      })
+
       // REST: training impact
       server.middlewares.use('/__eros/training/impact', async (req, res) => {
         try {
