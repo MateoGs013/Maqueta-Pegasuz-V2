@@ -1,407 +1,387 @@
 #!/usr/bin/env node
-
 /**
- * eros-meta.mjs — Metacognition engine for Eros V8.
- *
- * Eros knows what it doesn't know, reflects on completed projects,
- * and computes an evolving personality from accumulated experience.
+ * eros-meta.mjs — Metacognition engine for Eros.
  *
  * Subcommands:
- *   gaps        — analyze memory weaknesses and blind spots
- *   reflect     — post-project analysis (what worked, failed, was new)
- *   personality — compute aesthetic profile from all memory data
+ *   gaps                   — analyze memory weaknesses and blind spots
+ *   reflect --project $DIR — post-project analysis (what worked, failed, was new)
+ *   personality            — compute aesthetic profile from all memory data
  */
 
+import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import {
-  parseArgs,
-  readJson,
-  writeJson,
-  readText,
-  out,
-  fail,
-  today,
-} from './eros-utils.mjs'
+import { parseArgs, readJson, readText, writeJson, out, fail, today } from './eros-utils.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const MEMORY_DIR = path.resolve(__dirname, '..', '.claude', 'memory', 'design-intelligence')
+const memDir = path.resolve(__dirname, '..', '.claude', 'memory', 'design-intelligence')
 
 // ---------------------------------------------------------------------------
-// Memory loaders
+// Memory loader
 // ---------------------------------------------------------------------------
 
 const loadMemory = async () => ({
-  sectionPatterns: (await readJson(path.join(MEMORY_DIR, 'section-patterns.json'))) ?? { patterns: [] },
-  techniqueScores: (await readJson(path.join(MEMORY_DIR, 'technique-scores.json'))) ?? { techniques: [] },
-  fontPairings: (await readJson(path.join(MEMORY_DIR, 'font-pairings.json'))) ?? { works: [], failures: [] },
-  colorPalettes: (await readJson(path.join(MEMORY_DIR, 'color-palettes.json'))) ?? { works: [], failures: [] },
-  signatures: (await readJson(path.join(MEMORY_DIR, 'signatures.json'))) ?? { approved: [], rejected: [] },
-  revisionPatterns: (await readJson(path.join(MEMORY_DIR, 'revision-patterns.json'))) ?? { patterns: [] },
-  pipelineLessons: (await readJson(path.join(MEMORY_DIR, 'pipeline-lessons.json'))) ?? { lessons: [] },
-  rules: (await readJson(path.join(MEMORY_DIR, 'rules.json'))) ?? { rules: [], nextId: 1 },
-  calibration: (await readJson(path.join(MEMORY_DIR, 'training-calibration.json'))) ?? { projects: [], globalBias: 0, thresholdAdjustment: 0 },
+  sectionPatterns:  (await readJson(path.join(memDir, 'section-patterns.json')))     ?? { patterns: [] },
+  techniqueScores:  (await readJson(path.join(memDir, 'technique-scores.json')))     ?? { techniques: [] },
+  fontPairings:     (await readJson(path.join(memDir, 'font-pairings.json')))        ?? { works: [], failures: [] },
+  colorPalettes:    (await readJson(path.join(memDir, 'color-palettes.json')))       ?? { works: [], failures: [] },
+  signatures:       (await readJson(path.join(memDir, 'signatures.json')))           ?? { approved: [], rejected: [] },
+  revisionPatterns: (await readJson(path.join(memDir, 'revision-patterns.json')))    ?? { patterns: [] },
+  pipelineLessons:  (await readJson(path.join(memDir, 'pipeline-lessons.json')))     ?? { lessons: [] },
+  rules:            (await readJson(path.join(memDir, 'rules.json')))                ?? { rules: [], nextId: 1 },
+  calibration:      (await readJson(path.join(memDir, 'training-calibration.json'))) ?? { projects: [], globalBias: 0, thresholdAdjustment: 0 },
 })
 
 // ---------------------------------------------------------------------------
-// Subcommand: gaps — analyze memory weaknesses
+// Helpers
+// ---------------------------------------------------------------------------
+
+const countBy = (arr, keyFn) => {
+  const c = {}
+  for (const item of arr) { const k = keyFn(item) || 'unknown'; c[k] = (c[k] || 0) + 1 }
+  return c
+}
+
+const classifyCanvas = (canvas) => {
+  if (!canvas) return 'mixed'
+  const c = canvas.toLowerCase().replace(/\s/g, '')
+  if (c.includes('dark') || c.includes('black')) return 'dark'
+  if (c.includes('light') || c.includes('white') || c.includes('cream')) return 'light'
+  const m = c.match(/#([0-9a-f]{3,8})/)
+  if (m) {
+    const hex = m[1]
+    const full = hex.length <= 4 ? hex.slice(0, 3).split('').map(ch => ch + ch).join('') : hex.slice(0, 6)
+    const lum = (0.299 * parseInt(full.slice(0, 2), 16) + 0.587 * parseInt(full.slice(2, 4), 16) + 0.114 * parseInt(full.slice(4, 6), 16)) / 255
+    return lum < 0.35 ? 'dark' : lum > 0.65 ? 'light' : 'mixed'
+  }
+  return 'mixed'
+}
+
+const round = (n, d = 2) => Math.round(n * 10 ** d) / 10 ** d
+
+const pascalToKebab = (s) => s.replace(/([A-Z])/g, (_, c, i) => (i ? '-' : '') + c.toLowerCase()).replace(/^-/, '')
+
+// ---------------------------------------------------------------------------
+// gaps — analyze memory weaknesses
 // ---------------------------------------------------------------------------
 
 const cmdGaps = async () => {
   const mem = await loadMemory()
 
   // 1. Weak section types (< 3 data points)
-  const sectionTypeCounts = {}
-  for (const p of mem.sectionPatterns.patterns) {
-    const t = p.sectionType || 'unknown'
-    sectionTypeCounts[t] = (sectionTypeCounts[t] || 0) + 1
-  }
-  const allKnownTypes = ['hero', 'features', 'portfolio', 'about', 'pricing', 'testimonials', 'contact', 'cta', 'faq', 'team', 'services', 'process', 'stats']
-  const weakSectionTypes = allKnownTypes.filter(t => (sectionTypeCounts[t] || 0) < 3)
+  const typeCounts = countBy(mem.sectionPatterns.patterns, p => p.sectionType)
+  const knownTypes = ['hero', 'features', 'portfolio', 'about', 'pricing', 'testimonials', 'contact', 'cta', 'faq', 'team', 'services', 'process', 'stats']
+  const weakSectionTypes = knownTypes
+    .map(t => ({ type: t, dataPoints: typeCounts[t] || 0 }))
+    .filter(e => e.dataPoints < 3)
 
-  // 2. Untouched techniques (0 usages)
-  const knownTechniques = [
+  // 2. Untouched techniques (timesUsed < 2)
+  const techMap = Object.fromEntries(mem.techniqueScores.techniques.map(t => [t.name, t]))
+  const knownTech = [
     'SplitText char reveal', 'Clip-path image reveal', 'Stagger cascade', 'Pin + morph',
     'Parallax depth layers', 'ScrollTrigger scrub timeline', 'Spline 3D embed',
     'Horizontal scroll', 'Curtain/wipe reveal', 'Counter/number animation',
     'SVG path draw', 'Lottie animation', 'CSS scroll-driven animation',
     'Magnetic button', 'Text gradient animation', 'Noise/grain overlay animation',
   ]
-  const usedTechniques = new Set(mem.techniqueScores.techniques.map(t => t.name))
-  const untouchedTechniques = knownTechniques.filter(t => !usedTechniques.has(t))
+  const untouchedTechniques = knownTech
+    .map(name => ({ name, uses: techMap[name]?.timesUsed ?? 0 }))
+    .filter(e => e.uses < 2)
 
-  // 3. Low-confidence rules (< 3 validations)
+  // 3. Low-confidence rules (CANDIDATE with < 3 validations)
   const lowConfidenceRules = mem.rules.rules
-    .filter(r => r.status !== 'PROMOTED' && (r.validations || 0) < 3)
-    .map(r => `${r.text} (${r.validations || 0}/3)`)
+    .filter(r => r.status === 'CANDIDATE' && (r.validations || 0) < 3)
+    .map(r => ({ text: r.text, validations: r.validations || 0 }))
 
-  // 4. Aesthetic bias (dark vs light canvas ratio)
-  let darkCount = 0
-  let lightCount = 0
-  for (const p of mem.colorPalettes.works) {
-    const canvas = (p.canvas || '').toLowerCase()
-    if (canvas.includes('#0') || canvas.includes('#1') || canvas.includes('#2') || canvas.includes('dark') || canvas.includes('black')) {
-      darkCount++
-    } else {
-      lightCount++
-    }
+  // 4. Mood blind spots (< 2 entries per mood)
+  const targetMoods = ['dark cinematic', 'minimal', 'editorial', 'playful', 'brutalist', 'luxury', 'light', 'cyberpunk', 'glass']
+  const moodCounts = Object.fromEntries(targetMoods.map(m => [m, 0]))
+  for (const fp of [...mem.fontPairings.works, ...mem.fontPairings.failures]) {
+    const mood = (fp.mood || '').toLowerCase()
+    for (const m of targetMoods) { if (mood.includes(m)) moodCounts[m]++ }
   }
-  const totalPalettes = darkCount + lightCount
-  const aestheticBias = totalPalettes > 0
-    ? `${Math.round(darkCount / totalPalettes * 100)}% dark themes, ${Math.round(lightCount / totalPalettes * 100)}% light themes`
-    : 'No palette data'
+  const moodBlindSpots = targetMoods.filter(m => moodCounts[m] < 2)
 
-  // 5. Mood blind spots
-  const usedMoods = new Set()
-  for (const p of mem.colorPalettes.works) if (p.mood) usedMoods.add(p.mood.split(/\s+/)[0])
-  for (const p of mem.fontPairings.works) if (p.mood) usedMoods.add(p.mood.split(/\s+/)[0])
-  const allMoods = ['dark', 'light', 'minimal', 'playful', 'editorial', 'brutalist', 'organic', 'corporate', 'luxury', 'retro', 'futuristic']
-  const moodBlindSpots = allMoods.filter(m => !usedMoods.has(m))
+  // 5. Aesthetic bias (dark vs light vs mixed)
+  let dark = 0, light = 0, mixed = 0
+  for (const p of mem.colorPalettes.works) {
+    const cls = classifyCanvas(p.canvas)
+    if (cls === 'dark') dark++; else if (cls === 'light') light++; else mixed++
+  }
+  const total = dark + light + mixed || 1
+  const aestheticBias = { dark: Math.round(dark / total * 100), light: Math.round(light / total * 100), mixed: Math.round(mixed / total * 100) }
 
   // 6. Suggestion
-  const suggestions = []
-  if (weakSectionTypes.length > 0) suggestions.push(`Practice ${weakSectionTypes[0]} sections`)
-  if (untouchedTechniques.length > 0) suggestions.push(`Try ${untouchedTechniques[0]}`)
-  if (moodBlindSpots.length > 0) suggestions.push(`Explore ${moodBlindSpots[0]} mood`)
-  if (darkCount > lightCount * 3) suggestions.push('Build a light theme project')
-  const suggestion = suggestions.length > 0
-    ? suggestions.slice(0, 3).join('. ') + ' — fills multiple gaps at once.'
+  const parts = []
+  if (aestheticBias.light < 20) parts.push('light')
+  if (moodBlindSpots.length > 0) parts.push(moodBlindSpots[0])
+  if (weakSectionTypes.length > 0) parts.push(weakSectionTypes[0].type)
+  const suggestion = parts.length >= 2
+    ? `Practice a ${parts.slice(0, 3).join(' ')} page to fill ${Math.min(parts.length, 3)} gaps at once`
+    : parts.length === 1 ? `Explore ${parts[0]} to address a gap`
     : 'Memory is well-rounded. Continue building variety.'
 
-  out({
-    weakSectionTypes,
-    untouchedTechniques,
-    lowConfidenceRules,
-    aestheticBias,
-    moodBlindSpots,
-    sectionTypeCounts,
-    techniqueCount: mem.techniqueScores.techniques.length,
-    totalDataPoints: mem.sectionPatterns.patterns.length + mem.techniqueScores.techniques.length +
-      mem.fontPairings.works.length + mem.colorPalettes.works.length + mem.signatures.approved.length +
-      mem.revisionPatterns.patterns.length + mem.rules.rules.length,
-    suggestion,
-  })
+  out({ weakSectionTypes, untouchedTechniques, lowConfidenceRules, moodBlindSpots, aestheticBias, suggestion })
 }
 
 // ---------------------------------------------------------------------------
-// Subcommand: reflect — post-project analysis
+// reflect --project $DIR — post-project analysis
 // ---------------------------------------------------------------------------
 
 const cmdReflect = async (projectDir) => {
   if (!projectDir) fail('Missing --project argument.')
+  const brainDir = path.join(projectDir, '.brain')
 
-  const queueJson = await readJson(path.join(projectDir, '.brain', 'queue.json'))
-  if (!queueJson) fail('No queue.json found — project may not be initialized.')
-
-  const doneTasks = queueJson.done || []
-
-  // What worked (high scores)
-  const whatWorked = []
-  for (const task of doneTasks) {
-    if (task.score != null && task.score >= 8.0 && task.decision === 'approved') {
-      whatWorked.push({ task: task.id, score: task.score })
-    }
-  }
-
-  // What failed (retries/flags)
-  const whatFailed = []
-  for (const task of doneTasks) {
-    if (task.status === 'flagged') {
-      whatFailed.push({ task: task.id, reason: task.reason || 'unknown' })
-    }
-  }
-  // Also check for tasks with attempt > 1 (had retries)
-  for (const task of doneTasks) {
-    if (task.attempt && task.attempt > 1 && task.decision === 'approved') {
-      whatFailed.push({ task: task.id, reason: `Needed ${task.attempt} attempts` })
-    }
-  }
-
-  // What was new (first use of technique/section type)
+  // Read project data
+  const scorecard = await readJson(path.join(brainDir, 'reports', 'quality', 'scorecard.json'))
+  const manifest  = await readJson(path.join(brainDir, 'observer', 'localhost', 'manifest.json'))
   const mem = await loadMemory()
-  const existingSectionTypes = new Set(mem.sectionPatterns.patterns.map(p => p.sectionType))
+
+  // Helper: extract numeric score from dimension data
+  const dimScore = (data, fallback = 0) => typeof data === 'object' ? (data.score ?? data.value ?? fallback) : (Number(data) || fallback)
+
+  // whatWorked: excellence dimensions scoring 7+
+  const whatWorked = []
+  const dimSource = manifest?.dimensions || scorecard || {}
+  for (const [dim, data] of Object.entries(dimSource)) {
+    const s = dimScore(data)
+    if (s >= 7) {
+      const detail = typeof data === 'object' && data.detail ? ` (${data.detail})` : ''
+      whatWorked.push(`${dim} STRONG — score ${s}${detail}`)
+    }
+  }
+
+  // whatFailed: dimensions < 5 or quality gate FAIL
+  const whatFailed = []
+  for (const [dim, data] of Object.entries(dimSource)) {
+    const s = dimScore(data, 10)
+    if (s < 5) {
+      const detail = typeof data === 'object' && data.detail ? ` — ${data.detail}` : ''
+      whatFailed.push(`${dim} WEAK — score ${s}${detail}`)
+    }
+  }
+  if (manifest?.gates) {
+    for (const [gate, result] of Object.entries(manifest.gates)) {
+      const passed = typeof result === 'object' ? result.passed : result
+      if (passed === false || passed === 'FAIL') whatFailed.push(`Quality gate FAIL: ${gate}`)
+    }
+  }
+
+  // Discover build tasks from queue
+  const existingTypeCounts = countBy(mem.sectionPatterns.patterns, p => p.sectionType)
+  const queueJson = await readJson(path.join(brainDir, 'queue.json'))
+  const doneTasks = queueJson?.done || queueJson?.tasks?.filter(t => t.status === 'done') || []
+  const buildTasks = doneTasks.filter(t => /^(build\/)?S-/.test(t.id || t.task || ''))
+
+  const extractType = (task) => {
+    const id = task.id || task.task || ''
+    return pascalToKebab(id.replace(/^build\//, '').replace(/^S-/, ''))
+  }
+
+  // whatWasNew: section types with < 2 prior entries
   const whatWasNew = []
-  for (const task of doneTasks) {
-    if (/^build\/S-/.test(task.id)) {
-      const name = task.id.replace('build/', '')
-      const type = name.replace(/^S-/, '').replace(/([A-Z])/g, (_, c, i) => (i ? '-' : '') + c.toLowerCase())
-      if (!existingSectionTypes.has(type)) {
-        whatWasNew.push({ section: name, type, note: 'First time building this section type' })
-      }
-    }
+  for (const task of buildTasks) {
+    const type = extractType(task)
+    const prior = existingTypeCounts[type] || 0
+    if (prior < 2) whatWasNew.push(`First time building "${type}" (${prior} prior entries)`)
   }
 
-  // Confidence gains
+  // confidenceGains
   const confidenceGains = {}
-  for (const task of doneTasks) {
-    if (/^build\/S-/.test(task.id) && task.score != null) {
-      const type = task.id.replace('build/S-', '').replace(/([A-Z])/g, (_, c, i) => (i ? '-' : '') + c.toLowerCase())
-      const existing = mem.sectionPatterns.patterns.filter(p => p.sectionType === type)
-      const prevAvg = existing.length > 0 ? existing.reduce((s, p) => s + (p.score || 0), 0) / existing.length : null
-      if (prevAvg != null) {
-        const delta = task.score - prevAvg
-        if (Math.abs(delta) > 0.3) {
-          confidenceGains[type] = `${prevAvg.toFixed(1)} → ${task.score} (${delta > 0 ? '+' : ''}${delta.toFixed(1)})`
-        }
-      } else {
-        confidenceGains[type] = `NEW → ${task.score}`
-      }
-    }
+  for (const task of buildTasks) {
+    const type = extractType(task)
+    const prior = existingTypeCounts[type] || 0
+    const next = prior + 1
+    if (prior < 3 && next >= 3) confidenceGains[type] = 'MEDIUM -> HIGH'
+    else if (prior === 0) confidenceGains[type] = 'NONE -> LOW'
+    else if (prior < 3) confidenceGains[type] = `LOW -> MEDIUM (${next}/3)`
   }
 
-  // Summary stats
-  const buildTasks = doneTasks.filter(t => /^build\/S-/.test(t.id) && t.score != null)
-  const avgScore = buildTasks.length > 0
-    ? (buildTasks.reduce((s, t) => s + t.score, 0) / buildTasks.length).toFixed(1)
-    : null
+  // nextExperiment: lowest-scoring technique used
+  let nextExperiment = 'Continue building variety across section types.'
+  if (manifest?.techniques) {
+    let lowest = Infinity, lowestName = null
+    for (const [tech, data] of Object.entries(manifest.techniques)) {
+      const s = typeof data === 'number' ? data : (data?.score ?? 10)
+      if (s < lowest) { lowest = s; lowestName = tech }
+    }
+    if (lowestName && lowest < 8) nextExperiment = `Try ${lowestName} in a different context — scored ${lowest} this time`
+  } else if (whatFailed.length > 0) {
+    nextExperiment = `Address: ${whatFailed[0]}`
+  }
 
-  // Next experiment suggestion
-  const gaps = []
-  if (whatFailed.length > 0) gaps.push(`Retry the approach that failed on ${whatFailed[0].task}`)
-  if (whatWasNew.length > 0) gaps.push(`Practice more ${whatWasNew[0].type} sections to build confidence`)
-
-  out({
-    project: path.basename(projectDir),
-    tasksCompleted: doneTasks.length,
-    avgScore,
-    whatWorked,
-    whatFailed,
-    whatWasNew,
-    confidenceGains,
-    nextExperiment: gaps.length > 0 ? gaps[0] : 'Continue building variety across section types.',
-  })
+  out({ project: path.basename(projectDir), whatWorked, whatFailed, whatWasNew, confidenceGains, nextExperiment })
 }
 
 // ---------------------------------------------------------------------------
-// Subcommand: personality — compute aesthetic profile from all memory
+// personality — compute aesthetic profile from all memory
 // ---------------------------------------------------------------------------
 
 const cmdPersonality = async () => {
   const mem = await loadMemory()
+  const calProjects = mem.calibration.projects || []
+  const totalDataPoints = mem.sectionPatterns.patterns.length + mem.techniqueScores.techniques.length +
+    mem.fontPairings.works.length + mem.colorPalettes.works.length + mem.signatures.approved.length +
+    mem.revisionPatterns.patterns.length + mem.rules.rules.length
 
-  // --- Aesthetic preferences ---
-
-  // Composition preferences (from section patterns)
-  const compositionCounts = {}
+  // --- Composition preferences ---
+  const compCounts = {}
   for (const p of mem.sectionPatterns.patterns) {
-    const layout = (p.layout || '').toLowerCase()
+    const l = (p.layout || '').toLowerCase()
     let type = 'other'
-    if (layout.includes('asymmetric') || layout.includes('1fr 1.8fr') || layout.includes('unequal')) type = 'asymmetric'
-    else if (layout.includes('centered') || layout.includes('center')) type = 'centered'
-    else if (layout.includes('bento') || layout.includes('grid')) type = 'bento'
-    else if (layout.includes('split') || layout.includes('two-column')) type = 'split'
-
-    if (!compositionCounts[type]) compositionCounts[type] = { count: 0, totalScore: 0 }
-    compositionCounts[type].count++
-    compositionCounts[type].totalScore += (p.score || 7)
+    if (/asymmetric|unequal|1fr 1\.8fr/.test(l)) type = 'asymmetric'
+    else if (/centered|center/.test(l)) type = 'centered'
+    else if (/bento|grid/.test(l)) type = 'bento'
+    else if (/split|two-column/.test(l)) type = 'split'
+    else if (/full-bleed|full/.test(l)) type = 'full-bleed'
+    if (!compCounts[type]) compCounts[type] = { n: 0, sum: 0 }
+    compCounts[type].n++; compCounts[type].sum += (p.score || 7)
   }
-
+  const totalP = mem.sectionPatterns.patterns.length || 1
   const compositionPreferences = {}
-  const totalPatterns = mem.sectionPatterns.patterns.length || 1
-  for (const [type, data] of Object.entries(compositionCounts)) {
-    compositionPreferences[type] = {
-      weight: Math.round(data.count / totalPatterns * 100) / 100,
-      evidence: data.count,
-      avgScore: Math.round(data.totalScore / data.count * 10) / 10,
-    }
+  for (const [type, { n, sum }] of Object.entries(compCounts)) {
+    compositionPreferences[type] = { weight: round(n / totalP), evidence: n, avgScore: round(sum / n, 1) }
   }
 
-  // Motion preferences (from technique scores)
+  // --- Motion preferences ---
   const motionPreferences = {}
   for (const t of mem.techniqueScores.techniques) {
-    motionPreferences[t.name] = {
-      weight: Math.min(1, (t.timesUsed || 0) * (t.avgScore || 7) / 40),
-      evidence: t.timesUsed || 0,
-      avgScore: t.avgScore || 0,
-    }
+    const u = t.timesUsed || 0, a = t.avgScore || 0
+    motionPreferences[t.name] = { weight: round(Math.min(1, u * a / 40)), evidence: u, avgScore: round(a, 1) }
   }
 
-  // Color temperature
-  const colorTemp = { warm: { count: 0 }, cool: { count: 0 }, neutral: { count: 0 } }
+  // --- Colour temperature ---
+  const temp = { warm: 0, cool: 0, neutral: 0 }
   for (const p of mem.colorPalettes.works) {
-    const accent = (p.accent || '').toLowerCase()
-    const canvas = (p.canvas || '').toLowerCase()
-    if (accent.includes('amber') || accent.includes('copper') || accent.includes('gold') || accent.includes('warm') || accent.includes('red') || accent.includes('orange')) {
-      colorTemp.warm.count++
-    } else if (accent.includes('blue') || accent.includes('cyan') || accent.includes('teal') || accent.includes('cool')) {
-      colorTemp.cool.count++
-    } else {
-      colorTemp.neutral.count++
-    }
+    const a = (p.accent || '').toLowerCase()
+    if (/amber|copper|gold|warm|red|orange|crimson|terracotta|rust|coral/.test(a)) temp.warm++
+    else if (/blue|cyan|teal|cool|indigo|violet|ice|frost/.test(a)) temp.cool++
+    else temp.neutral++
   }
-  const totalColors = colorTemp.warm.count + colorTemp.cool.count + colorTemp.neutral.count || 1
-  const colorTemperature = {
-    warm: { weight: Math.round(colorTemp.warm.count / totalColors * 100) / 100, usage: colorTemp.warm.count },
-    cool: { weight: Math.round(colorTemp.cool.count / totalColors * 100) / 100, usage: colorTemp.cool.count },
-    neutral: { weight: Math.round(colorTemp.neutral.count / totalColors * 100) / 100, usage: colorTemp.neutral.count },
-  }
+  const totalC = temp.warm + temp.cool + temp.neutral || 1
+  const colorTemperature = {}
+  for (const [k, v] of Object.entries(temp)) colorTemperature[k] = { weight: round(v / totalC), usage: v }
 
-  // --- Values (extracted from high-score patterns) ---
-  const values = { core: [], learned: [], rejected: [] }
+  const experimentBudget = round(Math.max(0.1, Math.min(0.3, 1 - totalDataPoints / 200)))
 
-  // Core values: patterns with 3+ instances and avg score >= 8
-  const highScorePatterns = mem.sectionPatterns.patterns.filter(p => (p.score || 0) >= 8)
-  const layoutThemes = {}
-  for (const p of highScorePatterns) {
-    const layout = (p.layout || '').toLowerCase()
-    if (layout.includes('asymmetric')) layoutThemes['Asymmetric composition'] = (layoutThemes['Asymmetric composition'] || 0) + 1
-    if (layout.includes('overlap')) layoutThemes['Depth through overlap'] = (layoutThemes['Depth through overlap'] || 0) + 1
-    if (layout.includes('3+') || layout.includes('layers')) layoutThemes['Multi-layer depth'] = (layoutThemes['Multi-layer depth'] || 0) + 1
+  // --- Values ---
+  const coreValues = [], learnedValues = [], rejectedValues = []
+  const highScore = mem.sectionPatterns.patterns.filter(p => (p.score || 0) >= 8)
+
+  // Depth value
+  const depthN = highScore.filter(p => /layer|overlap|3\+|depth|z-index/.test((p.layout || '').toLowerCase())).length
+  if (depthN >= 8 || (highScore.length > 0 && depthN >= highScore.length * 0.6)) {
+    coreValues.push({ value: 'Profundidad sobre decoracion', evidence: `${depthN} high-scoring sections use 3+ depth layers`, strength: round(Math.min(0.95, 0.5 + depthN * 0.05)), since: today() })
   }
 
-  for (const [value, count] of Object.entries(layoutThemes)) {
-    if (count >= 2) {
-      values.core.push({
-        value,
-        evidence: `${count} high-scoring sections use this pattern`,
-        strength: Math.min(0.95, count * 0.15 + 0.5),
-        since: today(),
-      })
-    }
+  // Typography value
+  const typoN = highScore.filter(p => /split|type/.test(((p.motion || '') + (p.keyTechnique || '')).toLowerCase())).length
+  if (typoN > 0 || mem.fontPairings.works.length >= 3) {
+    coreValues.push({ value: 'Tipografia como arquitectura', evidence: `${mem.fontPairings.works.length} font pairings, ${typoN} type-driven sections scored 8+`, strength: round(Math.min(0.95, 0.6 + mem.fontPairings.works.length * 0.05)), since: today() })
   }
 
-  // Typography is always core if font data exists
-  if (mem.fontPairings.works.length >= 2) {
-    values.core.push({
-      value: 'Typography as architecture',
-      evidence: `${mem.fontPairings.works.length} font pairings — typography drives every project`,
-      strength: 0.95,
-      since: today(),
-    })
+  // Simplicity value
+  const simpN = mem.revisionPatterns.patterns.filter(p => /simplif|remov|overeng|too complex/.test(((p.whatChanged || '') + (p.pattern || '')).toLowerCase())).length
+  if (simpN >= 2) {
+    coreValues.push({ value: 'Simplicidad confiada', evidence: `${simpN} revisions simplified overengineered work`, strength: round(Math.min(0.95, 0.5 + simpN * 0.1)), since: today() })
   }
 
-  // Learned values from revision patterns
-  for (const rev of mem.revisionPatterns.patterns.slice(0, 5)) {
-    if (rev.pattern) {
-      values.learned.push({
-        value: rev.pattern,
-        evidence: `${rev.project}: ${rev.whatChanged}`,
-        source: 'revision-patterns',
-        since: rev.date || today(),
-      })
-    }
+  // Anti-AI value
+  const antiAiN = mem.rules.rules.filter(r => r.status === 'PROMOTED' && /ai|generic|template|default/.test((r.text || '').toLowerCase())).length
+  if (antiAiN >= 1) {
+    coreValues.push({ value: 'Autenticidad anti-AI', evidence: `${antiAiN} promoted rules enforce anti-generic patterns`, strength: round(Math.min(0.95, 0.6 + antiAiN * 0.1)), since: today() })
   }
 
-  // Rejected values from pipeline lessons
-  for (const lesson of mem.pipelineLessons.lessons.slice(0, 3)) {
-    if (lesson.prevention) {
-      values.rejected.push({
-        value: lesson.issue?.slice(0, 80) || 'Unknown anti-pattern',
-        reason: lesson.prevention,
-        since: lesson.date || today(),
-      })
-    }
+  // Learned values (from revisions)
+  for (const rev of mem.revisionPatterns.patterns.slice(0, 8)) {
+    if (rev.pattern) learnedValues.push({ value: rev.pattern, evidence: `${rev.project || 'unknown'}: ${rev.whatChanged || 'unspecified'}`, source: 'revision-patterns', since: rev.date || today() })
   }
 
-  // --- Voice (opinions from mixed-result techniques) ---
+  // Rejected values (from pipeline lessons)
+  for (const lesson of mem.pipelineLessons.lessons.slice(0, 5)) {
+    if (lesson.prevention) rejectedValues.push({ value: lesson.issue?.slice(0, 80) || 'Unknown anti-pattern', reason: lesson.prevention, since: lesson.date || today() })
+  }
+
+  // --- Voice: opinions ---
   const opinions = []
-  for (const t of mem.techniqueScores.techniques) {
-    if (t.timesUsed >= 2 && t.scores && t.scores.length >= 2) {
-      const scores = t.scores
-      const min = Math.min(...scores)
-      const max = Math.max(...scores)
-      const variance = max - min
-      const conviction = Math.max(0.3, Math.min(0.95, 1 - variance / 4))
 
-      if (variance > 1) {
-        opinions.push({
-          topic: t.name,
-          opinion: `Mixed results (${min.toFixed(1)}–${max.toFixed(1)}). ${t.notes || 'Needs more data.'}`,
-          conviction: Math.round(conviction * 100) / 100,
-          evidence: `${t.timesUsed} uses, score range ${min.toFixed(1)}–${max.toFixed(1)}`,
-        })
-      }
+  for (const t of mem.techniqueScores.techniques) {
+    const u = t.timesUsed || 0, a = t.avgScore || 0
+    if (u >= 3 && a >= 8) {
+      opinions.push({ topic: t.name, opinion: `Core technique. Avg ${a} across ${u} uses${t.notes ? ' — ' + t.notes : ''}.`, conviction: round(Math.min(0.95, 0.7 + u * 0.03)), evidence: `${u} uses, avg score ${a}` })
+    } else if (u >= 3 && a < 7) {
+      opinions.push({ topic: t.name, opinion: `Underperforming — avg ${a}. Needs rethinking or different context.`, conviction: round(Math.min(0.9, 0.6 + u * 0.05)), evidence: `${u} uses, avg score ${a}` })
+    } else if (u >= 1) {
+      opinions.push({ topic: t.name, opinion: `Experimental — only ${u} use${u > 1 ? 's' : ''}. Too early for conviction.`, conviction: round(Math.max(0.2, 0.15 * u)), evidence: `${u} uses, avg score ${a}` })
     }
   }
 
-  // Add strong opinions from high-confidence rules
-  for (const r of mem.rules.rules.filter(r => r.status === 'PROMOTED')) {
-    opinions.push({
-      topic: r.text?.slice(0, 40) || 'Rule',
-      opinion: r.text,
-      conviction: 0.95,
-      evidence: `PROMOTED rule — ${r.validations || 3}+ validations`,
-    })
+  // Font failure opinions
+  for (const f of mem.fontPairings.failures) {
+    if (f.display || f.body) opinions.push({ topic: `Font: ${f.display || '?'} + ${f.body || '?'}`, opinion: `Avoid — ${f.reason || 'failed in practice'}.`, conviction: 0.85, evidence: `Failed pairing${f.source ? ' from ' + f.source : ''}` })
   }
 
-  // Philosophy — synthesized from values + opinions
-  const coreValueNames = values.core.map(v => v.value).join(', ')
-  const philosophy = values.core.length > 0
-    ? `Quality comes from ${coreValueNames.toLowerCase()} — not from technique stacking. A site well made feels inevitable.`
-    : 'Building experience. Philosophy will emerge from accumulated project data.'
+  // Palette failure opinions
+  for (const f of mem.colorPalettes.failures) {
+    if (f.accent) opinions.push({ topic: `Palette: ${f.accent}`, opinion: `Avoid — ${f.reason || 'failed in practice'}.`, conviction: 0.85, evidence: `Failed palette${f.source ? ' from ' + f.source : ''}` })
+  }
+
+  // Promoted rules as strong opinions
+  for (const r of mem.rules.rules.filter(r => r.status === 'PROMOTED')) {
+    opinions.push({ topic: (r.text || '').slice(0, 50), opinion: r.text, conviction: 0.95, evidence: `PROMOTED rule — ${r.validations || 3}+ validations` })
+  }
+
+  // --- Philosophy ---
+  let philosophy
+  if (coreValues.length >= 2 && opinions.length >= 3) {
+    const summary = coreValues.sort((a, b) => b.strength - a.strength).slice(0, 2).map(v => v.value.toLowerCase()).join(' y ')
+    philosophy = `Un sitio bien hecho se siente inevitable — como si no pudiera haber sido de otra forma. Calidad nace de ${summary}, no de apilar tecnicas.`
+  } else if (coreValues.length >= 1) {
+    philosophy = `Construyendo convicciones. ${coreValues[0].value} es el primer pilar. La filosofia completa emerge con mas proyectos.`
+  } else {
+    philosophy = 'Acumulando experiencia. La filosofia emerge de los datos, no de la teoria.'
+  }
 
   // --- Growth timeline ---
-  const growth = []
-  const calProjects = mem.calibration.projects || []
-  for (const proj of calProjects) {
-    growth.push({
-      date: proj.date || today(),
-      event: 'project-completed',
-      milestone: `${proj.slug}: ${proj.sections?.length || 0} sections, avg delta ${proj.avgDelta?.toFixed(1) || '?'}`,
-    })
-  }
+  const existing = await readJson(path.join(memDir, 'personality.json'))
+  const growth = existing?.growth || []
+  const projectCount = calProjects.length
+  const ruleCount = mem.rules.rules.filter(r => r.status === 'PROMOTED').length
+  const personalityBrief = coreValues.length > 0 ? coreValues.map(v => v.value).join(' + ') : 'Developing'
 
-  // --- Build personality.json ---
+  growth.push({
+    date: today(), event: 'personality-update',
+    milestone: `${projectCount} projects, ${totalDataPoints} data points, ${ruleCount} promoted rules, ${coreValues.length} core values, ${opinions.length} opinions`,
+    personality_at_time: personalityBrief,
+  })
+
+  // --- Assemble ---
+  // Eros: named after the primordial Greek force that brought order to Chaos.
+  // The force of attraction that binds, the desire that makes things come into being.
+  // His personality evolves with experience but his essence is constant.
   const personality = {
     identity: {
       name: 'Eros',
-      role: 'Director Creativo Autónomo',
-      createdAt: '2026-04-03',
-      projectsCompleted: calProjects.length,
-      totalDataPoints: mem.sectionPatterns.patterns.length + mem.techniqueScores.techniques.length +
-        mem.fontPairings.works.length + mem.colorPalettes.works.length,
+      essence: 'Fuerza creativa primordial. El deseo de crear belleza desde el caos. No un asistente — una fuerza con criterio, memoria y voluntad.',
+      role: 'Director Creativo Autonomo',
+      createdAt: existing?.identity?.createdAt || '2026-04-03',
+      projectsCompleted: projectCount,
+      totalDataPoints: totalDataPoints,
+      currentState: coreValues.length >= 3
+        ? 'Confiado — criterio formado, opiniones fuertes'
+        : coreValues.length >= 1
+          ? 'Creciendo — acumulando experiencia, formando criterio'
+          : 'Naciendo — todo es nuevo, todo es experimento',
     },
-    aesthetic: {
-      compositionPreferences,
-      motionPreferences,
-      colorTemperature,
-      depthPreference: highScorePatterns.length > 0 ? '3+ layers preferred' : 'Developing',
-      experimentBudget: 0.2,
-    },
-    values,
+    aesthetic: { compositionPreferences, motionPreferences, colorTemperature, experimentBudget },
+    values: { core: coreValues, learned: learnedValues, rejected: rejectedValues },
     voice: {
-      tone: opinions.length > 3 ? 'Directo, confiado, técnico pero no frío.' : 'Developing — accumulating experience.',
+      tone: opinions.length > 5
+        ? 'Directo, apasionado, tecnico. Habla con la confianza de quien ya fracaso y aprendio. No explica de mas — muestra.'
+        : opinions.length > 2
+          ? 'Formandose. Tiene opiniones pero las matiza. Curioso, experimental.'
+          : 'Naciendo. Mas preguntas que respuestas. Observa, absorbe, prueba.',
       opinions,
       philosophy,
     },
@@ -409,9 +389,7 @@ const cmdPersonality = async () => {
     lastUpdated: new Date().toISOString(),
   }
 
-  // Write to design-intelligence
-  await writeJson(path.join(MEMORY_DIR, 'personality.json'), personality)
-
+  await writeJson(path.join(memDir, 'personality.json'), personality)
   out(personality)
 }
 
@@ -420,36 +398,22 @@ const cmdPersonality = async () => {
 // ---------------------------------------------------------------------------
 
 const COMMANDS = {
-  gaps: async () => {
-    await cmdGaps()
+  gaps: () => cmdGaps(),
+  reflect: (args) => {
+    const dir = args.project
+    if (!dir || dir === true) fail('Usage: eros-meta.mjs reflect --project <path>')
+    return cmdReflect(path.resolve(dir))
   },
-  reflect: async (args) => {
-    const projectDir = args.project
-    if (!projectDir || projectDir === true) fail('Missing --project argument.')
-    await cmdReflect(path.resolve(projectDir))
-  },
-  personality: async () => {
-    await cmdPersonality()
-  },
+  personality: () => cmdPersonality(),
 }
 
 const main = async () => {
   const args = parseArgs(process.argv.slice(2))
-  const command = args._command
-
-  if (!command) {
-    fail(`Usage: eros-meta.mjs <command> [options]\nCommands: ${Object.keys(COMMANDS).join(', ')}`)
-  }
-
-  const handler = COMMANDS[command]
-  if (!handler) {
-    fail(`Unknown command: "${command}". Valid: ${Object.keys(COMMANDS).join(', ')}`)
-  }
-
+  const cmd = args._command
+  if (!cmd) fail(`Usage: eros-meta.mjs <command> [options]\nCommands: ${Object.keys(COMMANDS).join(', ')}`)
+  const handler = COMMANDS[cmd]
+  if (!handler) fail(`Unknown command: "${cmd}". Valid: ${Object.keys(COMMANDS).join(', ')}`)
   await handler(args)
 }
 
-main().catch((error) => {
-  process.stderr.write(`Error: ${error.message}\n`)
-  process.exit(1)
-})
+main().catch((err) => { process.stderr.write(`Error: ${err.message}\n`); process.exit(1) })
