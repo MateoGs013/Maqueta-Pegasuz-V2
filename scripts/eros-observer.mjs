@@ -765,23 +765,57 @@ async function extractMotion(page, networkLibs) {
     }
   })
 
-  // Scroll warm-up to trigger animations
+  // Scroll warm-up to trigger animations (use scroll container if detected)
   await page.evaluate(async () => {
-    const totalH = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)
+    // Find the scroll container (Lenis wrapper or body)
+    const container = document.querySelector('[data-eros-scroll]')
+    const scrollEl = container || document.documentElement
+    const totalH = container ? container.scrollHeight : Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)
+
+    if (totalH <= window.innerHeight * 1.2) return // single viewport, skip
+
     const steps = Math.min(25, Math.ceil(totalH / 300))
     const stepPx = Math.ceil(totalH / steps)
     for (let i = 0; i <= steps; i++) {
-      window.scrollTo({ top: i * stepPx, behavior: 'instant' })
-      await new Promise(r => setTimeout(r, 100))
+      if (container) {
+        container.scrollTop = i * stepPx
+      } else {
+        window.scrollTo({ top: i * stepPx, behavior: 'instant' })
+      }
+      await new Promise(r => setTimeout(r, 120))
     }
-    await new Promise(r => setTimeout(r, 500))
-    window.scrollTo({ top: 0, behavior: 'instant' })
+    await new Promise(r => setTimeout(r, 600))
+
+    // Return to top
+    if (container) container.scrollTop = 0
+    else window.scrollTo({ top: 0, behavior: 'instant' })
     await new Promise(r => setTimeout(r, 300))
+
     if (window.ScrollTrigger?.refresh) {
       window.ScrollTrigger.refresh()
       await new Promise(r => setTimeout(r, 400))
     }
   })
+
+  // Post-warm GSAP snapshot — catches once:true triggers that were registered
+  // during onMounted and triggered during the scroll warm-up
+  const postWarmGSAP = await page.evaluate(() => {
+    return {
+      gsapActive: !!(window.gsap || window.GreenSockGlobals),
+      scrollTriggerActive: !!window.ScrollTrigger,
+      scrollTriggerCount: window.ScrollTrigger?.getAll?.()?.length || 0,
+      scrollTriggerScrubCount: (window.ScrollTrigger?.getAll?.() || []).filter(t => t.scrub).length,
+      tweenCount: window.gsap?.globalTimeline?.getChildren?.(true, true, true)?.length || 0,
+      // Count killed triggers (once:true that already fired)
+      totalEverRegistered: window.ScrollTrigger?.getAll?.()?.length || 0,
+    }
+  })
+  // Merge: take MAX between pre-warm (registered before scroll) and post-warm (may have new ones)
+  gsapPreWarm.gsapActive = gsapPreWarm.gsapActive || postWarmGSAP.gsapActive
+  gsapPreWarm.scrollTriggerActive = gsapPreWarm.scrollTriggerActive || postWarmGSAP.scrollTriggerActive
+  gsapPreWarm.scrollTriggerCount = Math.max(gsapPreWarm.scrollTriggerCount, postWarmGSAP.scrollTriggerCount)
+  gsapPreWarm.scrollTriggerScrubCount = Math.max(gsapPreWarm.scrollTriggerScrubCount, postWarmGSAP.scrollTriggerScrubCount)
+  gsapPreWarm.tweenCount = Math.max(gsapPreWarm.tweenCount, postWarmGSAP.tweenCount)
 
   // CSS data
   const css = await page.evaluate(() => {
@@ -814,8 +848,17 @@ async function extractMotion(page, networkLibs) {
 
     const runtimeAnimations = document.getAnimations?.()?.length || 0
 
+    // Count elements with scroll-reveal attributes (evidence of motion intent even if triggers fired)
+    const revealElements = document.querySelectorAll('[data-reveal], [data-scroll], [data-aos], [data-gsap], [data-animate]').length
+    // Count elements with GSAP-set inline styles (visibility, opacity transforms)
+    const gsapStyledElements = [...document.querySelectorAll('*')].slice(0, 500).filter(el => {
+      const s = el.style
+      return s.visibility === 'inherit' || s.opacity === '1' || (s.transform && s.transform !== 'none')
+    }).length
+
     return {
       transitionCount, animationCount, staggerDelayCount, runtimeAnimations,
+      revealElements, gsapStyledElements,
       cubicBeziers: [...cubicBeziers].slice(0, 10),
       cubicBezierCount: cubicBeziers.size,
       avgDuration: durations.length
@@ -881,6 +924,8 @@ async function extractMotion(page, networkLibs) {
       count: css.animationCount,
       hasStagger: css.staggerDelayCount > 2,
       runtimeAnimations: css.runtimeAnimations,
+      revealElements: css.revealElements || 0,
+      gsapStyledElements: css.gsapStyledElements || 0,
     },
     gsap: {
       active: gsapActive,
@@ -1056,14 +1101,22 @@ function computeScores(layers) {
 
   const typography = layers.aesthetics.typography.score
 
+  // Motion: credit reveal elements and GSAP-styled elements as evidence of motion intent
+  const revealCredit = clamp((layers.motion.cssAnimations.revealElements || 0) / 5 * 10, 0, 10)
+  const gsapStyleCredit = clamp((layers.motion.cssAnimations.gsapStyledElements || 0) / 10 * 10, 0, 10)
+  const transitionCredit = clamp(layers.motion.cssTransitions.count / 20 * 10, 0, 10)
+
   const motion =
-    clamp(layers.motion.cssTransitions.cubicBezierCount * 2.5, 0, 10) * 0.2 +
-    (layers.motion.gsap.active ? 8 : 0) * 0.2 +
-    (layers.motion.gsap.scrollTrigger ? 8 : 0) * 0.15 +
-    (layers.motion.gsap.scrollTriggerScrub ? 8 : 0) * 0.15 +
+    clamp(layers.motion.cssTransitions.cubicBezierCount * 2.5, 0, 10) * 0.15 +
+    (layers.motion.gsap.active ? 8 : 0) * 0.15 +
+    (layers.motion.gsap.scrollTrigger ? 8 : 0) * 0.1 +
+    (layers.motion.gsap.scrollTriggerScrub ? 8 : 0) * 0.1 +
     (layers.motion.cssAnimations.hasStagger ? 8 : 0) * 0.1 +
-    clamp(layers.motion.gsap.tweenCount / 5 * 10, 0, 10) * 0.1 +
-    (layers.motion.wheelStates?.statesCaptured >= 2 ? 8 : 0) * 0.1
+    clamp(layers.motion.gsap.tweenCount / 5 * 10, 0, 10) * 0.05 +
+    (layers.motion.wheelStates?.statesCaptured >= 2 ? 8 : 0) * 0.05 +
+    revealCredit * 0.1 +
+    gsapStyleCredit * 0.1 +
+    transitionCredit * 0.1
 
   const craft =
     layers.aesthetics.colorHarmony.score * 0.3 +
