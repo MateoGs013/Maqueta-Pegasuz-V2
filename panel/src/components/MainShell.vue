@@ -17,6 +17,7 @@ const sections = [
     label: 'BRAIN',
     items: [
       { to: '/eros', label: 'Eros' },
+      { to: '/eros/chat', label: 'Chat' },
       { to: '/eros/training', label: 'Training' },
     ],
   },
@@ -25,7 +26,8 @@ const sections = [
 const isActive = (to) => {
   if (to === '/projects') return route.path.startsWith('/projects')
   if (to === '/eros/training') return route.path === '/eros/training'
-  if (to === '/eros') return route.path.startsWith('/eros') && !route.path.startsWith('/eros/training')
+  if (to === '/eros/chat') return route.path === '/eros/chat'
+  if (to === '/eros') return route.path === '/eros'
   return route.path.startsWith(to)
 }
 </script>

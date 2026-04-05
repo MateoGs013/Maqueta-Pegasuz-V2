@@ -292,6 +292,25 @@ export default function erosPlugin() {
         })
       })
 
+      // REST: Eros chat
+      server.middlewares.use('/__eros/chat', async (req, res) => {
+        if (req.method !== 'POST') { res.writeHead(405); res.end(); return }
+        let body = ''
+        req.on('data', c => { body += c })
+        req.on('end', async () => {
+          try {
+            const { message } = JSON.parse(body)
+            execFileCp('node', [path.join(scriptsDir, 'eros-chat.mjs'), '--message', message], { cwd: scriptsDir, timeout: 15000 }, (err, stdout) => {
+              res.writeHead(200, { 'Content-Type': 'application/json' })
+              res.end(err ? JSON.stringify({ response: 'No pude procesar eso. Probá preguntándome sobre mis técnicas, debilidades, o filosofía.', mood: 'confused' }) : stdout)
+            })
+          } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({ error: e.message }))
+          }
+        })
+      })
+
       // REST: training impact
       server.middlewares.use('/__eros/training/impact', async (req, res) => {
         try {
