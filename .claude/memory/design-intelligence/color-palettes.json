@@ -21,6 +21,72 @@
       "lesson": "Cool violet canvas = creative depth. Vermillion accent avoids copper (Forge) and purple (AI). Dual-theme palette with dark/light rhythm. 5.2:1 contrast on accent.",
       "userRating": null,
       "validations": 1
+    },
+    {
+      "date": "2026-04-04",
+      "project": "peritas-tech",
+      "mood": "dark cyberpunk",
+      "canvas": "#0a0a0f",
+      "accent": "#00f0ff, #ff00aa, #ffe600, #b8fe02",
+      "reaction": "auto-approved",
+      "lesson": "4-neon system with category coding (cyan=PCs, magenta=perifericos, yellow=componentes, lime=CTA). Blue-tinted near-black canvas gives depth. Each neon has 3 glow intensities (sm/md/lg).",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-04",
+      "project": "gentile-natalia",
+      "mood": "architectural restrained glass cinematic",
+      "canvas": "#0b100e",
+      "accent": "#b8b0a4,#d4cec6,#f3f0ec",
+      "reaction": "user approved",
+      "lesson": "Monochromatic green-tinted near-black with warm stone accents. No chromatic accent — color from photography only. Adapted from fluid.glass (#0b1012 blue-tint shifted to #0b100e green-tint for warmth). First project with zero chromatic accent.",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-10",
+      "mood": "minimal",
+      "canvas": "#0a0a12",
+      "accent": "#c47d52",
+      "reaction": null,
+      "lesson": "Cool blue near-black + burnt clay terracotta creates warm-in-cold tension perfect for minimal dark",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-17",
+      "mood": "minimal",
+      "canvas": "#0b0b0c",
+      "accent": "#8fae8b",
+      "reaction": null,
+      "lesson": "Sage green accent on near-black creates organic calm. Sandstone #d4cabb as secondary warms the void.",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-05",
+      "project": "artefakt-mov",
+      "mood": "reference",
+      "canvas": "#000000",
+      "accent": "#ffffff",
+      "reaction": "reference-excellent",
+      "lesson": "From https://artefakt.mov.",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-21",
+      "mood": "playful",
+      "canvas": "#0c0a12",
+      "accent": "#b8fe02",
+      "reaction": null,
+      "lesson": "Electric lime + hot coral on violet-black = playful energy. Three-accent system creates chromatic variety without chaos.",
+      "userRating": null,
+      "validations": 1
     }
   ],
   "failures": [

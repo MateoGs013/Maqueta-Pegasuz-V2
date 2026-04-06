@@ -119,6 +119,236 @@
       "keyTechnique": null,
       "score": 8,
       "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-10",
+      "sectionType": "hero",
+      "layout": "Layered Planes Recipe C",
+      "motion": "SplitText line reveal + 3-plane parallax",
+      "keyTechnique": null,
+      "score": 8.3,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-10",
+      "sectionType": "features",
+      "layout": "1.4fr 0.6fr pinned",
+      "motion": "ScrollTrigger pin+morph 300vh scrub",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-10",
+      "sectionType": "portfolio",
+      "layout": "1.618fr 1fr alternating",
+      "motion": "Clip-path alternating reveals",
+      "keyTechnique": null,
+      "score": 8.1,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-10",
+      "sectionType": "about",
+      "layout": "Image band + narrow centered text",
+      "motion": "Scroll-speed differential + SplitText line",
+      "keyTechnique": null,
+      "score": 8.8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-16",
+      "sectionType": "hero",
+      "layout": null,
+      "motion": "parallax-3-plane",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-16",
+      "sectionType": "features",
+      "layout": null,
+      "motion": "pin-scroll-morph",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-16",
+      "sectionType": "portfolio",
+      "layout": null,
+      "motion": "clip-path-reveal",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-16",
+      "sectionType": "about",
+      "layout": null,
+      "motion": "scroll-speed-differential",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-17",
+      "sectionType": "features",
+      "layout": null,
+      "motion": "pin-morph",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-17",
+      "sectionType": "hero",
+      "layout": null,
+      "motion": "kinetic-typography",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-17",
+      "sectionType": "portfolio",
+      "layout": null,
+      "motion": "clip-path-reveal",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-17",
+      "sectionType": "about",
+      "layout": null,
+      "motion": "parallax-depth",
+      "keyTechnique": null,
+      "score": 7.5,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-20",
+      "sectionType": "hero",
+      "layout": "layered-planes",
+      "motion": null,
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-20",
+      "sectionType": "pricing",
+      "layout": "pin-morph",
+      "motion": null,
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-20",
+      "sectionType": "testimonials",
+      "layout": "asymmetric",
+      "motion": null,
+      "keyTechnique": null,
+      "score": 7.5,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-21",
+      "sectionType": "hero",
+      "layout": "layered-planes",
+      "motion": "kinetic-typography",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-21",
+      "sectionType": "pricing",
+      "layout": "pinned-morph-grid",
+      "motion": "pin-morph-scroll",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-21",
+      "sectionType": "testimonials",
+      "layout": "sidebar-carousel",
+      "motion": "scroll-snap-carousel",
+      "keyTechnique": null,
+      "score": 7.5,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-21",
+      "sectionType": "contact",
+      "layout": "golden-ratio-form",
+      "motion": "stagger-cascade",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-06",
+      "project": "practice-22",
+      "sectionType": "hero",
+      "layout": null,
+      "motion": "pin+morph",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-06",
+      "project": "practice-22",
+      "sectionType": "team",
+      "layout": null,
+      "motion": "3D-flip stagger",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-06",
+      "project": "practice-22",
+      "sectionType": "faq",
+      "layout": null,
+      "motion": "wobble-accordion",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-06",
+      "project": "practice-22",
+      "sectionType": "cta",
+      "layout": null,
+      "motion": "perspective-tilt",
+      "keyTechnique": null,
+      "score": 8,
+      "userRating": null
     }
   ]
 }

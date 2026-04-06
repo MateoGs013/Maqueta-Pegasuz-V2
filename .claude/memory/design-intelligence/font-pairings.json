@@ -35,6 +35,54 @@
       "lesson": "Condensed all-caps for brutalist impact + geometric sans for tech-forward body. JetBrains Mono for creative developer credibility. 16.4x ratio.",
       "userRating": null,
       "validations": 1
+    },
+    {
+      "date": "2026-04-04",
+      "project": "peritas-tech",
+      "mood": "dark cyberpunk",
+      "display": "Bebas Neue",
+      "body": "Space Grotesk",
+      "mono": "JetBrains Mono",
+      "reaction": "auto-approved",
+      "lesson": "Bebas Neue gives condensed bold impact for cyberpunk headings. Space Grotesk geometric sans reads well on dark canvas. JetBrains Mono perfect for terminal/specs aesthetic.",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-04",
+      "project": "gentile-natalia",
+      "mood": "architectural restrained glass cinematic",
+      "display": "DM Serif Display",
+      "body": "Plus Jakarta Sans",
+      "mono": "IBM Plex Mono",
+      "reaction": "user approved",
+      "lesson": "High-contrast transitional serif + geometric humanist sans + architectural mono. Chosen to differentiate from Forge (Cormorant+DM Sans) and Coque (Bebas+Space Grotesk). Serif communicates permanence for real estate.",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-17",
+      "mood": "minimal",
+      "display": "Fraunces",
+      "body": "Outfit",
+      "mono": null,
+      "reaction": null,
+      "lesson": "Variable optical serif + geometric sans creates organic tension on dark minimal canvas. Fraunces wonk axis adds handmade quality.",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-20",
+      "mood": "editorial",
+      "display": "Playfair Display",
+      "body": "Source Sans 3",
+      "mono": null,
+      "reaction": null,
+      "lesson": "Playfair Display high stroke contrast creates strong editorial authority at 64px+. Pairs well with Source Sans 3 humanist sans.",
+      "userRating": null,
+      "validations": 1
     }
   ],
   "failures": [
