@@ -44,7 +44,20 @@ const generateBrief = async () => {
 // Build the /project prompt from brief
 // ---------------------------------------------------------------------------
 
-const buildPrompt = (brief) => {
+const buildPrompt = async (brief) => {
+  // Load candidate rules to inject into the brief
+  let rulesBlock = ''
+  try {
+    const rulesData = await readJson(path.join(path.resolve(__dirname, '..'), '.claude', 'memory', 'design-intelligence', 'rules.json'))
+    const allRules = (rulesData?.rules || [])
+    const promoted = allRules.filter(r => r.status === 'PROMOTED').map(r => r.text)
+    const candidates = allRules.filter(r => r.status === 'CANDIDATE').map(r => r.text)
+    const unique = [...new Set([...promoted, ...candidates])]
+    if (unique.length > 0) {
+      rulesBlock = `\n\n## Reglas a aplicar (OBLIGATORIAS)\n${unique.map(r => `- ${r}`).join('\n')}`
+    }
+  } catch {}
+
   return `/project
 
 ## Brief
@@ -58,7 +71,7 @@ const buildPrompt = (brief) => {
 **Objetivo:** ${brief.objective}
 
 Este es un proyecto de práctica para entrenar. Priorizar las secciones listadas.
-No usar referencias externas. Creatividad libre. Construir rápido.`
+No usar referencias externas. Creatividad libre. Construir rápido.${rulesBlock}`
 }
 
 // ---------------------------------------------------------------------------
@@ -66,7 +79,7 @@ No usar referencias externas. Creatividad libre. Construir rápido.`
 // ---------------------------------------------------------------------------
 
 const runSession = async (brief) => {
-  const prompt = buildPrompt(brief)
+  const prompt = await buildPrompt(brief)
   const slug = brief.id || `practice-${Date.now()}`
 
   log(`Starting session: ${slug}`)
@@ -157,13 +170,103 @@ const postSessionForProject = async (projectDir) => {
   let reflection = null
   try { reflection = await callScript('eros-meta.mjs', ['reflect', '--project', projectDir]) } catch {}
 
+  // Validate candidate rules against the built project
+  let rulesValidated = 0
+  try {
+    const rulesData = await readJson(path.join(path.resolve(__dirname, '..'), '.claude', 'memory', 'design-intelligence', 'rules.json'))
+    if (rulesData?.rules) {
+      const candidates = rulesData.rules.filter(r => r.status === 'CANDIDATE')
+
+      // Read project files to check if rules were applied
+      const srcDir = path.join(projectDir, 'src')
+      let projectCode = ''
+      try {
+        const walk = async (dir) => {
+          const entries = await fs.readdir(dir, { withFileTypes: true }).catch(() => [])
+          for (const e of entries) {
+            if (e.isFile() && (e.name.endsWith('.vue') || e.name.endsWith('.css') || e.name.endsWith('.js'))) {
+              projectCode += await fs.readFile(path.join(dir, e.name), 'utf8').catch(() => '')
+            } else if (e.isDirectory() && e.name !== 'node_modules') {
+              await walk(path.join(dir, e.name))
+            }
+          }
+        }
+        await walk(srcDir)
+      } catch {}
+
+      const codeLower = projectCode.toLowerCase()
+
+      for (const rule of candidates) {
+        let applied = false
+        const text = rule.text.toLowerCase()
+
+        // Check if the rule was respected
+        if (text.includes('inter') || text.includes('roboto')) {
+          applied = !codeLower.includes("'inter'") && !codeLower.includes('"inter"') && !codeLower.includes("'roboto'")
+        } else if (text.includes('gradient placeholder')) {
+          applied = !codeLower.includes('linear-gradient') || codeLower.includes('<img') || codeLower.includes('background-image: url')
+        } else if (text.includes('stock photo') || text.includes('unsplash')) {
+          applied = !codeLower.includes('unsplash.com') || codeLower.includes('picsum')
+        } else if (text.includes('text-only') || text.includes('elemento visual')) {
+          // Hero has more than just text — check for img, svg, canvas, or background-image in hero
+          applied = codeLower.includes('hero') && (codeLower.includes('<img') || codeLower.includes('<svg') || codeLower.includes('<canvas') || codeLower.includes('background-image'))
+        } else if (text.includes('hover') || text.includes('hover state')) {
+          applied = (codeLower.match(/:hover/g) || []).length >= 3
+        } else if (text.includes('depth') || text.includes('layer')) {
+          applied = (codeLower.match(/z-index/g) || []).length >= 3 || codeLower.includes('position: absolute')
+        } else if (text.includes('curtain') || text.includes('600ms')) {
+          applied = !codeLower.includes('1000ms') && !codeLower.includes('duration: 1')
+        } else if (text.includes('simple') || text.includes('un elemento')) {
+          applied = true // hard to validate, give benefit of the doubt
+        } else {
+          applied = true // unknown rule, assume applied
+        }
+
+        if (applied) {
+          rule.validations = (rule.validations || 0) + 1
+          rulesValidated++
+          if (rule.validations >= 3 && rule.status !== 'PROMOTED') {
+            rule.status = 'PROMOTED'
+            rule.promotedAt = new Date().toISOString()
+            log(`Rule PROMOTED: "${rule.text}" (${rule.validations} validations)`)
+          }
+        }
+      }
+
+      // Deduplicate before saving
+      const seen = new Map()
+      for (const r of rulesData.rules) {
+        const key = r.text.toLowerCase().trim()
+        if (seen.has(key)) {
+          const existing = seen.get(key)
+          existing.validations = Math.max(existing.validations, r.validations)
+          if (r.status === 'PROMOTED') existing.status = 'PROMOTED'
+        } else {
+          seen.set(key, { ...r })
+        }
+      }
+      rulesData.rules = [...seen.values()]
+
+      await (await import('./eros-utils.mjs')).writeJson(
+        path.join(path.resolve(__dirname, '..'), '.claude', 'memory', 'design-intelligence', 'rules.json'),
+        rulesData
+      )
+      if (rulesValidated > 0) log(`Validated ${rulesValidated} rules`)
+    }
+  } catch (err) {
+    log(`Rule validation error: ${err.message?.slice(0, 60)}`)
+  }
+
   // Update personality
   try { await callScript('eros-meta.mjs', ['personality']) } catch {}
+
+  // Promote rules
+  try { await callScript('eros-memory.mjs', ['promote']) } catch {}
 
   // Get stats
   const stats = await callScript('eros-memory.mjs', ['stats']).catch(() => null)
 
-  log(`Memory: ${stats?.totalDataPoints || '?'} data points`)
+  log(`Memory: ${stats?.totalDataPoints || '?'} data points | Rules validated: ${rulesValidated}`)
 
   // Cleanup practice project
   try {
@@ -171,7 +274,7 @@ const postSessionForProject = async (projectDir) => {
     log(`Cleaned up ${path.basename(projectDir)}`)
   } catch {}
 
-  return { learned: true, reflection, stats }
+  return { learned: true, reflection, stats, rulesValidated }
 }
 
 // ---------------------------------------------------------------------------
