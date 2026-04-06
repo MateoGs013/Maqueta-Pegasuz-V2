@@ -39,7 +39,77 @@
       "promotedTo": "CLAUDE.md",
       "promotedAt": "2025-01-01",
       "createdAt": "2025-01-01"
+    },
+    {
+      "id": "RULE-005",
+      "text": "Heroes text-only sin elemento visual son rechazados",
+      "source": "user-training/coque",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-03"
+    },
+    {
+      "id": "RULE-006",
+      "text": "Nunca usar stock photos genericos de Unsplash",
+      "source": "user-training/coque",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-03"
+    },
+    {
+      "id": "RULE-007",
+      "text": "Curtain reveals maximo 600ms",
+      "source": "user-training/coque",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-03"
+    },
+    {
+      "id": "RULE-008",
+      "text": "Empezar con el hero mas simple posible, agregar UN elemento distintivo",
+      "source": "user-training/coque",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-03"
+    },
+    {
+      "id": "RULE-009",
+      "text": "Gradient placeholders en vez de imagenes reales = rechazo",
+      "source": "user-training/coque",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-03"
+    },
+    {
+      "id": "RULE-010",
+      "text": "Cada seccion necesita un hover state diferenciado",
+      "source": "user-training/coque",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-03"
+    },
+    {
+      "id": "RULE-011",
+      "text": "Always add depth layers to feature sections",
+      "source": "review/eros-test-1775285439180",
+      "validations": 7,
+      "status": "PROMOTED",
+      "promotedTo": null,
+      "promotedAt": "2026-04-06T02:36:56.303Z",
+      "createdAt": "2026-04-04"
     }
   ],
-  "nextId": 5
+  "nextId": 12
 }
