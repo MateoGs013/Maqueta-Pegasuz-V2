@@ -1,5 +1,5 @@
 import { promises as fs } from 'node:fs'
-import { spawn } from 'node:child_process'
+import { spawn, execFile } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -182,6 +182,21 @@ const main = async () => {
     brief: bootstrappedBrief,
     installSkipped: skipInstall,
   })
+
+  // Sync: initialize git + push to archive repo
+  try {
+    await new Promise((resolve, reject) => {
+      execFile('node', [
+        path.join(__dirname, 'eros-project-sync.mjs'), 'init', '--project', projectDir,
+      ], { cwd: __dirname, timeout: 60000 }, (err, stdout, stderr) => {
+        if (stderr) process.stderr.write(stderr)
+        if (err) { reject(err); return }
+        resolve(stdout)
+      })
+    })
+  } catch (err) {
+    console.error(`[sync] Warning: ${err.message?.slice(0, 80)} — project created but not synced`)
+  }
 
   console.log(`Initialized project ${bootstrappedBrief.name} at ${projectDir}`)
 }
