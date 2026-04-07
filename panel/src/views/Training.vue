@@ -18,6 +18,41 @@ const studyProgress = ref('')
 const awwwards = ref([])
 const loadingAwwwards = ref(false)
 
+// Auto-training
+const trainHistory = ref([])
+const trainRunning = ref(false)
+const trainCount = ref(1)
+
+const loadTrainHistory = async () => {
+  try {
+    const data = await (await fetch('/__eros/training/auto-train-history')).json()
+    trainHistory.value = (data.sessions || []).slice().reverse().slice(0, 20)
+  } catch { trainHistory.value = [] }
+}
+
+const launchTraining = async () => {
+  trainRunning.value = true
+  try {
+    await fetch('/__eros/training/auto-train-start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ count: trainCount.value, maxRetries: 1 }),
+    })
+  } catch {}
+  // Poll for completion
+  const poll = setInterval(async () => {
+    await loadTrainHistory()
+    // Simple heuristic: stop polling after 20 min or if history grew
+    if (trainHistory.value.length > 0) {
+      const latest = trainHistory.value[0]
+      const age = Date.now() - new Date(latest.timestamp).getTime()
+      if (age < 30000) { trainRunning.value = false; clearInterval(poll) }
+    }
+  }, 15000)
+  // Safety timeout
+  setTimeout(() => { trainRunning.value = false; clearInterval(poll) }, 1200000)
+}
+
 const loadProjects = async () => {
   try { projects.value = await (await fetch('/__eros/training/projects')).json() } catch { projects.value = [] }
 }
@@ -100,7 +135,7 @@ const setHighlightVerdict = (idx, verdict) => {
   if (review.value?.highlights?.[idx]) review.value.highlights[idx].verdict = verdict
 }
 
-onMounted(() => { loadProjects(); loadImpact() })
+onMounted(() => { loadProjects(); loadImpact(); loadTrainHistory() })
 </script>
 
 <template>
@@ -122,6 +157,69 @@ onMounted(() => { loadProjects(); loadImpact() })
       <div class="cell metric-cell">
         <p class="label">Rules</p>
         <p class="value-sm">{{ (impact.rules?.promoted || 0) + (impact.rules?.candidates || 0) }}</p>
+      </div>
+    </div>
+
+    <!-- AUTO-TRAINING -->
+    <div class="grid-row grid-row--1">
+      <div class="cell">
+        <div class="autotrain-header">
+          <p class="label">Entrenamiento Autónomo</p>
+          <div class="autotrain-controls">
+            <select v-model="trainCount" class="train-select" :disabled="trainRunning">
+              <option :value="1">1 sesión</option>
+              <option :value="2">2 sesiones</option>
+              <option :value="3">3 sesiones</option>
+              <option :value="5">5 sesiones</option>
+            </select>
+            <button class="btn-train" @click="launchTraining" :disabled="trainRunning">
+              {{ trainRunning ? 'Entrenando...' : '▶ Entrenar' }}
+            </button>
+          </div>
+        </div>
+
+        <div v-if="trainRunning" class="train-running">
+          <div class="train-pulse"></div>
+          <span class="body-sm">Sesión en curso — puede tardar 10-30 min por sesión</span>
+        </div>
+
+        <div v-if="trainHistory.length" class="train-history">
+          <div class="train-table-header">
+            <span class="th-date">Fecha</span>
+            <span class="th-ref">Referencia</span>
+            <span class="th-mood">Mood</span>
+            <span class="th-obs">Observer</span>
+            <span class="th-audit">Audit</span>
+            <span class="th-gates">Gates</span>
+            <span class="th-time">Tiempo</span>
+          </div>
+          <div v-for="s in trainHistory" :key="s.id" class="train-row">
+            <span class="td-date">{{ s.date }}</span>
+            <span class="td-ref" :title="s.reference?.url">{{ s.reference?.title || '—' }}</span>
+            <span class="td-mood">{{ s.mood?.split(' ')?.[0] || '—' }}</span>
+            <span class="td-obs">
+              <template v-if="s.observer">
+                {{ Object.values(s.observer).length > 0
+                  ? (Object.values(s.observer).reduce((a,b) => a+b, 0) / Object.values(s.observer).length).toFixed(1)
+                  : '—' }}
+              </template>
+              <template v-else>—</template>
+            </span>
+            <span class="td-audit" :class="s.audit?.pass ? 'text-pass' : 'text-fail'">
+              {{ s.audit?.pct != null ? s.audit.pct + '%' : '—' }}
+            </span>
+            <span class="td-gates">
+              <template v-if="s.gates">
+                <span class="pill pill--tiny pill--strong">{{ s.gates.approved }}</span>
+                <span class="pill pill--tiny pill--warn" v-if="s.gates.retried">{{ s.gates.retried }}r</span>
+                <span class="pill pill--tiny pill--weak" v-if="s.gates.flagged">{{ s.gates.flagged }}f</span>
+              </template>
+              <template v-else>—</template>
+            </span>
+            <span class="td-time">{{ s.duration ? Math.round(s.duration / 60) + 'm' : '—' }}</span>
+          </div>
+        </div>
+        <p v-else class="body-sm dim">Sin sesiones de entrenamiento todavía.</p>
       </div>
     </div>
 
@@ -183,9 +281,12 @@ onMounted(() => { loadProjects(); loadImpact() })
               <span class="aww-title">{{ site.title }}</span>
               <span class="aww-url">{{ site.url?.replace(/https?:\/\//, '').replace(/\/$/, '') }}</span>
             </div>
-            <button class="btn-study-sm" @click="studyAwwward(site)" :disabled="studying">
-              Estudiar
-            </button>
+            <div class="aww-actions">
+              <a class="btn-visit-sm" :href="site.url" target="_blank" rel="noopener" title="Visitar sitio">↗</a>
+              <button class="btn-study-sm" @click="studyAwwward(site)" :disabled="studying">
+                Estudiar
+              </button>
+            </div>
           </div>
         </div>
         <p v-else-if="loadingAwwwards" class="body-sm dim">Buscando en Awwwards... (puede tardar 1 min)</p>
@@ -202,6 +303,8 @@ onMounted(() => { loadProjects(); loadImpact() })
             class="project-row" :class="{ 'project-row--active': activeProject === p.slug }"
             @click="selectProject(p.slug)"
           >
+            <img v-if="p.preview" :src="p.preview" class="project-thumb" alt="" />
+            <div v-else class="project-thumb project-thumb--empty"></div>
             <span class="project-name">{{ p.projectName || p.slug }}</span>
             <span class="pill">{{ p.score?.toFixed(1) || '—' }}</span>
           </button>
@@ -259,6 +362,49 @@ onMounted(() => { loadProjects(); loadImpact() })
 <style scoped>
 .grid-row--impact { grid-template-columns: repeat(4, 1fr); }
 .metric-cell { display: grid; gap: 6px; align-content: end; min-height: 80px; }
+
+/* ── Auto-Training ── */
+.autotrain-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.autotrain-controls { display: flex; align-items: center; gap: 8px; }
+.train-select {
+  padding: 4px 8px; background: var(--surface); border: 1px solid var(--line);
+  color: var(--text); font: 400 11px var(--font-mono); cursor: pointer;
+}
+.btn-train {
+  padding: 6px 14px; border: 1px solid var(--accent); background: transparent;
+  color: var(--accent); font: 600 10px var(--font-mono); letter-spacing: 0.06em;
+  text-transform: uppercase; cursor: pointer; transition: all 0.15s;
+}
+.btn-train:hover { background: var(--accent-ember); }
+.btn-train:disabled { opacity: 0.5; cursor: default; }
+.train-running {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line);
+}
+.train-pulse {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  animation: pulse-dot 1.5s ease infinite;
+}
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.train-history { margin-top: 12px; }
+.train-table-header, .train-row {
+  display: grid; grid-template-columns: 70px 1fr 80px 55px 50px 70px 45px;
+  gap: 6px; align-items: center; padding: 6px 0;
+}
+.train-table-header {
+  border-bottom: 1px solid var(--line); font: 600 8px var(--font-mono);
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;
+}
+.train-row { border-bottom: 1px solid var(--line-subtle, rgba(255,255,255,0.04)); font: 400 11px var(--font-body); color: var(--text); }
+.train-row:last-child { border-bottom: 0; }
+.td-ref { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-mood { font: 400 10px var(--font-mono); color: var(--text-dim); }
+.td-obs, .td-audit, .td-time { font: 500 11px var(--font-mono); text-align: center; }
+.td-gates { display: flex; gap: 3px; }
+.text-pass { color: var(--success, #4ade80); }
+.text-fail { color: var(--error, #f87171); }
+.pill--tiny { font-size: 8px; padding: 1px 4px; }
+.pill--warn { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); }
 
 /* ── Study ── */
 .study-input-wrap { display: flex; flex-direction: column; gap: 1px; background: var(--line); }
@@ -326,6 +472,14 @@ onMounted(() => { loadProjects(); loadImpact() })
 }
 .btn-study-sm:hover { color: var(--accent); border-color: var(--line-accent); background: var(--accent-ember); }
 .btn-study-sm:disabled { opacity: 0.4; }
+.aww-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.btn-visit-sm {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border: 1px solid var(--line); background: transparent;
+  color: var(--text-muted); font-size: 13px; text-decoration: none;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-visit-sm:hover { color: var(--accent); border-color: var(--line-accent); background: var(--accent-ember); }
 
 /* ── Projects ── */
 .project-list { display: grid; gap: 0; margin-top: 8px; }
@@ -339,7 +493,14 @@ onMounted(() => { loadProjects(); loadImpact() })
 .project-row:hover { background: var(--surface); margin: 0 -32px; padding: 10px 32px; }
 .project-row--active { background: var(--surface); margin: 0 -32px; padding: 10px 32px; }
 .project-row--active .project-name { color: var(--accent); }
-.project-name { font: 500 12px var(--font-body); color: var(--text); }
+.project-name { font: 500 12px var(--font-body); color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-thumb {
+  width: 48px; height: 32px; border-radius: 3px; object-fit: cover;
+  flex-shrink: 0; border: 1px solid var(--line); background: var(--surface);
+}
+.project-thumb--empty {
+  background: var(--surface); opacity: 0.4;
+}
 .dim { color: var(--text-dim); font-style: italic; }
 
 .result-block { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }

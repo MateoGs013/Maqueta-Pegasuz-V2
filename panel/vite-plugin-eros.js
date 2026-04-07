@@ -201,11 +201,23 @@ export default function erosPlugin() {
               const state = JSON.parse(await fsP.readFile(path.join(brainDir, 'state.json'), 'utf8').catch(() => '{}'))
               const scorecard = JSON.parse(await fsP.readFile(path.join(brainDir, 'reports', 'quality', 'scorecard.json'), 'utf8').catch(() => '{}'))
               const sections = await fsP.readdir(path.join(desktopDir, e.name, 'src', 'components', 'sections')).catch(() => [])
+              // Find preview thumbnail (observer frame-000.png or preview.png)
+              let preview = null
+              const previewCandidates = [
+                path.join(desktopDir, e.name, 'preview.png'),
+                path.join(brainDir, 'observer', 'localhost', 'frame-000.png'),
+                path.join(brainDir, 'observer', 'localhost', 'full-page-desktop.png'),
+              ]
+              for (const p of previewCandidates) {
+                try { await fsP.access(p); preview = `/__eros/preview/${e.name}/${path.basename(p)}`; break } catch {}
+              }
+
               projects.push({
                 slug: e.name,
                 projectName: state.project?.name || e.name,
                 score: scorecard.finalScore || null,
                 sections: sections.filter(f => f.endsWith('.vue')),
+                preview,
               })
             } catch { /* no .brain */ }
           }
@@ -311,6 +323,36 @@ export default function erosPlugin() {
         })
       })
 
+      // REST: serve project preview images
+      server.middlewares.use('/__eros/preview', async (req, res) => {
+        try {
+          const os = await import('node:os')
+          // URL: /__eros/preview/{slug}/{filename}
+          const parts = req.url.replace(/^\//, '').split('/')
+          const slug = parts[0]
+          const filename = parts[1]
+          if (!slug || !filename || !/\.(png|jpg|jpeg|webp)$/i.test(filename)) {
+            res.writeHead(400); res.end(); return
+          }
+          const desktopDir = path.join(os.default.homedir(), 'Desktop')
+          const candidates = [
+            path.join(desktopDir, slug, filename),
+            path.join(desktopDir, slug, '.brain', 'observer', 'localhost', filename),
+          ]
+          for (const p of candidates) {
+            try {
+              const data = await fsP.readFile(p)
+              const ext = path.extname(p).slice(1)
+              const mime = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp' }[ext] || 'image/png'
+              res.writeHead(200, { 'Content-Type': mime, 'Cache-Control': 'public, max-age=300' })
+              res.end(data)
+              return
+            } catch {}
+          }
+          res.writeHead(404); res.end()
+        } catch { res.writeHead(500); res.end() }
+      })
+
       // REST: Awwwards discovery
       server.middlewares.use('/__eros/discover', async (req, res) => {
         try {
@@ -330,6 +372,48 @@ export default function erosPlugin() {
           const result = await runTrain(['impact'])
           res.writeHead(200, { 'Content-Type': 'application/json' })
           res.end(JSON.stringify(result))
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: e.message }))
+        }
+      })
+
+      // REST: auto-training history
+      server.middlewares.use('/__eros/training/auto-train-history', async (req, res) => {
+        try {
+          const os = await import('node:os')
+          const historyPath = path.resolve(scriptsDir, '..', '.claude', 'memory', 'design-intelligence', 'training-history.json')
+          const data = await fsP.readFile(historyPath, 'utf8').catch(() => '{"sessions":[]}')
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(data)
+        } catch (e) {
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end('{"sessions":[]}')
+        }
+      })
+
+      // REST: launch auto-training session
+      server.middlewares.use('/__eros/training/auto-train-start', async (req, res) => {
+        if (req.method !== 'POST') { res.writeHead(405); res.end(); return }
+        try {
+          const body = await new Promise((resolve) => {
+            let d = ''; req.on('data', c => d += c); req.on('end', () => {
+              try { resolve(JSON.parse(d)) } catch { resolve({}) }
+            })
+          })
+          const count = String(body.count || 1)
+          const maxRetries = String(body.maxRetries || 1)
+          const args = [path.join(scriptsDir, 'eros-auto-train.mjs'), '--count', count, '--max-retries', maxRetries]
+          if (body.skipDiscover) args.push('--skip-discover')
+
+          const { spawn: spawnProc } = await import('node:child_process')
+          const child = spawnProc('node', args, {
+            cwd: scriptsDir, stdio: 'ignore', detached: true,
+          })
+          child.unref()
+
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ started: true, pid: child.pid, count: parseInt(count) }))
         } catch (e) {
           res.writeHead(500, { 'Content-Type': 'application/json' })
           res.end(JSON.stringify({ error: e.message }))
