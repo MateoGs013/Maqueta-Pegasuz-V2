@@ -52,13 +52,20 @@ const scrapeAwwwards = async (maxItems = 10) => {
       const items = document.querySelectorAll('li.js-collectable')
       return [...items].slice(0, max).map(li => {
         const link = li.querySelector('a[href*="/sites/"]')
-        const title = li.querySelector('.heading-4, h2, h3')?.textContent?.trim()
+        if (!link) return null
+
+        // Title: aria-label on the link, or alt on the img, or second .figure-rollover__row
+        const title = link.getAttribute('aria-label')
+          || li.querySelector('img[alt]')?.getAttribute('alt')
+          || [...li.querySelectorAll('.figure-rollover__row')].slice(1, 2).map(d => d.textContent?.trim())[0]
+          || null
+
         return {
-          title: title || null,
-          awwwardsUrl: link?.href || null,
-          slug: link?.href?.split('/sites/')?.[1]?.replace(/\/$/, '') || null,
+          title,
+          awwwardsUrl: link.href || null,
+          slug: link.href?.split('/sites/')?.[1]?.replace(/\/$/, '') || null,
         }
-      }).filter(s => s.awwwardsUrl)
+      }).filter(s => s && s.awwwardsUrl)
     }, maxItems)
 
     log(`Found ${entries.length} SOTD entries`)
@@ -71,22 +78,32 @@ const scrapeAwwwards = async (maxItems = 10) => {
         await new Promise(r => setTimeout(r, 1500))
 
         const siteData = await page.evaluate(() => {
-          // Find the visit link — toolbar button or first external link
           const socialDomains = ['youtube', 'facebook', 'twitter', 'instagram', 'linkedin', 'pinterest', 'dribbble', 'behance', 'github', 'vimeo', 'tiktok']
-          const allLinks = [...document.querySelectorAll('a')]
-            .map(a => a.href)
-            .filter(h => h && h.startsWith('http') && !h.includes('awwwards.com') && !socialDomains.some(d => h.includes(d)))
+          const isExternal = (href) => href && href.startsWith('http') && !href.includes('awwwards.com') && !socialDomains.some(d => href.includes(d))
 
-          // Deduplicate and pick the most common external domain
-          const domainCount = {}
-          for (const url of allLinks) {
-            try {
-              const domain = new URL(url).hostname
-              domainCount[domain] = (domainCount[domain] || 0) + 1
-            } catch {}
+          // 1. "Visit Site" button (most reliable)
+          let siteUrl = null
+          const visitBtn = [...document.querySelectorAll('a')].find(a =>
+            a.textContent?.trim()?.toLowerCase() === 'visit site' && isExternal(a.href)
+          )
+          if (visitBtn) siteUrl = visitBtn.href
+
+          // 2. Toolbar external link
+          if (!siteUrl) {
+            const toolbarLink = document.querySelector('a.toolbar-bts__item[href]')
+            if (toolbarLink && isExternal(toolbarLink.href)) siteUrl = toolbarLink.href
           }
-          const topDomain = Object.entries(domainCount).sort((a, b) => b[1] - a[1])[0]
-          const siteUrl = topDomain ? allLinks.find(u => u.includes(topDomain[0])) : null
+
+          // 3. Fallback: most common external domain
+          if (!siteUrl) {
+            const allLinks = [...document.querySelectorAll('a')].map(a => a.href).filter(isExternal)
+            const domainCount = {}
+            for (const url of allLinks) {
+              try { const d = new URL(url).hostname; domainCount[d] = (domainCount[d] || 0) + 1 } catch {}
+            }
+            const topDomain = Object.entries(domainCount).sort((a, b) => b[1] - a[1])[0]
+            if (topDomain) siteUrl = allLinks.find(u => u.includes(topDomain[0]))
+          }
 
           // Extract tags/categories
           const tags = [...document.querySelectorAll('[class*="category"], [class*="tag-"]')]
