@@ -32,6 +32,27 @@ npm-debug.log*
 # Reference captures (temporary — deleted after build)
 _ref-captures/
 
+# Auto-train & diagnostic temp artifacts
+_training-refs/
+_dryrun-*.log
+_dryrun-*.err
+_live-*.log
+_live-*.err
+_realrun-*.log
+_realrun-*.err
+_watchdog-*.log
+_watchdog-*.err
+temp-*.json
+tmp-*.json
+vite-watchdog.log
+
+# Vite cache
+.vite/
+
+# Lab scratch at repo root (NOT .brain/ inside projects)
+/.brain/
+/BRIEF-*.md
+
 # Claude Code local session data
 .claude/todos/
 .claude/projects/
