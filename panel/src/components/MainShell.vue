@@ -1,9 +1,39 @@
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { stats } from '@/composables/useMemory.js'
 import { runs } from '@/composables/useRuns.js'
 
 const route = useRoute()
+
+// ── Eros mood pill — updates every 5 min ──
+const mood = ref(null)
+const puchos = ref(null)
+let moodTimer = null
+
+const loadMood = async () => {
+  try {
+    const res = await fetch('/__eros/mood')
+    mood.value = await res.json()
+  } catch { /* keep previous */ }
+}
+const loadPuchos = async () => {
+  try {
+    const res = await fetch('/__eros/puchos')
+    puchos.value = await res.json()
+  } catch { /* keep previous */ }
+}
+onMounted(() => {
+  loadMood()
+  loadPuchos()
+  moodTimer = setInterval(() => {
+    loadMood()
+    loadPuchos()
+  }, 5 * 60 * 1000) // 5 min
+})
+onUnmounted(() => {
+  if (moodTimer) clearInterval(moodTimer)
+})
 
 const sections = [
   {
@@ -18,6 +48,8 @@ const sections = [
     items: [
       { to: '/eros', label: 'Eros' },
       { to: '/eros/chat', label: 'Chat' },
+      { to: '/eros/feed', label: 'Feed' },
+      { to: '/eros/diary', label: 'Diario' },
       { to: '/eros/training', label: 'Training' },
     ],
   },
@@ -27,6 +59,8 @@ const isActive = (to) => {
   if (to === '/projects') return route.path.startsWith('/projects')
   if (to === '/eros/training') return route.path === '/eros/training'
   if (to === '/eros/chat') return route.path === '/eros/chat'
+  if (to === '/eros/feed') return route.path === '/eros/feed'
+  if (to === '/eros/diary') return route.path === '/eros/diary'
   if (to === '/eros') return route.path === '/eros'
   return route.path.startsWith(to)
 }
@@ -49,6 +83,24 @@ const isActive = (to) => {
           <div class="pulse-fill" :style="{ width: Math.min(100, stats.totalDataPoints / 2) + '%' }"></div>
         </div>
         <span class="pulse-text">{{ stats.totalDataPoints }} data points</span>
+      </div>
+
+      <!-- Eros mood pill (derived from recent activity) -->
+      <div v-if="mood" class="sb-mood" :title="mood.reason">
+        <span class="sb-mood-icon" :style="{ color: mood.color, borderColor: mood.color }">{{ mood.emoji }}</span>
+        <div class="sb-mood-body">
+          <span class="sb-mood-label" :style="{ color: mood.color }">{{ mood.mood }}</span>
+          <span class="sb-mood-reason">{{ mood.reason }}</span>
+        </div>
+      </div>
+
+      <!-- Pucho counter — total puchos smoked + total minutes -->
+      <div v-if="puchos && puchos.count > 0" class="sb-puchos" :title="puchos.lastPucho?.reason || ''">
+        <span class="sb-puchos-icon">🚬</span>
+        <div class="sb-puchos-body">
+          <span class="sb-puchos-count">{{ puchos.count }} pucho{{ puchos.count === 1 ? '' : 's' }}</span>
+          <span class="sb-puchos-time">{{ puchos.totalFormatted }}</span>
+        </div>
       </div>
 
       <nav class="sb-nav">
@@ -110,6 +162,58 @@ const isActive = (to) => {
   transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .pulse-text { font: 400 9px var(--font-mono); color: var(--text-dim); letter-spacing: 0.06em; }
+
+/* Pucho counter — shows accumulated thinking time */
+.sb-puchos {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 20px 12px;
+  border-top: 1px solid var(--line-subtle, rgba(255,255,255,0.04));
+}
+.sb-puchos-icon {
+  font-size: 14px;
+  filter: grayscale(0.3);
+  opacity: 0.85;
+}
+.sb-puchos-body {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+.sb-puchos-count {
+  font: 600 10px var(--font-mono);
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.sb-puchos-time {
+  font: 400 9px var(--font-mono);
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+
+/* Mood pill — small indicator of Eros's derived emotional state */
+.sb-mood {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 20px 16px;
+  border-top: 1px solid var(--line-subtle, rgba(255,255,255,0.04));
+}
+.sb-mood-icon {
+  width: 26px; height: 26px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid currentColor;
+  font: 700 14px var(--font-mono);
+  background: transparent;
+}
+.sb-mood-body { display: grid; gap: 2px; min-width: 0; }
+.sb-mood-label {
+  font: 700 10px var(--font-mono); letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.sb-mood-reason {
+  font: 400 9px var(--font-mono); color: var(--text-dim);
+  overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
 
 .sb-nav {
   flex: 1; display: flex; flex-direction: column; padding: 0;

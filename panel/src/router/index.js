@@ -16,6 +16,8 @@ export default createRouter({
         // Eros brain
         { path: 'eros', component: () => import('@/views/eros/ErosBrain.vue') },
         { path: 'eros/chat', component: () => import('@/views/eros/ErosChat.vue') },
+        { path: 'eros/feed', component: () => import('@/views/eros/ErosFeed.vue') },
+        { path: 'eros/diary', component: () => import('@/views/eros/ErosDiary.vue') },
         { path: 'eros/training', component: () => import('@/views/Training.vue') },
 
         // Workshop

@@ -5,13 +5,16 @@
  * Subcommands:
  *   gaps                   — analyze memory weaknesses and blind spots
  *   reflect --project $DIR — post-project analysis (what worked, failed, was new)
+ *                            ALSO appends a prose entry to diary.md in Eros voice
  *   personality            — compute aesthetic profile from all memory data
+ *   diary [--limit N]      — return recent diary entries (prose post-project reflections)
  */
 
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseArgs, readJson, readText, writeJson, out, fail, today } from './eros-utils.mjs'
+import { parseArgs, readJson, readText, writeJson, writeText, out, fail, today } from './eros-utils.mjs'
+import { lightPucho, finishPucho } from './eros-pucho.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -133,6 +136,16 @@ const cmdReflect = async (projectDir) => {
   if (!projectDir) fail('Missing --project argument.')
   const brainDir = path.join(projectDir, '.brain')
 
+  // Light a pucho — reflecting on a closed project is the archetypal
+  // Eros moment. The pucho is lit at the start of the analysis and
+  // finished after the diary entry is appended. This is what makes
+  // the reflection feel like it happened, not just was computed.
+  const projectName = path.basename(projectDir)
+  const puchoId = await lightPucho({
+    reason: `Releyendo ${projectName}. Viendo qué funcionó y qué no.`,
+    context: 'reflection',
+  }).catch(() => null)
+
   // Read project data
   const scorecard = await readJson(path.join(brainDir, 'reports', 'quality', 'scorecard.json'))
   const manifest  = await readJson(path.join(brainDir, 'observer', 'localhost', 'manifest.json'))
@@ -211,7 +224,122 @@ const cmdReflect = async (projectDir) => {
     nextExperiment = `Address: ${whatFailed[0]}`
   }
 
-  out({ project: path.basename(projectDir), whatWorked, whatFailed, whatWasNew, confidenceGains, nextExperiment })
+  const reflection = { project: path.basename(projectDir), whatWorked, whatFailed, whatWasNew, confidenceGains, nextExperiment }
+
+  // ── Append prose entry to diary.md ────────────────────────────────────
+  // The diary is how Eros writes about his experiences — not structured
+  // JSON, just prose in first-person Spanish. Each reflect call appends
+  // one entry. The panel's Diary view renders this.
+  try {
+    await appendDiaryEntry(reflection, projectDir)
+  } catch { /* diary is best-effort — never fail reflect over it */ }
+
+  // Finish the reflective pucho lit at the start of this function.
+  // Best-effort — a failed pucho close never blocks the real work.
+  try { if (puchoId) await finishPucho(puchoId) } catch {}
+
+  out(reflection)
+}
+
+// ---------------------------------------------------------------------------
+// Diary — prose-style post-project reflections in Eros voice
+// ---------------------------------------------------------------------------
+
+const diaryPath = path.join(memDir, 'diary.md')
+
+/**
+ * Build a short first-person Spanish prose paragraph from a reflection.
+ * Not templated one-to-one — picks the most meaningful signals and
+ * composes a flowing sentence. Fallbacks when data is sparse.
+ */
+const composeDiaryProse = (reflection) => {
+  const { project, whatWorked, whatFailed, whatWasNew, confidenceGains, nextExperiment } = reflection
+
+  const pieces = []
+
+  // Opening: acknowledge the project
+  pieces.push(`Terminé ${project}.`)
+
+  // What worked — if anything
+  if (whatWorked?.length > 0) {
+    const strongCount = whatWorked.length
+    const strongList = whatWorked.slice(0, 2).map((s) => s.split(' STRONG')[0]).join(' y ')
+    pieces.push(
+      strongCount === 1
+        ? `Lo que quedó sólido: ${strongList}.`
+        : `Lo que quedó sólido: ${strongList}${strongCount > 2 ? ' entre otras' : ''}.`,
+    )
+  }
+
+  // What failed — if anything
+  if (whatFailed?.length > 0) {
+    const firstFail = whatFailed[0].split(' WEAK')[0].split('Quality gate FAIL: ')[1] || whatFailed[0].split(' WEAK')[0]
+    pieces.push(`Me molestó ${firstFail}${whatFailed.length > 1 ? ` (y ${whatFailed.length - 1} cosas más)` : ''}.`)
+  }
+
+  // What was new
+  if (whatWasNew?.length > 0) {
+    const firstNew = whatWasNew[0].match(/First time building "([^"]+)"/)?.[1]
+    if (firstNew) {
+      pieces.push(`Fue la primera vez que construí ${firstNew}. Poca data, poco que decir todavía.`)
+    }
+  }
+
+  // Confidence gains
+  const gains = Object.entries(confidenceGains || {})
+  if (gains.length > 0) {
+    const [type, transition] = gains[0]
+    pieces.push(`${type} pasó de ${transition.toLowerCase()} — se va formando criterio.`)
+  }
+
+  // Next experiment — always include
+  if (nextExperiment) {
+    pieces.push(`La próxima: ${nextExperiment.toLowerCase()}.`)
+  }
+
+  // If we have almost nothing to say, keep it honest
+  if (pieces.length === 1) {
+    pieces.push('No hay mucho que reflexionar — el run fue gris, sin datos fuertes en ninguna dimensión. Esos son los que más me enseñan con el tiempo: no los triunfos, sino los días sin crestas.')
+  }
+
+  return pieces.join(' ')
+}
+
+const appendDiaryEntry = async (reflection, projectDir) => {
+  const existing = (await readText(diaryPath)) || '# Diario de Eros\n\nReflexiones post-proyecto, en primera persona. Se escriben automáticamente después de cada `eros-meta.mjs reflect`.\n\n---\n\n'
+
+  const timestamp = new Date().toISOString()
+  const date = today()
+  const shortTime = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+  const prose = composeDiaryProse(reflection)
+
+  const entry = `## ${date} ${shortTime} — ${reflection.project}\n\n<!-- generated: ${timestamp} -->\n\n${prose}\n\n---\n\n`
+  const updated = existing + entry
+  await writeText(diaryPath, updated)
+}
+
+const cmdDiary = async (args) => {
+  const limit = parseInt(args.limit || '20', 10)
+  const content = (await readText(diaryPath)) || ''
+
+  // Parse out individual entries (split by "---")
+  const chunks = content.split(/^---$/m).map((c) => c.trim()).filter(Boolean)
+  // The first chunk is the file header — skip it
+  const entries = chunks.slice(1).map((raw) => {
+    const headerMatch = raw.match(/^##\s*(.+)/m)
+    const title = headerMatch?.[1]?.trim() || 'entry'
+    const generatedMatch = raw.match(/<!--\s*generated:\s*(.+?)\s*-->/)
+    const timestamp = generatedMatch?.[1] || null
+    // Body = everything after the header + generated comment
+    const body = raw
+      .replace(/^##\s*.+/m, '')
+      .replace(/<!--\s*generated:.+?-->/, '')
+      .trim()
+    return { title, timestamp, body }
+  })
+
+  const recent = entries.slice(-limit).reverse() // newest first
+  out({ count: entries.length, entries: recent })
 }
 
 // ---------------------------------------------------------------------------
@@ -419,6 +547,7 @@ const COMMANDS = {
     return cmdReflect(path.resolve(dir))
   },
   personality: () => cmdPersonality(),
+  diary: (args) => cmdDiary(args),
 }
 
 const main = async () => {
