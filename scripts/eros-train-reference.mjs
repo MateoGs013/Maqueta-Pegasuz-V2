@@ -77,7 +77,7 @@ const slugify = (url) => {
 // Call another eros script
 const callScript = async (script, args) => {
   const scriptPath = path.join(__dirname, script)
-  const { stdout } = await execFile('node', [scriptPath, ...args], { cwd: __dirname })
+  const { stdout } = await execFile(process.execPath, [scriptPath, ...args], { cwd: __dirname })
   try { return JSON.parse(stdout) } catch { return { raw: stdout } }
 }
 
@@ -100,7 +100,7 @@ const cmdAnalyze = async (args) => {
     const captureScript = path.join(__dirname, 'capture-refs.mjs')
     // Use eros-observer.mjs (V2, Playwright) — faster and more reliable
     const observerScript = path.join(__dirname, 'eros-observer.mjs')
-    await execFile('node', [observerScript, '--no-discover', url, refDir], {
+    await execFile(process.execPath, [observerScript, '--no-discover', url, refDir], {
       cwd: __dirname,
       timeout: 180000,
     })
@@ -445,7 +445,7 @@ const cmdSession = async (args) => {
     // Capture
     try {
       const captureScript = path.join(__dirname, 'capture-refs.mjs')
-      await execFile('node', [captureScript, '--no-discover', url, refDir], {
+      await execFile(process.execPath, [captureScript, '--no-discover', url, refDir], {
         cwd: __dirname,
         timeout: 120000,
       })

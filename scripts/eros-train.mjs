@@ -31,7 +31,7 @@ const __dirname = path.dirname(__filename)
 
 const callScript = (script, args, timeoutMs = 60000) => new Promise((resolve, reject) => {
   const p = path.join(__dirname, script)
-  execFile('node', [p, ...args], { cwd: __dirname, timeout: timeoutMs }, (err, stdout, stderr) => {
+  execFile(process.execPath, [p, ...args], { cwd: __dirname, timeout: timeoutMs }, (err, stdout, stderr) => {
     if (err) { reject(new Error(stderr || err.message)); return }
     try { resolve(JSON.parse(stdout)) } catch { resolve({ raw: stdout }) }
   })

@@ -95,7 +95,7 @@ const callInterpret = (taskType, extraArgs = []) => {
   return new Promise((resolve) => {
     const script = path.join(__dirname, 'eros-memory.mjs')
     const allArgs = [script, 'interpret', '--task-type', taskType, ...extraArgs]
-    execFile('node', allArgs, { cwd: __dirname }, (err, stdout) => {
+    execFile(process.execPath, allArgs, { cwd: __dirname }, (err, stdout) => {
       if (err) {
         resolve({ insightsMarkdown: '## Memory Insights\n\n_No memory data available._\n', threshold: null, relevantRules: [] })
         return
@@ -113,7 +113,7 @@ const callInterpret = (taskType, extraArgs = []) => {
 const callThreshold = (sectionType) => {
   return new Promise((resolve) => {
     const script = path.join(__dirname, 'eros-memory.mjs')
-    execFile('node', [script, 'threshold', '--section-type', sectionType], { cwd: __dirname }, (err, stdout) => {
+    execFile(process.execPath, [script, 'threshold', '--section-type', sectionType], { cwd: __dirname }, (err, stdout) => {
       if (err) {
         resolve({ scoreMinimum: 7.0, isDefault: true })
         return
@@ -507,7 +507,7 @@ const cmdMotion = async (args) => {
     '',
     ...sectionList.map((f) => `- ${f}`),
     '',
-  ]
+  )
 
   if (tokens) {
     parts.push('## Tokens', '', tokens, '')

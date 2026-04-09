@@ -48,7 +48,7 @@ const getThreshold = (sectionType) => {
   return new Promise((resolve) => {
     const script = path.join(__dirname, 'eros-memory.mjs')
     execFile(
-      'node',
+      process.execPath,
       [script, 'threshold', '--section-type', sectionType],
       { cwd: __dirname },
       (err, stdout) => {

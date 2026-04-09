@@ -42,7 +42,7 @@ const assert = (condition, msg) => {
 const run = (script, args) => {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(__dirname, script)
-    execFile('node', [scriptPath, ...args], { cwd: __dirname }, (err, stdout, stderr) => {
+    execFile(process.execPath, [scriptPath, ...args], { cwd: __dirname }, (err, stdout, stderr) => {
       if (err) {
         reject(new Error(`${script} ${args.join(' ')}: ${stderr || err.message}`))
         return

@@ -17,7 +17,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const memDir = path.resolve(__dirname, '..', '.claude', 'memory', 'design-intelligence')
 
 const callScript = (script, args) => new Promise((resolve, reject) => {
-  execFile('node', [path.join(__dirname, script), ...args], { cwd: __dirname, timeout: 30000 }, (err, stdout) => {
+  execFile(process.execPath, [path.join(__dirname, script), ...args], { cwd: __dirname, timeout: 30000 }, (err, stdout) => {
     if (err) { reject(err); return }
     try { resolve(JSON.parse(stdout)) } catch { resolve(null) }
   })

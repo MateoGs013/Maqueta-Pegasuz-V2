@@ -186,7 +186,7 @@ const main = async () => {
   // Sync: initialize git + push to archive repo
   try {
     await new Promise((resolve, reject) => {
-      execFile('node', [
+      execFile(process.execPath, [
         path.join(__dirname, 'eros-project-sync.mjs'), 'init', '--project', projectDir,
       ], { cwd: __dirname, timeout: 60000 }, (err, stdout, stderr) => {
         if (stderr) process.stderr.write(stderr)

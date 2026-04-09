@@ -404,7 +404,7 @@ async function writeToMemory(projectSlug, changeInfo) {
     pattern: changeInfo.pattern,
   })
 
-  const { stdout } = await execFile('node', [
+  const { stdout } = await execFile(process.execPath, [
     MEMORY_SCRIPT,
     'learn',
     '--event', 'user_change',
