@@ -1,40 +1,38 @@
 #!/usr/bin/env node
 /**
+ * capture-refs.mjs — DEPRECATED (v4.0, Puppeteer-based).
+ *
+ * ⚠️ This script is superseded by `eros-observer.mjs` which uses Playwright
+ * and has 6 layers of analysis (Geometry, Aesthetics, Semantic/ARIA,
+ * AntiTemplate, Structural, Motion) instead of 4. Same CLI, richer output.
+ *
+ * Still functional — kept so legacy callers in SKILL.md / brain-config.md /
+ * bootstrap-front-brain.mjs / eros-train-reference.mjs / refresh-quality.mjs
+ * / eros-gate.mjs continue to work during the migration.
+ *
+ * Migration plan:
+ *   1. Update those callers to use `eros-observer.mjs` directly (same args)
+ *   2. Delete this file once the last reference is gone
+ *
  * General Observer v4.0 (formerly Reference Capture Script)
- * Complete 4-pass analysis: Scroll → Hover → Click → Responsive
- * Auto-discovers internal pages from navigation links.
- * Also works as a local project observer (--local flag).
+ * Complete 4-pass analysis: Scroll → Hover → Click → Responsive.
  *
- * Captures desktop + mobile screenshots per section boundary,
- * extracts design tokens, tech stack, CSS custom properties,
- * runs interaction sweeps (hover states, click states, scroll behaviors),
- * detects spacing systems, and writes a rich manifest.
- * Now also scores against the Excellence Standard and writes analysis.md.
- *
- * Usage:
+ * Usage (identical to eros-observer.mjs):
  *   Single URL:           node capture-refs.mjs <url> [output-dir]
  *   Batch mode:           node capture-refs.mjs --batch <url1> <url2> ... [--out <dir>]
  *   Disable discovery:    node capture-refs.mjs --no-discover <url> [output-dir]
  *   Set max pages:        node capture-refs.mjs --max-pages 3 <url> [output-dir]
  *   Local project:        node capture-refs.mjs --local --port 5173 <output-dir>
- *
- * Auto-discovery: when given a homepage URL, extracts nav links and captures
- * internal pages automatically. Each page gets its own directory:
- *   _ref-captures/{domain}/          — homepage
- *   _ref-captures/{domain}--about/   — /about
- *   _ref-captures/{domain}--work/    — /work
- *
- * Output per page:
- *   desktop/frame-NNN.png        — per-section desktop screenshots
- *   mobile/frame-NNN.png         — per-section mobile screenshots
- *   interactions/hover-NNN.png   — hover state captures
- *   interactions/click-NNN.png   — click state captures
- *   interactions/scroll-NNN.png  — scroll behavior captures
- *   full-page-desktop.png
- *   full-page-mobile.png
- *   manifest.json                — rich metadata with interaction data
- *   analysis.md                  — Excellence Standard scoring + human-readable summary
  */
+
+// Deprecation notice — visible on every invocation.
+// Silenced by EROS_HIDE_DEPRECATION=1 so auto-train's clean output isn't noisy.
+if (!process.env.EROS_HIDE_DEPRECATION) {
+  process.stderr.write(
+    '[capture-refs] DEPRECATED: prefer eros-observer.mjs (Playwright, 6-layer analysis). ' +
+    'Same CLI. Set EROS_HIDE_DEPRECATION=1 to silence this warning.\n',
+  )
+}
 
 import puppeteer from 'puppeteer'
 import { mkdirSync, writeFileSync } from 'fs'
