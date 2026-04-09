@@ -103,6 +103,143 @@
       ],
       "bestWith": [],
       "notes": "High impact but heavy. Requires dynamic import + fallback image. Loading UX is critical."
+    },
+    {
+      "name": "SplitText",
+      "timesUsed": 1,
+      "avgScore": 8.5,
+      "avgUserRating": null,
+      "scores": [
+        8.5
+      ],
+      "bestWith": [
+        "reference"
+      ],
+      "notes": null
+    },
+    {
+      "name": "clip-path",
+      "timesUsed": 2,
+      "avgScore": 8.5,
+      "avgUserRating": null,
+      "scores": [
+        8.5,
+        8.5
+      ],
+      "bestWith": [
+        "reference"
+      ],
+      "notes": null
+    },
+    {
+      "name": "stagger",
+      "timesUsed": 2,
+      "avgScore": 8.5,
+      "avgUserRating": null,
+      "scores": [
+        8.5,
+        8.5
+      ],
+      "bestWith": [
+        "reference"
+      ],
+      "notes": null
+    },
+    {
+      "name": "scrub",
+      "timesUsed": 2,
+      "avgScore": 8.5,
+      "avgUserRating": null,
+      "scores": [
+        8.5,
+        8.5
+      ],
+      "bestWith": [
+        "reference"
+      ],
+      "notes": null
+    },
+    {
+      "name": "grain",
+      "timesUsed": 2,
+      "avgScore": 8.5,
+      "avgUserRating": null,
+      "scores": [
+        8.5,
+        8.5
+      ],
+      "bestWith": [
+        "reference"
+      ],
+      "notes": null
+    },
+    {
+      "name": "noise",
+      "timesUsed": 2,
+      "avgScore": 8.5,
+      "avgUserRating": null,
+      "scores": [
+        8.5,
+        8.5
+      ],
+      "bestWith": [
+        "reference"
+      ],
+      "notes": null
+    },
+    {
+      "name": "GSAP",
+      "timesUsed": 2,
+      "avgScore": 8.5,
+      "avgUserRating": null,
+      "scores": [
+        8.5,
+        8.5
+      ],
+      "bestWith": [
+        "reference"
+      ],
+      "notes": null
+    },
+    {
+      "name": "ScrollTrigger",
+      "timesUsed": 1,
+      "avgScore": 8.5,
+      "avgUserRating": null,
+      "scores": [
+        8.5
+      ],
+      "bestWith": [
+        "reference"
+      ],
+      "notes": null
+    },
+    {
+      "name": "Lenis",
+      "timesUsed": 2,
+      "avgScore": 8.5,
+      "avgUserRating": null,
+      "scores": [
+        8.5,
+        8.5
+      ],
+      "bestWith": [
+        "reference"
+      ],
+      "notes": null
+    },
+    {
+      "name": "WebGL",
+      "timesUsed": 1,
+      "avgScore": 8.5,
+      "avgUserRating": null,
+      "scores": [
+        8.5
+      ],
+      "bestWith": [
+        "reference"
+      ],
+      "notes": null
     }
   ]
 }

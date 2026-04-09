@@ -1,0 +1,39 @@
+{
+  "id": "practice-1775678402932",
+  "name": "Practice V2 — Artem Shcherban Portfolio",
+  "type": "practice",
+  "mood": "minimal",
+  "sections": [
+    "S-Hero",
+    "S-Pricing",
+    "S-Contact",
+    "S-Cta"
+  ],
+  "techniqueChallenge": "Pin + morph",
+  "objective": "Imitate Artem Shcherban Portfolio: minimal + SplitText, clip-path, stagger",
+  "reference": {
+    "url": "https://artemshcherban.com/",
+    "title": "Artem Shcherban Portfolio",
+    "palette": [
+      "#0f0f0f",
+      "#fed008",
+      "#f6f6f6",
+      "#f0f0f0"
+    ],
+    "techniques": [
+      "SplitText",
+      "clip-path",
+      "stagger"
+    ]
+  },
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "pricing",
+      "contact",
+      "cta"
+    ],
+    "technique": true
+  },
+  "createdAt": "2026-04-08T20:00:02.932Z"
+}

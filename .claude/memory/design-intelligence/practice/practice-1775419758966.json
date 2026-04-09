@@ -1,0 +1,24 @@
+{
+  "id": "practice-1775419758966",
+  "name": "Practice 14",
+  "type": "practice",
+  "mood": "minimal",
+  "sections": [
+    "S-Hero",
+    "S-Features",
+    "S-Portfolio",
+    "S-About"
+  ],
+  "techniqueChallenge": "Pin + morph",
+  "objective": "Fill gaps: minimal theme + features + portfolio + about + Pin + morph",
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "features",
+      "portfolio",
+      "about"
+    ],
+    "technique": false
+  },
+  "createdAt": "2026-04-05T20:09:18.966Z"
+}

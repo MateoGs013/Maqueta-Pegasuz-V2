@@ -1,3 +1,24 @@
 {
-  "projects": []
+  "projects": [
+    {
+      "slug": "practice-v2",
+      "name": "practice-v2",
+      "branch": "practice-v2",
+      "remote": "https://github.com/MateoGs013/pegasuz-projects.git",
+      "projectDir": "C:\\Users\\mateo\\Desktop\\practice-v2",
+      "machine": "MASTERACE",
+      "updatedAt": "2026-04-08T19:14:59.675Z",
+      "createdAt": "2026-04-08T19:14:59.676Z"
+    },
+    {
+      "slug": "practice-v2-iyo",
+      "name": "practice-v2-iyo",
+      "branch": "practice-v2-iyo",
+      "remote": "https://github.com/MateoGs013/pegasuz-projects.git",
+      "projectDir": "C:\\Users\\mateo\\Desktop\\practice-v2-iyo",
+      "machine": "MASTERACE",
+      "updatedAt": "2026-04-09T00:38:30.151Z",
+      "createdAt": "2026-04-09T00:38:30.152Z"
+    }
+  ]
 }

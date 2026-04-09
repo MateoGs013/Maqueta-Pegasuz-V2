@@ -1,0 +1,44 @@
+{
+  "active": false,
+  "startedAt": "2026-04-09T00:34:13.464Z",
+  "count": 1,
+  "dryRun": false,
+  "maxRetries": 1,
+  "phaseIndex": 10,
+  "phase": "complete",
+  "totalPhases": 10,
+  "memoryBefore": 143,
+  "sessionId": "practice-1775695009426",
+  "briefName": "Practice V2 — IYO",
+  "mood": "brutalist",
+  "reference": {
+    "title": "IYO",
+    "url": "https://www.iyo.ai/"
+  },
+  "projectDir": "C:\\Users\\mateo\\Desktop\\practice-19",
+  "lastResult": [
+    {
+      "brief": "Practice V2 — IYO",
+      "duration": 1806,
+      "audit": 50,
+      "gates": {
+        "approved": 0,
+        "retried": 0,
+        "flagged": 0,
+        "total": 0
+      }
+    }
+  ],
+  "lastUpdatedAt": "2026-04-09T01:04:19.826Z",
+  "phaseStartedAt": "2026-04-09T01:04:19.434Z",
+  "sections": [
+    "S-Hero",
+    "S-Team",
+    "S-Services",
+    "S-Process"
+  ],
+  "technique": "ScrollTrigger scrub timeline",
+  "currentTask": null,
+  "finishedAt": "2026-04-09T01:04:19.826Z",
+  "memoryAfter": 143
+}

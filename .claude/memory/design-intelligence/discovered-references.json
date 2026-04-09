@@ -6,7 +6,9 @@
       "awwwardsUrl": "https://www.awwwards.com/sites/champions-for-good",
       "siteUrl": "https://www.champions4good.club/",
       "tags": [],
-      "discoveredAt": "2026-04-06T14:53:46.655Z"
+      "discoveredAt": "2026-04-06T14:53:46.655Z",
+      "studied": true,
+      "studiedAt": "2026-04-08T19:39:20.154Z"
     },
     {
       "title": "Artem Shcherban Portfolio",
@@ -14,7 +16,9 @@
       "awwwardsUrl": "https://www.awwwards.com/sites/artem-shcherban-portfolio",
       "siteUrl": "https://artemshcherban.com/",
       "tags": [],
-      "discoveredAt": "2026-04-05T20:20:22.033Z"
+      "discoveredAt": "2026-04-05T20:20:22.033Z",
+      "studied": true,
+      "studiedAt": "2026-04-08T20:00:02.816Z"
     },
     {
       "title": "SŌM",
@@ -22,7 +26,9 @@
       "awwwardsUrl": "https://www.awwwards.com/sites/som",
       "siteUrl": "https://www.drinksom.eu/",
       "tags": [],
-      "discoveredAt": "2026-04-05T20:20:26.554Z"
+      "discoveredAt": "2026-04-05T20:20:26.554Z",
+      "studied": true,
+      "studiedAt": "2026-04-08T20:04:50.333Z"
     },
     {
       "title": "Artefakt",
@@ -30,7 +36,9 @@
       "awwwardsUrl": "https://www.awwwards.com/sites/artefakt",
       "siteUrl": "https://artefakt.mov/",
       "tags": [],
-      "discoveredAt": "2026-04-05T20:20:30.692Z"
+      "discoveredAt": "2026-04-05T20:20:30.692Z",
+      "studied": true,
+      "studiedAt": "2026-04-08T20:17:39.481Z"
     },
     {
       "title": "IYO",
@@ -38,7 +46,9 @@
       "awwwardsUrl": "https://www.awwwards.com/sites/iyo",
       "siteUrl": "https://www.iyo.ai/",
       "tags": [],
-      "discoveredAt": "2026-04-05T20:20:35.033Z"
+      "discoveredAt": "2026-04-05T20:20:35.033Z",
+      "studied": true,
+      "studiedAt": "2026-04-08T21:44:20.195Z"
     },
     {
       "title": "Vast",
@@ -46,7 +56,8 @@
       "awwwardsUrl": "https://www.awwwards.com/sites/vast",
       "siteUrl": "https://vastspace.com/",
       "tags": [],
-      "discoveredAt": "2026-04-05T20:20:39.169Z"
+      "discoveredAt": "2026-04-05T20:20:39.169Z",
+      "studied": false
     },
     {
       "title": "San Rita",
@@ -87,7 +98,35 @@
       "siteUrl": "https://tlb.betteroff.studio/",
       "tags": [],
       "discoveredAt": "2026-04-05T20:21:00.865Z"
+    },
+    {
+      "title": "Nine To Five",
+      "slug": "nine-to-five",
+      "awwwardsUrl": "https://www.awwwards.com/sites/nine-to-five",
+      "siteUrl": "https://www.9to5studio.it/",
+      "tags": [
+        "NEW",
+        "New",
+        "video",
+        "video",
+        "video"
+      ],
+      "discoveredAt": "2026-04-08T19:11:41.604Z"
+    },
+    {
+      "title": "Maxima Therapy",
+      "slug": "maxima-therapy",
+      "awwwardsUrl": "https://www.awwwards.com/sites/maxima-therapy",
+      "siteUrl": "https://maximatherapy.com/",
+      "tags": [
+        "New",
+        "New",
+        "video",
+        "video",
+        "video"
+      ],
+      "discoveredAt": "2026-04-08T19:11:45.538Z"
     }
   ],
-  "lastScan": "2026-04-06T15:32:10.400Z"
+  "lastScan": "2026-04-09T00:34:48.843Z"
 }

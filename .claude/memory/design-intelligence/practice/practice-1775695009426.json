@@ -1,0 +1,30 @@
+{
+  "id": "practice-1775695009426",
+  "name": "Practice V2 — IYO",
+  "type": "practice",
+  "mood": "brutalist",
+  "sections": [
+    "S-Hero",
+    "S-Team",
+    "S-Services",
+    "S-Process"
+  ],
+  "techniqueChallenge": "ScrollTrigger scrub timeline",
+  "objective": "Imitate IYO: brutalist + reference techniques",
+  "reference": {
+    "url": "https://www.iyo.ai/",
+    "title": "IYO",
+    "palette": [],
+    "techniques": []
+  },
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "team",
+      "services",
+      "process"
+    ],
+    "technique": true
+  },
+  "createdAt": "2026-04-09T00:36:49.426Z"
+}

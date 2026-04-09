@@ -1,0 +1,21 @@
+{
+  "updatedAt": "2026-04-09T01:04:19.437Z",
+  "count": 1,
+  "events": [
+    {
+      "id": "evt-1775696659437",
+      "timestamp": "2026-04-09T01:04:19.437Z",
+      "type": "project-completed",
+      "title": "Practice V2 — IYO",
+      "detail": "audit 50% · 0✓ 0r 0f · 30m · 4 secciones",
+      "mood": "reflective",
+      "metadata": {
+        "briefId": "practice-1775695009426",
+        "reference": "IYO",
+        "mood": "brutalist",
+        "audit": 50,
+        "duration": 1806
+      }
+    }
+  ]
+}

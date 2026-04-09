@@ -1,0 +1,157 @@
+{
+  "sessions": [
+    {
+      "id": "practice-1775678690600",
+      "date": "2026-04-08",
+      "timestamp": "2026-04-08T20:05:22.465Z",
+      "name": "Practice V2 — SŌM",
+      "mood": "minimal",
+      "sections": [
+        "S-Hero",
+        "S-Pricing",
+        "S-Contact",
+        "S-Cta"
+      ],
+      "technique": "Pin + morph",
+      "reference": {
+        "url": "https://www.drinksom.eu/",
+        "title": "SŌM"
+      },
+      "duration": 132,
+      "observer": null,
+      "audit": null,
+      "gates": {
+        "approved": 0,
+        "retried": 1,
+        "flagged": 0,
+        "total": 1
+      },
+      "rulesValidated": 6
+    },
+    {
+      "id": "practice-1775675550907",
+      "date": "2026-04-08",
+      "timestamp": "2026-04-08T20:24:59.548Z",
+      "name": "Practice V2 — autonomous",
+      "mood": "minimal",
+      "sections": [
+        "S-Hero",
+        "S-Pricing",
+        "S-Contact",
+        "S-Cta"
+      ],
+      "technique": "Pin + morph",
+      "reference": null,
+      "duration": 4413,
+      "observer": null,
+      "audit": {
+        "score": 16,
+        "total": 32,
+        "pct": 50
+      },
+      "gates": {
+        "approved": 0,
+        "retried": 0,
+        "flagged": 0,
+        "total": 0
+      },
+      "rulesValidated": 2
+    },
+    {
+      "id": "practice-1775688744438",
+      "date": "2026-04-08",
+      "timestamp": "2026-04-08T22:57:51.734Z",
+      "name": "Practice V2 — IYO",
+      "mood": "playful",
+      "sections": [
+        "S-Hero",
+        "S-Contact",
+        "S-Cta",
+        "S-Faq"
+      ],
+      "technique": "Pin + morph",
+      "reference": {
+        "url": "https://www.iyo.ai/",
+        "title": "IYO"
+      },
+      "duration": 485,
+      "observer": null,
+      "audit": {
+        "score": 16,
+        "total": 32,
+        "pct": 50
+      },
+      "gates": {
+        "approved": 0,
+        "retried": 0,
+        "flagged": 0,
+        "total": 0
+      },
+      "rulesValidated": 0
+    },
+    {
+      "id": "practice-1775692287411",
+      "date": "2026-04-08",
+      "timestamp": "2026-04-08T23:54:10.750Z",
+      "name": "Practice V2 — IYO",
+      "mood": "playful",
+      "sections": [
+        "S-Hero",
+        "S-Contact",
+        "S-Cta",
+        "S-Faq"
+      ],
+      "technique": "Pin + morph",
+      "reference": {
+        "url": "https://www.iyo.ai/",
+        "title": "IYO"
+      },
+      "duration": 319,
+      "observer": null,
+      "audit": {
+        "score": 16,
+        "total": 32,
+        "pct": 50
+      },
+      "gates": {
+        "approved": 0,
+        "retried": 0,
+        "flagged": 0,
+        "total": 0
+      },
+      "rulesValidated": 0
+    },
+    {
+      "id": "practice-1775695009426",
+      "date": "2026-04-09",
+      "timestamp": "2026-04-09T01:04:19.436Z",
+      "name": "Practice V2 — IYO",
+      "mood": "brutalist",
+      "sections": [
+        "S-Hero",
+        "S-Team",
+        "S-Services",
+        "S-Process"
+      ],
+      "technique": "ScrollTrigger scrub timeline",
+      "reference": {
+        "url": "https://www.iyo.ai/",
+        "title": "IYO"
+      },
+      "duration": 1806,
+      "observer": null,
+      "audit": {
+        "score": 16,
+        "total": 32,
+        "pct": 50
+      },
+      "gates": {
+        "approved": 0,
+        "retried": 0,
+        "flagged": 0,
+        "total": 0
+      },
+      "rulesValidated": 0
+    }
+  ]
+}

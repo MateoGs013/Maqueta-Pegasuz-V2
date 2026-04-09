@@ -1,0 +1,30 @@
+{
+  "id": "practice-1775692287411",
+  "name": "Practice V2 — IYO",
+  "type": "practice",
+  "mood": "playful",
+  "sections": [
+    "S-Hero",
+    "S-Contact",
+    "S-Cta",
+    "S-Faq"
+  ],
+  "techniqueChallenge": "Pin + morph",
+  "objective": "Imitate IYO: playful + reference techniques",
+  "reference": {
+    "url": "https://www.iyo.ai/",
+    "title": "IYO",
+    "palette": [],
+    "techniques": []
+  },
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "contact",
+      "cta",
+      "faq"
+    ],
+    "technique": true
+  },
+  "createdAt": "2026-04-08T23:51:27.411Z"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "practice-1775675550907",
+  "name": "Practice V2 — autonomous",
+  "type": "practice",
+  "mood": "minimal",
+  "sections": [
+    "S-Hero",
+    "S-Pricing",
+    "S-Contact",
+    "S-Cta"
+  ],
+  "techniqueChallenge": "Pin + morph",
+  "objective": "Fill gaps: minimal + pricing + contact + cta",
+  "reference": null,
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "pricing",
+      "contact",
+      "cta"
+    ],
+    "technique": true
+  },
+  "createdAt": "2026-04-08T19:12:30.908Z"
+}

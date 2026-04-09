@@ -1,0 +1,30 @@
+{
+  "id": "practice-1775677160265",
+  "name": "Practice V2 — Champions For Good",
+  "type": "practice",
+  "mood": "minimal",
+  "sections": [
+    "S-Hero",
+    "S-Pricing",
+    "S-Contact",
+    "S-Cta"
+  ],
+  "techniqueChallenge": "Pin + morph",
+  "objective": "Imitate Champions For Good: minimal + reference techniques",
+  "reference": {
+    "url": "https://www.champions4good.club/",
+    "title": "Champions For Good",
+    "palette": [],
+    "techniques": []
+  },
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "pricing",
+      "contact",
+      "cta"
+    ],
+    "technique": true
+  },
+  "createdAt": "2026-04-08T19:39:20.265Z"
+}

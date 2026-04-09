@@ -1,0 +1,30 @@
+{
+  "id": "practice-1775678690600",
+  "name": "Practice V2 — SŌM",
+  "type": "practice",
+  "mood": "minimal",
+  "sections": [
+    "S-Hero",
+    "S-Pricing",
+    "S-Contact",
+    "S-Cta"
+  ],
+  "techniqueChallenge": "Pin + morph",
+  "objective": "Imitate SŌM: minimal + reference techniques",
+  "reference": {
+    "url": "https://www.drinksom.eu/",
+    "title": "SŌM",
+    "palette": [],
+    "techniques": []
+  },
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "pricing",
+      "contact",
+      "cta"
+    ],
+    "technique": true
+  },
+  "createdAt": "2026-04-08T20:04:50.600Z"
+}

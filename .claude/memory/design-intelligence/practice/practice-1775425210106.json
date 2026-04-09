@@ -1,0 +1,24 @@
+{
+  "id": "practice-1775425210106",
+  "name": "Practice 20",
+  "type": "practice",
+  "mood": "editorial",
+  "sections": [
+    "S-Hero",
+    "S-Pricing",
+    "S-Testimonials",
+    "S-Contact"
+  ],
+  "techniqueChallenge": "Pin + morph",
+  "objective": "Fill gaps: editorial theme + pricing + testimonials + contact + Pin + morph",
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "pricing",
+      "testimonials",
+      "contact"
+    ],
+    "technique": false
+  },
+  "createdAt": "2026-04-05T21:40:10.106Z"
+}

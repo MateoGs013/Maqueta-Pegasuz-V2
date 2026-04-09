@@ -1,0 +1,37 @@
+{
+  "id": "practice-1775679459622",
+  "name": "Practice V2 — Artefakt",
+  "type": "practice",
+  "mood": "minimal",
+  "sections": [
+    "S-Hero",
+    "S-Pricing",
+    "S-Contact",
+    "S-Cta"
+  ],
+  "techniqueChallenge": "Pin + morph",
+  "objective": "Imitate Artefakt: minimal + clip-path, stagger, scrub",
+  "reference": {
+    "url": "https://artefakt.mov/",
+    "title": "Artefakt",
+    "palette": [
+      "#000000",
+      "#ffffff"
+    ],
+    "techniques": [
+      "clip-path",
+      "stagger",
+      "scrub"
+    ]
+  },
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "pricing",
+      "contact",
+      "cta"
+    ],
+    "technique": true
+  },
+  "createdAt": "2026-04-08T20:17:39.622Z"
+}

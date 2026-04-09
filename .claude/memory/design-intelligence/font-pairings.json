@@ -83,6 +83,18 @@
       "lesson": "Playfair Display high stroke contrast creates strong editorial authority at 64px+. Pairs well with Source Sans 3 humanist sans.",
       "userRating": null,
       "validations": 1
+    },
+    {
+      "date": "2026-04-08",
+      "project": "practice-v2",
+      "mood": "minimal",
+      "display": "DM Serif Display",
+      "body": "Plus Jakarta Sans",
+      "mono": "JetBrains Mono",
+      "reaction": "Sharp Didone + geometric humanist = quiet blade aesthetic",
+      "lesson": "DM Serif Display works well for minimal dark — different from Fraunces (wonky) or Syne (wide). Clean editorial without being generic.",
+      "userRating": null,
+      "validations": 1
     }
   ],
   "failures": [

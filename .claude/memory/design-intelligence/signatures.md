@@ -14,6 +14,27 @@ Cross-project signature intelligence. CEO appends after Phase 3 batch review.
 | 2026-04-02 | Coque | FeaturedWork | Curtain reveal clip-path | Each project reveals left-to-right via clip-path: inset() at 1000ms power3.inOut on light theme | Slow curtain-pull makes each project feel like an event. Light section provides breathing room. |
 | 2026-04-02 | Coque | Marquee | Contra-scroll kinetic | Two rows at different speeds (60px/s vs 45px/s) in opposite directions, pause on hover | Speed differential prevents mechanical feel. Display + mono rows add typographic contrast. |
 | 2026-04-02 | Coque | CTA | Repulsion field | Headline words push away from cursor while CTA button pulls toward it (magnetic + repulsion) | Gravitational tension creates micro-narrative — everything points toward the action button. |
+| 2026-04-08 | artemshcherban-com | reference | — | — | — |
+| 2026-04-08 | artemshcherban-com | reference | — | — | — |
+| 2026-04-08 | artemshcherban-com | reference | — | — | — |
+| 2026-04-08 | artemshcherban-com | reference | — | — | — |
+| 2026-04-08 | artemshcherban-com | reference | — | — | — |
+| 2026-04-08 | artemshcherban-com | reference | — | — | — |
+| 2026-04-08 | artemshcherban-com | reference | — | — | — |
+| 2026-04-08 | artemshcherban-com | reference | — | — | — |
+| 2026-04-08 | artemshcherban-com | reference | — | — | — |
+| 2026-04-08 | artefakt-mov | reference | — | — | — |
+| 2026-04-08 | artefakt-mov | reference | — | — | — |
+| 2026-04-08 | artefakt-mov | reference | — | — | — |
+| 2026-04-08 | artefakt-mov | reference | — | — | — |
+| 2026-04-08 | artefakt-mov | reference | — | — | — |
+| 2026-04-08 | artefakt-mov | reference | — | — | — |
+| 2026-04-08 | artefakt-mov | reference | — | — | — |
+| 2026-04-08 | artefakt-mov | reference | — | — | — |
+| 2026-04-08 | practice-v2 | S-Hero | — | — | — |
+| 2026-04-08 | practice-v2 | S-Pricing | — | — | — |
+| 2026-04-08 | practice-v2 | S-Contact | — | — | — |
+| 2026-04-08 | practice-v2 | S-Cta | — | — | — |
 
 ## Rejected
 

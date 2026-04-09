@@ -12,3 +12,13 @@ Usage counts and average scores per technique. CEO updates after Phase 3.
 | Stagger cascade | 4 | 7.6 | Workhorse for grids/features. Use ScrollTrigger.batch(). Range 0.03-0.08 per item. |
 | Gradient mesh atmosphere | 2 | 6.8 | Adds depth cheaply but can feel generic. Needs low opacity (2-4%) and hue variation. |
 | Spline 3D scene | 1 | 6.5 | High impact but heavy. Requires dynamic import + fallback image. Loading UX is critical. |
+| SplitText | 1 | 8.5 | — |
+| clip-path | 2 | 8.5 | — |
+| stagger | 2 | 8.5 | — |
+| scrub | 2 | 8.5 | — |
+| grain | 2 | 8.5 | — |
+| noise | 2 | 8.5 | — |
+| GSAP | 2 | 8.5 | — |
+| ScrollTrigger | 1 | 8.5 | — |
+| Lenis | 2 | 8.5 | — |
+| WebGL | 1 | 8.5 | — |

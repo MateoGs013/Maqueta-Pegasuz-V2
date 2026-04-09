@@ -87,6 +87,39 @@
       "lesson": "Electric lime + hot coral on violet-black = playful energy. Three-accent system creates chromatic variety without chaos.",
       "userRating": null,
       "validations": 1
+    },
+    {
+      "date": "2026-04-08",
+      "project": "artemshcherban-com",
+      "mood": "reference",
+      "canvas": "#0f0f0f",
+      "accent": "#fed008, #f6f6f6, #f0f0f0",
+      "reaction": "reference-excellent",
+      "lesson": "From https://artemshcherban.com/.",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-08",
+      "project": "artefakt-mov",
+      "mood": "reference",
+      "canvas": "#000000",
+      "accent": "#ffffff",
+      "reaction": "reference-excellent",
+      "lesson": "From https://artefakt.mov.",
+      "userRating": null,
+      "validations": 1
+    },
+    {
+      "date": "2026-04-08",
+      "project": "practice-v2",
+      "mood": "minimal",
+      "canvas": "#0c0b08",
+      "accent": "#b8a078",
+      "reaction": "Warm amber void with aged brass — single accent discipline",
+      "lesson": "Warm amber near-black creates envelope of warmth. Brass accent at 6.8:1 contrast used sparingly. Differentiated from cool blue (#0a0a12) and sage (#0b0b0c) minimal palettes.",
+      "userRating": null,
+      "validations": 1
     }
   ],
   "failures": [
