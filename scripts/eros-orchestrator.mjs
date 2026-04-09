@@ -272,10 +272,51 @@ const ACTION_MAP = [
         command: `cd "${SCRIPTS}" && node capture-refs.mjs --local --port 5173 "${p(project, '.brain', 'observer')}" && npm run refresh:quality -- --project "${project}"`,
         expectedOutputs: [p(project, '.brain', 'observer', 'localhost')],
         onFailure: 'flag',
-        note: 'Ensure dev server is running on port 5173 before this task.',
+        note: 'Run `server/start` before this task if no dev server is active. Use server/stop after the observation phase to free the port.',
         plan: `Phase 3: Sections. Observing ${sec} — capturing screenshots + refreshing quality metrics.`,
       }
     },
+  },
+  // ===========================================================================
+  // Dev server lifecycle (Plan EROS-V8 Fase 4)
+  // ===========================================================================
+  // These are declarative server tasks that the state machine can insert
+  // before / after observation phases so the dev-server lifecycle becomes
+  // part of the orchestrated flow instead of being glued into auto-train.
+  // The underlying worker is scripts/eros-server.mjs which manages a
+  // `<project>/.brain/server.json` state file with { pid, port, startedAt }.
+  {
+    test: /^server\/start$/,
+    resolve: (taskId, state, queue, project) => ({
+      action: 'run-script',
+      command: `node "${p(SCRIPTS, 'eros-server.mjs')}" start --project "${project}"`,
+      expectedOutputs: [p(project, '.brain', 'server.json')],
+      onFailure: 'retry',
+      timeout: 60000,
+      plan: 'Dev server: starting vite on a free port. State written to .brain/server.json.',
+    }),
+  },
+  {
+    test: /^server\/stop$/,
+    resolve: (taskId, state, queue, project) => ({
+      action: 'run-script',
+      command: `node "${p(SCRIPTS, 'eros-server.mjs')}" stop --project "${project}"`,
+      expectedOutputs: [],
+      onFailure: 'flag',
+      timeout: 30000,
+      plan: 'Dev server: killing the pid recorded in .brain/server.json and clearing state.',
+    }),
+  },
+  {
+    test: /^server\/status$/,
+    resolve: (taskId, state, queue, project) => ({
+      action: 'run-script',
+      command: `node "${p(SCRIPTS, 'eros-server.mjs')}" status --project "${project}"`,
+      expectedOutputs: [],
+      onFailure: 'flag',
+      timeout: 10000,
+      plan: 'Dev server: checking pid+port from .brain/server.json.',
+    }),
   },
   {
     test: /^evaluate\/S-/,

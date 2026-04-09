@@ -38,7 +38,7 @@ const PRACTICE_DIR = path.join(MEMORY_DIR, 'practice')
 const callScript = (script, args) => {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(__dirname, script)
-    execFile('node', [scriptPath, ...args], { cwd: __dirname, timeout: 30000 }, (err, stdout, stderr) => {
+    execFile(process.execPath, [scriptPath, ...args], { cwd: __dirname, timeout: 30000 }, (err, stdout, stderr) => {
       if (err) {
         reject(new Error(`${script}: ${stderr || err.message}`))
         return
@@ -129,34 +129,95 @@ const cmdGenerate = async () => {
 }
 
 // ---------------------------------------------------------------------------
-// Subcommand: run — execute full pipeline on practice project
+// Subcommand: run — execute full pipeline end-to-end via auto-train
 // ---------------------------------------------------------------------------
+// Previously this was a stub that printed instructions. Now it actually
+// spawns eros-auto-train.mjs --count 1, which runs all 10 phases (discover
+// → brief → build → server → observer → audit → gates → retry → learn →
+// cleanup). The practice brief (if provided via --brief) is used for
+// tracking, but auto-train generates its own brief with anti-convergence
+// logic already built in — meaning two practice runs won't repeat the
+// same mood/technique. The practice script records the final result
+// back into the brief file for history tracking.
+
+const runAutoTrain = (count = 1, maxRetries = 1) => {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.join(__dirname, 'eros-auto-train.mjs')
+    process.stderr.write(`[eros-practice] spawning auto-train --count ${count} --max-retries ${maxRetries}\n`)
+    const child = execFile(
+      process.execPath,
+      [scriptPath, '--count', String(count), '--max-retries', String(maxRetries)],
+      {
+        cwd: __dirname,
+        timeout: 3600000, // 1h max for a full practice session
+        maxBuffer: 20 * 1024 * 1024,
+      },
+      (err, stdout) => {
+        if (err) {
+          reject(new Error(`auto-train failed: ${err.message.slice(0, 300)}`))
+          return
+        }
+        try { resolve(JSON.parse(stdout)) } catch { resolve({ raw: stdout }) }
+      },
+    )
+    // Stream stderr so the caller sees live progress from auto-train
+    if (child.stderr) {
+      child.stderr.on('data', (chunk) => process.stderr.write(chunk))
+    }
+  })
+}
 
 const cmdRun = async (briefPath) => {
-  if (!briefPath) fail('Missing --brief argument (path to practice brief JSON).')
+  // A --brief argument is optional. When provided, we record the result
+  // back into that specific brief file. Without one, we still run and
+  // log the result but don't persist against a named practice entry.
+  let brief = null
+  if (briefPath) {
+    brief = await readJson(briefPath)
+    if (!brief) fail(`Could not read brief at ${briefPath}`)
+    process.stderr.write(`[eros-practice] recording against brief: ${brief.id || briefPath}\n`)
+  }
 
-  const brief = await readJson(briefPath)
-  if (!brief) fail(`Could not read brief at ${briefPath}`)
+  const startedAt = new Date().toISOString()
+  let result
+  try {
+    result = await runAutoTrain(1, 1)
+  } catch (err) {
+    fail(err.message)
+  }
 
-  // This would create a temp project, run the full next/done loop,
-  // reflect, correct, and store results. For safety, we only generate
-  // the execution plan here — actual execution requires Claude's loop.
-  //
-  // In practice, the user triggers this via: /project (with practice brief)
-  // and Eros runs the pipeline. The practice script just tracks results.
+  const finishedAt = new Date().toISOString()
 
-  out({
-    status: 'ready',
-    brief,
-    instructions: [
-      `1. Create project: node init-project.mjs --brief-file "${briefPath}" --project "$DESKTOP/${brief.id}"`,
-      `2. Run the pipeline: loop next → execute → done until complete`,
-      `3. After completion: node eros-meta.mjs reflect --project "$DESKTOP/${brief.id}"`,
-      `4. Auto-correct: node eros-train.mjs correct --project "$DESKTOP/${brief.id}"`,
-      `5. Record result: node eros-practice.mjs record --brief "${briefPath}" --result '{...}'`,
-    ],
-    note: 'Practice run orchestration happens through the normal next/done loop. This script generates the brief and tracks results.',
-  })
+  // Extract practical result summary from auto-train output
+  const sessionResult = (result.results && result.results[0]) || {}
+  const summary = {
+    startedAt,
+    finishedAt,
+    briefId: sessionResult.brief || brief?.id || null,
+    duration: sessionResult.duration || null,
+    audit: sessionResult.audit || null,
+    gates: sessionResult.gates || null,
+    rulesValidated: sessionResult.rulesValidated || null,
+    memoryGrowth: result.growth || 0,
+  }
+
+  // If we had a specific practice brief, update it with the run result
+  if (brief && briefPath) {
+    brief.completedAt = finishedAt
+    brief.result = {
+      avgScore: null, // auto-train returns audit, not per-section avg
+      sectionsCompleted: summary.gates?.approved || 0,
+      sectionsFlagged: summary.gates?.flagged || 0,
+      gapsFilled: brief.targetGaps ? Object.keys(brief.targetGaps).filter((k) => brief.targetGaps[k]) : [],
+      notes: `audit ${summary.audit?.pct ?? '?'}% · ${summary.duration ?? '?'}s`,
+      autoTrainResult: summary,
+    }
+    try {
+      await writeJson(path.join(PRACTICE_DIR, `${brief.id}.json`), brief)
+    } catch { /* don't fail on record write */ }
+  }
+
+  out({ status: 'complete', summary, briefUpdated: !!brief })
 }
 
 // ---------------------------------------------------------------------------
