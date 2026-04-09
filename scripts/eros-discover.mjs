@@ -26,7 +26,7 @@ const log = (msg) => process.stderr.write(`[eros-discover] ${msg}\n`)
 
 const callScript = (script, args, timeoutMs = 300000) => new Promise((resolve, reject) => {
   const p = path.join(__dirname, script)
-  execFile('node', [p, ...args], { cwd: __dirname, timeout: timeoutMs }, (err, stdout) => {
+  execFile(process.execPath, [p, ...args], { cwd: __dirname, timeout: timeoutMs }, (err, stdout) => {
     if (err) { reject(err); return }
     try { resolve(JSON.parse(stdout)) } catch { resolve({ raw: stdout }) }
   })
@@ -198,10 +198,17 @@ const main = async () => {
     return
   }
 
-  // Study top N new sites
-  const toStudy = newSites.slice(0, count)
+  // Study top N new sites — fall back to unstudied existing if nothing new
+  let toStudy = newSites.slice(0, count)
+  let restudying = false
+  if (toStudy.length === 0) {
+    const unstudied = history.sites.filter(s => !s.studied)
+    toStudy = unstudied.slice(0, count)
+    restudying = toStudy.length > 0
+    if (restudying) log(`No new sites — restudying ${toStudy.length} existing unstudied references`)
+  }
   log('')
-  log(`Studying ${toStudy.length} new references...`)
+  log(`Studying ${toStudy.length} ${restudying ? 'existing' : 'new'} references...`)
   log('')
 
   const results = []
@@ -210,6 +217,19 @@ const main = async () => {
     results.push(result)
     log('')
   }
+
+  // Persist studied status back to history file
+  for (const r of results) {
+    const idx = history.sites.findIndex(s => s.siteUrl === r.siteUrl)
+    if (idx >= 0) {
+      history.sites[idx] = {
+        ...history.sites[idx],
+        studied: r.studied,
+        studiedAt: r.studied ? new Date().toISOString() : history.sites[idx].studiedAt,
+      }
+    }
+  }
+  await writeJson(discoveryFile, history)
 
   // Update memory stats
   let stats = null

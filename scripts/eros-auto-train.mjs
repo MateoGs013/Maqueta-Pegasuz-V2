@@ -24,13 +24,14 @@
  *   node eros-auto-train.mjs --max-retries 2    # retry limit per section (default 1)
  */
 
-import { query } from '@anthropic-ai/claude-agent-sdk'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFile, spawn } from 'node:child_process'
-import { promises as fs } from 'node:fs'
+import { promises as fs, existsSync } from 'node:fs'
 import net from 'node:net'
 import { parseArgs, readJson, writeJson, readText, ensureDir, out, fail, today } from './eros-utils.mjs'
+import { appendEvent } from './eros-feed.mjs'
+import { smokePucho } from './eros-pucho.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')
@@ -40,11 +41,77 @@ const memDir = path.join(maquetaDir, '.claude', 'memory', 'design-intelligence')
 const log = (msg) => process.stderr.write(`[eros-train] ${msg}\n`)
 
 // ---------------------------------------------------------------------------
+// Live status file — enables the panel to show real-time training progress
+// without polling the log tail. Written on every phase transition.
+// ---------------------------------------------------------------------------
+const statusPath = path.join(memDir, 'auto-train-status.json')
+const TOTAL_PHASES = 10
+const phaseLabels = {
+  0: 'Discovering reference (Awwwards)',
+  1: 'Generating brief',
+  2: 'Building project (claude -p)',
+  3: 'Starting dev server',
+  4: 'Running observer',
+  5: 'Running audit',
+  6: 'Running gates',
+  7: 'Retrying failing sections',
+  8: 'Validating rules',
+  9: 'Learning from session',
+  10: 'Cleanup',
+}
+
+let statusCache = null
+const updateStatus = async (patch) => {
+  try {
+    statusCache = { ...(statusCache || {}), ...patch, lastUpdatedAt: new Date().toISOString() }
+    const { promises: fsP } = await import('node:fs')
+    await fsP.mkdir(path.dirname(statusPath), { recursive: true })
+    await fsP.writeFile(statusPath, JSON.stringify(statusCache, null, 2) + '\n', 'utf8')
+  } catch { /* status file is best-effort — never fail the pipeline over it */ }
+}
+
+const setPhase = async (index, extras = {}) => {
+  await updateStatus({
+    phaseIndex: index,
+    phase: phaseLabels[index] || `Phase ${index}`,
+    phaseStartedAt: new Date().toISOString(),
+    totalPhases: TOTAL_PHASES,
+    ...extras,
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Executable resolution (Windows PATH workaround)
+// ---------------------------------------------------------------------------
+// Git-bash sets PATH with colons and unix-style dirs (/c/foo/bar), but
+// cmd.exe (what spawn+shell:true uses on Windows) expects semicolons and
+// Windows dirs (C:\foo\bar). Result: detached spawns can't find
+// claude/npm/npx even though bash can. Fix: resolve absolute paths at
+// startup and invoke .cmd files via `node <cli-js>` to bypass the shell.
+
+const nodeBinDir = path.dirname(process.execPath)
+const homeDir = process.env.USERPROFILE || process.env.HOME || ''
+const findFirst = (candidates) => candidates.find(c => c && existsSync(c)) || null
+
+const CLAUDE_EXE = findFirst([
+  path.join(homeDir, '.local', 'bin', 'claude.exe'),
+  path.join(homeDir, '.local', 'bin', 'claude'),
+]) || 'claude'
+
+const NPM_CLI = findFirst([
+  path.join(nodeBinDir, 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+])
+
+const NPX_CLI = findFirst([
+  path.join(nodeBinDir, 'node_modules', 'npm', 'bin', 'npx-cli.js'),
+])
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 const callScript = (script, args, timeoutMs = 300000) => new Promise((resolve, reject) => {
-  execFile('node', [path.join(__dirname, script), ...args], {
+  execFile(process.execPath, [path.join(__dirname, script), ...args], {
     cwd: __dirname,
     timeout: timeoutMs,
     maxBuffer: 10 * 1024 * 1024,
@@ -84,17 +151,36 @@ const discoverAndStudyReference = async () => {
   if (studied.length === 0) return null
 
   const ref = studied[0]
-  log(`Reference: ${ref.title || ref.url} (${ref.url})`)
+  // Schema drift: discover writes siteUrl, but older code reads ref.url. Normalize.
+  const url = ref.url || ref.siteUrl
+  log(`Reference: ${ref.title || url} (${url})`)
 
-  // Try to load the observer analysis from the study
+  // Try to load the observer analysis from the study.
+  // Slug drift: discover saves a title-based slug (e.g. "champions-for-good"),
+  // but eros-train.mjs study saves under a URL-derived slug
+  // (e.g. "champions4good-club"). Try both.
   let analysis = null
   const trainingRefsDir = path.join(maquetaDir, '_training-refs')
+  const candidates = []
   if (ref.slug) {
-    analysis = await readJson(path.join(trainingRefsDir, ref.slug, 'analysis.json'))
-      || await readJson(path.join(trainingRefsDir, ref.slug.replace(/\./g, '-'), 'analysis.json'))
+    candidates.push(ref.slug)
+    candidates.push(ref.slug.replace(/\./g, '-'))
+  }
+  if (url) {
+    const urlSlug = url
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .replace(/\/$/, '')
+      .replace(/[./]/g, '-')
+    candidates.push(urlSlug)
+  }
+  for (const slug of candidates) {
+    if (!slug) continue
+    const found = await readJson(path.join(trainingRefsDir, slug, 'analysis.json'))
+    if (found) { analysis = found; break }
   }
 
-  return { url: ref.url, title: ref.title, slug: ref.slug, analysis }
+  return { url, title: ref.title, slug: ref.slug, analysis }
 }
 
 // ---------------------------------------------------------------------------
@@ -104,6 +190,17 @@ const discoverAndStudyReference = async () => {
 const generateBriefFromReference = async (ref) => {
   // Get gap analysis to also target weaknesses
   const gaps = await callScript('eros-meta.mjs', ['gaps'])
+
+  // ── Anti-convergencia: load recent sessions to avoid repetition ──
+  // Without this, Eros picks the same gap-targeted mood/technique
+  // every run, converging to a single pattern. PLAN-EROS-V8 Fase 9.
+  const recentHistory = (await readJson(historyPath)) || { sessions: [] }
+  const last5 = (recentHistory.sessions || []).slice(-5)
+  const recentMoods = new Set(last5.map((s) => s.mood).filter(Boolean))
+  const recentTechniques = new Set(last5.map((s) => s.technique).filter(Boolean))
+  const recentSectionTypes = new Set(
+    last5.flatMap((s) => (s.sections || []).map((name) => String(name).replace(/^S-/, '').toLowerCase())),
+  )
 
   // Extract mood from reference analysis
   let mood = 'dark cinematic'
@@ -131,27 +228,43 @@ const generateBriefFromReference = async (ref) => {
     techniques = (a.techniques || []).slice(0, 3)
   }
 
-  // Override mood with gap if available
-  const blindSpot = gaps.moodBlindSpots?.[0]
-  if (blindSpot) mood = blindSpot
+  // ── Mood selection with anti-convergence ──
+  // Prefer blind spots that haven't been used in the last 5 runs. Only
+  // fall back to the default "first blind spot" if everything has been
+  // used recently (means Eros genuinely has no fresh moods to try).
+  const moodBlindSpots = gaps.moodBlindSpots || []
+  const freshMood = moodBlindSpots.find((m) => !recentMoods.has(m))
+  if (freshMood) mood = freshMood
+  else if (moodBlindSpots[0] && !recentMoods.has(mood)) mood = moodBlindSpots[0]
+  // If mood IS in recentMoods AND no fresh blind spot exists: keep
+  // ref-derived mood (won't force repetition of a recently-used mood).
 
-  // Pick sections targeting weaknesses
+  // ── Section selection with anti-convergence ──
+  // Prefer weak section types that haven't been built in recent runs.
   const weakTypes = (gaps.weakSectionTypes || []).map(t => typeof t === 'string' ? t : t.type)
+  const freshWeakTypes = weakTypes.filter((t) => !recentSectionTypes.has(t.toLowerCase()))
+  const orderedWeakTypes = [...freshWeakTypes, ...weakTypes.filter((t) => !freshWeakTypes.includes(t))]
   const selectedSections = ['hero']
-  for (const type of weakTypes) {
+  for (const type of orderedWeakTypes) {
     if (type !== 'hero' && selectedSections.length < 4) selectedSections.push(type)
   }
-  const fallbacks = ['features', 'about', 'cta', 'testimonials']
+  const fallbacks = ['features', 'about', 'cta', 'testimonials', 'pricing', 'faq']
   for (const t of fallbacks) {
     if (selectedSections.length >= 3) break
     if (!selectedSections.includes(t)) selectedSections.push(t)
   }
 
-  // Technique challenge from gap or reference
-  const rawTech = gaps.untouchedTechniques?.[0]
-  const techniqueChallenge = (typeof rawTech === 'string' ? rawTech : rawTech?.name)
-    || (techniques[0]?.name || techniques[0])
-    || 'Stagger cascade'
+  // ── Technique challenge with anti-convergence ──
+  // Force a technique with < 3 uses AND not used in recent 5 runs.
+  const untouchedTechs = (gaps.untouchedTechniques || [])
+    .map((t) => (typeof t === 'string' ? t : t?.name))
+    .filter(Boolean)
+  const freshTech = untouchedTechs.find((t) => !recentTechniques.has(t))
+  const techniqueChallenge =
+    freshTech ||
+    untouchedTechs[0] ||
+    (techniques[0]?.name || techniques[0]) ||
+    'Stagger cascade'
 
   // Load rules to inject
   let rulesBlock = ''
@@ -195,7 +308,10 @@ const generateBriefFromReference = async (ref) => {
 }
 
 // ---------------------------------------------------------------------------
-// Phase 2: Build project with SDK
+// Phase 2: Build project with Claude Code CLI (claude -p)
+// Uses subscription auth + full Claude Code environment (skills, /project,
+// hooks, CLAUDE.md discovery). Equivalent to opening a terminal and typing
+// `claude` then `/project <brief>` by hand.
 // ---------------------------------------------------------------------------
 
 const buildProject = async (brief, rulesBlock) => {
@@ -219,32 +335,59 @@ Este es un proyecto de práctica para entrenar. Priorizar las secciones listadas
 ${brief.reference ? `Usar la referencia como inspiración directa — imitar mood, composición y técnicas.` : 'Creatividad libre.'}
 Construir rápido.${rulesBlock}`
 
-  log(`Starting SDK session: ${brief.id}`)
+  log(`Spawning claude CLI: ${brief.id}`)
   log(`Prompt: ${prompt.length} chars`)
 
   const startTime = Date.now()
   let toolUses = 0
 
   try {
-    for await (const message of query({
-      prompt,
-      options: {
+    await new Promise((resolve, reject) => {
+      const proc = spawn(CLAUDE_EXE, [
+        '-p', prompt,
+        '--permission-mode', 'acceptEdits',
+        '--add-dir', desktopDir,
+        '--output-format', 'stream-json',
+        '--verbose',
+        '--name', `eros-train-${brief.id}`,
+      ], {
         cwd: maquetaDir,
-        allowedTools: [
-          'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep',
-          'Agent', 'Skill',
-        ],
-        permissionMode: 'acceptEdits',
-        maxTurns: 200,
-      },
-    })) {
-      if (message.type === 'assistant') {
-        process.stderr.write('.')
-      }
-      if (message.type === 'tool_use') {
-        toolUses++
-      }
-    }
+        stdio: ['ignore', 'pipe', 'pipe'],
+        shell: false,
+      })
+
+      let stdoutBuf = ''
+      proc.stdout.on('data', (d) => {
+        stdoutBuf += d.toString()
+        const lines = stdoutBuf.split('\n')
+        stdoutBuf = lines.pop() || ''
+        for (const line of lines) {
+          if (!line.trim()) continue
+          try {
+            const msg = JSON.parse(line)
+            if (msg.type === 'assistant' && msg.message?.content) {
+              for (const c of msg.message.content) {
+                if (c.type === 'tool_use') {
+                  toolUses++
+                  process.stderr.write('.')
+                }
+              }
+            }
+          } catch { /* not JSON — ignore */ }
+        }
+      })
+
+      proc.stderr.on('data', (d) => {
+        const msg = d.toString().trim()
+        if (msg) process.stderr.write(`\n  [claude] ${msg.slice(0, 120)}`)
+      })
+
+      proc.on('close', (code) => {
+        if (code === 0 || code === null) resolve()
+        else reject(new Error(`claude exited with code ${code}`))
+      })
+      proc.on('error', reject)
+    })
   } catch (err) {
     log(`\nBuild error: ${err.message}`)
   }
@@ -289,10 +432,11 @@ const startDevServer = async (projectDir) => {
   const port = await findFreePort()
   log(`Starting dev server on port ${port}...`)
 
-  const proc = spawn('npx', ['vite', '--port', String(port), '--host', '127.0.0.1'], {
+  if (!NPX_CLI) throw new Error('npx-cli.js not found — cannot start dev server')
+  const proc = spawn(process.execPath, [NPX_CLI, 'vite', '--port', String(port), '--host', '127.0.0.1'], {
     cwd: projectDir,
     stdio: ['ignore', 'pipe', 'pipe'],
-    shell: true,
+    shell: false,
   })
 
   // Log stderr for debugging
@@ -438,17 +582,43 @@ Requirements:
 Only modify the single file: src/components/sections/${section}.vue`
 
   try {
-    for await (const message of query({
-      prompt,
-      options: {
+    await new Promise((resolve, reject) => {
+      const proc = spawn(CLAUDE_EXE, [
+        '-p', prompt,
+        '--permission-mode', 'acceptEdits',
+        '--output-format', 'stream-json',
+        '--verbose',
+        '--name', `eros-retry-${section}`,
+      ], {
         cwd: projectDir,
-        allowedTools: ['Read', 'Write', 'Edit', 'Glob', 'Grep', 'Bash'],
-        permissionMode: 'acceptEdits',
-        maxTurns: 30,
-      },
-    })) {
-      if (message.type === 'tool_use') process.stderr.write('r')
-    }
+        stdio: ['ignore', 'pipe', 'pipe'],
+        shell: false,
+      })
+
+      let stdoutBuf = ''
+      proc.stdout.on('data', (d) => {
+        stdoutBuf += d.toString()
+        const lines = stdoutBuf.split('\n')
+        stdoutBuf = lines.pop() || ''
+        for (const line of lines) {
+          if (!line.trim()) continue
+          try {
+            const msg = JSON.parse(line)
+            if (msg.type === 'assistant' && msg.message?.content) {
+              for (const c of msg.message.content) {
+                if (c.type === 'tool_use') process.stderr.write('r')
+              }
+            }
+          } catch {}
+        }
+      })
+      proc.stderr.on('data', () => {})
+      proc.on('close', (code) => {
+        if (code === 0 || code === null) resolve()
+        else reject(new Error(`claude retry exited with code ${code}`))
+      })
+      proc.on('error', reject)
+    })
     log(`\n  ${section} retry complete`)
     return true
   } catch (err) {
@@ -694,18 +864,29 @@ const runFullSession = async (sessionNum, maxRetries) => {
   const sessionStart = Date.now()
 
   // ── Phase 0: Discover reference ──
+  await setPhase(0)
   const ref = await discoverAndStudyReference()
 
   // ── Phase 1: Generate brief ──
   log('\nPhase 1: Generating brief...')
+  await setPhase(1)
   const { brief, rulesBlock } = await generateBriefFromReference(ref)
   log(`Brief: ${brief.name}`)
   log(`Mood: ${brief.mood} | Sections: ${(brief.sections || []).join(', ')}`)
   log(`Technique: ${brief.techniqueChallenge}`)
   if (ref) log(`Reference: ${ref.title || ref.url}`)
+  await updateStatus({
+    sessionId: brief.id,
+    briefName: brief.name,
+    mood: brief.mood,
+    sections: brief.sections || [],
+    technique: brief.techniqueChallenge,
+    reference: ref ? { title: ref.title || ref.url, url: ref.url || ref.siteUrl } : null,
+  })
 
   // ── Phase 2: Build project ──
   log('\nPhase 2: Building project...')
+  await setPhase(2, { currentTask: 'claude -p /project' })
   const buildResult = await buildProject(brief, rulesBlock)
 
   // ── Find the built project ──
@@ -715,6 +896,7 @@ const runFullSession = async (sessionNum, maxRetries) => {
     return { brief, error: 'project not found', duration: Math.round((Date.now() - sessionStart) / 1000) }
   }
   log(`Project at: ${projectDir}`)
+  await updateStatus({ projectDir })
 
   // ── Phase 3: Start dev server ──
   let server = null
@@ -723,23 +905,28 @@ const runFullSession = async (sessionNum, maxRetries) => {
 
   try {
     log('\nPhase 3: Starting dev server...')
+    await setPhase(3, { currentTask: 'npm install' })
 
     // Install deps first
     log('Installing dependencies...')
     await new Promise((resolve, reject) => {
-      execFile('npm', ['install'], { cwd: projectDir, timeout: 120000, shell: true }, (err) => {
+      if (!NPM_CLI) { reject(new Error('npm-cli.js not found')); return }
+      execFile(process.execPath, [NPM_CLI, 'install'], { cwd: projectDir, timeout: 120000 }, (err) => {
         if (err) reject(err); else resolve()
       })
     })
 
+    await updateStatus({ currentTask: 'vite dev server' })
     server = await startDevServer(projectDir)
 
     // ── Phase 4: Observer V2 ──
     log('\nPhase 4: Running observer...')
+    await setPhase(4, { currentTask: `observer on :${server.port}` })
     observerData = await runObserver(projectDir, server.port)
 
     // ── Phase 5: Audit ──
     log('\nPhase 5: Running audit...')
+    await setPhase(5)
     auditResult = await runAudit(projectDir)
 
   } catch (err) {
@@ -752,6 +939,7 @@ const runFullSession = async (sessionNum, maxRetries) => {
 
   // ── Phase 6: Gates ──
   log('\nPhase 6: Running gates...')
+  await setPhase(6)
   let gateResults = await runGates(projectDir)
 
   // ── Phase 7: Retry failing sections ──
@@ -781,16 +969,64 @@ const runFullSession = async (sessionNum, maxRetries) => {
     }
   }
 
+  // Phase 7 branch ends here (retry is conditional, no separate entry)
+  if (gateResults.retries.length > 0) {
+    await setPhase(7, { currentTask: `retrying ${gateResults.retries.length} sections` })
+  }
+
   // ── Phase 8: Validate rules ──
   log('\nPhase 8: Validating rules...')
+  await setPhase(8)
   const rulesValidated = await validateRulesWithObserver(observerData, projectDir)
 
   // ── Phase 9: Learn ──
   log('\nPhase 9: Learning...')
+  await setPhase(9)
   const practiceResult = await learnFromSession(projectDir, observerData, auditResult, gateResults)
+
+  // ── Preserve preview screenshots before cleanup ──
+  // Phase 10 nukes the project dir, which would otherwise delete the
+  // observer PNGs. Copy the key frames into a persistent location keyed
+  // by session id so the panel can show them in the detail modal later.
+  try {
+    const previewDir = path.join(memDir, 'previews', brief.id)
+    await ensureDir(previewDir)
+    const observerLocal = path.join(projectDir, '.brain', 'observer', 'localhost')
+    const framesToSave = [
+      'full-page-desktop.png',
+      'full-page-mobile.png',
+      'frame-000.png',
+      'frame-001.png',
+    ]
+    let saved = 0
+    for (const name of framesToSave) {
+      try {
+        await fs.copyFile(path.join(observerLocal, name), path.join(previewDir, name))
+        saved++
+      } catch { /* frame may not exist — skip */ }
+    }
+    // Also save the desktop/ and mobile/ subdir first frames if present
+    for (const sub of ['desktop', 'mobile']) {
+      try {
+        const entries = await fs.readdir(path.join(observerLocal, sub))
+        const firstFrame = entries.find((f) => /^frame-\d+\.png$/.test(f))
+        if (firstFrame) {
+          await fs.copyFile(
+            path.join(observerLocal, sub, firstFrame),
+            path.join(previewDir, `${sub}-${firstFrame}`),
+          )
+          saved++
+        }
+      } catch {}
+    }
+    if (saved > 0) log(`Preserved ${saved} preview frame(s) for ${brief.id}`)
+  } catch (err) {
+    log(`Preview preservation error: ${err.message?.slice(0, 80)}`)
+  }
 
   // ── Phase 10: Cleanup ──
   log('\nPhase 10: Cleanup...')
+  await setPhase(10)
   try {
     await fs.rm(projectDir, { recursive: true, force: true })
     log(`Cleaned up ${path.basename(projectDir)}`)
@@ -798,11 +1034,30 @@ const runFullSession = async (sessionNum, maxRetries) => {
 
   const duration = Math.round((Date.now() - sessionStart) / 1000)
 
+  // Extract observer scores from the real manifest paths.
+  // The observer writes `manifest.excellenceSignals._scores` (numeric) +
+  // `manifest.antiTemplate.score`. Previously we read `manifest.scores`
+  // which never existed — every session landed with observer: null.
+  let observerScores = null
+  const rawScores = observerData?.manifest?.excellenceSignals?._scores
+  if (rawScores && typeof rawScores === 'object') {
+    observerScores = {
+      composition: rawScores.composition ?? null,
+      depth: rawScores.depth ?? null,
+      typography: rawScores.typography ?? null,
+      motion: rawScores.motion ?? null,
+      craft: rawScores.craft ?? null,
+      antiTemplate: observerData?.manifest?.antiTemplate?.score
+        ?? observerData?.manifest?.antiTemplate?._score
+        ?? null,
+    }
+  }
+
   const sessionResult = {
     brief,
     reference: ref ? { url: ref.url, title: ref.title } : null,
     build: buildResult,
-    observer: observerData?.manifest?.scores || null,
+    observer: observerScores,
     audit: auditResult?.overall || null,
     gates: {
       approved: gateResults.sections.filter(s => s.verdict === 'APPROVE').length,
@@ -849,6 +1104,57 @@ const saveToHistory = async (result) => {
     history.sessions = history.sessions.slice(-100)
   }
   await writeJson(historyPath, history)
+
+  // Post to activity feed — lets the Eros panel timeline show this event
+  try {
+    const auditPct = result.audit?.pct
+    const gateSummary = result.gates
+      ? `${result.gates.approved}✓ ${result.gates.retried}r ${result.gates.flagged}f`
+      : null
+    const detailParts = [
+      auditPct != null ? `audit ${auditPct}%` : null,
+      gateSummary,
+      result.duration ? `${Math.round(result.duration / 60)}m` : null,
+      (result.brief?.sections || []).length ? `${result.brief.sections.length} secciones` : null,
+    ].filter(Boolean)
+
+    await appendEvent({
+      type: result.error ? 'project-failed' : 'project-completed',
+      title: result.brief?.name || 'Practice run',
+      detail: detailParts.join(' · ') || 'session finished',
+      metadata: {
+        briefId: result.brief?.id,
+        reference: result.reference?.title || null,
+        mood: result.brief?.mood || null,
+        audit: auditPct,
+        duration: result.duration,
+      },
+    })
+  } catch { /* feed is best-effort */ }
+
+  // Smoke a pucho to mark the moment. Context depends on outcome —
+  // celebration for a clean run, frustrated for failures or rough gates.
+  try {
+    const auditPct = result.audit?.pct
+    const gateFlags = result.gates?.flagged || 0
+    const gateRetries = result.gates?.retried || 0
+
+    let context = 'celebration'
+    let reason = `${result.brief?.name || 'practice'} terminó — audit ${auditPct ?? '?'}%`
+
+    if (result.error) {
+      context = 'frustrated'
+      reason = `${result.brief?.name || 'practice'} falló: ${String(result.error).slice(0, 80)}`
+    } else if (gateFlags > 0 || (auditPct != null && auditPct < 50)) {
+      context = 'frustrated'
+      reason = `${result.brief?.name || 'practice'}: ${gateFlags} flags · audit ${auditPct ?? '?'}%. Hay algo que no cerró.`
+    } else if (gateRetries > 0) {
+      context = 'reflection'
+      reason = `${result.brief?.name || 'practice'}: ${gateRetries} retries necesarios. Releer qué disparó los fixes.`
+    }
+
+    await smokePucho({ reason, context })
+  } catch { /* puchos are best-effort */ }
 }
 
 // ---------------------------------------------------------------------------
@@ -873,6 +1179,25 @@ const main = async () => {
   const statsBefore = await callScript('eros-memory.mjs', ['stats']).catch(() => null)
   log(`Memory before: ${statsBefore?.totalDataPoints || '?'} data points`)
   log('')
+
+  // Initialize live status file — the panel polls this to show progress.
+  await updateStatus({
+    active: true,
+    startedAt: new Date().toISOString(),
+    count,
+    dryRun,
+    maxRetries,
+    phaseIndex: -1,
+    phase: 'initializing',
+    totalPhases: TOTAL_PHASES,
+    memoryBefore: statsBefore?.totalDataPoints || 0,
+    sessionId: null,
+    briefName: null,
+    mood: null,
+    reference: null,
+    projectDir: null,
+    lastResult: null,
+  })
 
   const sessionResults = []
 
@@ -919,6 +1244,22 @@ const main = async () => {
     log(`Philosophy: ${personality.voice?.philosophy}`)
   } catch {}
 
+  // Mark run as finished in status file — the panel stops showing "activo"
+  await updateStatus({
+    active: false,
+    finishedAt: new Date().toISOString(),
+    phaseIndex: TOTAL_PHASES,
+    phase: 'complete',
+    currentTask: null,
+    memoryAfter: statsAfter?.totalDataPoints || 0,
+    lastResult: sessionResults.map((r) => ({
+      brief: r.brief?.name,
+      duration: r.duration,
+      audit: r.audit?.pct || null,
+      gates: r.gates || null,
+    })),
+  })
+
   out({
     version: 2,
     sessions: count,
@@ -938,4 +1279,8 @@ const main = async () => {
   })
 }
 
-main().catch(err => { log(`Fatal: ${err.message}`); process.exit(1) })
+main().catch(async (err) => {
+  log(`Fatal: ${err.message}`)
+  try { await updateStatus({ active: false, error: err.message, finishedAt: new Date().toISOString() }) } catch {}
+  process.exit(1)
+})
