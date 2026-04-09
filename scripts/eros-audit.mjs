@@ -31,8 +31,8 @@ const log = (msg) => process.stderr.write(`[eros-audit] ${msg}\n`)
 // Source code collector
 // ---------------------------------------------------------------------------
 
-const collectSource = async (srcDir) => {
-  const files = { vue: [], css: [], js: [] }
+const collectSource = async (srcDir, projectDir) => {
+  const files = { vue: [], css: [], js: [], html: [] }
   const walk = async (dir) => {
     const entries = await fs.readdir(dir, { withFileTypes: true }).catch(() => [])
     for (const e of entries) {
@@ -49,14 +49,48 @@ const collectSource = async (srcDir) => {
     }
   }
   await walk(srcDir)
+
+  // ── Include index.html at project root (NOT under src/) ──
+  // Previously this file was skipped entirely, which made every SEO check
+  // fail deterministically (title, meta, lang, viewport, OG all live in
+  // index.html in a Vue SPA scaffold). Also include dist/index.html if
+  // the project was built, which has the full resolved meta tags.
+  if (projectDir) {
+    for (const relPath of ['index.html', path.join('dist', 'index.html')]) {
+      const full = path.join(projectDir, relPath)
+      try {
+        const content = await fs.readFile(full, 'utf8')
+        if (content) files.html.push({ path: full, content })
+      } catch { /* not built or not present — skip */ }
+    }
+  }
+
   return files
+}
+
+// Parse Vue SFC <template> blocks to get rendered markup. A naive regex
+// approach but good enough for regex-based a11y checks that look for h1,
+// nav, main, etc. in project source.
+const extractVueTemplates = (vueFiles) => {
+  return vueFiles
+    .map((f) => {
+      const match = f.content.match(/<template[^>]*>([\s\S]*?)<\/template>/)
+      return match ? match[1] : ''
+    })
+    .join('\n')
 }
 
 const allContent = (files) => [
   ...files.vue.map(f => f.content),
   ...files.css.map(f => f.content),
   ...files.js.map(f => f.content),
+  ...(files.html || []).map(f => f.content),
 ].join('\n')
+
+// HTML-only content — index.html and dist/index.html when present.
+// Used by checks that specifically look for <head> metadata (title,
+// viewport, lang, OG tags) which only exist in index.html.
+const htmlContent = (files) => (files.html || []).map(f => f.content).join('\n')
 
 // ---------------------------------------------------------------------------
 // Layer 1: Accessibility
@@ -121,38 +155,46 @@ const auditA11y = (files, observer) => {
 // ---------------------------------------------------------------------------
 
 const auditSeo = (files) => {
+  // SEO checks are MARKUP-only: they look at index.html specifically,
+  // not Vue templates (since these tags live in the static HTML head).
+  // Fall back to all content if no index.html was found (legacy behavior).
+  const html = htmlContent(files)
+  const markup = html || allContent(files)
   const all = allContent(files)
   const checks = []
   let score = 0
   const total = 6
 
   // 1. <title> or useHead/document.title
-  const hasTitle = /<title[\s>]|useHead|document\.title/i.test(all)
+  // Title can live in index.html OR be set dynamically via useHead in code.
+  const hasTitle = /<title[\s>]/i.test(markup) || /useHead|document\.title/i.test(all)
   checks.push({ name: 'title defined', pass: hasTitle })
   if (hasTitle) score++
 
   // 2. meta description
-  const hasMetaDesc = /meta.*description|useHead.*description/i.test(all)
+  const hasMetaDesc = /<meta[^>]+name=["']description["']/i.test(markup)
+    || /useHead[\s\S]*description/i.test(all)
   checks.push({ name: 'meta description', pass: hasMetaDesc })
   if (hasMetaDesc) score++
 
   // 3. OG tags
-  const hasOG = /og:title|og:description|og:image/i.test(all)
+  const hasOG = /og:title|og:description|og:image/i.test(markup)
+    || /og:title|og:description|og:image/i.test(all)
   checks.push({ name: 'Open Graph tags', pass: hasOG })
   if (hasOG) score++
 
-  // 4. lang attribute on html
-  const hasLang = /lang=/.test(all)
+  // 4. lang attribute on <html>
+  const hasLang = /<html[^>]+lang=/i.test(markup)
   checks.push({ name: 'lang attribute', pass: hasLang })
   if (hasLang) score++
 
   // 5. viewport meta
-  const hasViewport = /viewport/.test(all)
+  const hasViewport = /<meta[^>]+name=["']viewport["']/i.test(markup)
   checks.push({ name: 'viewport meta', pass: hasViewport })
   if (hasViewport) score++
 
-  // 6. Semantic HTML (section/article/aside usage)
-  const semanticTags = (all.match(/<(section|article|aside|header|footer)[\s>]/g) || []).length
+  // 6. Semantic HTML (section/article/aside usage across Vue templates + index.html)
+  const semanticTags = (all.match(/<(section|article|aside|header|footer|main|nav)[\s>]/g) || []).length
   checks.push({ name: 'semantic HTML tags', pass: semanticTags >= 3, detail: `${semanticTags} tags` })
   if (semanticTags >= 3) score++
 
@@ -325,10 +367,10 @@ const main = async () => {
   const srcDir = path.join(project, 'src')
   const layerFilter = args.layer || null
 
-  // Collect source
+  // Collect source (src/ tree + project-root index.html + dist/index.html)
   log('Collecting source files...')
-  const files = await collectSource(srcDir)
-  log(`Found ${files.vue.length} Vue, ${files.css.length} CSS, ${files.js.length} JS files`)
+  const files = await collectSource(srcDir, project)
+  log(`Found ${files.vue.length} Vue, ${files.css.length} CSS, ${files.js.length} JS, ${(files.html || []).length} HTML files`)
 
   // Load observer data if available
   let observer = null
