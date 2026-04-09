@@ -4,6 +4,8 @@ import {
   allBlueprints,
   blueprintManifest,
 } from '@components/blueprints.manifest.js'
+// Shared memory store — single source of truth, see useMemory.js
+import { memoryData, fetchMemory as refreshMemory } from '@/composables/useMemory.js'
 
 // ── Helpers (pure, no state) ──
 
@@ -305,50 +307,12 @@ export const sectionBreakdown = computed(() => {
 })
 
 // ── Memory (live from design-intelligence JSON via /__eros/memory-data) ──
+// Shares the single memoryData store + polling with useMemory.js.
+// Previously this module kept its own local state + setInterval, doubling
+// every memory fetch. See useMemory.js for the single source of truth.
+// `memoryData` and `refreshMemory` are imported at the top of this file.
 
-const memoryData = shallowRef({
-  techniqueScores: { techniques: [] },
-  fontPairings: { works: [], failures: [] },
-  colorPalettes: { works: [], failures: [] },
-  signatures: { approved: [], rejected: [] },
-  sectionPatterns: { patterns: [] },
-  revisionPatterns: { patterns: [] },
-  pipelineLessons: { lessons: [] },
-  rules: { rules: [], nextId: 1 },
-  trainingCalibration: { projects: [], globalBias: 0, thresholdAdjustment: 0 },
-})
-
-const fetchMemoryData = async () => {
-  try {
-    const res = await fetch('/__eros/memory-data')
-    const data = await res.json()
-    memoryData.value = {
-      techniqueScores: data.techniqueScores ?? memoryData.value.techniqueScores,
-      fontPairings: data.fontPairings ?? memoryData.value.fontPairings,
-      colorPalettes: data.colorPalettes ?? memoryData.value.colorPalettes,
-      signatures: data.signatures ?? memoryData.value.signatures,
-      sectionPatterns: data.sectionPatterns ?? memoryData.value.sectionPatterns,
-      revisionPatterns: data.revisionPatterns ?? memoryData.value.revisionPatterns,
-      pipelineLessons: data.pipelineLessons ?? memoryData.value.pipelineLessons,
-      rules: data.rules ?? memoryData.value.rules,
-      trainingCalibration: data.trainingCalibration ?? memoryData.value.trainingCalibration,
-    }
-  } catch { /* endpoint not available */ }
-}
-
-// Fetch on load + refresh every 30s (guarded against HMR accumulation)
-fetchMemoryData()
-let memoryInterval = null
-if (!memoryInterval) {
-  memoryInterval = setInterval(fetchMemoryData, 30000)
-}
-if (import.meta.hot) {
-  import.meta.hot.dispose(() => {
-    if (memoryInterval) { clearInterval(memoryInterval); memoryInterval = null }
-  })
-}
-
-export const refreshMemory = fetchMemoryData
+export { refreshMemory }
 
 export const memoryTechniques = computed(() =>
   (memoryData.value.techniqueScores.techniques || []).map(t => ({

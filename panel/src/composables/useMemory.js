@@ -1,11 +1,39 @@
 import { shallowRef, computed } from 'vue'
 
-const memoryData = shallowRef(null)
+// Single source of truth for memory data. Also imported by frontBrain.js
+// (consumers like Eros.vue, Calidad.vue) — previously both modules kept
+// their own local memoryData and polled independently, doubling traffic.
+export const memoryData = shallowRef({
+  techniqueScores: { techniques: [] },
+  fontPairings: { works: [], failures: [] },
+  colorPalettes: { works: [], failures: [] },
+  signatures: { approved: [], rejected: [] },
+  sectionPatterns: { patterns: [] },
+  revisionPatterns: { patterns: [] },
+  pipelineLessons: { lessons: [] },
+  rules: { rules: [], nextId: 1 },
+  trainingCalibration: { projects: [], globalBias: 0, thresholdAdjustment: 0 },
+})
 
 export const fetchMemory = async () => {
   try {
     const res = await fetch('/__eros/memory-data')
-    if (res.ok) memoryData.value = await res.json()
+    if (!res.ok) return
+    const data = await res.json()
+    // Preserve previous values for fields the API returned as null (file
+    // missing). Keeps the tree always non-null so downstream computed
+    // exports in both useMemory.js and frontBrain.js never crash.
+    memoryData.value = {
+      techniqueScores: data.techniqueScores ?? memoryData.value.techniqueScores,
+      fontPairings: data.fontPairings ?? memoryData.value.fontPairings,
+      colorPalettes: data.colorPalettes ?? memoryData.value.colorPalettes,
+      signatures: data.signatures ?? memoryData.value.signatures,
+      sectionPatterns: data.sectionPatterns ?? memoryData.value.sectionPatterns,
+      revisionPatterns: data.revisionPatterns ?? memoryData.value.revisionPatterns,
+      pipelineLessons: data.pipelineLessons ?? memoryData.value.pipelineLessons,
+      rules: data.rules ?? memoryData.value.rules,
+      trainingCalibration: data.trainingCalibration ?? memoryData.value.trainingCalibration,
+    }
   } catch {}
 }
 

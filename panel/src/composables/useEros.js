@@ -4,6 +4,8 @@ const logs = ref([])
 const watchActive = ref(false)
 let eventSource = null
 let instanceCount = 0
+let reconnectAttempts = 0
+let reconnectTimer = null
 
 export function useEros() {
   const connect = () => {
@@ -12,7 +14,15 @@ export function useEros() {
       eventSource.close()
       eventSource = null
     }
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer)
+      reconnectTimer = null
+    }
     eventSource = new EventSource('/__eros/logs')
+    eventSource.onopen = () => {
+      reconnectAttempts = 0 // reset backoff on successful connect
+      watchActive.value = true
+    }
     eventSource.onmessage = (event) => {
       try {
         const entry = JSON.parse(event.data)
@@ -22,14 +32,18 @@ export function useEros() {
     }
     eventSource.onerror = () => {
       watchActive.value = false
-      // Auto-reconnect after 5s instead of letting EventSource hammer the server
       if (eventSource) {
         eventSource.close()
         eventSource = null
       }
-      setTimeout(() => {
+      // Exponential backoff: 5s, 10s, 20s, 40s, 60s (max). Prevents the
+      // panel from hammering vite when vite is dead/restarting.
+      reconnectAttempts++
+      const delay = Math.min(60000, 5000 * Math.pow(2, Math.min(reconnectAttempts - 1, 4)))
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null
         if (instanceCount > 0) connect()
-      }, 5000)
+      }, delay)
     }
     watchActive.value = true
   }
