@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import ObserverRadar from '@/components/ObserverRadar.vue'
 
 const projects = ref([])
 const activeProject = ref(null)
@@ -22,6 +23,90 @@ const loadingAwwwards = ref(false)
 const trainHistory = ref([])
 const trainRunning = ref(false)
 const trainCount = ref(1)
+const maxRetries = ref(1)
+const skipDiscover = ref(false)
+
+// Persistent config — loaded on mount, saved on change
+const loadTrainConfig = async () => {
+  try {
+    const data = await (await fetch('/__eros/training/config')).json()
+    trainCount.value = data.count ?? 1
+    maxRetries.value = data.maxRetries ?? 1
+    skipDiscover.value = data.skipDiscover ?? false
+  } catch {}
+}
+const saveTrainConfig = async () => {
+  try {
+    await fetch('/__eros/training/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        count: trainCount.value,
+        maxRetries: maxRetries.value,
+        skipDiscover: skipDiscover.value,
+      }),
+    })
+  } catch {}
+}
+
+// Detail modal
+const detailSession = ref(null)
+const detailFrames = ref([])
+const openDetail = async (session) => {
+  detailSession.value = session
+  detailFrames.value = []
+  // Fetch preserved preview frames for this session (if any)
+  try {
+    const res = await fetch(`/__eros/training/preview-list?session=${encodeURIComponent(session.id)}`)
+    const data = await res.json()
+    detailFrames.value = data.frames || []
+  } catch { /* no frames — modal falls back to radar-only */ }
+}
+const closeDetail = () => {
+  detailSession.value = null
+  detailFrames.value = []
+}
+
+const formatDuration = (seconds) => {
+  if (!seconds) return '—'
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}m ${s < 10 ? '0' : ''}${s}s`
+}
+
+// Live status (phase, task, progress) — written by eros-auto-train.mjs
+const trainStatus = ref(null)
+let statusTimer = null
+
+const loadTrainStatus = async () => {
+  try {
+    const data = await (await fetch('/__eros/training/auto-train-status')).json()
+    trainStatus.value = data
+    // If status says active, lock the UI as running
+    if (data.active) trainRunning.value = true
+    else if (trainStatus.value?.finishedAt && Date.now() - new Date(trainStatus.value.finishedAt).getTime() > 60000) {
+      // Finished > 60s ago → clear running flag so the button unlocks
+      trainRunning.value = false
+    }
+  } catch { /* endpoint not available */ }
+}
+
+const progressPct = computed(() => {
+  const s = trainStatus.value
+  if (!s || !s.active || s.phaseIndex == null || s.phaseIndex < 0) return 0
+  return Math.min(100, Math.round(((s.phaseIndex + 1) / (s.totalPhases || 10)) * 100))
+})
+
+const elapsedStr = computed(() => {
+  const s = trainStatus.value
+  if (!s?.startedAt) return ''
+  const ms = Date.now() - new Date(s.startedAt).getTime()
+  if (ms < 0) return ''
+  const sec = Math.floor(ms / 1000)
+  const m = Math.floor(sec / 60)
+  const r = sec % 60
+  return m + 'm ' + (r < 10 ? '0' : '') + r + 's'
+})
 
 const loadTrainHistory = async () => {
   try {
@@ -32,25 +117,37 @@ const loadTrainHistory = async () => {
 
 const launchTraining = async () => {
   trainRunning.value = true
+  // Save config before launch so it persists for next session
+  await saveTrainConfig()
   try {
     await fetch('/__eros/training/auto-train-start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ count: trainCount.value, maxRetries: 1 }),
+      body: JSON.stringify({
+        count: trainCount.value,
+        maxRetries: maxRetries.value,
+        skipDiscover: skipDiscover.value,
+      }),
     })
   } catch {}
-  // Poll for completion
+  // Poll status every 3s for live phase updates + history every 15s for
+  // completion detection. In-flight guard prevents stacking.
+  let polling = false
   const poll = setInterval(async () => {
-    await loadTrainHistory()
-    // Simple heuristic: stop polling after 20 min or if history grew
-    if (trainHistory.value.length > 0) {
-      const latest = trainHistory.value[0]
-      const age = Date.now() - new Date(latest.timestamp).getTime()
-      if (age < 30000) { trainRunning.value = false; clearInterval(poll) }
-    }
+    if (polling) return
+    polling = true
+    try {
+      await loadTrainHistory()
+      if (trainStatus.value?.active === false && trainHistory.value.length > 0) {
+        // Run ended — wait one more tick for history to sync, then unlock
+        const latest = trainHistory.value[0]
+        const age = Date.now() - new Date(latest.timestamp).getTime()
+        if (age < 30000) { trainRunning.value = false; clearInterval(poll) }
+      }
+    } finally { polling = false }
   }, 15000)
-  // Safety timeout
-  setTimeout(() => { trainRunning.value = false; clearInterval(poll) }, 1200000)
+  // Safety timeout — real runs take 30-90 min, not 20. 2h hard cap.
+  setTimeout(() => { trainRunning.value = false; clearInterval(poll) }, 7200000)
 }
 
 const loadProjects = async () => {
@@ -135,7 +232,18 @@ const setHighlightVerdict = (idx, verdict) => {
   if (review.value?.highlights?.[idx]) review.value.highlights[idx].verdict = verdict
 }
 
-onMounted(() => { loadProjects(); loadImpact(); loadTrainHistory() })
+onMounted(() => {
+  loadTrainConfig()
+  loadProjects()
+  loadImpact()
+  loadTrainHistory()
+  loadTrainStatus()
+  // Poll status every 3s — lightweight (just reads a small JSON file)
+  statusTimer = setInterval(loadTrainStatus, 3000)
+})
+onUnmounted(() => {
+  if (statusTimer) clearInterval(statusTimer)
+})
 </script>
 
 <template>
@@ -166,21 +274,53 @@ onMounted(() => { loadProjects(); loadImpact(); loadTrainHistory() })
         <div class="autotrain-header">
           <p class="label">Entrenamiento Autónomo</p>
           <div class="autotrain-controls">
-            <select v-model="trainCount" class="train-select" :disabled="trainRunning">
+            <select v-model="trainCount" @change="saveTrainConfig" class="train-select" :disabled="trainRunning" title="Cantidad de sesiones">
               <option :value="1">1 sesión</option>
               <option :value="2">2 sesiones</option>
               <option :value="3">3 sesiones</option>
               <option :value="5">5 sesiones</option>
             </select>
+            <select v-model="maxRetries" @change="saveTrainConfig" class="train-select" :disabled="trainRunning" title="Reintentos por sección">
+              <option :value="0">0 retries</option>
+              <option :value="1">1 retry</option>
+              <option :value="2">2 retries</option>
+              <option :value="3">3 retries</option>
+            </select>
+            <label class="train-toggle" :title="'Saltear discover de Awwwards (usar brief genérico)'">
+              <input type="checkbox" v-model="skipDiscover" @change="saveTrainConfig" :disabled="trainRunning" />
+              <span>skip discover</span>
+            </label>
             <button class="btn-train" @click="launchTraining" :disabled="trainRunning">
               {{ trainRunning ? 'Entrenando...' : '▶ Entrenar' }}
             </button>
           </div>
         </div>
 
-        <div v-if="trainRunning" class="train-running">
+        <!-- LIVE STATUS: phase + progress bar + elapsed time -->
+        <div v-if="trainStatus?.active" class="train-running train-running--live">
           <div class="train-pulse"></div>
-          <span class="body-sm">Sesión en curso — puede tardar 10-30 min por sesión</span>
+          <div class="train-live-body">
+            <div class="train-live-line1">
+              <span class="train-phase">
+                {{ trainStatus.phase || 'inicializando' }}
+                <span v-if="trainStatus.phaseIndex >= 0" class="train-phase-idx">
+                  · phase {{ trainStatus.phaseIndex }}/{{ trainStatus.totalPhases || 10 }}
+                </span>
+              </span>
+              <span class="train-elapsed">{{ elapsedStr }}</span>
+            </div>
+            <div v-if="trainStatus.currentTask" class="train-current-task">{{ trainStatus.currentTask }}</div>
+            <div class="train-progress-bar"><div class="train-progress-fill" :style="{ width: progressPct + '%' }"></div></div>
+            <div v-if="trainStatus.briefName" class="train-brief">
+              <span>{{ trainStatus.briefName }}</span>
+              <span v-if="trainStatus.mood"> · {{ trainStatus.mood }}</span>
+              <span v-if="trainStatus.reference?.title"> · ref: {{ trainStatus.reference.title }}</span>
+            </div>
+          </div>
+        </div>
+        <div v-else-if="trainRunning" class="train-running">
+          <div class="train-pulse"></div>
+          <span class="body-sm">Iniciando sesión...</span>
         </div>
 
         <div v-if="trainHistory.length" class="train-history">
@@ -193,7 +333,7 @@ onMounted(() => { loadProjects(); loadImpact(); loadTrainHistory() })
             <span class="th-gates">Gates</span>
             <span class="th-time">Tiempo</span>
           </div>
-          <div v-for="s in trainHistory" :key="s.id" class="train-row">
+          <button v-for="s in trainHistory" :key="s.id" class="train-row train-row--clickable" @click="openDetail(s)">
             <span class="td-date">{{ s.date }}</span>
             <span class="td-ref" :title="s.reference?.url">{{ s.reference?.title || '—' }}</span>
             <span class="td-mood">{{ s.mood?.split(' ')?.[0] || '—' }}</span>
@@ -217,7 +357,7 @@ onMounted(() => { loadProjects(); loadImpact(); loadTrainHistory() })
               <template v-else>—</template>
             </span>
             <span class="td-time">{{ s.duration ? Math.round(s.duration / 60) + 'm' : '—' }}</span>
-          </div>
+          </button>
         </div>
         <p v-else class="body-sm dim">Sin sesiones de entrenamiento todavía.</p>
       </div>
@@ -356,6 +496,101 @@ onMounted(() => { loadProjects(); loadImpact(); loadTrainHistory() })
         <p class="body-sm dim" style="margin-top:24px">Selecciona un proyecto.</p>
       </div>
     </div>
+
+    <!-- ── DETAIL MODAL ── -->
+    <div v-if="detailSession" class="detail-backdrop" @click.self="closeDetail">
+      <div class="detail-modal">
+        <header class="detail-head">
+          <div class="detail-head-left">
+            <p class="label">Sesión</p>
+            <h2 class="detail-title">{{ detailSession.name }}</h2>
+            <p class="body-sm dim">{{ detailSession.date }} · {{ formatDuration(detailSession.duration) }}</p>
+          </div>
+          <button class="detail-close" @click="closeDetail" title="Cerrar">×</button>
+        </header>
+
+        <div class="detail-body">
+          <!-- Reference + mood + technique -->
+          <div class="detail-meta">
+            <div v-if="detailSession.reference" class="detail-meta-item">
+              <span class="label">Referencia</span>
+              <a v-if="detailSession.reference.url" :href="detailSession.reference.url" target="_blank" rel="noopener" class="detail-ref-link">
+                {{ detailSession.reference.title }} ↗
+              </a>
+              <span v-else>{{ detailSession.reference.title }}</span>
+            </div>
+            <div class="detail-meta-item">
+              <span class="label">Mood</span>
+              <span>{{ detailSession.mood || '—' }}</span>
+            </div>
+            <div class="detail-meta-item">
+              <span class="label">Técnica</span>
+              <span>{{ detailSession.technique || '—' }}</span>
+            </div>
+          </div>
+
+          <!-- Observer radar (if has data) -->
+          <div v-if="detailSession.observer && Object.keys(detailSession.observer).length" class="detail-observer">
+            <ObserverRadar :dimensions="detailSession.observer" :size="280" title="Observer V2" />
+          </div>
+          <div v-else class="detail-no-observer">
+            <p class="body-sm dim">Sin datos del observer para esta sesión.</p>
+          </div>
+
+          <!-- Preserved screenshots from Phase 4 (observer) -->
+          <div v-if="detailFrames.length" class="detail-previews">
+            <p class="label">Screenshots (observer)</p>
+            <div class="detail-previews-grid">
+              <a
+                v-for="f in detailFrames"
+                :key="f"
+                :href="`/__eros/training/preview/${encodeURIComponent(detailSession.id)}/${f}`"
+                target="_blank"
+                rel="noopener"
+                class="detail-preview-frame"
+                :title="f"
+              >
+                <img :src="`/__eros/training/preview/${encodeURIComponent(detailSession.id)}/${f}`" :alt="f" loading="lazy" />
+                <span class="detail-preview-label">{{ f.replace(/\.(png|jpg|webp)$/, '') }}</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Audit + gates summary -->
+          <div class="detail-stats">
+            <div class="cell metric-cell">
+              <p class="label">Audit</p>
+              <p class="value-sm" :class="(detailSession.audit?.pct || 0) >= 75 ? 'text-pass' : (detailSession.audit?.pct || 0) >= 50 ? '' : 'text-fail'">
+                {{ detailSession.audit?.pct != null ? detailSession.audit.pct + '%' : '—' }}
+              </p>
+              <p class="body-sm dim" v-if="detailSession.audit?.score != null && detailSession.audit?.total != null">
+                {{ detailSession.audit.score }}/{{ detailSession.audit.total }}
+              </p>
+            </div>
+            <div class="cell metric-cell">
+              <p class="label">Gates aprobadas</p>
+              <p class="value-sm">{{ detailSession.gates?.approved || 0 }}<span class="suffix">/{{ detailSession.gates?.total || 0 }}</span></p>
+              <p class="body-sm dim">
+                {{ detailSession.gates?.retried || 0 }} retries · {{ detailSession.gates?.flagged || 0 }} flagged
+              </p>
+            </div>
+            <div class="cell metric-cell">
+              <p class="label">Reglas</p>
+              <p class="value-sm">{{ detailSession.rulesValidated || 0 }}</p>
+              <p class="body-sm dim">validadas esta sesión</p>
+            </div>
+          </div>
+
+          <!-- Sections list -->
+          <div v-if="detailSession.sections?.length" class="detail-sections">
+            <p class="label">Secciones</p>
+            <ul class="detail-sections-list">
+              <li v-for="(s, i) in detailSession.sections" :key="i">{{ s }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -370,6 +605,15 @@ onMounted(() => { loadProjects(); loadImpact(); loadTrainHistory() })
   padding: 4px 8px; background: var(--surface); border: 1px solid var(--line);
   color: var(--text); font: 400 11px var(--font-mono); cursor: pointer;
 }
+.train-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 8px; background: var(--surface); border: 1px solid var(--line);
+  font: 400 10px var(--font-mono); color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer;
+  user-select: none;
+}
+.train-toggle input { margin: 0; cursor: pointer; accent-color: var(--accent); }
+.train-toggle:has(input:checked) { color: var(--accent); border-color: var(--line-accent); }
 .btn-train {
   padding: 6px 14px; border: 1px solid var(--accent); background: transparent;
   color: var(--accent); font: 600 10px var(--font-mono); letter-spacing: 0.06em;
@@ -381,10 +625,36 @@ onMounted(() => { loadProjects(); loadImpact(); loadTrainHistory() })
   display: flex; align-items: center; gap: 10px;
   margin-top: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line);
 }
+.train-running--live {
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-left: 2px solid var(--accent);
+}
 .train-pulse {
   width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
   animation: pulse-dot 1.5s ease infinite;
+  flex-shrink: 0; margin-top: 4px;
 }
+.train-live-body { flex: 1; display: grid; gap: 6px; min-width: 0; }
+.train-live-line1 {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+}
+.train-phase {
+  font: 600 11px var(--font-mono); color: var(--text); text-transform: uppercase; letter-spacing: 0.06em;
+}
+.train-phase-idx { color: var(--text-dim); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.train-elapsed { font: 400 11px var(--font-mono); color: var(--text-dim); }
+.train-current-task {
+  font: 400 11px var(--font-mono); color: var(--text-muted); opacity: 0.8;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.train-progress-bar {
+  width: 100%; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden;
+}
+.train-progress-fill {
+  height: 100%; background: var(--accent); transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.train-brief { font: 400 10px var(--font-mono); color: var(--text-dim); }
 @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 .train-history { margin-top: 12px; }
 .train-table-header, .train-row {
@@ -540,4 +810,119 @@ onMounted(() => { loadProjects(); loadImpact(); loadTrainHistory() })
 @media (max-width: 980px) {
   .project-row:hover, .project-row--active { margin: 0 -16px; padding: 10px 16px; }
 }
+
+/* ── Clickable rows ── */
+.train-row--clickable {
+  width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--line-subtle, rgba(255,255,255,0.04));
+  cursor: pointer; text-align: left; font: inherit; color: inherit;
+  padding: 6px 0;
+}
+.train-row--clickable:hover { background: var(--surface); }
+
+/* ── Detail modal ── */
+.detail-backdrop {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: fade-in 0.15s ease;
+}
+.detail-modal {
+  width: 100%; max-width: 720px; max-height: calc(100vh - 48px);
+  background: var(--bg); border: 1px solid var(--line-accent);
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.detail-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 24px 32px 20px; border-bottom: 1px solid var(--line);
+}
+.detail-head-left { min-width: 0; flex: 1; }
+.detail-title { font: 700 22px var(--font-display); color: var(--text); margin: 4px 0 6px; letter-spacing: -0.02em; }
+.detail-close {
+  width: 32px; height: 32px; background: transparent; border: 1px solid var(--line);
+  color: var(--text-muted); font: 300 22px var(--font-mono); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.detail-close:hover { color: var(--text); border-color: var(--text); }
+
+.detail-body {
+  padding: 24px 32px 32px; overflow-y: auto;
+  display: grid; gap: 24px;
+}
+
+.detail-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.detail-meta-item { display: grid; gap: 4px; }
+.detail-meta-item .label { margin-bottom: 0; }
+.detail-meta-item span { font: 400 13px var(--font-body); color: var(--text); }
+.detail-ref-link { color: var(--accent); text-decoration: none; }
+.detail-ref-link:hover { text-decoration: underline; }
+
+.detail-observer {
+  display: flex; justify-content: center;
+  padding: 16px 0;
+  border: 1px solid var(--line); border-left: 2px solid var(--accent);
+}
+.detail-no-observer {
+  padding: 24px; text-align: center; border: 1px dashed var(--line);
+}
+
+.detail-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  background: var(--line);
+}
+.detail-stats .metric-cell {
+  background: var(--bg); padding: 16px;
+}
+
+.detail-sections .label { margin-bottom: 8px; }
+.detail-sections-list {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.detail-sections-list li {
+  padding: 4px 10px; background: var(--surface); border: 1px solid var(--line);
+  font: 500 11px var(--font-mono); color: var(--text);
+}
+
+/* Preserved preview screenshots */
+.detail-previews .label { margin-bottom: 8px; }
+.detail-previews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.detail-preview-frame {
+  display: grid;
+  gap: 4px;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.detail-preview-frame:hover { border-color: var(--accent); }
+.detail-preview-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: top;
+}
+.detail-preview-label {
+  font: 500 9px var(--font-mono);
+  color: var(--text-dim);
+  padding: 4px 6px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 </style>

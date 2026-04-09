@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { excellence, hasV2 } from '@/composables/useObserver.js'
 
 const props = defineProps({ run: Object, slug: String })
@@ -23,6 +23,55 @@ const dims = computed(() => {
 
 const tone = (v) => v >= 8 ? 'strong' : v >= 5 ? 'medium' : 'weak'
 const decLabel = { approve: 'Aprobado', retry: 'Reintentar', flag: 'Revisar', pending: 'Pendiente' }
+
+// ── Vercel deploy state ──
+const deployUrl = ref(null)
+const deployedAt = ref(null)
+const deploying = ref(false)
+const deployError = ref(null)
+
+const loadDeployInfo = async () => {
+  if (!props.slug) return
+  try {
+    const res = await fetch('/__eros/training/deploys')
+    const data = await res.json()
+    const entry = data?.deploys?.[props.slug]
+    if (entry) {
+      deployUrl.value = entry.url
+      deployedAt.value = entry.deployedAt
+    } else {
+      deployUrl.value = null
+      deployedAt.value = null
+    }
+  } catch {}
+}
+
+const deployNow = async () => {
+  if (!props.slug || deploying.value) return
+  deploying.value = true
+  deployError.value = null
+  try {
+    const res = await fetch('/__eros/training/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: props.slug }),
+    })
+    const data = await res.json()
+    if (data.ok && data.url) {
+      deployUrl.value = data.url
+      deployedAt.value = new Date().toISOString()
+    } else {
+      deployError.value = data.error || 'Deploy failed'
+    }
+  } catch (e) {
+    deployError.value = e.message
+  } finally {
+    deploying.value = false
+  }
+}
+
+onMounted(loadDeployInfo)
+watch(() => props.slug, loadDeployInfo)
 </script>
 
 <template>
@@ -88,6 +137,28 @@ const decLabel = { approve: 'Aprobado', retry: 'Reintentar', flag: 'Revisar', pe
         <li v-for="(inst, i) in scorecard.retryInstructions" :key="i">{{ inst }}</li>
       </ol>
     </div>
+
+    <!-- Vercel preview deploy -->
+    <div class="cell deploy-cell">
+      <div class="deploy-row">
+        <div class="deploy-info">
+          <p class="label">Preview Vercel</p>
+          <template v-if="deployUrl">
+            <a :href="deployUrl" target="_blank" rel="noopener" class="deploy-url">{{ deployUrl }}</a>
+            <p class="body-sm" v-if="deployedAt">Último deploy: {{ new Date(deployedAt).toLocaleString('es-AR') }}</p>
+          </template>
+          <p v-else-if="!deploying" class="body-sm dim">Sin deploy previo — click para publicar a Vercel</p>
+          <p v-else class="body-sm">Deployando... puede tardar 1-2 min (build + upload)</p>
+          <p v-if="deployError" class="body-sm deploy-error">{{ deployError }}</p>
+        </div>
+        <div class="deploy-actions">
+          <a v-if="deployUrl" :href="deployUrl" target="_blank" rel="noopener" class="btn-deploy btn-deploy--open" title="Abrir preview">↗</a>
+          <button class="btn-deploy" @click="deployNow" :disabled="deploying">
+            {{ deploying ? 'Deployando...' : deployUrl ? 'Re-deploy' : 'Deploy ↗' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -101,4 +172,23 @@ const decLabel = { approve: 'Aprobado', retry: 'Reintentar', flag: 'Revisar', pe
 .queue-stat { display: flex; align-items: baseline; gap: 6px; }
 .ol { list-style: decimal; padding-left: 16px; display: grid; gap: 6px; }
 .ol li { font: 400 13px/1.6 var(--font-body); color: var(--text-muted); }
+
+/* ── Deploy cell ── */
+.deploy-cell { margin-top: 0; }
+.deploy-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.deploy-info { min-width: 0; flex: 1; }
+.deploy-url { font: 500 12px var(--font-mono); color: var(--accent); text-decoration: none; word-break: break-all; }
+.deploy-url:hover { text-decoration: underline; }
+.deploy-error { color: var(--error); }
+.deploy-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.btn-deploy {
+  padding: 6px 14px; border: 1px solid var(--accent); background: transparent;
+  color: var(--accent); font: 600 10px var(--font-mono); letter-spacing: 0.06em;
+  text-transform: uppercase; cursor: pointer; transition: all 0.15s; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.btn-deploy:hover { background: var(--accent-ember); }
+.btn-deploy:disabled { opacity: 0.5; cursor: default; }
+.btn-deploy--open { padding: 6px 10px; font-size: 14px; }
+.dim { color: var(--text-dim); }
 </style>
