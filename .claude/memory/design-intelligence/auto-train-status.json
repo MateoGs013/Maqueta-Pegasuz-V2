@@ -1,44 +1,38 @@
 {
   "active": false,
-  "startedAt": "2026-04-09T00:34:13.464Z",
+  "startedAt": "2026-04-09T14:26:59.221Z",
   "count": 1,
   "dryRun": false,
   "maxRetries": 1,
   "phaseIndex": 10,
   "phase": "complete",
   "totalPhases": 10,
-  "memoryBefore": 143,
-  "sessionId": "practice-1775695009426",
-  "briefName": "Practice V2 — IYO",
-  "mood": "brutalist",
-  "reference": {
-    "title": "IYO",
-    "url": "https://www.iyo.ai/"
-  },
-  "projectDir": "C:\\Users\\mateo\\Desktop\\practice-19",
+  "memoryBefore": 151,
+  "memoryAfter": 174,
+  "memoryAfterAudit": 98,
+  "sessionId": "practice-1775744821068",
+  "briefName": "Practice V2 — autonomous",
+  "mood": "cyberpunk",
+  "reference": null,
+  "projectDir": "C:\\Users\\mateo\\Desktop\\practice-v2-cyber",
   "lastResult": [
     {
-      "brief": "Practice V2 — IYO",
-      "duration": 1806,
-      "audit": 50,
+      "brief": "Practice V2 — autonomous",
+      "duration": 81092,
+      "audit": 75,
       "gates": {
-        "approved": 0,
+        "approved": 4,
         "retried": 0,
         "flagged": 0,
-        "total": 0
+        "total": 4
       }
     }
   ],
-  "lastUpdatedAt": "2026-04-09T01:04:19.826Z",
-  "phaseStartedAt": "2026-04-09T01:04:19.434Z",
-  "sections": [
-    "S-Hero",
-    "S-Team",
-    "S-Services",
-    "S-Process"
-  ],
-  "technique": "ScrollTrigger scrub timeline",
+  "lastUpdatedAt": "2026-04-10T12:58:31.882Z",
+  "phaseStartedAt": "2026-04-10T12:58:31.346Z",
+  "sections": ["S-Hero", "S-Faq", "S-Team", "S-Services"],
+  "technique": "Curtain/wipe reveal",
   "currentTask": null,
-  "finishedAt": "2026-04-09T01:04:19.826Z",
-  "memoryAfter": 143
+  "finishedAt": "2026-04-10T12:58:31.882Z",
+  "_note": "memoryBefore/After are pre-audit values. memoryAfterAudit reflects cleaned data point count (98). Audit removed ~45% noise entries on 2026-04-10."
 }

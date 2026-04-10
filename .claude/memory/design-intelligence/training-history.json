@@ -1,66 +1,39 @@
 {
   "sessions": [
     {
-      "id": "practice-1775678690600",
-      "date": "2026-04-08",
-      "timestamp": "2026-04-08T20:05:22.465Z",
-      "name": "Practice V2 — SŌM",
-      "mood": "minimal",
-      "sections": [
-        "S-Hero",
-        "S-Pricing",
-        "S-Contact",
-        "S-Cta"
-      ],
-      "technique": "Pin + morph",
-      "reference": {
-        "url": "https://www.drinksom.eu/",
-        "title": "SŌM"
-      },
-      "duration": 132,
-      "observer": null,
-      "audit": null,
-      "gates": {
-        "approved": 0,
-        "retried": 1,
-        "flagged": 0,
-        "total": 1
-      },
-      "rulesValidated": 6,
-      "audited_with_buggy_code": true,
-      "migration_note": "duration 132s too short — died before producing a project"
-    },
-    {
       "id": "practice-1775675550907",
       "date": "2026-04-08",
       "timestamp": "2026-04-08T20:24:59.548Z",
       "name": "Practice V2 — autonomous",
       "mood": "minimal",
-      "sections": [
-        "S-Hero",
-        "S-Pricing",
-        "S-Contact",
-        "S-Cta"
-      ],
+      "sections": ["S-Hero", "S-Pricing", "S-Contact", "S-Cta"],
       "technique": "Pin + morph",
       "reference": null,
       "duration": 4413,
       "observer": null,
-      "audit": {
-        "score": 26,
-        "total": 32,
-        "pct": 81
-      },
-      "gates": {
-        "approved": 0,
-        "retried": 0,
-        "flagged": 0,
-        "total": 0
-      },
+      "audit": { "score": 26, "total": 32, "pct": 81 },
+      "gates": { "approved": 0, "retried": 0, "flagged": 0, "total": 0 },
       "rulesValidated": 2,
-      "migrated_at": "2026-04-09T01:26:54.463Z",
       "matched_project_dir": "practice-v2",
-      "match_confidence": "exact"
+      "match_confidence": "exact",
+      "migrated_at": "2026-04-09T01:26:54.463Z"
+    },
+    {
+      "id": "practice-1775678690600",
+      "date": "2026-04-08",
+      "timestamp": "2026-04-08T20:05:22.465Z",
+      "name": "Practice V2 — SOM",
+      "mood": "minimal",
+      "sections": ["S-Hero", "S-Pricing", "S-Contact", "S-Cta"],
+      "technique": "Pin + morph",
+      "reference": { "url": "https://www.drinksom.eu/", "title": "SOM" },
+      "duration": 132,
+      "observer": null,
+      "audit": null,
+      "gates": { "approved": 0, "retried": 1, "flagged": 0, "total": 1 },
+      "rulesValidated": 6,
+      "status": "abandoned",
+      "statusReason": "duration 132s too short -- died before producing output"
     },
     {
       "id": "practice-1775688744438",
@@ -68,52 +41,27 @@
       "timestamp": "2026-04-08T22:57:51.734Z",
       "name": "Practice V2 — IYO",
       "mood": "playful",
-      "sections": [
-        "S-Hero",
-        "S-Contact",
-        "S-Cta",
-        "S-Faq"
-      ],
+      "sections": ["S-Hero", "S-Contact", "S-Cta", "S-Faq"],
       "technique": "Pin + morph",
-      "reference": {
-        "url": "https://www.iyo.ai/",
-        "title": "IYO"
-      },
+      "reference": { "url": "https://www.iyo.ai/", "title": "IYO" },
       "duration": 485,
       "observer": null,
-      "audit": {
-        "score": 27,
-        "total": 32,
-        "pct": 84
-      },
-      "gates": {
-        "approved": 0,
-        "retried": 0,
-        "flagged": 0,
-        "total": 0
-      },
+      "audit": { "score": 27, "total": 32, "pct": 84 },
+      "gates": { "approved": 0, "retried": 0, "flagged": 0, "total": 0 },
       "rulesValidated": 0,
-      "migrated_at": "2026-04-09T01:26:54.528Z",
       "matched_project_dir": "practice-v2-iyo",
-      "match_confidence": "heuristic"
+      "match_confidence": "heuristic",
+      "migrated_at": "2026-04-09T01:26:54.528Z"
     },
     {
       "id": "practice-1775692287411",
       "date": "2026-04-08",
       "timestamp": "2026-04-08T23:54:10.750Z",
-      "name": "Practice V2 — IYO",
+      "name": "Practice V2 — IYO (low scores)",
       "mood": "playful",
-      "sections": [
-        "S-Hero",
-        "S-Contact",
-        "S-Cta",
-        "S-Faq"
-      ],
+      "sections": ["S-Hero", "S-Contact", "S-Cta", "S-Faq"],
       "technique": "Pin + morph",
-      "reference": {
-        "url": "https://www.iyo.ai/",
-        "title": "IYO"
-      },
+      "reference": { "url": "https://www.iyo.ai/", "title": "IYO" },
       "duration": 319,
       "observer": {
         "composition": 5,
@@ -123,56 +71,108 @@
         "craft": 3.9,
         "antiTemplate": 5.5
       },
-      "audit": {
-        "score": 19,
-        "total": 32,
-        "pct": 59
-      },
-      "gates": {
-        "approved": 0,
-        "retried": 0,
-        "flagged": 0,
-        "total": 0
-      },
+      "observerTrust": "verified",
+      "audit": { "score": 19, "total": 32, "pct": 59 },
+      "gates": { "approved": 0, "retried": 0, "flagged": 0, "total": 0 },
       "rulesValidated": 0,
-      "migrated_at": "2026-04-09T01:26:54.585Z",
       "matched_project_dir": "practice-19",
-      "match_confidence": "exact"
+      "match_confidence": "exact",
+      "migrated_at": "2026-04-09T01:26:54.585Z"
     },
     {
       "id": "practice-1775695009426",
       "date": "2026-04-09",
       "timestamp": "2026-04-09T01:04:19.436Z",
-      "name": "Practice V2 — IYO",
+      "name": "Practice V2 — IYO (brutalist)",
       "mood": "brutalist",
-      "sections": [
-        "S-Hero",
-        "S-Team",
-        "S-Services",
-        "S-Process"
-      ],
+      "sections": ["S-Hero", "S-Team", "S-Services", "S-Process"],
       "technique": "ScrollTrigger scrub timeline",
-      "reference": {
-        "url": "https://www.iyo.ai/",
-        "title": "IYO"
-      },
+      "reference": { "url": "https://www.iyo.ai/", "title": "IYO" },
       "duration": 1806,
       "observer": null,
-      "audit": {
-        "score": 26,
-        "total": 32,
-        "pct": 81
-      },
-      "gates": {
-        "approved": 0,
-        "retried": 0,
-        "flagged": 0,
-        "total": 0
-      },
+      "audit": { "score": 26, "total": 32, "pct": 81 },
+      "gates": { "approved": 0, "retried": 0, "flagged": 0, "total": 0 },
       "rulesValidated": 0,
-      "migrated_at": "2026-04-09T01:26:54.646Z",
       "matched_project_dir": "practice-v2-backup",
-      "match_confidence": "heuristic"
+      "match_confidence": "heuristic",
+      "migrated_at": "2026-04-09T01:26:54.646Z"
+    },
+    {
+      "id": "practice-1775737284411",
+      "date": "2026-04-09",
+      "timestamp": "2026-04-09T13:46:47.243Z",
+      "name": "Practice V2 — IYO (luxury)",
+      "mood": "luxury",
+      "sections": ["S-Hero", "S-Stats", "S-Contact", "S-Cta"],
+      "technique": "Spline 3D embed",
+      "reference": { "url": "https://www.iyo.ai/", "title": "IYO" },
+      "duration": 5288,
+      "observer": {
+        "composition": 6.8,
+        "depth": 6.9,
+        "typography": 8.5,
+        "motion": 5.5,
+        "craft": 6.6,
+        "antiTemplate": 6.5
+      },
+      "observerTrust": "verified",
+      "audit": { "score": 24, "total": 32, "pct": 75 },
+      "gates": { "approved": 4, "retried": 0, "flagged": 0, "total": 4 },
+      "rulesValidated": 1
+    },
+    {
+      "id": "practice-1775744293191",
+      "date": "2026-04-09",
+      "timestamp": "2026-04-09T14:24:59.225Z",
+      "name": "Practice V2 — autonomous (light)",
+      "mood": "light",
+      "sections": ["S-Hero", "S-Faq", "S-Team", "S-Services"],
+      "technique": "Horizontal scroll",
+      "reference": null,
+      "duration": 410,
+      "observer": {
+        "composition": 6.8,
+        "depth": 6.9,
+        "typography": 8.5,
+        "motion": 5.5,
+        "craft": 6.6,
+        "antiTemplate": 6.5
+      },
+      "observerTrust": "suspect-copied",
+      "observerNote": "Scores identical to practice-1775737284411 despite different mood (light vs luxury), technique (horizontal scroll vs Spline 3D), and duration (410s vs 5288s). Likely cached/stale observer data.",
+      "audit": null,
+      "gates": { "approved": 4, "retried": 0, "flagged": 0, "total": 4 },
+      "rulesValidated": 0
+    },
+    {
+      "id": "practice-1775744821068",
+      "date": "2026-04-10",
+      "startedAt": "2026-04-09T14:26:59.221Z",
+      "timestamp": "2026-04-10T12:58:31.352Z",
+      "name": "Practice V2 — autonomous (cyberpunk)",
+      "mood": "cyberpunk",
+      "sections": ["S-Hero", "S-Faq", "S-Team", "S-Services"],
+      "technique": "Curtain/wipe reveal",
+      "reference": null,
+      "duration": 81092,
+      "observer": {
+        "composition": 6.8,
+        "depth": 6.7,
+        "typography": 7.5,
+        "motion": 5.5,
+        "craft": 6.6,
+        "antiTemplate": 6.5
+      },
+      "observerTrust": "suspect-partial",
+      "observerNote": "composition/motion/craft/antiTemplate identical to previous 2 sessions. Only depth and typography differ slightly. Observer may be partially cached.",
+      "audit": { "score": 24, "total": 32, "pct": 75 },
+      "gates": { "approved": 4, "retried": 0, "flagged": 0, "total": 4 },
+      "rulesValidated": 0,
+      "matched_project_dir": "practice-v2-cyber"
     }
-  ]
+  ],
+  "_meta": {
+    "cleanedAt": "2026-04-10",
+    "cleanReason": "Audit V1: added observerTrust field (verified/suspect-copied/suspect-partial), added observerNote for suspect sessions, added status:abandoned for dead session, added startedAt for overnight sessions, improved session names for disambiguation. Sorted by timestamp."
+  }
 }

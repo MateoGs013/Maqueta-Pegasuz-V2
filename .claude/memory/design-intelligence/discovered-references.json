@@ -126,7 +126,22 @@
         "video"
       ],
       "discoveredAt": "2026-04-08T19:11:45.538Z"
+    },
+    {
+      "title": "ICOMAT",
+      "slug": "icomat",
+      "awwwardsUrl": "https://www.awwwards.com/sites/icomat",
+      "siteUrl": "https://www.icomat.co.uk/",
+      "tags": [
+        "NEW",
+        "New",
+        "Resources",
+        "Web Technology",
+        "Web Technology"
+      ],
+      "discoveredAt": "2026-04-09T12:18:59.835Z",
+      "studied": false
     }
   ],
-  "lastScan": "2026-04-09T00:34:48.843Z"
+  "lastScan": "2026-04-09T12:44:37.290Z"
 }

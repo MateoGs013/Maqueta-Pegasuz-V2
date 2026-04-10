@@ -2,57 +2,42 @@
   "techniques": [
     {
       "name": "SplitText char reveal",
-      "timesUsed": 4,
-      "avgScore": 7.8,
+      "timesUsed": 5,
+      "avgScore": 7.9,
       "avgUserRating": null,
-      "scores": [
-        7.8,
-        7.8,
-        7.8,
-        7.8
-      ],
-      "bestWith": [],
-      "notes": "Strong for hero headlines + editorial sections. Needs mask:true for polish. Weak on short copy."
+      "scores": [7.8, 7.8, 7.8, 7.8, 8.5],
+      "bestWith": ["hero", "editorial"],
+      "confidence": "medium",
+      "notes": "Strong for hero headlines + editorial sections. Needs mask:true for polish. Weak on short copy. Reference sites confirm high impact."
     },
     {
       "name": "Clip-path image reveal",
-      "timesUsed": 3,
-      "avgScore": 8.2,
+      "timesUsed": 5,
+      "avgScore": 8.3,
       "avgUserRating": null,
-      "scores": [
-        8.2,
-        8.2,
-        8.2
-      ],
-      "bestWith": [],
-      "notes": "Top performer for visual sections. Works best with high-contrast imagery. Avoid on small elements."
+      "scores": [8.2, 8.2, 8.2, 8.5, 8.5],
+      "bestWith": ["hero", "portfolio", "work"],
+      "confidence": "high",
+      "notes": "Top performer for visual sections. Works best with high-contrast imagery. Avoid on small elements. Reference sites validate as core technique."
     },
     {
       "name": "Parallax depth layers",
       "timesUsed": 5,
       "avgScore": 7.4,
       "avgUserRating": null,
-      "scores": [
-        7.4,
-        7.4,
-        7.4,
-        7.4,
-        7.4
-      ],
-      "bestWith": [],
+      "scores": [7.4, 7.4, 7.4, 7.4, 7.4],
+      "bestWith": ["hero", "about"],
+      "confidence": "high",
       "notes": "Reliable depth technique. Always use scrub:0.5. Diminishing returns past 3 layers."
     },
     {
       "name": "Magnetic buttons",
       "timesUsed": 3,
-      "avgScore": 7,
+      "avgScore": 7.0,
       "avgUserRating": null,
-      "scores": [
-        7,
-        7,
-        7
-      ],
-      "bestWith": [],
+      "scores": [7, 7, 7],
+      "bestWith": ["cta", "nav"],
+      "confidence": "medium",
       "notes": "Good craft signal but subtle. Must disable on touch. Works best with scale + border feedback."
     },
     {
@@ -60,37 +45,29 @@
       "timesUsed": 2,
       "avgScore": 7.2,
       "avgUserRating": null,
-      "scores": [
-        7.2,
-        7.2
-      ],
-      "bestWith": [],
+      "scores": [7.2, 7.2],
+      "bestWith": ["stats"],
+      "confidence": "low",
       "notes": "Effective for stats sections. Needs intersection observer trigger. Avoid decimals."
     },
     {
       "name": "Stagger cascade",
-      "timesUsed": 4,
-      "avgScore": 7.6,
+      "timesUsed": 6,
+      "avgScore": 7.8,
       "avgUserRating": null,
-      "scores": [
-        7.6,
-        7.6,
-        7.6,
-        7.6
-      ],
-      "bestWith": [],
-      "notes": "Workhorse for grids/features. Use ScrollTrigger.batch(). Range 0.03-0.08 per item."
+      "scores": [7.6, 7.6, 7.6, 7.6, 8.5, 8.5],
+      "bestWith": ["features", "grid", "services"],
+      "confidence": "high",
+      "notes": "Workhorse for grids/features. Use ScrollTrigger.batch(). Range 0.03-0.08 per item. Reference sites confirm as essential pattern."
     },
     {
       "name": "Gradient mesh atmosphere",
       "timesUsed": 2,
       "avgScore": 6.8,
       "avgUserRating": null,
-      "scores": [
-        6.8,
-        6.8
-      ],
-      "bestWith": [],
+      "scores": [6.8, 6.8],
+      "bestWith": ["hero", "cta"],
+      "confidence": "low",
       "notes": "Adds depth cheaply but can feel generic. Needs low opacity (2-4%) and hue variation."
     },
     {
@@ -98,148 +75,65 @@
       "timesUsed": 1,
       "avgScore": 6.5,
       "avgUserRating": null,
-      "scores": [
-        6.5
-      ],
-      "bestWith": [],
+      "scores": [6.5],
+      "bestWith": ["hero"],
+      "confidence": "low",
       "notes": "High impact but heavy. Requires dynamic import + fallback image. Loading UX is critical."
     },
     {
-      "name": "SplitText",
+      "name": "Grain/noise overlay",
+      "timesUsed": 2,
+      "avgScore": 8.5,
+      "avgUserRating": null,
+      "scores": [8.5, 8.5],
+      "bestWith": ["hero", "cta", "dark-sections"],
+      "confidence": "low",
+      "notes": "Film grain at 2-4% opacity on dark sections. Name element site-grain or noise-layer for observer detection."
+    },
+    {
+      "name": "Curtain wipe reveal",
+      "timesUsed": 1,
+      "avgScore": 9.1,
+      "avgUserRating": null,
+      "scores": [9.1],
+      "bestWith": ["hero"],
+      "confidence": "low",
+      "notes": "Highest single score. Used in cyberpunk hero with lime curtain 580ms. Must use cubic-bezier(0.77,0,0.175,1). Needs validation in other contexts."
+    },
+    {
+      "name": "Clip-path accordion",
+      "timesUsed": 1,
+      "avgScore": 8.6,
+      "avgUserRating": null,
+      "scores": [8.6],
+      "bestWith": ["faq"],
+      "confidence": "low",
+      "notes": "Clip-path curtain accordion 420ms for FAQ items. Numeral color transitions add craft."
+    },
+    {
+      "name": "Glitch signature",
+      "timesUsed": 1,
+      "avgScore": 8.7,
+      "avgUserRating": null,
+      "scores": [8.7],
+      "bestWith": ["team"],
+      "confidence": "low",
+      "notes": "3-layer RGB split hover on team cards. Status dot pulse adds life. Best in cyberpunk/dark contexts."
+    },
+    {
+      "name": "Curtain hover reveal",
       "timesUsed": 1,
       "avgScore": 8.5,
       "avgUserRating": null,
-      "scores": [
-        8.5
-      ],
-      "bestWith": [
-        "reference"
-      ],
-      "notes": null
-    },
-    {
-      "name": "clip-path",
-      "timesUsed": 2,
-      "avgScore": 8.5,
-      "avgUserRating": null,
-      "scores": [
-        8.5,
-        8.5
-      ],
-      "bestWith": [
-        "reference"
-      ],
-      "notes": null
-    },
-    {
-      "name": "stagger",
-      "timesUsed": 2,
-      "avgScore": 8.5,
-      "avgUserRating": null,
-      "scores": [
-        8.5,
-        8.5
-      ],
-      "bestWith": [
-        "reference"
-      ],
-      "notes": null
-    },
-    {
-      "name": "scrub",
-      "timesUsed": 2,
-      "avgScore": 8.5,
-      "avgUserRating": null,
-      "scores": [
-        8.5,
-        8.5
-      ],
-      "bestWith": [
-        "reference"
-      ],
-      "notes": null
-    },
-    {
-      "name": "grain",
-      "timesUsed": 2,
-      "avgScore": 8.5,
-      "avgUserRating": null,
-      "scores": [
-        8.5,
-        8.5
-      ],
-      "bestWith": [
-        "reference"
-      ],
-      "notes": null
-    },
-    {
-      "name": "noise",
-      "timesUsed": 2,
-      "avgScore": 8.5,
-      "avgUserRating": null,
-      "scores": [
-        8.5,
-        8.5
-      ],
-      "bestWith": [
-        "reference"
-      ],
-      "notes": null
-    },
-    {
-      "name": "GSAP",
-      "timesUsed": 2,
-      "avgScore": 8.5,
-      "avgUserRating": null,
-      "scores": [
-        8.5,
-        8.5
-      ],
-      "bestWith": [
-        "reference"
-      ],
-      "notes": null
-    },
-    {
-      "name": "ScrollTrigger",
-      "timesUsed": 1,
-      "avgScore": 8.5,
-      "avgUserRating": null,
-      "scores": [
-        8.5
-      ],
-      "bestWith": [
-        "reference"
-      ],
-      "notes": null
-    },
-    {
-      "name": "Lenis",
-      "timesUsed": 2,
-      "avgScore": 8.5,
-      "avgUserRating": null,
-      "scores": [
-        8.5,
-        8.5
-      ],
-      "bestWith": [
-        "reference"
-      ],
-      "notes": null
-    },
-    {
-      "name": "WebGL",
-      "timesUsed": 1,
-      "avgScore": 8.5,
-      "avgUserRating": null,
-      "scores": [
-        8.5
-      ],
-      "bestWith": [
-        "reference"
-      ],
-      "notes": null
+      "scores": [8.5],
+      "bestWith": ["services"],
+      "confidence": "low",
+      "notes": "Neon curtain 480ms per-card with content inversion on hover. Card lift y:-8."
     }
-  ]
+  ],
+  "_meta": {
+    "cleanedAt": "2026-04-10",
+    "cleanReason": "Audit V1: removed 10 phantom/duplicate entries (SplitText, clip-path, stagger, scrub, grain, noise, GSAP, ScrollTrigger, Lenis, WebGL). Merged reference evidence into parent techniques. Added confidence field. 22 -> 13 entries.",
+    "removedEntries": ["SplitText", "clip-path", "stagger", "scrub", "grain", "noise", "GSAP", "ScrollTrigger", "Lenis", "WebGL"]
+  }
 }

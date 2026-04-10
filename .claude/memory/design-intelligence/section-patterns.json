@@ -5,7 +5,7 @@
       "project": "baseline",
       "sectionType": "hero-cinematic",
       "layout": "1fr 1.8fr asymmetric grid, full-height, image overlap right",
-      "motion": "Timeline entrance: bg scale → headline SplitText → subtext fade → CTA slide",
+      "motion": "Timeline entrance: bg scale -> headline SplitText -> subtext fade -> CTA slide",
       "keyTechnique": "Clip-path image reveal + SplitText char stagger",
       "score": 8.2,
       "userRating": null
@@ -47,7 +47,7 @@
       "layout": "Full-width dark section, centered headline, gradient mesh bg",
       "motion": "Slow scale-in on headline, atmospheric gradient shift on scroll",
       "keyTechnique": "Gradient mesh + cinematic slow-reveal",
-      "score": 7,
+      "score": 7.0,
       "userRating": null
     },
     {
@@ -57,7 +57,7 @@
       "layout": "3-plane layered (back-type + gradient mesh + front-content), full-height, bottom-left content 52%",
       "motion": "SplitText char reveal + 3-plane parallax scrub + magnetic CTA",
       "keyTechnique": "Phantom back-type + gradient mesh atmosphere",
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
@@ -96,8 +96,8 @@
       "sectionType": "hero",
       "layout": "KineticGrid 3x3 named grid",
       "motion": "SplitText chars + clipPath index wipe + parallax",
-      "keyTechnique": null,
-      "score": 8,
+      "keyTechnique": "KineticGrid named areas",
+      "score": 8.0,
       "userRating": null
     },
     {
@@ -106,8 +106,8 @@
       "sectionType": "bento",
       "layout": "Bento asymmetric 1.4fr 1fr 0.6fr",
       "motion": "Stagger cascade 120ms",
-      "keyTechnique": null,
-      "score": 8,
+      "keyTechnique": "Asymmetric bento with varied card heights",
+      "score": 8.0,
       "userRating": null
     },
     {
@@ -116,8 +116,8 @@
       "sectionType": "feature",
       "layout": "Split 1fr 1.4fr with terminal overlap",
       "motion": "Line-by-line typing + tilt interaction",
-      "keyTechnique": null,
-      "score": 8,
+      "keyTechnique": "Terminal typing effect + tilt",
+      "score": 8.0,
       "userRating": null
     },
     {
@@ -126,7 +126,7 @@
       "sectionType": "hero",
       "layout": "Layered Planes Recipe C",
       "motion": "SplitText line reveal + 3-plane parallax",
-      "keyTechnique": null,
+      "keyTechnique": "Layered planes with SplitText",
       "score": 8.3,
       "userRating": null
     },
@@ -136,8 +136,8 @@
       "sectionType": "features",
       "layout": "1.4fr 0.6fr pinned",
       "motion": "ScrollTrigger pin+morph 300vh scrub",
-      "keyTechnique": null,
-      "score": 8,
+      "keyTechnique": "Pin-morph scroll progression",
+      "score": 8.0,
       "userRating": null
     },
     {
@@ -146,7 +146,7 @@
       "sectionType": "portfolio",
       "layout": "1.618fr 1fr alternating",
       "motion": "Clip-path alternating reveals",
-      "keyTechnique": null,
+      "keyTechnique": "Golden ratio alternating layout",
       "score": 8.1,
       "userRating": null
     },
@@ -156,7 +156,7 @@
       "sectionType": "about",
       "layout": "Image band + narrow centered text",
       "motion": "Scroll-speed differential + SplitText line",
-      "keyTechnique": null,
+      "keyTechnique": "Speed differential parallax",
       "score": 8.8,
       "userRating": null
     },
@@ -164,77 +164,77 @@
       "date": "2026-04-05",
       "project": "practice-16",
       "sectionType": "hero",
-      "layout": null,
+      "layout": "layered-planes",
       "motion": "parallax-3-plane",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
       "date": "2026-04-05",
       "project": "practice-16",
       "sectionType": "features",
-      "layout": null,
+      "layout": "pinned-split",
       "motion": "pin-scroll-morph",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
       "date": "2026-04-05",
       "project": "practice-16",
       "sectionType": "portfolio",
-      "layout": null,
+      "layout": "alternating-reveal",
       "motion": "clip-path-reveal",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
       "date": "2026-04-05",
       "project": "practice-16",
       "sectionType": "about",
-      "layout": null,
+      "layout": "centered-editorial",
       "motion": "scroll-speed-differential",
       "keyTechnique": null,
-      "score": 8,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-05",
-      "project": "practice-17",
-      "sectionType": "features",
-      "layout": null,
-      "motion": "pin-morph",
-      "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
       "date": "2026-04-05",
       "project": "practice-17",
       "sectionType": "hero",
-      "layout": null,
+      "layout": "kinetic-typography-grid",
       "motion": "kinetic-typography",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-05",
+      "project": "practice-17",
+      "sectionType": "features",
+      "layout": "pinned-morph",
+      "motion": "pin-morph",
+      "keyTechnique": null,
+      "score": 8.0,
       "userRating": null
     },
     {
       "date": "2026-04-05",
       "project": "practice-17",
       "sectionType": "portfolio",
-      "layout": null,
+      "layout": "alternating-asymmetric",
       "motion": "clip-path-reveal",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
       "date": "2026-04-05",
       "project": "practice-17",
       "sectionType": "about",
-      "layout": null,
+      "layout": "split-editorial",
       "motion": "parallax-depth",
       "keyTechnique": null,
       "score": 7.5,
@@ -245,9 +245,9 @@
       "project": "practice-20",
       "sectionType": "hero",
       "layout": "layered-planes",
-      "motion": null,
+      "motion": "SplitText + parallax",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
@@ -255,9 +255,9 @@
       "project": "practice-20",
       "sectionType": "pricing",
       "layout": "pin-morph",
-      "motion": null,
+      "motion": "pin-scroll-morph",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
@@ -265,7 +265,7 @@
       "project": "practice-20",
       "sectionType": "testimonials",
       "layout": "asymmetric",
-      "motion": null,
+      "motion": "crossfade-scroll",
       "keyTechnique": null,
       "score": 7.5,
       "userRating": null
@@ -277,7 +277,7 @@
       "layout": "layered-planes",
       "motion": "kinetic-typography",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
@@ -287,7 +287,7 @@
       "layout": "pinned-morph-grid",
       "motion": "pin-morph-scroll",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
@@ -307,217 +307,47 @@
       "layout": "golden-ratio-form",
       "motion": "stagger-cascade",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
       "date": "2026-04-06",
       "project": "practice-22",
       "sectionType": "hero",
-      "layout": null,
+      "layout": "full-height-morph",
       "motion": "pin+morph",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
       "date": "2026-04-06",
       "project": "practice-22",
       "sectionType": "team",
-      "layout": null,
+      "layout": "bento-cards",
       "motion": "3D-flip stagger",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
       "date": "2026-04-06",
       "project": "practice-22",
       "sectionType": "faq",
-      "layout": null,
+      "layout": "accordion-split",
       "motion": "wobble-accordion",
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
       "date": "2026-04-06",
       "project": "practice-22",
       "sectionType": "cta",
-      "layout": null,
+      "layout": "centered-perspective",
       "motion": "perspective-tilt",
       "keyTechnique": null,
-      "score": 8,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "sectionType": "reference",
-      "layout": "—",
-      "motion": "—",
-      "keyTechnique": null,
-      "score": 8.5,
+      "score": 8.0,
       "userRating": null
     },
     {
@@ -537,7 +367,7 @@
       "layout": null,
       "motion": null,
       "keyTechnique": null,
-      "score": 8,
+      "score": 8.0,
       "userRating": null
     },
     {
@@ -559,6 +389,51 @@
       "keyTechnique": null,
       "score": 7.8,
       "userRating": null
+    },
+    {
+      "date": "2026-04-09",
+      "project": "practice-v2-cyber",
+      "sectionType": "hero",
+      "layout": "4-col asymmetric 1.2fr 2.4fr 0.6fr 1fr",
+      "motion": "lime curtain 580ms + clip-path char reveal + scanline scrub",
+      "keyTechnique": "Curtain wipe reveal + neon curtain",
+      "score": 9.1,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-09",
+      "project": "practice-v2-cyber",
+      "sectionType": "faq",
+      "layout": "3-col 0.5fr 2.8fr 1.1fr",
+      "motion": "clip-path curtain accordion 420ms + numeral cyan-to-magenta + counter count-up",
+      "keyTechnique": "Clip-path accordion + neon numeral transition",
+      "score": 8.6,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-09",
+      "project": "practice-v2-cyber",
+      "sectionType": "team",
+      "layout": "bento 2fr 1.3fr 1.7fr",
+      "motion": "ScrollTrigger.batch + 3-layer RGB split hover + status dot pulse",
+      "keyTechnique": "Glitch signature + RGB split hover",
+      "score": 8.7,
+      "userRating": null
+    },
+    {
+      "date": "2026-04-09",
+      "project": "practice-v2-cyber",
+      "sectionType": "services",
+      "layout": "horizontal CSS scroll track",
+      "motion": "neon curtain 480ms per-card + content inversion + card lift y:-8",
+      "keyTechnique": "Curtain hover reveal + content inversion",
+      "score": 8.5,
+      "userRating": null
     }
-  ]
+  ],
+  "_meta": {
+    "cleanedAt": "2026-04-10",
+    "cleanReason": "Audit V1: removed 8 score-0 abandoned entries (practice-v2-iyo 4 + practice-v2-cyber first attempt 4), removed 17 reference placeholder entries (artemshcherban 9 + artefakt 8) with layout/motion '--'. Backfilled keyTechnique on peritas-tech and practice-v2-cyber entries. 67 -> 43 patterns.",
+    "removedCount": 24
+  }
 }

@@ -1,44 +1,26 @@
 # Signature Elements
 
-Cross-project signature intelligence. CEO appends after Phase 3 batch review.
+Distinctive design elements that make sections memorable. Only entries with actual content retained.
 
-## Approved
+## Approved (8)
 
 | Date | Project | Section | Element | Description | Why It Worked |
-|------|------|------|------|------|------|
-| 2025-04 | baseline | Hero | Diagonal text overlap | Display heading rotated -3deg overlapping a full-bleed image with clip-path reveal | Creates immediate visual tension and breaks the "centered heading" pattern. Strong composition signal. |
-| 2025-04 | baseline | Nav | Contextual micro-interactions | Nav items that shift color/weight based on scroll section, with magnetic hover on CTA | Makes nav feel alive without being distracting. Good craft dimension score. |
-| 2025-04 | baseline | Features | Staggered card cascade | Bento grid with cards entering via ScrollTrigger.batch(), alternating from left/right with depth shadows | Reliable high-scorer. Combines stagger + depth + asymmetric grid for 3 excellence dimensions at once. |
-| 2025-04 | baseline | Footer | Parallax depth close | Footer with 3 parallax layers (bg texture, content, floating accent) collapsing on scroll end | Distinctive close to page. Most footers are flat — this adds depth as a signature. |
-| 2026-04-02 | Coque | Hero | Phantom architecture back-type | Oversized "COQUE" at 22vw behind gradient mesh, 3-plane parallax (30%/15%/8%), front-content bottom-left | Back-type as spatial anchor creates depth without imagery. Avoids the dark-image-on-dark trap. |
-| 2026-04-02 | Coque | FeaturedWork | Curtain reveal clip-path | Each project reveals left-to-right via clip-path: inset() at 1000ms power3.inOut on light theme | Slow curtain-pull makes each project feel like an event. Light section provides breathing room. |
-| 2026-04-02 | Coque | Marquee | Contra-scroll kinetic | Two rows at different speeds (60px/s vs 45px/s) in opposite directions, pause on hover | Speed differential prevents mechanical feel. Display + mono rows add typographic contrast. |
-| 2026-04-02 | Coque | CTA | Repulsion field | Headline words push away from cursor while CTA button pulls toward it (magnetic + repulsion) | Gravitational tension creates micro-narrative — everything points toward the action button. |
-| 2026-04-08 | artemshcherban-com | reference | — | — | — |
-| 2026-04-08 | artemshcherban-com | reference | — | — | — |
-| 2026-04-08 | artemshcherban-com | reference | — | — | — |
-| 2026-04-08 | artemshcherban-com | reference | — | — | — |
-| 2026-04-08 | artemshcherban-com | reference | — | — | — |
-| 2026-04-08 | artemshcherban-com | reference | — | — | — |
-| 2026-04-08 | artemshcherban-com | reference | — | — | — |
-| 2026-04-08 | artemshcherban-com | reference | — | — | — |
-| 2026-04-08 | artemshcherban-com | reference | — | — | — |
-| 2026-04-08 | artefakt-mov | reference | — | — | — |
-| 2026-04-08 | artefakt-mov | reference | — | — | — |
-| 2026-04-08 | artefakt-mov | reference | — | — | — |
-| 2026-04-08 | artefakt-mov | reference | — | — | — |
-| 2026-04-08 | artefakt-mov | reference | — | — | — |
-| 2026-04-08 | artefakt-mov | reference | — | — | — |
-| 2026-04-08 | artefakt-mov | reference | — | — | — |
-| 2026-04-08 | artefakt-mov | reference | — | — | — |
-| 2026-04-08 | practice-v2 | S-Hero | — | — | — |
-| 2026-04-08 | practice-v2 | S-Pricing | — | — | — |
-| 2026-04-08 | practice-v2 | S-Contact | — | — | — |
-| 2026-04-08 | practice-v2 | S-Cta | — | — | — |
+|------|---------|---------|---------|-------------|---------------|
+| 2025-04 | baseline | Hero | Diagonal text overlap | Display heading -3deg overlapping full-bleed image with clip-path reveal | Immediate visual tension, breaks centered heading pattern |
+| 2025-04 | baseline | Nav | Contextual micro-interactions | Nav items shift color/weight by scroll section, magnetic hover on CTA | Nav feels alive without distraction |
+| 2025-04 | baseline | Features | Staggered card cascade | Bento grid with ScrollTrigger.batch(), alternating left/right + depth shadows | Combines stagger + depth + asymmetric grid (3 dimensions) |
+| 2025-04 | baseline | Footer | Parallax depth close | 3 parallax layers collapsing on scroll end | Distinctive close -- most footers are flat |
+| 2026-04-02 | Coque | Hero | Phantom architecture back-type | 22vw "COQUE" behind gradient mesh, 3-plane parallax, front-content bottom-left | Back-type as spatial anchor, depth without imagery |
+| 2026-04-02 | Coque | FeaturedWork | Curtain reveal clip-path | clip-path: inset() at 1000ms power3.inOut on light theme (pre-RULE-007) | Slow curtain-pull makes each project an event |
+| 2026-04-02 | Coque | Marquee | Contra-scroll kinetic | Two rows at 60px/s vs 45px/s, opposite directions, pause on hover | Speed differential prevents mechanical feel |
+| 2026-04-02 | Coque | CTA | Repulsion field | Words push away from cursor, CTA pulls toward (magnetic + repulsion) | Gravitational tension micro-narrative |
 
-## Rejected
+## Rejected (2)
 
-| Date | Project | Section | Element | User Feedback | Lesson |
-|------|------|------|------|------|------|
-| 2025-04 | baseline | Hero | Auto-playing video background | Full-viewport looping video behind hero text | Performance hit, accessibility concerns, feels like 2018. Use static image with motion overlays instead. |
-| 2025-04 | baseline | Features | Infinite scroll marquee | Horizontally scrolling ticker with brand logos | Feels cheap and distracting. Only works for testimonial quotes with careful pacing. |
+| Date | Project | Section | Element | Lesson |
+|------|---------|---------|---------|--------|
+| 2025-04 | baseline | Hero | Auto-playing video bg | Performance hit, feels like 2018. Use static + motion overlays. |
+| 2025-04 | baseline | Features | Infinite scroll marquee | Feels cheap. Only works for testimonial quotes with careful pacing. |
+
+---
+*Cleaned 2026-04-10: removed 33 all-null shell entries (41 -> 8 approved).*

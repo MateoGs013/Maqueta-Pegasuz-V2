@@ -1,5 +1,8 @@
 {
   "projects": [],
   "globalBias": 0,
-  "thresholdAdjustment": 0
+  "thresholdAdjustment": 0,
+  "_status": "unused",
+  "_note": "Never populated despite 19+ projects. Calibration pipeline either missing or never triggered. Consider implementing or removing.",
+  "_auditedAt": "2026-04-10"
 }

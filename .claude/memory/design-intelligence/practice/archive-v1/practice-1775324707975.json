@@ -1,0 +1,25 @@
+{
+  "id": "practice-1775324707975",
+  "name": "Practice 3",
+  "type": "practice",
+  "mood": "light",
+  "sections": [
+    "S-Hero",
+    "S-Features",
+    "S-Portfolio",
+    "S-About"
+  ],
+  "techniqueChallenge": "Pin + morph",
+  "objective": "Fill gaps: light theme + features + portfolio + about + Pin + morph",
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "hero",
+      "features",
+      "portfolio",
+      "about"
+    ],
+    "technique": true
+  },
+  "createdAt": "2026-04-04T17:45:07.975Z"
+}

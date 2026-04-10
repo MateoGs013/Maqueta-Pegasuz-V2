@@ -22,7 +22,8 @@
       "reaction": "approved by user",
       "lesson": "High-contrast Garamond for editorial authority. DM Sans geometric body. Distinguished from griflan's PP Editorial by classical Garamond DNA.",
       "userRating": null,
-      "validations": 1
+      "validations": 1,
+      "caution": "DM Sans is an emerging AI fingerprint font (RULE-015). Consider alternatives for future projects."
     },
     {
       "date": "2026-04-02",
@@ -46,7 +47,9 @@
       "reaction": "auto-approved",
       "lesson": "Bebas Neue gives condensed bold impact for cyberpunk headings. Space Grotesk geometric sans reads well on dark canvas. JetBrains Mono perfect for terminal/specs aesthetic.",
       "userRating": null,
-      "validations": 1
+      "validations": 1,
+      "repetitionWarning": "Identical pairing to Coque (2 days prior). Intentional for cyberpunk context but pushes sameness boundary.",
+      "reusedFrom": "Coque"
     },
     {
       "date": "2026-04-04",
@@ -58,7 +61,8 @@
       "reaction": "user approved",
       "lesson": "High-contrast transitional serif + geometric humanist sans + architectural mono. Chosen to differentiate from Forge (Cormorant+DM Sans) and Coque (Bebas+Space Grotesk). Serif communicates permanence for real estate.",
       "userRating": null,
-      "validations": 1
+      "validations": 1,
+      "caution": "Plus Jakarta Sans is an emerging AI fingerprint font (RULE-015). Consider alternatives for future projects."
     },
     {
       "date": "2026-04-05",
@@ -70,7 +74,8 @@
       "reaction": null,
       "lesson": "Variable optical serif + geometric sans creates organic tension on dark minimal canvas. Fraunces wonk axis adds handmade quality.",
       "userRating": null,
-      "validations": 1
+      "validations": 1,
+      "caution": "Outfit is an emerging AI fingerprint font (RULE-015). Consider alternatives for future projects."
     },
     {
       "date": "2026-04-05",
@@ -92,9 +97,11 @@
       "body": "Plus Jakarta Sans",
       "mono": "JetBrains Mono",
       "reaction": "Sharp Didone + geometric humanist = quiet blade aesthetic",
-      "lesson": "DM Serif Display works well for minimal dark — different from Fraunces (wonky) or Syne (wide). Clean editorial without being generic.",
+      "lesson": "DM Serif Display works well for minimal dark -- different from Fraunces (wonky) or Syne (wide). Clean editorial without being generic.",
       "userRating": null,
-      "validations": 1
+      "validations": 1,
+      "repetitionWarning": "Identical display+body pairing to gentile-natalia. Different contexts (real estate vs practice) but no differentiation.",
+      "reusedFrom": "gentile-natalia"
     }
   ],
   "failures": [
@@ -112,5 +119,41 @@
       "reason": "Generic, overused. Avoid.",
       "source": "seed"
     }
-  ]
+  ],
+  "watchList": [
+    {
+      "font": "DM Sans",
+      "reason": "Increasingly common in AI-generated sites. Used in Forge Studio body but flagged by RULE-015.",
+      "addedAt": "2026-04-10",
+      "usedInProjects": ["Forge Studio"]
+    },
+    {
+      "font": "Space Grotesk",
+      "reason": "Popular in AI outputs. Used in Coque + peritas-tech body.",
+      "addedAt": "2026-04-10",
+      "usedInProjects": ["Coque", "peritas-tech"]
+    },
+    {
+      "font": "Outfit",
+      "reason": "Emerging AI fingerprint. Used in practice-17 body.",
+      "addedAt": "2026-04-10",
+      "usedInProjects": ["practice-17"]
+    },
+    {
+      "font": "Plus Jakarta Sans",
+      "reason": "Common in AI outputs. Used in gentile-natalia + practice-v2 body.",
+      "addedAt": "2026-04-10",
+      "usedInProjects": ["gentile-natalia", "practice-v2"]
+    },
+    {
+      "font": "Sora",
+      "reason": "Emerging AI fingerprint. Not yet used in projects.",
+      "addedAt": "2026-04-10",
+      "usedInProjects": []
+    }
+  ],
+  "_meta": {
+    "cleanedAt": "2026-04-10",
+    "cleanReason": "Audit V1: added watchList tier for emerging AI fonts, added repetitionWarning + reusedFrom fields, added caution flags to entries using watch-listed fonts."
+  }
 }

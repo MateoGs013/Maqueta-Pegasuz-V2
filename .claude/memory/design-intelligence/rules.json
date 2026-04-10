@@ -3,42 +3,46 @@
     {
       "id": "RULE-001",
       "text": "Purple gradients = instant AI fingerprint",
-      "source": "Research (V5.5)",
+      "source": "seed/Research (V5.5)",
       "validations": 5,
       "status": "PROMOTED",
       "promotedTo": "CLAUDE.md",
-      "promotedAt": "2025-01-01",
-      "createdAt": "2025-01-01"
+      "promotedAt": "2026-04-03",
+      "createdAt": "2026-04-03",
+      "seeded": true
     },
     {
       "id": "RULE-002",
       "text": "Inter/Roboto = AI fingerprint fonts",
-      "source": "Research (V5.5)",
+      "source": "seed/Research (V5.5)",
       "validations": 5,
       "status": "PROMOTED",
       "promotedTo": "CLAUDE.md",
-      "promotedAt": "2025-01-01",
-      "createdAt": "2025-01-01"
+      "promotedAt": "2026-04-03",
+      "createdAt": "2026-04-03",
+      "seeded": true
     },
     {
       "id": "RULE-003",
       "text": "1fr 1fr grids look template-like",
-      "source": "Research (V5.5)",
+      "source": "seed/Research (V5.5)",
       "validations": 5,
       "status": "PROMOTED",
       "promotedTo": "CLAUDE.md",
-      "promotedAt": "2025-01-01",
-      "createdAt": "2025-01-01"
+      "promotedAt": "2026-04-03",
+      "createdAt": "2026-04-03",
+      "seeded": true
     },
     {
       "id": "RULE-004",
       "text": "Uniform padding across sections = AI tell",
-      "source": "Research (V5.5)",
+      "source": "seed/Research (V5.5)",
       "validations": 5,
       "status": "PROMOTED",
       "promotedTo": "CLAUDE.md",
-      "promotedAt": "2025-01-01",
-      "createdAt": "2025-01-01"
+      "promotedAt": "2026-04-03",
+      "createdAt": "2026-04-03",
+      "seeded": true
     },
     {
       "id": "RULE-005",
@@ -56,19 +60,20 @@
       "source": "user-training/coque",
       "validations": 3,
       "status": "PROMOTED",
-      "promotedTo": null,
+      "promotedTo": "personality.json/voice.opinions",
       "promotedAt": "2026-04-08T20:24:58.522Z",
       "createdAt": "2026-04-03"
     },
     {
       "id": "RULE-007",
-      "text": "Curtain reveals maximo 600ms",
-      "source": "user-training/coque",
-      "validations": 2,
-      "status": "CANDIDATE",
-      "promotedTo": null,
-      "promotedAt": null,
-      "createdAt": "2026-04-03"
+      "text": "Curtain reveals must use cubic-bezier(0.77,0,0.175,1) and stay under 600ms for scroll-triggered reveals. Portfolio/hover reveals may extend to 1000ms with justification.",
+      "source": "user-training/coque + practice-v2-cyber",
+      "validations": 3,
+      "status": "PROMOTED",
+      "promotedTo": "personality.json/voice.opinions",
+      "promotedAt": "2026-04-10",
+      "createdAt": "2026-04-03",
+      "mergedFrom": ["RULE-007 (original)", "RULE-012"]
     },
     {
       "id": "RULE-008",
@@ -86,7 +91,7 @@
       "source": "user-training/coque",
       "validations": 3,
       "status": "PROMOTED",
-      "promotedTo": null,
+      "promotedTo": "personality.json/voice.opinions",
       "promotedAt": "2026-04-08T20:24:58.526Z",
       "createdAt": "2026-04-03"
     },
@@ -94,22 +99,87 @@
       "id": "RULE-010",
       "text": "Cada seccion necesita un hover state diferenciado",
       "source": "user-training/coque",
-      "validations": 2,
-      "status": "CANDIDATE",
-      "promotedTo": null,
-      "promotedAt": null,
+      "validations": 3,
+      "status": "PROMOTED",
+      "promotedTo": "personality.json/voice.opinions",
+      "promotedAt": "2026-04-09T13:46:45.068Z",
       "createdAt": "2026-04-03"
     },
     {
       "id": "RULE-011",
       "text": "Always add depth layers to feature sections",
       "source": "review/eros-test-1775285439180",
-      "validations": 7,
+      "validations": 3,
       "status": "PROMOTED",
-      "promotedTo": null,
+      "promotedTo": "personality.json/voice.opinions",
       "promotedAt": "2026-04-06T02:36:56.303Z",
-      "createdAt": "2026-04-04"
+      "createdAt": "2026-04-04",
+      "note": "Original 7 validations were from same training batch (eros-test). Adjusted to 3 distinct validations."
+    },
+    {
+      "id": "RULE-013",
+      "text": "In cyberpunk projects assign each neon a semantic role (DIAGNOSTIC/HUMAN/WARNING/ACTION), then limit each section to its 2 assigned neons",
+      "source": "practice-v2-cyber",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-09"
+    },
+    {
+      "id": "RULE-014",
+      "text": "Use CSS clip-path polygon avatars in team sections -- 5+ distinct shapes give unique identity without stock photos",
+      "source": "practice-v2-cyber",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-09"
+    },
+    {
+      "id": "RULE-015",
+      "text": "DM Sans, Space Grotesk, Outfit, Sora, Plus Jakarta Sans are emerging AI fingerprint fonts -- use with caution or avoid",
+      "source": "audit-v1/anti-ai-evolution",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-10"
+    },
+    {
+      "id": "RULE-016",
+      "text": "Glassmorphism generico (blur + rgba bg + border-radius 16+) = AI fingerprint 2026",
+      "source": "audit-v1/anti-ai-evolution",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-10"
+    },
+    {
+      "id": "RULE-017",
+      "text": "Fade-up como unica animacion de entrada = AI tell. Vary entry directions and techniques per section.",
+      "source": "audit-v1/anti-ai-evolution",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-10"
+    },
+    {
+      "id": "RULE-018",
+      "text": "Uniform border-radius across all elements = template feel. Vary radii per component type.",
+      "source": "audit-v1/anti-ai-evolution",
+      "validations": 1,
+      "status": "CANDIDATE",
+      "promotedTo": null,
+      "promotedAt": null,
+      "createdAt": "2026-04-10"
     }
   ],
-  "nextId": 12
+  "nextId": 19,
+  "_meta": {
+    "cleanedAt": "2026-04-10",
+    "cleanReason": "Audit V1: fixed seed dates (2025-01-01 -> 2026-04-03), merged RULE-007+012, added seeded flag, fixed promotedTo targets, adjusted RULE-011 validations (7->3 for distinct projects), added RULE-015-018 (anti-AI V2 evolution). 14 -> 18 rules."
+  }
 }

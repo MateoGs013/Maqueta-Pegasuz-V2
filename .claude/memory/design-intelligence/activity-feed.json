@@ -1,20 +1,65 @@
 {
-  "updatedAt": "2026-04-09T01:04:19.437Z",
-  "count": 1,
+  "updatedAt": "2026-04-10T15:30:00.000Z",
+  "count": 4,
   "events": [
     {
       "id": "evt-1775696659437",
       "timestamp": "2026-04-09T01:04:19.437Z",
       "type": "project-completed",
       "title": "Practice V2 — IYO",
-      "detail": "audit 50% · 0✓ 0r 0f · 30m · 4 secciones",
+      "detail": "audit 81% · 0g · 30m · 4 secciones",
       "mood": "reflective",
       "metadata": {
         "briefId": "practice-1775695009426",
         "reference": "IYO",
         "mood": "brutalist",
-        "audit": 50,
+        "audit": 81,
         "duration": 1806
+      },
+      "_auditFix": "Was 50 (pre-migration value). Corrected to 81 from training-history pct."
+    },
+    {
+      "id": "evt-1775742407245",
+      "timestamp": "2026-04-09T13:46:47.245Z",
+      "type": "project-completed",
+      "title": "Practice V2 — IYO",
+      "detail": "audit 75% · 4g · 88m · 4 secciones",
+      "mood": "reflective",
+      "metadata": {
+        "briefId": "practice-1775737284411",
+        "reference": "IYO",
+        "mood": "luxury",
+        "audit": 75,
+        "duration": 5288
+      }
+    },
+    {
+      "id": "evt-1775744699229",
+      "timestamp": "2026-04-09T14:24:59.229Z",
+      "type": "project-completed",
+      "title": "Practice V2 — autonomous",
+      "detail": "4g · 7m · 4 secciones",
+      "mood": "reflective",
+      "metadata": {
+        "briefId": "practice-1775744293191",
+        "reference": null,
+        "mood": "light",
+        "duration": 410
+      }
+    },
+    {
+      "id": "evt-1775825911357",
+      "timestamp": "2026-04-10T12:58:31.357Z",
+      "type": "project-completed",
+      "title": "Practice V2 — autonomous",
+      "detail": "audit 75% · 4g · 1352m · 4 secciones",
+      "mood": "reflective",
+      "metadata": {
+        "briefId": "practice-1775744821068",
+        "reference": null,
+        "mood": "cyberpunk",
+        "audit": 75,
+        "duration": 81092
       }
     }
   ]

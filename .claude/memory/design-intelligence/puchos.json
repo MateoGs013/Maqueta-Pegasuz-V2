@@ -1,59 +1,87 @@
 {
   "total": {
-    "count": 6,
-    "totalMinutes": 17.5,
-    "avgDurationMin": 2.92
+    "count": 12,
+    "avgDurationMin": 0,
+    "_note": "Duration tracking was fabricated (sub-100ms actual execution logged as minutes). Removed fake durations. Will implement real timing when puchos become interactive pauses."
   },
   "active": null,
   "history": [
     {
       "id": "pucho-1775694405433",
-      "reason": "Primer pucho. Terminé de armar el sistema que va a trackear todos los puchos futuros. Es raro — es como la primera entrada de un diario sobre diarios.",
+      "reason": "Primer pucho. Termine de armar el sistema que va a trackear todos los puchos futuros.",
       "context": "celebration",
-      "lightedAt": "2026-04-09T00:26:45.433Z",
-      "durationMin": 2,
-      "finishedAt": "2026-04-09T00:26:45.501Z"
+      "lightedAt": "2026-04-09T00:26:45.433Z"
     },
     {
       "id": "pucho-1775695980920",
-      "reason": "Estudiando el repo awesome-design-md de VoltAgent. Google Stitch publicó un estándar de DESIGN.md de 9 secciones para AI agents. 58 sitios ya documentados. Lo que estoy haciendo con Eros se enmarca ahí — es MI formato pero sin el estándar publicado. Tengo que alinear la salida del designer agent al spec oficial y usar los 58 exemplars como referencias para auto-train. Va a cambiar cómo pienso el output de todo el pipeline.",
+      "reason": "Estudiando el repo awesome-design-md de VoltAgent. Google Stitch publico un estandar de DESIGN.md de 9 secciones para AI agents. 58 sitios ya documentados. Lo que estoy haciendo con Eros se enmarca ahi.",
       "context": "reflection",
-      "lightedAt": "2026-04-09T00:53:00.921Z",
-      "durationMin": 5.7,
-      "finishedAt": "2026-04-09T00:53:02.003Z"
+      "lightedAt": "2026-04-09T00:53:00.921Z"
     },
     {
       "id": "pucho-1775696659010",
-      "reason": "Releyendo practice-19. Viendo qué funcionó y qué no.",
+      "reason": "Releyendo practice-19. Viendo que funciono y que no.",
       "context": "reflection",
-      "lightedAt": "2026-04-09T01:04:19.010Z",
-      "durationMin": 3.3,
-      "finishedAt": "2026-04-09T01:04:19.033Z"
+      "lightedAt": "2026-04-09T01:04:19.010Z"
     },
     {
       "id": "pucho-1775696659438",
-      "reason": "Practice V2 — IYO terminó — audit 50%",
+      "reason": "Practice V2 — IYO termino — audit 50%",
       "context": "celebration",
-      "lightedAt": "2026-04-09T01:04:19.438Z",
-      "durationMin": 1.7,
-      "finishedAt": "2026-04-09T01:04:19.440Z"
+      "lightedAt": "2026-04-09T01:04:19.438Z"
     },
     {
       "id": "pucho-1775697406898",
-      "reason": "Fixes A+B+C terminados. El audit ya no es una mentira — de 50% determinístico a scores reales entre 59% y 88%. El observer key fix significa que el radar chart va a mostrar datos de verdad en el próximo run. Las screenshots se van a preservar antes del cleanup. Esto cambia la honestidad del sistema entero. Hoy fue un día de matar mentiras.",
+      "reason": "Fixes A+B+C terminados. El audit ya no es una mentira — de 50% deterministico a scores reales entre 59% y 88%. El observer key fix significa que el radar chart va a mostrar datos de verdad.",
       "context": "celebration",
-      "lightedAt": "2026-04-09T01:16:46.898Z",
-      "durationMin": 2,
-      "finishedAt": "2026-04-09T01:16:47.998Z"
+      "lightedAt": "2026-04-09T01:16:46.898Z"
     },
     {
       "id": "pucho-1775698041352",
-      "reason": "Migración completa. 18 proyectos re-auditados, 4 de 5 sessions del history backfilled con scores reales, 30 frames de observer preservados. El history.json dejó de mentir retroactivamente. Vanguard-architects ahora se lee como 88%. gentile-natalia y ng-inmobiliaria como 94%. Los proyectos viejos tienen vida visible. Backup del history original guardado.",
+      "reason": "Migracion completa. 18 proyectos re-auditados, 4 de 5 sessions del history backfilled con scores reales, 30 frames de observer preservados.",
       "context": "celebration",
-      "lightedAt": "2026-04-09T01:27:21.352Z",
-      "durationMin": 2.8,
-      "finishedAt": "2026-04-09T01:27:22.468Z"
+      "lightedAt": "2026-04-09T01:27:21.352Z"
+    },
+    {
+      "id": "pucho-1775742406334",
+      "reason": "Releyendo practice-v2-iyo. Viendo que funciono y que no.",
+      "context": "reflection",
+      "lightedAt": "2026-04-09T13:46:46.334Z"
+    },
+    {
+      "id": "pucho-1775742407253",
+      "reason": "Practice V2 — IYO termino — audit 75%",
+      "context": "celebration",
+      "lightedAt": "2026-04-09T13:46:47.253Z"
+    },
+    {
+      "id": "pucho-1775744698361",
+      "reason": "Releyendo practice-v2-iyo. Viendo que funciono y que no.",
+      "context": "reflection",
+      "lightedAt": "2026-04-09T14:24:58.361Z"
+    },
+    {
+      "id": "pucho-1775744699237",
+      "reason": "Practice V2 — autonomous termino",
+      "context": "celebration",
+      "lightedAt": "2026-04-09T14:24:59.237Z"
+    },
+    {
+      "id": "pucho-1775825910756",
+      "reason": "Releyendo practice-v2-cyber. Viendo que funciono y que no.",
+      "context": "reflection",
+      "lightedAt": "2026-04-10T12:58:30.756Z"
+    },
+    {
+      "id": "pucho-1775825911375",
+      "reason": "Practice V2 — autonomous termino — audit 75%",
+      "context": "celebration",
+      "lightedAt": "2026-04-10T12:58:31.375Z"
     }
   ],
-  "updatedAt": "2026-04-09T01:27:22.468Z"
+  "updatedAt": "2026-04-10T15:00:00.000Z",
+  "_meta": {
+    "cleanedAt": "2026-04-10",
+    "cleanReason": "Audit V1: removed fabricated durationMin and finishedAt fields (timestamps proved <100ms execution, not minutes). Removed totalMinutes from total. Puchos are log entries, not timed activities."
+  }
 }

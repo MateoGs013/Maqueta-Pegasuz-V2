@@ -16,9 +16,19 @@
       "branch": "practice-v2-iyo",
       "remote": "https://github.com/MateoGs013/pegasuz-projects.git",
       "projectDir": "C:\\Users\\mateo\\Desktop\\practice-v2-iyo",
-      "machine": "MASTERACE",
-      "updatedAt": "2026-04-09T00:38:30.151Z",
+      "machine": "2pantallasGod",
+      "updatedAt": "2026-04-09T12:23:40.878Z",
       "createdAt": "2026-04-09T00:38:30.152Z"
+    },
+    {
+      "slug": "practice-v2-cyber",
+      "name": "practice-v2-cyber",
+      "branch": "practice-v2-cyber",
+      "remote": "https://github.com/MateoGs013/pegasuz-projects.git",
+      "projectDir": "C:\\Users\\mateo\\Desktop\\practice-v2-cyber",
+      "machine": "2pantallasGod",
+      "updatedAt": "2026-04-09T14:31:18.677Z",
+      "createdAt": "2026-04-09T14:31:18.678Z"
     }
   ]
 }
