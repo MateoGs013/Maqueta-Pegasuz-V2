@@ -658,7 +658,7 @@ onUnmounted(() => {
 @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 .train-history { margin-top: 12px; }
 .train-table-header, .train-row {
-  display: grid; grid-template-columns: 70px 1fr 80px 55px 50px 70px 45px;
+  display: grid; grid-template-columns: 82px 1fr 80px 55px 50px 70px 45px;
   gap: 6px; align-items: center; padding: 6px 0;
 }
 .train-table-header {
@@ -667,6 +667,7 @@ onUnmounted(() => {
 }
 .train-row { border-bottom: 1px solid var(--line-subtle, rgba(255,255,255,0.04)); font: 400 11px var(--font-body); color: var(--text); }
 .train-row:last-child { border-bottom: 0; }
+.td-date { white-space: nowrap; }
 .td-ref { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .td-mood { font: 400 10px var(--font-mono); color: var(--text-dim); }
 .td-obs, .td-audit, .td-time { font: 500 11px var(--font-mono); text-align: center; }
