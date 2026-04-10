@@ -36,10 +36,17 @@ function safe(obj, ...keys) {
 // --- Dimension scorers ---
 
 function scoreComposition(structural, perceptual, intelligence, judgment) {
+  // Color harmony: boost monochromatic/analogous intentional palettes
+  let harmonyScore = safe(perceptual, 'colorHarmony', 'score');
+  const harmonyTemplate = safe(perceptual, 'colorHarmony', 'template');
+  if (harmonyScore != null && (harmonyTemplate === 'i' || harmonyTemplate === 'V')) {
+    harmonyScore = clamp(harmonyScore + 2, 0, 10); // intentional restraint = bonus
+  }
+
   const items = [
-    { value: safe(structural, 'geometry', 'visualBalance', 'score'), weight: 1.0 },
-    { value: safe(structural, 'antiTemplate', 'varietyScore'), weight: 0.8 },
-    { value: safe(perceptual, 'colorHarmony', 'score'), weight: 0.7 },
+    { value: safe(structural, 'aria', 'score'), weight: 0.6 },
+    { value: safe(structural, 'score'), weight: 0.8 },
+    { value: harmonyScore, weight: 0.8 },
     { value: safe(intelligence, 'uniqueness', 'score'), weight: 0.6 },
     { value: safe(judgment, 'composition', 'score'), weight: 1.2 },
   ];
@@ -81,25 +88,21 @@ function scoreDepth(structural, perceptual, judgment) {
 }
 
 function scoreTypography(structural, perceptual, judgment) {
-  let typScore = null;
-  const sizeRatio = safe(structural, 'typography', 'sizeRatio');
-  const levels = safe(structural, 'typography', 'levels');
-  const weights = safe(structural, 'typography', 'weights');
+  // CSS quality metrics serve as proxy for typography discipline
+  const maintainability = safe(structural, 'cssQuality', 'maintainability');
+  const complexity = safe(structural, 'cssQuality', 'complexity');
 
-  if (sizeRatio != null || levels != null || weights != null) {
-    let score = 5;
-    // sizeRatio >= 4x is good
-    if (sizeRatio != null) score += clamp(((sizeRatio - 1) / 7) * 3, -2, 3);
-    // 4+ size levels is good
-    if (levels != null) score += clamp(((levels - 2) / 4) * 2, -1, 2);
-    // 2+ weights is good
-    if (weights != null) score += clamp(((weights - 1) / 3) * 1, -1, 1);
-    typScore = clamp(score, 0, 10);
+  // CSS quality → typography proxy: high maintainability + low complexity = disciplined type system
+  let cssTypScore = null;
+  if (maintainability != null && complexity != null) {
+    cssTypScore = clamp((maintainability + complexity) / 2, 0, 10);
+  } else if (maintainability != null) {
+    cssTypScore = clamp(maintainability, 0, 10);
   }
 
   const items = [
-    { value: typScore, weight: 1.0 },
-    { value: safe(perceptual, 'cssQuality', 'maintainability'), weight: 0.5 },
+    { value: cssTypScore, weight: 1.0 },
+    { value: safe(structural, 'aria', 'score'), weight: 0.5 },
     { value: safe(judgment, 'typography', 'score'), weight: 1.2 },
   ];
   const raw = weightedAvg(items);
@@ -128,23 +131,30 @@ function scoreMotion(perceptual, judgment) {
 }
 
 function scoreCraft(structural, perceptual, judgment) {
-  const hoverScore = safe(perceptual, 'hoverEffects', 'score');
-  const colorHarmony = safe(perceptual, 'colorHarmony', 'score');
-  const semanticScore = safe(structural, 'semantic', 'score');
+  // Hover effects: coverage (0-1) → 0-10
+  const hoverCoverage = safe(perceptual, 'hoverEffects', 'coverage');
+  const hoverScore = hoverCoverage != null ? clamp(hoverCoverage * 10, 0, 10) : null;
 
-  // Penalize high CSS unused rate
-  const cssUnused = safe(structural, 'cssUnused', 'rate');
+  const colorHarmony = safe(perceptual, 'colorHarmony', 'score');
+  const semanticScore = safe(structural, 'aria', 'score');
+
+  // CSS unused penalty from coverage data
+  const cssUnusedPct = safe(structural, 'cssCoverage', 'unusedPercent');
   let unusedPenalty = null;
-  if (cssUnused != null) {
-    // 0% unused = no penalty, 50%+ unused = -2 points
-    unusedPenalty = clamp(10 - cssUnused * 4, 0, 10);
+  if (cssUnusedPct != null) {
+    // 0% unused = 10, 100% unused = 0
+    unusedPenalty = clamp(10 - (cssUnusedPct / 10), 0, 10);
   }
 
+  // CSS quality performance score
+  const cssPerfScore = safe(structural, 'cssQuality', 'performance');
+
   const items = [
-    { value: hoverScore, weight: 1.0 },
+    { value: hoverScore, weight: 0.8 },
     { value: colorHarmony, weight: 0.7 },
-    { value: semanticScore, weight: 0.8 },
-    { value: unusedPenalty, weight: 0.5 },
+    { value: semanticScore, weight: 0.7 },
+    { value: unusedPenalty, weight: 0.4 },
+    { value: cssPerfScore, weight: 0.5 },
     { value: safe(judgment, 'uniqueness', 'score'), weight: 1.2 },
   ];
   const raw = weightedAvg(items);

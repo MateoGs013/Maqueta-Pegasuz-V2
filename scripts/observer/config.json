@@ -35,7 +35,7 @@
     "structural": true,
     "perceptual": true,
     "intelligence": true,
-    "judgment": false
+    "judgment": true
   },
   "colorHarmony": {
     "templates": {
