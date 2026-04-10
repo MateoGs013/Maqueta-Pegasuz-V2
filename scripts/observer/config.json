@@ -1,0 +1,54 @@
+{
+  "viewports": {
+    "desktop": { "width": 1440, "height": 900 },
+    "mobile": { "width": 375, "height": 812 }
+  },
+  "limits": {
+    "maxElements": 500,
+    "maxAnimations": 100,
+    "maxHoverTests": 20,
+    "wheelStates": 4,
+    "navigationTimeout": 30000,
+    "settleDelay": 2000
+  },
+  "scoring": {
+    "sourceWeights": {
+      "heuristic": 0.45,
+      "llmJudge": 0.30,
+      "aesthetic": 0.15,
+      "performance": 0.10
+    },
+    "dimensionWeights": {
+      "composition": 0.25,
+      "depth": 0.20,
+      "typography": 0.20,
+      "motion": 0.20,
+      "craft": 0.15
+    }
+  },
+  "performance": {
+    "lcpTarget": 2500,
+    "clsTarget": 0.1,
+    "tbtTarget": 300
+  },
+  "passes": {
+    "structural": true,
+    "perceptual": true,
+    "intelligence": true,
+    "judgment": false
+  },
+  "colorHarmony": {
+    "templates": {
+      "i":  [[0, 18]],
+      "V":  [[0, 18], [180, 18]],
+      "L":  [[0, 18], [90, 18]],
+      "T":  [[0, 18], [120, 18], [240, 18]],
+      "Y":  [[0, 18], [26, 18], [180, 18]],
+      "X":  [[0, 18], [90, 18], [180, 18], [270, 18]]
+    }
+  },
+  "easingQuality": {
+    "bad": ["linear", "ease", "ease-in", "ease-out", "ease-in-out"],
+    "good_prefix": "cubic-bezier"
+  }
+}
