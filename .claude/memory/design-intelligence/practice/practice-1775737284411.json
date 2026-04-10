@@ -1,0 +1,30 @@
+{
+  "id": "practice-1775737284411",
+  "name": "Practice V2 — IYO",
+  "type": "practice",
+  "mood": "luxury",
+  "sections": [
+    "S-Hero",
+    "S-Stats",
+    "S-Contact",
+    "S-Cta"
+  ],
+  "techniqueChallenge": "Spline 3D embed",
+  "objective": "Imitate IYO: luxury + reference techniques",
+  "reference": {
+    "url": "https://www.iyo.ai/",
+    "title": "IYO",
+    "palette": [],
+    "techniques": []
+  },
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "stats",
+      "contact",
+      "cta"
+    ],
+    "technique": true
+  },
+  "createdAt": "2026-04-09T12:21:24.411Z"
+}

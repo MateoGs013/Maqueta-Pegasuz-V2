@@ -1,0 +1,25 @@
+{
+  "id": "practice-1775744293191",
+  "name": "Practice V2 — autonomous",
+  "type": "practice",
+  "mood": "light",
+  "sections": [
+    "S-Hero",
+    "S-Faq",
+    "S-Team",
+    "S-Services"
+  ],
+  "techniqueChallenge": "Horizontal scroll",
+  "objective": "Fill gaps: light + faq + team + services",
+  "reference": null,
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "faq",
+      "team",
+      "services"
+    ],
+    "technique": true
+  },
+  "createdAt": "2026-04-09T14:18:13.191Z"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "practice-1775744821068",
+  "name": "Practice V2 — autonomous",
+  "type": "practice",
+  "mood": "cyberpunk",
+  "sections": [
+    "S-Hero",
+    "S-Faq",
+    "S-Team",
+    "S-Services"
+  ],
+  "techniqueChallenge": "Curtain/wipe reveal",
+  "objective": "Fill gaps: cyberpunk + faq + team + services",
+  "reference": null,
+  "targetGaps": {
+    "mood": true,
+    "sectionTypes": [
+      "faq",
+      "team",
+      "services"
+    ],
+    "technique": true
+  },
+  "createdAt": "2026-04-09T14:27:01.068Z"
+}
