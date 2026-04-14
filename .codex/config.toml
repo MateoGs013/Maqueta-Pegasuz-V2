@@ -1,0 +1,14 @@
+# Codex configuration for Eros project
+# Reference: https://developers.openai.com/codex/config-basic
+
+# Maximum bytes to read from AGENTS.md (0 = no limit)
+project_doc_max_bytes = 0
+
+# Fallback filenames when AGENTS.md is missing in a directory
+project_doc_fallback_filenames = ["CLAUDE.md", "EROS.md"]
+
+# Sandbox mode: "read-only" | "workspace-write" | "danger-full-access"
+sandbox_mode = "workspace-write"
+
+# Default model (adjust per OpenAI availability)
+model = "o1-preview"
