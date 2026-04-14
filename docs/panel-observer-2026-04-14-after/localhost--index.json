@@ -1,0 +1,61 @@
+{
+  "domain": "localhost",
+  "capturedAt": "2026-04-14T22:00:39.664Z",
+  "totalPages": 9,
+  "pages": [
+    {
+      "pagePath": "/projects",
+      "dirName": "localhost--projects",
+      "url": "http://localhost:4403/projects",
+      "sections": 1
+    },
+    {
+      "pagePath": "/eros",
+      "dirName": "localhost--eros",
+      "url": "http://localhost:4403/eros",
+      "sections": 1
+    },
+    {
+      "pagePath": "/eros/chat",
+      "dirName": "localhost--eros-chat",
+      "url": "http://localhost:4403/eros/chat",
+      "sections": 1
+    },
+    {
+      "pagePath": "/eros/feed",
+      "dirName": "localhost--eros-feed",
+      "url": "http://localhost:4403/eros/feed",
+      "sections": 1
+    },
+    {
+      "pagePath": "/eros/diary",
+      "dirName": "localhost--eros-diary",
+      "url": "http://localhost:4403/eros/diary",
+      "sections": 1
+    },
+    {
+      "pagePath": "/eros/training",
+      "dirName": "localhost--eros-training",
+      "url": "http://localhost:4403/eros/training",
+      "sections": 1
+    },
+    {
+      "pagePath": "/workshop",
+      "dirName": "localhost--workshop",
+      "url": "http://localhost:4403/workshop",
+      "sections": 1
+    },
+    {
+      "pagePath": "/workshop/tokens",
+      "dirName": "localhost--workshop-tokens",
+      "url": "http://localhost:4403/workshop/tokens",
+      "sections": 1
+    },
+    {
+      "pagePath": "/workshop/components",
+      "dirName": "localhost--workshop-components",
+      "url": "http://localhost:4403/workshop/components",
+      "sections": 1
+    }
+  ]
+}
