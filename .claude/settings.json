@@ -2,6 +2,15 @@
   "hooks": {
     "SessionStart": [
       {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat EROS.md AGENTS.md"
+          }
+        ]
+      },
+      {
         "matcher": "compact",
         "hooks": [
           {
