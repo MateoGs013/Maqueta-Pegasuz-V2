@@ -39,7 +39,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')
 const puchosPath = path.join(
   maquetaDir,
-  '.claude',
+  '.eros',
   'memory',
   'design-intelligence',
   'puchos.json',

@@ -262,6 +262,137 @@ Plan de ~24h en 6 ramas independientes. ~95 hallazgos totales.
 - ✅ diary.md: contenido reflexivo real (no templates)
 - ✅ training-history.json: campos `observerTrust` + `status`
 
+**PLAN-AUTO-TRAIN-V2 (85 → 100):**
+- ✅ **Validado end-to-end** por primera vez: sesión IYO del 2026-04-08,
+  319s, todas las 10 fases corrieron, no hubo hang en post-cleanup
+- ✅ Auto-train ahora escribe `auto-train-status.json` en cada phase
+  transition (para PLAN-TRAINING-DASHBOARD)
+- ✅ Hook de activity feed en `saveToHistory` (dispara evento
+  `project-completed` al feed)
+- ✅ Fix de ENOENT del banner PATH en bashrc (root cause de los fallos
+  de spawn) — ver `.bashrc` fix + snapshot patching
+
+**PLAN-OBSERVER-V2 (80 → 90):**
+- ✅ Confirmado: Capa 3 semántica (ARIA) YA estaba implementada en
+  `eros-observer.mjs:446-530` (mi review anterior falló el grep). Usa
+  `page.accessibility.snapshot()`, detecta landmarks, heading hierarchy,
+  interactive naming, skip-link
+- ✅ `capture-refs.mjs` marcado como **DEPRECATED** con header + warning
+  stderr (silenciable con `EROS_HIDE_DEPRECATION=1`). Sigue funcional
+  durante migración de callers
+
+**PLAN-EROS-ALIVE (30 → 55):**
+- ✅ **Feed de actividad completo**: backend + UI
+- ✅ Nuevo `scripts/eros-feed.mjs` con CLI (`append`/`list`/`clear`) + exports
+  (`appendEvent`/`readFeed`) para hooks programáticos
+- ✅ Endpoint `/__eros/feed?limit=N` en el vite plugin
+- ✅ Nueva vista `panel/src/views/eros/ErosFeed.vue` con timeline
+  agrupado por día, mood colors, auto-polling cada 10s
+- ✅ Hook en `eros-auto-train.mjs saveToHistory` que dispara eventos
+  `project-completed` / `project-failed` al feed
+- ✅ Ruta `/eros/feed` en router + link "Feed" en MainShell sidebar
+
+**PLAN-TRAINING-DASHBOARD (30 → 70):**
+- ✅ **Live status file writer**: `auto-train-status.json` se escribe en
+  cada phase transition con `{active, phase, phaseIndex, totalPhases,
+  currentTask, startedAt, sessionId, briefName, mood, reference, ...}`
+- ✅ Endpoint `/__eros/training/auto-train-status` en vite plugin
+- ✅ Training.vue con polling cada 3s que muestra:
+  - Fase actual + índice (ej: "Phase 4: Running observer · 4/10")
+  - Current task (ej: "observer on :5173")
+  - Tiempo transcurrido
+  - Progress bar animada
+  - Brief metadata (nombre, mood, reference)
+- ✅ Safety timeout de Training.vue cambiado de 20min → 2h (el de 20
+  daba falso positivo en runs reales de 30-90m)
+- ✅ Polling guard "in-flight" para prevenir stacking
+- ✅ Backoff exponencial en SSE reconnect (useEros.js)
+
+**PLAN-VERCEL-DEPLOY (0 → 80):**
+- ✅ Nuevo `scripts/eros-deploy.mjs` con subcommands `deploy`/`list`/`remove`
+- ✅ Maneja build + vercel deploy + captura de URL + registry persistente
+  en `.eros/memory/design-intelligence/deploy-registry.json`
+- ✅ Resolución absoluta de `vercel.cmd` (Windows) / `vercel` (Unix)
+- ✅ Endpoint `/__eros/training/deploy` + `/__eros/training/deploys` en
+  vite plugin
+- ✅ Botón "Deploy ↗" + URL display en `ProjectResumen.vue`
+- ⚠️ **Requiere setup manual una vez**: `npm i -g vercel && vercel login`
+
+**PLAN-HARDENING-AUDIT (parcial):**
+- ✅ Banner ANSI → PATH corruption fix en `.bashrc` + snapshot patcher
+- ✅ `vite-plugin-eros.js`: cleanup completo en `closeBundle` (watchProcess,
+  runtimeWatcher, dataDebounce, SSE clients)
+- ✅ Removido el auto-spawn de `sync-front-brain-runs.mjs --watch` (era la
+  causa probable del crash silencioso de vite por handle exhaustion)
+- ✅ 4 `execFileCp('node', ...)` → `process.execPath` (defensa)
+- ✅ Cache con TTL 10s para `/__eros/training/projects`
+- ✅ `runTrain` con queue de concurrencia 1 (semáforo simple)
+- ✅ Dedupe del polling de memoria entre `useMemory.js` y `frontBrain.js`
+- ✅ Guard `[[ $- == *i* ]] && [[ -t 1 ]]` para `ng completion` en bashrc
+  (defensa contra el mismo tipo de bug del banner)
+
+### Extensión de features — segunda mitad de la sesión 2026-04-08
+
+**PLAN-EROS-V8 (85 → 100):**
+- ✅ **Anti-convergencia completa**: `eros-auto-train.mjs generateBriefFromReference`
+  ahora lee `training-history.json`, saca los moods + técnicas + section
+  types de las últimas 5 sesiones, y prefiere blind spots / técnicas
+  / secciones que no se hayan usado recientemente. Las practicas ya no
+  convergen al mismo pattern
+- ✅ **Practice run E2E**: `eros-practice.mjs run` ya NO es un stub que
+  imprime instrucciones — ahora spawnea `eros-auto-train.mjs --count 1`
+  con maxBuffer grande y timeout 1h, captura el resultado, y (si se
+  pasó `--brief`) persiste el result al brief file para tracking
+
+**PLAN-EROS-ALIVE (55 → 95):**
+- ✅ **Chat con personalidad**: verificado (ya estaba) — `eros-chat.mjs`
+  construye un system prompt de 50+ líneas con identity + voice + values
+  + opinions + techniques + fonts + rules + gaps + section patterns +
+  revision lessons, y lo pasa al Agent SDK como `systemPrompt`
+- ✅ **Estado emocional derivado**: nuevo `scripts/eros-mood.mjs` que
+  lee feed events + training history + personality + rules, computa
+  signals (highAudit, lowAudit, failedRecent, completedRecent, studyEvents,
+  personalityUpdates, gaps, etc.) y elige un mood entre Confiado /
+  Reflexivo / Curioso / Determinado / Frustrado / Latente. Endpoint
+  `/__eros/mood` y pill en el sidebar con color + emoji + reason
+- ✅ **Diario reflexivo**: `eros-meta.mjs reflect` ahora ADEMÁS de
+  devolver JSON, compone una entrada en prosa (primera persona, en
+  español) y la appendea a `diary.md`. Nuevo subcommand `eros-meta.mjs
+  diary` que devuelve las entries parsed, endpoint `/__eros/diary`, y
+  nueva vista `ErosDiary.vue` que las muestra con tipografía de libro
+
+**PLAN-TRAINING-DASHBOARD (70 → 95):**
+- ✅ **Detail view con breakdown**: clickear una row del history en
+  Training.vue abre un modal con reference link, mood, técnica,
+  duration, audit, gates approved/retried/flagged, rules validated,
+  sections list, y el ObserverRadar si hay datos. Closeable por backdrop
+  click o botón ×
+- ✅ **Radar chart 6 dimensiones**: `panel/src/components/ObserverRadar.vue`
+  — SVG puro sin librerías, hexagonal radar con 5 grid rings, labels,
+  dots tone-coded, centro con promedio, legend con scores numéricos.
+  Reutilizable en Training detail modal + Calidad + cualquier vista
+  que quiera mostrar las 6 dimensiones
+- ✅ **Config panel persistente**: endpoint `/__eros/training/config`
+  GET/POST que lee/escribe `training-config.json`. Training.vue carga
+  en mount, guarda en change, y usa los valores al launchar. Controles:
+  trainCount (1/2/3/5), maxRetries (0-3), skipDiscover toggle
+
+### Lo que está casi terminado (pushear a 100%)
+
+1. **EROS-V8** — falta integrar el dev server como action + practice run E2E. ~3h de trabajo.
+2. **AUTO-TRAIN-V2** — se beneficia directo de `PLAN-HARDENING` commit 2.6 (cleanup). ~1h extra.
+3. **OBSERVER-V2** — confirmar semántica, deprecar V1. ~2h + la extracción del core (Rama 4 del hardening).
+
+### Lo que no arrancó o casi
+
+4. **TRAINING-DASHBOARD** — solo MVP. Las fases 2-4 (live, SSE, detail, config) son ~7h de UI.
+5. **EROS-ALIVE** — solo chat. Feed + emocional + diario son ~5-6h (independientes entre sí).
+6. **VERCEL-DEPLOY** — 0%. Es un plan chico (~2.5h). Alto ROI visual para compartir proyectos.
+
+### Plan nuevo
+
+- **PLAN-HARDENING-AUDIT.md** — acabado de escribir. Bloquea nada de los anteriores. Recomendado arrancar con Ramas 1+2 (P0) en paralelo con el trabajo de cerrar EROS-V8 y OBSERVER-V2.
+
 ---
 
 ## Recomendación de siguiente trabajo

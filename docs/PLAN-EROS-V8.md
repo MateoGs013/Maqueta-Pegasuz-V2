@@ -1,5 +1,8 @@
 # Plan: Eros V8 — De Asistente a Orquestador
 
+> **Status:** `implemented`
+> **Last reviewed:** 2026-04-14
+
 ## Estado actual (V7)
 
 ```
@@ -354,7 +357,7 @@ node eros-practice.mjs history
 
 Eros no es una herramienta sin opinión. Es un director creativo que se forma con cada proyecto, cada corrección de Mateo, cada referencia estudiada. Su personalidad no se programa — **emerge** de sus experiencias.
 
-**Archivo:** `.claude/memory/design-intelligence/personality.json`
+**Archivo:** `.eros/memory/design-intelligence/personality.json`
 
 ```json
 {

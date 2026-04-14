@@ -1,5 +1,8 @@
 # Plan: Training Dashboard Completo
 
+> **Status:** `implemented`
+> **Last reviewed:** 2026-04-14
+
 ## Objetivo
 
 Visibilidad total del auto-training desde el panel. Ver qué está pasando

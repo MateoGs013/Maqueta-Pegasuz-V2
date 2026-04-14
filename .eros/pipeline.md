@@ -5,7 +5,7 @@
 ```
 Layer 1: Working Memory   → $PROJECT_DIR/.brain/     (per-project, hot state)
 Layer 2: Session State    → $PROJECT_DIR/.brain/state.md + state.json  (crash recovery + machine state)
-Layer 3: Long-Term Memory → $MAQUETA_DIR/.claude/memory/design-intelligence/  (cross-project)
+Layer 3: Long-Term Memory → $MAQUETA_DIR/.eros/memory/design-intelligence/  (cross-project)
 ```
 
 **The brain works like this:** [V7: automated by eros-*.mjs scripts]

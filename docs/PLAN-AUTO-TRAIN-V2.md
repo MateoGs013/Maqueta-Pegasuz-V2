@@ -1,5 +1,8 @@
 # Plan: Auto-Training V2 — Entrenamiento Real
 
+> **Status:** `implemented`
+> **Last reviewed:** 2026-04-14
+
 ## Problema actual
 
 El auto-training hace proyectos descafeinados:

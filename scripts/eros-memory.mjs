@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * eros-memory.mjs
- * SINGLE AUTHORITY for all reads/writes to .claude/memory/design-intelligence/
+ * SINGLE AUTHORITY for all reads/writes to .eros/memory/design-intelligence/
  * Claude never writes to memory files directly — always through this script.
  *
  * Uses JSON files as source of truth, renders markdown views from them.
@@ -34,7 +34,7 @@ import {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const MEMORY_DIR = path.resolve(__dirname, '..', '.claude', 'memory', 'design-intelligence');
+const MEMORY_DIR = path.resolve(__dirname, '..', '.eros', 'memory', 'design-intelligence');
 
 const FILES = {
   fontPairings:        'font-pairings',

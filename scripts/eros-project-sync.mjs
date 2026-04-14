@@ -29,7 +29,7 @@ import { parseArgs, readJson, writeJson, ensureDir, exists, out, fail } from './
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')
 const desktopDir = path.join(os.homedir(), 'Desktop')
-const registryPath = path.join(maquetaDir, '.claude', 'memory', 'design-intelligence', 'project-registry.json')
+const registryPath = path.join(maquetaDir, '.eros', 'memory', 'design-intelligence', 'project-registry.json')
 
 const GITHUB_USER = 'MateoGs013'
 const ARCHIVE_REPO = 'pegasuz-projects'

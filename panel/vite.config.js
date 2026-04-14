@@ -13,7 +13,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src'),
       '@components': path.resolve(__dirname, '../_components'),
-      '@front-brain-runtime': path.resolve(__dirname, '../.claude/front-brain/runtime'),
+      '@front-brain-runtime': path.resolve(__dirname, '../.eros/front-brain/runtime'),
     },
     dedupe: ['vue', 'vue-router', 'gsap'],
   },

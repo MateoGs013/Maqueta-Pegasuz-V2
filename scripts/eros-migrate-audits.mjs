@@ -18,7 +18,7 @@
  *      Backs up the original history to training-history.json.pre-migration.bak.
  *
  *   3. Copies observer screenshots from .brain/observer/localhost/*.png
- *      into .claude/memory/design-intelligence/previews/<project-name>/
+ *      into .eros/memory/design-intelligence/previews/<project-name>/
  *      so the Training detail modal can show them even for old projects.
  *
  * Usage:
@@ -35,7 +35,7 @@ import { parseArgs, readJson, writeJson, readText, ensureDir, out, fail, today }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')
-const memDir = path.join(maquetaDir, '.claude', 'memory', 'design-intelligence')
+const memDir = path.join(maquetaDir, '.eros', 'memory', 'design-intelligence')
 const historyPath = path.join(memDir, 'training-history.json')
 const previewsRoot = path.join(memDir, 'previews')
 const desktopDir = path.join(os.homedir(), 'Desktop')

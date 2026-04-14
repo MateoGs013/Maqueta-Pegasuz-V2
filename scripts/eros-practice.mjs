@@ -28,7 +28,7 @@ import {
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const MEMORY_DIR = path.resolve(__dirname, '..', '.claude', 'memory', 'design-intelligence')
+const MEMORY_DIR = path.resolve(__dirname, '..', '.eros', 'memory', 'design-intelligence')
 const PRACTICE_DIR = path.join(MEMORY_DIR, 'practice')
 
 // ---------------------------------------------------------------------------

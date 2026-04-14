@@ -1,5 +1,8 @@
 # Plan: Vercel Preview Deploys para Proyectos
 
+> **Status:** `in-progress`
+> **Last reviewed:** 2026-04-14
+
 ## Objetivo
 
 Cada proyecto construido por Eros se deploya automáticamente a Vercel,

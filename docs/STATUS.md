@@ -1,8 +1,10 @@
 # Repo Status
 
+> **Architecture note (2026-04-14):** Migrated to multi-AI layout. Canonical brain at `.eros/`. Claude adapter at `.claude/`, Gemini at `.gemini/`, Codex at `.codex/`. See `docs/superpowers/specs/2026-04-14-multi-ai-architecture-design.md`.
+
 ## Canonical Source of Truth
 
-The canonical architecture lives in `.claude/`.
+The canonical architecture lives in `.eros/`.
 
 - pipeline
 - brain config

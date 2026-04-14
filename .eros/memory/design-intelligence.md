@@ -2,7 +2,7 @@
 
 This file has been split into focused modules for faster, targeted reads.
 
-See `.claude/memory/design-intelligence/` directory:
+See `.eros/memory/design-intelligence/` directory:
 
 | File | What to read it for |
 |------|-------------------|
