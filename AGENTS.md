@@ -1,4 +1,10 @@
-# Pegasuz V6.1 — Autonomous Brain Pipeline
+# AGENTS.md — Eros Orchestrator Contract
+
+> This file is the AI-neutral contract for working inside this repository. Any AI agent reads this to understand how Eros operates. The soul of Eros lives in `EROS.md`. AI-specific tool mappings live in `CLAUDE.md`, `GEMINI.md`, and `.codex/`.
+
+## System Purpose
+
+Eros is an autonomous creative-director pipeline that turns a one-line project brief into a production-ready Vue 3 website with cinematic motion, distinctive typography, and a complete design system.
 
 ## Project Isolation
 
@@ -12,142 +18,110 @@ Desktop/
     _components/             <- curated seed library (heroes/navs as creative anchors)
     panel/                   <- dual panel: Eros (quality) + Workshop (ABM editor)
     docs/_libraries/         <- pattern libraries (copied to new projects)
-    scripts/                 <- capture-refs.mjs, generate-tokens.js
-    .claude/                 <- canonical skills, agents, pipeline, memory
-    .agents/                 <- Codex compatibility layer (non-canonical)
+    scripts/                 <- capture-refs.mjs, generate-tokens.js, eros-*.mjs
+    .eros/                   <- canonical brain: agents, workflows, memory, pipeline
+    .claude/                 <- Claude adapter: skills, agent wrappers, settings
+    .gemini/                 <- Gemini adapter: settings, overrides
+    .codex/                  <- Codex adapter: AGENTS.override.md, config.toml
 
-  {project-slug}/            <- NEW PROJECT (created by /project)
+  {project-slug}/            <- NEW PROJECT (created from template)
     .brain/                  <- working memory (micro-task state, context, reports)
     docs/                    <- design docs (generated) + _libraries (copied)
     _ref-captures/           <- reference screenshots (temporary)
     src/                     <- Vue 3 app (from scaffold)
 ```
 
-`MAQUETA_DIR` = `C:\Users\mateo\Desktop\maqueta`
-`PROJECT_DIR` = `C:\Users\mateo\Desktop\{project-slug}`
+- `MAQUETA_DIR` = `C:\Users\mateo\Desktop\maqueta`
+- `PROJECT_DIR` = `C:\Users\mateo\Desktop\{project-slug}`
 
 ## Stack
-Vue 3 (`<script setup>`) + Vite + Vue Router + Pinia
-GSAP 3 + ScrollTrigger + Lenis · CSS Custom Properties
-@splinetool/runtime (optional — interactive 3D scenes, loaded dynamically)
 
-## Brain Architecture (V6.1 — Autonomous)
+Vue 3 (`<script setup>`) + Vite + Vue Router + Pinia · GSAP 3 + ScrollTrigger + Lenis · CSS Custom Properties · @splinetool/runtime (optional)
 
-**Default mode is autonomous.** The brain builds, evaluates, and learns without waiting for the user.
-User reads `docs/review/REVIEW-SUMMARY.md` when done. Override with "interactive" in the brief.
-
-Three memory layers:
+## Brain Architecture — 3 Memory Layers
 
 | Layer | Location | Purpose | Lifetime |
 |-------|----------|---------|----------|
-| **Working Memory** | `$PROJECT_DIR/.brain/` | Hot state: tasks, context, reports, approvals | Per project |
-| **Long-Term Memory** | `$MAQUETA_DIR/.claude/memory/design-intelligence/` | Cross-project intelligence | Permanent |
-| **Session State** | `$PROJECT_DIR/.brain/state.md + state.json` | Crash recovery + live machine state | Per project |
+| Working Memory | `$PROJECT_DIR/.brain/` | Hot state: tasks, context, reports, approvals | Per project |
+| Long-Term Memory | `$MAQUETA_DIR/.eros/memory/design-intelligence/` | Cross-project intelligence | Permanent |
+| Session State | `$PROJECT_DIR/.brain/state.md` | Crash recovery | Per project |
 
-### .brain/ (Working Memory per project)
-```
-DESIGN.md
-.brain/
-  state.md          <- current phase + next task (15 lines, read first)
-  state.json        <- live phase, scores, retries, active section
-  identity.md       <- project identity card
-  metrics.json      <- observer and system scores
-  queue.json        <- micro-task queue with status
-  decisions.md      <- real-time decision log
-  approvals.md      <- auto-approval log (user reads async — never blocks)
-  learnings.md      <- real-time learnings
-  control/
-    rules.json      <- hard rules, biases, overrides, thresholds
-  context/          <- pre-computed input files (includes Memory Insights block)
-  reports/
-    quality/
-      observer.json <- deterministic observer output
-      critic.json   <- multimodal critic output
-      scorecard.json<- combined decision output
-  reviews/
-    REVIEW-SUMMARY.md
-```
+## Autonomous Brain Loop
 
-### Autonomous Brain Loop
-```
-1. Read DESIGN.md + .brain/state.md + state.json -> where am I?
-2. Read .brain/queue.json      -> what's next?
-3. INTERPRET                    -> read design-intelligence/ -> inject Memory Insights
-4. Execute ONE micro-task       -> context file | agent spawn | integration
-5. AUTO-EVALUATE                -> observer + critic + scorecard vs brain-config.md thresholds
-6. MEMORY HOOK                  -> write learning to design-intelligence/ immediately
-7. Log to approvals.md + decisions.md
-8. Update queue + state         -> continue
-```
+1. Read `.brain/state.md` — where am I?
+2. Read `.brain/queue.md` — what's next?
+3. INTERPRET — read design-intelligence, inject Memory Insights
+4. Execute ONE micro-task — context file | agent spawn | integration
+5. AUTO-EVALUATE — pass/fail vs brain-config thresholds
+6. MEMORY HOOK — write learning to design-intelligence immediately
+7. Log to approvals.md + decisions.md; update queue + state
 
-**Brain config:** `.claude/brain-config.md` — thresholds, mode, memory hooks, rule promotion.
-**Pipeline:** `.claude/pipeline.md` — micro-task catalog, auto-approval engine, interpretation layer.
-**CEO skill:** `.claude/skills/project/SKILL.md` — orchestration logic.
+## Agent Registry
 
-## Canonical Namespace
+Agents live in `.eros/agents/`. The CEO orchestrator writes a context file to `.brain/context/`, then spawns the agent which reads ONE file. Agents never "read the docs" — context is pre-computed.
 
-Use `.claude/` as the source of truth for architecture, pipeline and memory.
+| Agent | Input | Output |
+|-------|-------|--------|
+| `designer` | `.brain/context/design-brief.md` | `docs/tokens.md` + `docs/pages/*.md` |
+| `builder` | `.brain/context/S-{Name}.md` | `S-{Name}.vue` + `.brain/reports/S-{Name}.md` |
+| `polisher` | `.brain/context/motion.md` | composables + `.brain/reports/motion.md` |
+| `reference-analyst` | `_ref-captures/` | `docs/reference-analysis.md` |
+| `evaluator` | agent output + brain-config thresholds | pass/fail verdict |
 
-- `AGENTS.md` and `.agents/` exist for Codex compatibility and operator ergonomics.
-- `panel/` is the internal backoffice, not the final user-facing app.
-- `_components-preview/` is deprecated. Preview should happen through `panel`.
-- `_components/` is a seed library: curated creative anchors with mutation freedom, not rigid production templates.
+## Workflow Registry
 
----
+Workflows live in `.eros/workflows/`. Each workflow is a markdown document that describes a procedure (loop, decision tree, protocol). How each AI invokes them is documented in that AI's adapter file.
 
-## Design Philosophy — Excellence Standard
+| Workflow | Purpose |
+|----------|---------|
+| `project` | CEO orchestration loop (next/done protocol) |
+| `motion-system` | Motion vocabulary, GSAP patterns, stagger values |
 
-Every project must feel like it was designed by a senior creative director, not generated by AI.
-
-### The standard (measurable, per section)
+## Quality Standards (measurable, per section)
 
 | Dimension | Hard requirements |
 |-----------|------------------|
-| **Composition** | Grid ratio >= 1.4:1 · 1 overlap · 1 container break · padding top != bottom (>= 20% diff) · 2+ text alignments |
-| **Depth** | 3+ z-index values · 1 atmospheric pseudo-element · 1 backdrop-filter/shadow/blur · scroll-responsive background |
-| **Typography** | Font size ratio >= 4x · 4+ sizes · 2+ weights · custom letter-spacing |
-| **Motion** | 3+ animated elements with different delays · 2+ easing curves · 1 scroll-linked (scrub) · stagger on 1+ group |
-| **Craft** | 2+ distinct hovers · 1 magnetic element · focus-visible everywhere · 1 clip-path/mask |
-| **Signature** | 1 distinctive element named and explained |
+| Composition | Grid ratio >= 1.4:1 · 1 overlap · 1 container break · padding top != bottom (>= 20% diff) · 2+ text alignments |
+| Depth | 3+ z-index values · 1 atmospheric pseudo-element · 1 backdrop-filter/shadow/blur · scroll-responsive background |
+| Typography | Font size ratio >= 4x · 4+ sizes · 2+ weights · custom letter-spacing |
+| Motion | 3+ animated elements with different delays · 2+ easing curves · 1 scroll-linked (scrub) · stagger on 1+ group |
+| Craft | 2+ distinct hovers · 1 magnetic element · focus-visible everywhere · 1 clip-path/mask |
+| Signature | 1 distinctive element named and explained |
 
-### Principles
-- Rich near-blacks (`#0a0a0f`) and warm whites (`#fafaf7`) — never pure `#000` or `#fff`
-- Distinctive font pairings — never Inter, Roboto, Arial, system-ui
-- Custom easing: `cubic-bezier(0.16, 1, 0.3, 1)` — never default `ease`
-- No two sections share the same grid structure
-- Padding varies between sections — never uniform
-- Every section has a "spatial surprise"
+## Global Rules
 
-## Rules (all agents)
 - Static first: hardcode all content. API wiring after visual approval.
-- Only `transform` + `opacity` for animations
-- Parallax: always `scrub: 0.5` — never `scrub: true`
-- Spline: dynamic import, `shallowRef`, `dispose()` on unmount, fallback image
-- `prefers-reduced-motion` via `gsap.matchMedia()` — not manual checks
-- `autoAlpha` instead of `opacity` for fades
-- `SplitText.create()` with `autoSplit`, `mask`, `aria: 'auto'`
-- `gsap.quickTo()` for mouse followers
-- `ScrollTrigger.batch()` for grids
-- No consecutive sections with same motion technique
+- Only `transform` + `opacity` for animations.
+- Parallax: always `scrub: 0.5` — never `scrub: true`.
+- Spline: dynamic import, `shallowRef`, `dispose()` on unmount, fallback image.
+- `prefers-reduced-motion` via `gsap.matchMedia()` — not manual checks.
+- `autoAlpha` instead of `opacity` for fades.
+- `SplitText.create()` with `autoSplit`, `mask`, `aria: 'auto'`.
+- `gsap.quickTo()` for mouse followers.
+- `ScrollTrigger.batch()` for grids.
+- No consecutive sections with same motion technique.
 - `var(--token)` for everything. No magic numbers.
-- Register GSAP plugins once in `main.js`
-- Lazy route imports with `scrollBehavior`
-- Images: `alt` + `width` + `height` + `loading="lazy"`
-- No `axios` outside `src/config/api.js`
-- No `will-change` preventive · No infinite decorative loops
-- Semantic HTML, correct heading hierarchy, `focus-visible`
+- Register GSAP plugins once in `main.js`.
+- Lazy route imports with `scrollBehavior`.
+- Images: `alt` + `width` + `height` + `loading="lazy"`.
+- No `axios` outside `src/config/api.js`.
+- No `will-change` preventive. No infinite decorative loops.
+- Semantic HTML, correct heading hierarchy, `focus-visible`.
 
 ## GSAP Anti-Patterns
-- Never ScrollTrigger on child tweens inside timeline — on the timeline itself
-- Never `scrub` + `toggleActions` together
-- Never nest `gsap.context()` inside `gsap.matchMedia()`
-- Never forget `immediateRender: false` when stacking `from()`/`fromTo()`
-- Never create ScrollTriggers in random order without `refreshPriority`
-- Never leave `markers: true` in production
-- `clearProps: 'all'` when CSS classes should take over
-- `ScrollTrigger.refresh()` after Vue `nextTick` for dynamic content
 
-## Quality Checklist (per section)
+- Never ScrollTrigger on child tweens inside timeline — on the timeline itself.
+- Never `scrub` + `toggleActions` together.
+- Never nest `gsap.context()` inside `gsap.matchMedia()`.
+- Never forget `immediateRender: false` when stacking `from()`/`fromTo()`.
+- Never create ScrollTriggers in random order without `refreshPriority`.
+- Never leave `markers: true` in production.
+- `clearProps: 'all'` when CSS classes should take over.
+- `ScrollTrigger.refresh()` after Vue nextTick for dynamic content.
+
+## Per-Section Quality Checklist
+
+Before marking a section done:
 - [ ] Semantic HTML, heading hierarchy, `aria-label`
 - [ ] `var(--token)` everywhere, fluid type with `clamp()`
 - [ ] Visual depth: 2+ layers, overlap, shadow, gradient, blur, grain
@@ -160,19 +134,12 @@ Every project must feel like it was designed by a senior creative director, not 
 - [ ] No default easing — all cubic-bezier or GSAP named
 - [ ] Asymmetric composition — not centered-everything
 
----
+## References
 
-## Agent Teams
-
-CEO orchestrates via `/project` skill. Agents read from `.brain/context/` files.
-
-| Agent | Role | Input | Output |
-|-------|------|-------|--------|
-| `designer` | Visual identity | `.brain/context/design-brief.md` | `DESIGN.md` + `docs/tokens.md` + `docs/pages/*.md` |
-| `builder` | Section components | `.brain/context/S-{Name}.md` + `DESIGN.md` | `S-{Name}.vue` + `.brain/reports/S-{Name}.md` |
-| `polisher` | Motion + QA | `.brain/context/motion.md` | composables + `.brain/reports/motion.md` |
-| `reference-analyst` | Analyze references | `_ref-captures/` | `docs/reference-analysis.md` |
-
-**Context rule:** CEO writes context file (with Memory Insights block) before spawning agent.
-Agent reads ONE file — never "read the docs."
-Brain auto-approves output against thresholds. Failures logged to `approvals.md`, never block pipeline.
+- Soul: `EROS.md`
+- Runtime loop: `.eros/pipeline.md`
+- Thresholds: `.eros/brain-config.md`
+- Schema contracts: `.eros/FRONT_BRAIN_SCHEMA.md`
+- Claude specifics: `CLAUDE.md`
+- Gemini specifics: `GEMINI.md`
+- Codex overrides: `.codex/AGENTS.override.md`
