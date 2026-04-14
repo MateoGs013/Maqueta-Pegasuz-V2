@@ -10,7 +10,7 @@
  * Requires: Vercel CLI (npm i -g vercel) + `vercel login` once per machine.
  *
  * The deploy registry lives at
- *   .claude/memory/design-intelligence/deploy-registry.json
+ *   .eros/memory/design-intelligence/deploy-registry.json
  * so the panel and other tools can look up preview URLs without re-running
  * `vercel ls` (which is slow and rate-limited).
  */
@@ -25,7 +25,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')
 const registryPath = path.join(
   maquetaDir,
-  '.claude',
+  '.eros',
   'memory',
   'design-intelligence',
   'deploy-registry.json',

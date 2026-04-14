@@ -87,7 +87,7 @@ const findSections = async (project) => {
 // ---------------------------------------------------------------------------
 
 const updateCalibration = async (slug, sections) => {
-  const memDir = path.join(__dirname, '..', '.claude', 'memory', 'design-intelligence')
+  const memDir = path.join(__dirname, '..', '.eros', 'memory', 'design-intelligence')
   const calPath = path.join(memDir, 'training-calibration.json')
   const cal = (await readJson(calPath)) || { projects: [], globalBias: 0, thresholdAdjustment: 0 }
 
@@ -503,7 +503,7 @@ const processStudyFeedback = async (analysis, feedback, statsBefore) => {
 
 const cmdImpact = async () => {
   const stats = await callMemory(['stats'])
-  const memDir = path.join(__dirname, '..', '.claude', 'memory', 'design-intelligence')
+  const memDir = path.join(__dirname, '..', '.eros', 'memory', 'design-intelligence')
   const cal = await readJson(path.join(memDir, 'training-calibration.json'))
   const rules = await readJson(path.join(memDir, 'rules.json'))
 

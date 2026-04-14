@@ -435,7 +435,7 @@ const main = async () => {
     // Cleanup test font pairing we added
     // (we wrote a test entry to the real memory — remove it)
     try {
-      const memDir = path.join(__dirname, '..', '.claude', 'memory', 'design-intelligence')
+      const memDir = path.join(__dirname, '..', '.eros', 'memory', 'design-intelligence')
       const fp = JSON.parse(await fs.readFile(path.join(memDir, 'font-pairings.json'), 'utf8'))
       fp.works = fp.works.filter(w => w.project !== 'test-project')
       await fs.writeFile(path.join(memDir, 'font-pairings.json'), JSON.stringify(fp, null, 2) + '\n')

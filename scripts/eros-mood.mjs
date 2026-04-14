@@ -29,7 +29,7 @@ import { parseArgs, out, readJson } from './eros-utils.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')
-const memDir = path.join(maquetaDir, '.claude', 'memory', 'design-intelligence')
+const memDir = path.join(maquetaDir, '.eros', 'memory', 'design-intelligence')
 
 // ─── Mood catalog ─────────────────────────────────────────────────────────
 // Each mood has a visual signature + a rough semantic fingerprint. The

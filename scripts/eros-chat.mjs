@@ -14,7 +14,7 @@ import { parseArgs, readJson, out, fail } from './eros-utils.mjs'
 // ---------------------------------------------------------------------------
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const memDir = path.resolve(__dirname, '..', '.claude', 'memory', 'design-intelligence')
+const memDir = path.resolve(__dirname, '..', '.eros', 'memory', 'design-intelligence')
 
 const callScript = (script, args) => new Promise((resolve, reject) => {
   execFile(process.execPath, [path.join(__dirname, script), ...args], { cwd: __dirname, timeout: 30000 }, (err, stdout) => {

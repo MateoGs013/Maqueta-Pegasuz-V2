@@ -36,7 +36,7 @@ import { smokePucho } from './eros-pucho.mjs'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')
 const desktopDir = path.join(process.env.HOME || process.env.USERPROFILE, 'Desktop')
-const memDir = path.join(maquetaDir, '.claude', 'memory', 'design-intelligence')
+const memDir = path.join(maquetaDir, '.eros', 'memory', 'design-intelligence')
 
 const log = (msg) => process.stderr.write(`[eros-train] ${msg}\n`)
 

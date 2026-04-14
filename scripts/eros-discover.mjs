@@ -20,7 +20,7 @@ import { parseArgs, readJson, writeJson, out, fail, today } from './eros-utils.m
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')
-const discoveryFile = path.join(maquetaDir, '.claude', 'memory', 'design-intelligence', 'discovered-references.json')
+const discoveryFile = path.join(maquetaDir, '.eros', 'memory', 'design-intelligence', 'discovered-references.json')
 
 const log = (msg) => process.stderr.write(`[eros-discover] ${msg}\n`)
 
