@@ -1,138 +1,131 @@
-# Maqueta
+# Eros — Autonomous Creative Director
 
-Claude-first front-brain template for generating modern Vue 3 frontends with:
+> Turn a one-line brief into a production-ready Vue 3 website with cinematic motion, a distinctive design system, and an evolving aesthetic memory.
 
-- a curated seed library for non-generic heroes and navs
-- a hybrid `.brain` contract (`.md` + `.json`)
-- a dual-panel system: **Eros** (autonomous quality) + **Workshop** (local ABM editor)
-- an observer-driven quality loop aimed at autonomous delivery
+[![Stack: Vue 3](https://img.shields.io/badge/Vue-3-42b883)](https://vuejs.org)
+[![Motion: GSAP 3](https://img.shields.io/badge/GSAP-3-88ce02)](https://gsap.com)
+[![AI-Friendly: Claude · Gemini · Codex](https://img.shields.io/badge/AI-Claude%20%7C%20Gemini%20%7C%20Codex-8e44ad)](./AGENTS.md)
 
-## Current Positioning
+## What is Eros?
 
-This repository is not a single product runtime. It is the source template for a larger system:
+Eros is an autonomous creative-director pipeline. You give it a brief; it builds a complete website — design tokens, typography system, cinematic motion, responsive layout. It has an evolving personality that learns from each project: taste gets sharper, opinions get stronger, mistakes don't repeat.
 
-- `.claude/` is the canonical source of truth for brain rules, pipeline, agents, memory, and front-brain contracts.
-- `_project-scaffold/` is the starter copied into each generated project.
-- `_components/` is the curated seed library the LLM uses as creative anchors.
-- `panel/` hosts two isolated panels: Eros (observability) and Workshop (ABM editor).
-- `_components-preview/` is deprecated. Preview now belongs inside `panel`.
+Not a template generator. Not a scaffolding tool. A creative force with memory.
 
-## Canonical Docs
+Named after the primordial Greek force that brought order to Chaos.
 
-- [Repo status](./docs/STATUS.md)
-- [Front-Brain schema](./.eros/FRONT_BRAIN_SCHEMA.md)
-- [Front-Brain workspace](./.eros/front-brain/README.md)
-- [Front-Brain roadmap](./.eros/front-brain/ROADMAP.md)
-- [Pipeline](./.eros/pipeline.md)
-- [Brain config](./.eros/brain-config.md)
-
-## Runtime Layers
-
-### 1. Brain core
-
-Lives in `.claude/`. It defines:
-
-- orchestration rules
-- memory model
-- quality gates
-- front-brain artifacts such as `DESIGN.md`, `.brain/state.json`, `.brain/control/rules.json`
-
-### 2. Project scaffold
-
-Lives in `_project-scaffold/`. It provides:
-
-- Vue 3 + Vite starter
-- starter `.brain/` files
-- starter `DESIGN.md`
-- base routing and token wiring
-
-### 3. Seeds
-
-Lives in `_components/`. Seeds are not rigid templates and not final assemblies. They are:
-
-- curated visual anchors
-- minimum quality contracts
-- non-generic starting points the LLM can mutate without collapsing into basic heroes/navs
-
-### 4. Panel (dual architecture)
-
-Lives in `panel/`. Single Vite server, route-based separation, lazy-loaded — no state contamination.
-
-#### Eros (`/eros/*`)
-
-Autonomous quality observability:
-
-- **Resumen** — score, health, queue, timeline
-- **Calidad** — observer signals, critic notes, debt breakdown
-- **Componentes** — blueprint browser with iframe preview
-- **Sistema** — run history, memory techniques, fonts, rules
-
-Data source: `runs.generated.json` via SSE live sync (`vite-plugin-eros.js`).
-
-#### Workshop (`/workshop/*`)
-
-Local ABM editor (personal Stitch-like tool):
-
-- **Token Editor** — visual editing of `_components/tokens.css` with color pickers, sliders, clamp sub-inputs, palette overview, import/export JSON
-- **Component Editor** — browse heroes/navs, edit props with live preview, create/duplicate/delete components
-- **Staging Layer** — in-memory drafts, diff viewer with selective apply, localStorage persistence, automatic backups
-
-Data source: `/__workshop/*` REST endpoints (`vite-plugin-workshop.js`).
-
-A floating pill at top-right switches between panels. Keyboard shortcuts: `1/2/3` for nav, `Ctrl+S` to review changes.
-
-## Development Notes
-
-### Canonical namespace
-
-Use `.claude/` as the source of truth.
-
-- `AGENTS.md` and `.agents/` exist for Codex compatibility.
-- Do not create competing canonical docs under `.Codex/`.
-
-### Preview strategy
-
-- `panel` owns preview mode via `?preview=ComponentName`.
-- Workshop uses the same mechanism for live token/prop editing via CSS injection and `postMessage`.
-- `_components-preview/` is retained only as deprecated sandbox compatibility.
-
-### Build commands
-
-#### Panel
+## Quickstart
 
 ```bash
-cd panel
-npm run dev        # dev server on :4000 (syncs runs first)
-npm run build      # production build (syncs runs first)
+# 1. Clone + install
+git clone <repo-url> eros
+cd eros && npm install
+
+# 2. Open the dual panel (Eros orchestrator + Workshop ABM editor)
+cd panel && npm run dev
+
+# 3. Start a project (in a Claude / Gemini / Codex session)
+# Say: "Nuevo proyecto: <brief>"
 ```
 
-#### Scaffold
+## Architecture at a Glance
 
-```bash
-cd _project-scaffold
-npm run build
+```
+Eros/
+├── EROS.md          # Soul — identity, voice, philosophy
+├── AGENTS.md        # Brain — orchestrator contract (AI-neutral)
+├── CLAUDE.md        # Claude adapter
+├── GEMINI.md        # Gemini adapter (uses @include for EROS + AGENTS)
+│                    # (Codex reads AGENTS.md natively — no CODEX.md needed)
+│
+├── .eros/           # Shared brain (AI-neutral, canonical)
+│   ├── agents/      # Agent definitions (designer, builder, polisher, evaluator, reference-analyst)
+│   ├── workflows/   # Runtime workflows (project CEO loop, motion system)
+│   ├── memory/      # Design intelligence, personality.json
+│   ├── pipeline.md  # 7-step autonomous brain loop
+│   └── scripts/     # eros-doctor.mjs + other validators
+│
+├── .claude/         # Claude adapter (skills stubs, agent wrappers, hooks)
+├── .gemini/         # Gemini settings.json + overrides
+├── .codex/          # Codex AGENTS.override.md + config.toml
+│
+├── panel/           # Dual Vue panel: Eros (quality observability) + Workshop (ABM editor)
+├── _project-scaffold/   # Template copied to each new project
+├── _components/     # Curated seed library (heroes, navs as creative anchors)
+├── docs/            # Plans, design libraries, specs
+└── scripts/         # eros-*.mjs orchestration scripts
 ```
 
-#### Scripts
+**Golden rule:** `.eros/` is the source of truth. `.claude/`, `.gemini/`, `.codex/` contain only adapters — never content.
 
-```bash
-# Create a new project from template
-cd scripts && npm run init:project -- --brief-file ".\\examples\\front-brain-brief.example.json"
+## For AI Agents
 
-# Bootstrap brain contract on existing project
-npm run bootstrap:brain -- --project "C:\\Users\\mateo\\Desktop\\my-project"
+If you are an AI agent working in this repository:
 
-# Rerun seed selection
-npm run select:blueprints -- --project "C:\\Users\\mateo\\Desktop\\my-project"
+1. **Read `EROS.md`** — it tells you who you are
+2. **Read `AGENTS.md`** — it tells you how the system works
+3. **Read your adapter** (`CLAUDE.md`, `GEMINI.md`, or `.codex/AGENTS.override.md`) for AI-specific tool mappings
 
-# Refresh quality artifacts (observer, critic, scorecard, debt)
-npm run refresh:quality -- --project "C:\\Users\\mateo\\Desktop\\my-project"
+### Claude users
 
-# Sync front-brain runs (with --watch for live panel updates)
-npm run sync:runs
-```
+Claude auto-loads `CLAUDE.md` at session start. A `SessionStart` hook in `.claude/settings.json` injects `EROS.md + AGENTS.md` automatically so you start with full context.
 
-### Environment variables
+### Gemini users
+
+Gemini CLI auto-loads `GEMINI.md`, which imports `EROS.md + AGENTS.md` via `@include` syntax. Hierarchical: `~/.gemini/GEMINI.md` (global) → project → component. Run `/memory show` to see merged context, `/memory reload` to refresh.
+
+### Codex users
+
+Codex reads root `AGENTS.md` natively (Linux Foundation open standard). Codex-specific deltas live in `.codex/AGENTS.override.md` (empty by default). Config in `.codex/config.toml`.
+
+## Stack
+
+**Frontend:** Vue 3 (`<script setup>`) · Vite · Vue Router · Pinia
+**Motion:** GSAP 3 + ScrollTrigger + Lenis smooth scroll
+**Styling:** CSS Custom Properties (design tokens)
+**3D (optional):** @splinetool/runtime (dynamic import, disposable)
+
+## Panel
+
+Single Vite server with route-based separation. Lazy-loaded, no state contamination between the two surfaces.
+
+- **Eros (`/eros/*`)** — autonomous quality observability: score, queue, timeline, observer signals, debt breakdown, blueprint browser, run history, memory techniques, fonts, rules. Data via SSE live sync.
+- **Workshop (`/workshop/*`)** — local ABM editor: token editor (color pickers, clamp sliders, palette overview), component editor with live preview, staging layer with diff viewer and selective apply.
+
+Floating pill at top-right switches between panels. Keyboard: `1/2/3` for nav, `Ctrl+S` to review changes.
+
+## Scripts
+
+| Command | Purpose |
+|---------|---------|
+| `cd panel && npm run dev` | Start dual panel (syncs runs first) |
+| `npm run build` (in panel or scaffold) | Production build |
+| `node scripts/eros-state.mjs read` | Read current brain state |
+| `node .eros/scripts/eros-doctor.mjs` | Validate multi-AI architecture integrity |
+| `cd scripts && npm run init:project -- --brief-file "<path>"` | Create a new project from template |
+| `npm run bootstrap:brain -- --project "<path>"` | Bootstrap brain contract on existing project |
+| `npm run select:blueprints -- --project "<path>"` | Rerun seed selection |
+| `npm run refresh:quality -- --project "<path>"` | Refresh observer, critic, scorecard, debt |
+| `npm run sync:runs` | Sync front-brain runs (`--watch` for live panel) |
+
+## Design Philosophy
+
+Every project must feel like it was designed by a senior creative director, not generated by AI. Read `EROS.md` for the excellence standard.
+
+Quick summary:
+- Rich near-blacks, warm whites — never pure `#000` / `#fff`
+- Distinctive font pairings — never Inter, Roboto, Arial
+- Custom easing — never default `ease`
+- No two sections share grid structure
+- Every section has a spatial surprise
+
+The full **measurable enforcement criteria** (composition ratios, z-index counts, motion rules, craft requirements) live in `AGENTS.md` under "Quality Standards".
+
+## Evolving Personality
+
+After each project, Eros regenerates its `personality.json` — values, voice, and philosophy shift based on what worked. The Eros you use today is shaped by every prior project. Run `node eros-meta.mjs personality` after a project to update.
+
+## Environment Variables
 
 - `OPENAI_API_KEY` — enables multimodal critic mode
 - `OPENAI_PROJECT_ID`, `OPENAI_ORGANIZATION_ID` — optional
@@ -140,15 +133,36 @@ npm run sync:runs
 
 ## Near-Term Objective
 
-Maqueta is moving toward a Stitch-like workflow:
+Eros is moving toward a Stitch-like workflow:
 
-1. prompt-only brief intake
+1. Prompt-only brief intake
 2. `DESIGN.md` generation
-3. multiple visual directions
-4. seed selection with mutation budgets
-5. homepage generation
-6. observer-driven scorecard refresh and critic retries
+3. Multiple visual directions
+4. Seed selection with mutation budgets
+5. Homepage generation
+6. Observer-driven scorecard refresh and critic retries
 7. Workshop-based token/component editing with staged apply
-8. final review summary with no mandatory human intervention
+8. Final review summary with no mandatory human intervention
 
-Execution details now live in `.eros/front-brain/ROADMAP.md`.
+Execution details in `.eros/front-brain/ROADMAP.md`.
+
+## Contributing
+
+- Read `AGENTS.md` to understand the orchestrator contract
+- Run `node .eros/scripts/eros-doctor.mjs` before every PR — must pass with zero issues
+- Keep `AGENTS.md` AI-neutral (no tool-specific jargon — that belongs in adapter files)
+- Follow the phased migration pattern: commit-safe, reversible, testable
+
+## Canonical Docs
+
+- [Repo status](./docs/STATUS.md)
+- [Pipeline](./.eros/pipeline.md)
+- [Brain config](./.eros/brain-config.md)
+- [Front-Brain schema](./.eros/FRONT_BRAIN_SCHEMA.md)
+- [Front-Brain workspace](./.eros/front-brain/README.md)
+- [Front-Brain roadmap](./.eros/front-brain/ROADMAP.md)
+- [Multi-AI architecture spec](./docs/superpowers/specs/2026-04-14-multi-ai-architecture-design.md)
+
+## License
+
+(Choose and update this section — MIT recommended for open source.)
