@@ -5,6 +5,7 @@
 [![Stack: Vue 3](https://img.shields.io/badge/Vue-3-42b883)](https://vuejs.org)
 [![Motion: GSAP 3](https://img.shields.io/badge/GSAP-3-88ce02)](https://gsap.com)
 [![AI-Friendly: Claude · Gemini · Codex](https://img.shields.io/badge/AI-Claude%20%7C%20Gemini%20%7C%20Codex-8e44ad)](./AGENTS.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-f5d76e)](./LICENSE)
 
 ## What is Eros?
 
@@ -165,4 +166,4 @@ Execution details in `.eros/front-brain/ROADMAP.md`.
 
 ## License
 
-(Choose and update this section — MIT recommended for open source.)
+Released under the [MIT License](./LICENSE) © 2026 MateoGs013.
