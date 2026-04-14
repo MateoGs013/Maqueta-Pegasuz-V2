@@ -58,6 +58,10 @@ vite-watchdog.log
 .claude/projects/
 .claude/worktrees/
 .claude/front-brain/runtime/runs.generated.json
+.claude/scheduled_tasks.lock
+
+# OMC runtime state (HUD cache only — PRD/specs/progress are tracked)
+.omc/state/
 
 # Internal tool outputs
 panel-dist/

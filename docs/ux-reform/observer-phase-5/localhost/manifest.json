@@ -1,0 +1,302 @@
+{
+  "version": 2,
+  "url": "http://localhost:5179",
+  "domain": "localhost",
+  "pagePath": "/",
+  "dirName": "localhost",
+  "capturedAt": "2026-04-11T02:04:35.176Z",
+  "isLocal": true,
+  "geometry": {
+    "visualBalance": {
+      "score": 5,
+      "type": "asymmetric-unbalanced",
+      "centerOfMass": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "quadrants": {
+        "topLeft": 0,
+        "topRight": 0.006,
+        "bottomLeft": 0,
+        "bottomRight": 0.994
+      }
+    },
+    "overlap": {
+      "intentional": 1,
+      "elements": []
+    },
+    "surprise": {
+      "count": 0,
+      "types": []
+    }
+  },
+  "aesthetics": {
+    "colorHarmony": {
+      "score": 5,
+      "type": "mixed",
+      "temperature": "warm",
+      "saturationRange": [
+        6,
+        100
+      ],
+      "aiFingerprint": false,
+      "uniqueColors": 10
+    },
+    "whitespace": {
+      "globalRatio": 0.95,
+      "perSection": [
+        0.69
+      ],
+      "rhythm": 0,
+      "verdict": "sparse"
+    },
+    "typography": {
+      "score": 4.5,
+      "sizeRatio": 1.8,
+      "modularScale": null,
+      "levels": 2,
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "hasCustomSpacing": true,
+      "lineHeightConsistency": false
+    }
+  },
+  "semantic": {
+    "score": 6.5,
+    "headingHierarchy": "correct",
+    "landmarks": [
+      "main"
+    ],
+    "interactiveNamed": 33,
+    "issues": [
+      "missing-nav-landmark",
+      "low-interactive-naming: 33%",
+      "missing-skip-link"
+    ]
+  },
+  "antiTemplate": {
+    "score": 8,
+    "isTemplate": false,
+    "layoutVariety": 1,
+    "signatures": [
+      {
+        "section": 0,
+        "features": []
+      }
+    ],
+    "findings": [
+      "missing-surprise"
+    ]
+  },
+  "depthMetrics": {
+    "zIndexLayers": [
+      -1,
+      2147483645
+    ],
+    "zIndexCount": 2,
+    "clipPathCount": 0,
+    "backdropFilterCount": 1,
+    "shadowCount": 1,
+    "shadowVariety": 1,
+    "overlapElements": 12,
+    "hasPseudoElements": true,
+    "hasGrain": false,
+    "canvasLayerCount": 0
+  },
+  "motionProfile": {
+    "cssTransitions": {
+      "count": 8,
+      "cubicBeziers": [
+        "cubic-bezier(0.16, 1, 0.3, 1)"
+      ],
+      "cubicBezierCount": 1,
+      "avgDuration": 0.35
+    },
+    "cssAnimations": {
+      "count": 1,
+      "hasStagger": false,
+      "runtimeAnimations": 0,
+      "revealElements": 0,
+      "gsapStyledElements": 3
+    },
+    "gsap": {
+      "active": false,
+      "tweenCount": 0,
+      "scrollTrigger": false,
+      "scrollTriggerCount": 0,
+      "scrollTriggerScrub": false,
+      "scrollTriggerScrubCount": 0
+    },
+    "wheelStates": {
+      "isWheelDriven": true,
+      "statesCaptured": 0
+    }
+  },
+  "compositionMetrics": {
+    "textAlignmentVariety": 2,
+    "avgPaddingAsymmetry": 0,
+    "containerBreaks": 0,
+    "isSingleViewport": true,
+    "subCompositions": 0
+  },
+  "typographyMetrics": {
+    "sizeRatio": 1.8,
+    "sizeCount": 2,
+    "weightCount": 4,
+    "hasLetterSpacing": true,
+    "hasClamp": false
+  },
+  "excellenceSignals": {
+    "composition": "MEDIUM",
+    "depth": "WEAK",
+    "typography": "WEAK",
+    "motion": "WEAK",
+    "craft": "WEAK",
+    "_scores": {
+      "composition": 5.4,
+      "depth": 3.1,
+      "typography": 4.5,
+      "motion": 1.1,
+      "craft": 4.9,
+      "signals": {
+        "composition": "MEDIUM",
+        "depth": "WEAK",
+        "typography": "WEAK",
+        "motion": "WEAK",
+        "craft": "WEAK"
+      }
+    }
+  },
+  "qualityGates": {
+    "contrast": {
+      "signal": "PASS",
+      "passRate": 100,
+      "failingAA": 0,
+      "passingAA": 4,
+      "totalPairs": 4,
+      "minRatio": 5.38,
+      "avgRatio": 11.1,
+      "failingSamples": []
+    },
+    "animations": {
+      "clean": false,
+      "total": 1,
+      "high": 1,
+      "medium": 0,
+      "patterns": [
+        {
+          "type": "forbidden-transition",
+          "element": "div.vue-devtools__panel",
+          "property": "padding",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    "images": {
+      "total": 0,
+      "signal": "PASS",
+      "avgScore": 100,
+      "issues": []
+    },
+    "headings": {
+      "signal": "PASS",
+      "h1Count": 1,
+      "totalHeadings": 1,
+      "skippedLevels": [],
+      "issues": [],
+      "structure": [
+        {
+          "level": 1,
+          "text": "Pegasuz"
+        }
+      ]
+    },
+    "meta": {
+      "signal": "FAIL",
+      "score": 0
+    },
+    "overall": "FAIL"
+  },
+  "wheelStates": {
+    "isWheelDriven": true,
+    "statesCaptured": 0
+  },
+  "palette": {
+    "textColors": [
+      {
+        "hex": "#000000",
+        "frequency": 2
+      },
+      {
+        "hex": "#f0e7d8",
+        "frequency": 2
+      },
+      {
+        "hex": "#ff6a00",
+        "frequency": 1
+      },
+      {
+        "hex": "#8a8578",
+        "frequency": 1
+      },
+      {
+        "hex": "#00dc82",
+        "frequency": 1
+      }
+    ],
+    "bgColors": [
+      {
+        "hex": "#0a0a0b",
+        "frequency": 2
+      },
+      {
+        "hex": "#ff6a00",
+        "frequency": 1
+      },
+      {
+        "hex": "#ffffff",
+        "frequency": 1
+      }
+    ]
+  },
+  "screenshots": {
+    "desktop": 1,
+    "mobile": 1
+  },
+  "desktop": {
+    "frames": 1,
+    "frameFiles": [
+      "desktop/frame-000.png"
+    ],
+    "sections": [
+      {
+        "file": "desktop/frame-000.png",
+        "sectionTag": "viewport-chunk",
+        "sectionClass": "",
+        "scrollY": 0,
+        "height": 900
+      }
+    ],
+    "fullPage": "full-page-desktop.png"
+  },
+  "mobile": {
+    "frames": 1,
+    "frameFiles": [
+      "mobile/frame-000.png"
+    ],
+    "sections": [
+      {
+        "file": "mobile/frame-000.png",
+        "sectionTag": "viewport-chunk",
+        "sectionClass": "",
+        "scrollY": 0,
+        "height": 812
+      }
+    ],
+    "fullPage": "full-page-mobile.png"
+  }
+}
