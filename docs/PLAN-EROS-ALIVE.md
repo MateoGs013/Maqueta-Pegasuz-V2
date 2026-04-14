@@ -1,5 +1,8 @@
 # Plan: Darle Vida a Eros — Pendiente
 
+> **Status:** `implemented`
+> **Last reviewed:** 2026-04-14
+
 ## Ideas aprobadas para implementar
 
 ### 1. Chat en el panel

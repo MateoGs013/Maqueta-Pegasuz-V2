@@ -20,11 +20,11 @@ This repository is not a single product runtime. It is the source template for a
 ## Canonical Docs
 
 - [Repo status](./docs/STATUS.md)
-- [Front-Brain schema](./.claude/FRONT_BRAIN_SCHEMA.md)
-- [Front-Brain workspace](./.claude/front-brain/README.md)
-- [Front-Brain roadmap](./.claude/front-brain/ROADMAP.md)
-- [Pipeline](./.claude/pipeline.md)
-- [Brain config](./.claude/brain-config.md)
+- [Front-Brain schema](./.eros/FRONT_BRAIN_SCHEMA.md)
+- [Front-Brain workspace](./.eros/front-brain/README.md)
+- [Front-Brain roadmap](./.eros/front-brain/ROADMAP.md)
+- [Pipeline](./.eros/pipeline.md)
+- [Brain config](./.eros/brain-config.md)
 
 ## Runtime Layers
 
@@ -151,4 +151,4 @@ Maqueta is moving toward a Stitch-like workflow:
 7. Workshop-based token/component editing with staged apply
 8. final review summary with no mandatory human intervention
 
-Execution details now live in `.claude/front-brain/ROADMAP.md`.
+Execution details now live in `.eros/front-brain/ROADMAP.md`.

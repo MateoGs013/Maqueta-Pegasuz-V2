@@ -1,5 +1,8 @@
 # Plan: Observer V2 — Eros Ve Por Sí Mismo
 
+> **Status:** `in-progress`
+> **Last reviewed:** 2026-04-14
+
 ## Problema actual
 
 El observer V1 (`capture-refs.mjs`, 3000+ líneas, Puppeteer) hace análisis **estructural**:

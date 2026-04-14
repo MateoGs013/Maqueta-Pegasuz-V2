@@ -1,5 +1,8 @@
 # Plan: Hardening & Audit — Maqueta V8
 
+> **Status:** `in-progress`
+> **Last reviewed:** 2026-04-14
+
 Plan de endurecimiento derivado del audit completo del repo (panel, scripts, configs, scaffold). ~95 hallazgos totales: 10 críticos, ~20 altos, ~40 medios, resto bajos.
 
 Organizado en **6 ramas independientes** que pueden correr en paralelo (no hay conflictos de archivos entre ellas). Cada rama tiene commits atómicos y verificables.
@@ -302,7 +305,7 @@ master
 
 **Objetivo:** que los docs dejen de contradecirse. Solo archivos markdown — sin riesgo de romper runtime.
 
-**Archivos tocados:** `AGENTS.md`, `CLAUDE.md`, `.claude/brain-config.md`, `.claude/pipeline.md`, `.claude/agents/*.md`, `.claude/launch.json`, `.claude/memory/design-intelligence/*`.
+**Archivos tocados:** `AGENTS.md`, `CLAUDE.md`, `.eros/brain-config.md`, `.eros/pipeline.md`, `.claude/agents/*.md`, `.claude/launch.json`, `.eros/memory/design-intelligence/*`.
 
 ### Commit 5.1 — `docs: standardize V8 version across all meta-files`
 
@@ -310,7 +313,7 @@ master
 
 **Qué:**
 - Reemplazar todas las menciones a "V6.1" y "V7" con "V8" en los headers.
-- Añadir sección "Version History" al final de `.claude/FRONT_BRAIN_SCHEMA.md` explicando V6.1 → V7 → V8.
+- Añadir sección "Version History" al final de `.eros/FRONT_BRAIN_SCHEMA.md` explicando V6.1 → V7 → V8.
 - Clarificar en `CLAUDE.md:39` la relación: **Eros** = identidad creativa, **Pegasuz** = pipeline técnico.
 
 ### Commit 5.2 — `docs: define reference-observatory.md format + Dynamic Threshold block`
@@ -337,7 +340,7 @@ master
 ### Commit 5.4 — `docs: document practice folder lifecycle + launch.json cwd`
 
 **Por qué:**
-- `.claude/memory/design-intelligence/practice/` tiene 19 JSONs sin política de retención.
+- `.eros/memory/design-intelligence/practice/` tiene 19 JSONs sin política de retención.
 - `.claude/launch.json` define "maqueta-panel" pero no especifica `cwd`, rompe paths relativos.
 
 **Qué:**

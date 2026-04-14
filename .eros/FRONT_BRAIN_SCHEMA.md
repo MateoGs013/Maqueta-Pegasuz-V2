@@ -19,10 +19,10 @@ The front-brain is the control layer for autonomous frontend generation. It is r
 
 `.claude/` is the canonical architecture namespace.
 
-- `.claude/pipeline.md` defines orchestration
-- `.claude/brain-config.md` defines thresholds and approval logic
+- `.eros/pipeline.md` defines orchestration
+- `.eros/brain-config.md` defines thresholds and approval logic
 - `.claude/agents/*.md` define worker behavior
-- `.claude/front-brain/` stores front-brain contracts, fixtures, and examples
+- `.eros/front-brain/` stores front-brain contracts, fixtures, and examples
 
 `AGENTS.md` and `.agents/` are compatibility surfaces for Codex and should not diverge from `.claude`.
 
@@ -188,7 +188,7 @@ The panel may render Markdown where helpful, but its primary state must come fro
 The example implementation lives under:
 
 ```text
-.claude/front-brain/examples/demo-run/
+.eros/front-brain/examples/demo-run/
 ```
 
 This fixture is the reference payload for panel development until live project ingestion is wired.

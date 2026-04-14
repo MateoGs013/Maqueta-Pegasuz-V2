@@ -73,7 +73,7 @@ A script that reads the 58 exemplars from `./design-md-exemplars/` (plus any fut
 - `node eros-designmd.mjs generate --project <path>` — produce a DESIGN.md in the standard 9-section format from a finished Eros project
 
 ### P1 — align the designer agent output format (medium, high value)
-Update `.claude/memory/design-intelligence/rules.md` or the designer's context template so the output IS a 9-section DESIGN.md instead of the current format. Specifically, force the `## 9. Agent Prompt Guide` section to be written — that's what makes the handoff to builder agents actually work.
+Update `.eros/memory/design-intelligence/rules.md` or the designer's context template so the output IS a 9-section DESIGN.md instead of the current format. Specifically, force the `## 9. Agent Prompt Guide` section to be written — that's what makes the handoff to builder agents actually work.
 
 ### P2 — use exemplars as style references in auto-train (medium, medium value)
 When generating a practice brief, pull a random exemplar matching the target mood (e.g. "dark cinematic" → ElevenLabs/Ferrari/Minimax). Feed it as a reference instead of the Awwwards scrape. Much more detailed and consistent than a scraped Playwright analysis.
@@ -83,7 +83,7 @@ Once Eros's 20+ built projects are good, extract their DESIGN.md files in the st
 
 ## Local exemplars saved
 
-6 representative files under `.claude/memory/design-intelligence/references/design-md-exemplars/`:
+6 representative files under `.eros/memory/design-intelligence/references/design-md-exemplars/`:
 
 | File | Style archetype |
 |---|---|

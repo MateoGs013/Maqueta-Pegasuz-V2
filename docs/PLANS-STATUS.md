@@ -260,7 +260,7 @@ Plan de ~2.5h.
 **PLAN-VERCEL-DEPLOY (0 → 80):**
 - ✅ Nuevo `scripts/eros-deploy.mjs` con subcommands `deploy`/`list`/`remove`
 - ✅ Maneja build + vercel deploy + captura de URL + registry persistente
-  en `.claude/memory/design-intelligence/deploy-registry.json`
+  en `.eros/memory/design-intelligence/deploy-registry.json`
 - ✅ Resolución absoluta de `vercel.cmd` (Windows) / `vercel` (Unix)
 - ✅ Endpoint `/__eros/training/deploy` + `/__eros/training/deploys` en
   vite plugin
