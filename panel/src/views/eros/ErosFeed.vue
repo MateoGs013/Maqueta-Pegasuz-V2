@@ -124,6 +124,7 @@ onUnmounted(() => {
 
 <template>
   <div class="panel-page">
+    <h1 class="sr-only">Feed de actividad de Eros</h1>
     <div class="feed-header grid-row">
       <div class="cell">
         <p class="label">Feed de actividad</p>

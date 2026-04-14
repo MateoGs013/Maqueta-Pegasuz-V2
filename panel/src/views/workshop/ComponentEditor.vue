@@ -227,6 +227,7 @@ async function deleteComponent() {
 
 <template>
   <div class="comp-editor">
+    <h1 class="sr-only">Editor de componentes</h1>
     <!-- ── LIST ── -->
     <aside class="list-col">
       <div class="list-head">
@@ -457,7 +458,7 @@ async function deleteComponent() {
 .vp-btn.on { border-color: var(--line-accent); color: var(--info); background: var(--info-soft); z-index: 1; position: relative; }
 
 .preview-frame { flex: 1; position: relative; min-height: 0; }
-.preview-frame iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--bg); transition: width 300ms ease, margin 300ms ease; }
+.preview-frame iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--bg); }
 .vp--tablet iframe { width: 768px; margin: 0 auto; }
 .vp--mobile iframe { width: 375px; margin: 0 auto; }
 .vp--tablet, .vp--mobile { background: var(--bg-raised); }

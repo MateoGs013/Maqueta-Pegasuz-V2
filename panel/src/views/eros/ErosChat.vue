@@ -105,6 +105,7 @@ onMounted(() => scrollBottom())
 
 <template>
   <div class="chat">
+    <h1 class="sr-only">Conversación con Eros</h1>
     <div class="chat-body" ref="chatBody">
       <div
         v-for="(msg, i) in messages" :key="i"
