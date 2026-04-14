@@ -436,7 +436,7 @@ ${critic.notes.map((note) => `- ${note}`).join('\n') || '- none'}
   await writeText(targetPath, content)
 }
 
-const findObserverSourceDir = async (projectDir, explicitSource) => {
+const findObserverSourceDir = async (projectDir, explicitSource, { maxAgeMs = 0 } = {}) => {
   const directCandidates = []
 
   if (explicitSource) {
@@ -451,9 +451,24 @@ const findObserverSourceDir = async (projectDir, explicitSource) => {
   )
 
   for (const candidate of directCandidates) {
-    if (await exists(path.join(candidate, 'manifest.json')) || await exists(path.join(candidate, 'analysis.md'))) {
-      return candidate
+    const manifestPath = path.join(candidate, 'manifest.json')
+    const hasManifest = await exists(manifestPath)
+    const hasAnalysis = await exists(path.join(candidate, 'analysis.md'))
+
+    if (!hasManifest && !hasAnalysis) continue
+
+    // Freshness gate: reject manifests older than maxAgeMs (0 = no check)
+    if (maxAgeMs > 0 && hasManifest) {
+      try {
+        const stat = await fs.stat(manifestPath)
+        const ageMs = Date.now() - stat.mtimeMs
+        if (ageMs > maxAgeMs) {
+          continue // Skip stale manifest, try next candidate
+        }
+      } catch {}
     }
+
+    return candidate
   }
 
   return null

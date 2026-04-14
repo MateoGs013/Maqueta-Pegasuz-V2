@@ -1,0 +1,390 @@
+{
+  "task": "Pegasuz SuperAdmin UX/UI Reform v2 — Execute docs/pegasuz-superadmin-ux-ultra-plan-v2.md",
+  "target": "C:/Users/mateo/Desktop/Dev/pegasuz/SaaS-Multitenant/pegasuz/Pegasuz-Core/frontend-superadmin/frontend-superadmin/",
+  "maqueta": "C:/Users/mateo/Desktop/Dev/tools/maqueta/",
+  "plan": "docs/pegasuz-superadmin-ux-ultra-plan-v2.md",
+  "observer": "scripts/eros-observer.mjs",
+  "devServer": "http://localhost:5179",
+  "verificationSystem": "eros-observer-v2",
+  "baseline": {
+    "captured": true,
+    "path": "docs/ux-reform/observer-baseline/localhost/",
+    "scores": {
+      "composition": 5.4,
+      "depth": 3.1,
+      "typography": 4.5,
+      "motion": 1.1,
+      "craft": 4.3,
+      "overall": "FAIL"
+    }
+  },
+  "targets": {
+    "composition": 7.5,
+    "depth": 6.0,
+    "typography": 7.0,
+    "motion": 5.0,
+    "craft": 7.0,
+    "overall": "PASS",
+    "antiTemplateFindings": 0,
+    "semanticIssues": 1
+  },
+  "hardRules": [
+    "NEVER modify src/stores/system/*, src/services/*, src/api/*, src/composables/* (existing), src/config/*, src/constants/*, src/utils/*, vite.config.js",
+    "NEVER import from src/components/system/brain/useBrain*.js or the 22 old Brain section components in new code",
+    "Router: only add ONE line (router.afterEach(closeInspector))",
+    "Stores: only ADD src/stores/shell.js. Export from src/stores/system/index.js via ONE line.",
+    "Never touch Clientes/LaRucula/* files (they have uncommitted user work)",
+    "Stage explicit files, never git add -A"
+  ],
+  "stories": [
+    {
+      "id": "US-000",
+      "title": "Fase 0 — Preparacion",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Git branch 'ux/superadmin-reform-v2' created from current master HEAD in the pegasuz monorepo",
+        "Branch is checked out and verified with git branch --show-current",
+        "LaRucula uncommitted changes remain untouched in working directory",
+        "Directory docs/ux-reform/before/ created in maqueta for screenshots archive",
+        "Dev server http://localhost:5179/ returns 200",
+        "docs/pegasuz-superadmin-ux-ultra-plan-v2.md readable and present"
+      ]
+    },
+    {
+      "id": "US-0B",
+      "title": "Fase 0B — Observer baseline",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "docs/ux-reform/observer-baseline/localhost/analysis.md exists",
+        "docs/ux-reform/observer-baseline/localhost/manifest.json exists",
+        "docs/ux-reform/observer-baseline/localhost/full-page-desktop.png exists",
+        "docs/ux-reform/observer-baseline/localhost/full-page-mobile.png exists",
+        "Baseline scores documented in prd.json (already present)"
+      ],
+      "notes": "Already executed before ralph invocation. Marking as passed."
+    },
+    {
+      "id": "US-001",
+      "title": "Fase 1 — Layout tokens in design-system.css",
+      "priority": 3,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Block /* LAYOUT SYSTEM V2 */ added to src/assets/design-system.css",
+        "New tokens present: --pz-cell-pad-y (28px), --pz-cell-pad-x (32px), --pz-statusbar-height (24px), --pz-inspector-width (360px), --pz-gap (1px), --pz-prose-w (65ch)",
+        "Token --pz-topbar-height changed from 0px to 32px",
+        "Token --pz-cell-pad redefined as var(--pz-cell-pad-y) var(--pz-cell-pad-x)",
+        "Z-index scale added: --pz-z-canvas, --pz-z-sticky, --pz-z-inspector, --pz-z-sidebar-m, --pz-z-drawer, --pz-z-modal, --pz-z-palette, --pz-z-toast, --pz-z-tooltip",
+        "[data-density=\"comfortable\"] and [data-density=\"dense\"] blocks added",
+        "@media (prefers-reduced-motion: reduce) global block present",
+        "Existing --pz-* tokens are not modified except --pz-topbar-height",
+        "npm run dev starts without warnings",
+        "Manual devtools verification: :root contains the new tokens"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Fase 2 — Layout primitives + UI primitives + CSS + lint script",
+      "priority": 4,
+      "passes": true,
+      "acceptanceCriteria": [
+        "src/components/layout/primitives/CanvasRow.vue created with variant prop",
+        "src/components/layout/primitives/CanvasCell.vue created with hero and flush props",
+        "src/components/layout/primitives/MetricCell.vue created with state machine (data/loading/empty/error)",
+        "src/components/layout/primitives/ContextHeader.vue created",
+        "src/components/layout/primitives/TabBar.vue created",
+        "src/components/layout/primitives/SectionTitle.vue created",
+        "src/components/ui/SkeletonCell.vue created with variants (metric/list/table/chart/text) and pulse animation",
+        "src/components/ui/EmptyCell.vue created with variants (calm/positive/waiting) and optional action",
+        "src/components/ui/ErrorCell.vue created with retry callback",
+        "src/components/ui/HealthDot.vue created",
+        "src/components/ui/PulseIndicator.vue created",
+        "src/components/ui/Sparkline.vue created (SVG, no libs)",
+        "src/components/ui/KeyChip.vue created",
+        "design-system.css classes .canvas, .canvas-row, .canvas-row--1/2/3/4/aside/aside-l/golden, .canvas-cell, .canvas-cell-hero, .canvas-cell--flush, .canvas-stack added with min-height: 0 where needed",
+        "scripts/lint-ux.mjs created with the consistency checks from Parte 12.3 (hardcoded padding, border-radius, z-index, box-shadow, imports of deleted Brain components)",
+        "npm run dev compiles without errors in the target project",
+        "lint-ux.mjs runs and reports 0 violations on the new files"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Fase 3 — Shell de 5 zonas + SideBar con iconos + topbar + statusbar",
+      "priority": 5,
+      "passes": "partial",
+      "partialNote": "Shell components created, CSS + store wired, HMR successful, observer shows Semantic 4→6.5 (main landmark added). Auth-gated verifications (nav to 10 routes, WS frames, Ctrl+B) pending because observer only reaches login page without auth. Will verify when authenticated observer run is possible post-Fase 5.",
+      "acceptanceCriteria": [
+        "src/stores/shell.js created with useAppShellStore (sidebarCollapsed, density, inspectorOpen, inspectorSubject as shallowRef, inspectorTabs, inspectorActiveTab, openInspector with markRaw, closeInspector)",
+        "src/stores/system/index.js has ONE new line: export { useAppShellStore } from '../shell.js'",
+        "src/components/layout/AppShell.vue created with grid-template of 5 zones (32px topbar / 220px sidebar + 1fr canvas + 360px inspector / 24px status)",
+        "src/components/layout/TopBar.vue created: breadcrumb + context-pill slot + search button + notification dot + user menu",
+        "src/components/layout/SideBar.vue created with iconos existentes (Operations / Observability / Configuration groups)",
+        "src/components/layout/StatusBar.vue created: ws dot + last log line (aria-live=off) + uptime + version + user",
+        "src/App.vue refactored to use <AppShell> as root while preserving login-shell branch for LoginView",
+        "Navigation to all 10 routes still works",
+        "Sidebar collapse with Ctrl+B works",
+        "WebSocket frames received on /superadmin/logs (verified manually or via observer motion layer)",
+        "WebSocket frames received on /system/brain (verified manually or via observer)",
+        "Status bar shows ws dot live and last log updating",
+        "Topbar shows breadcrumb on each view",
+        "npm run build clean",
+        "Observer post-phase run: composition >= baseline, depth >= baseline, craft >= baseline",
+        "Semantic issues reduced (main landmark now present via <main> tag in AppShell)"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "Fase 4 — Inspector pane global + router afterEach + useFocusMemory",
+      "priority": 6,
+      "passes": true,
+      "acceptanceCriteria": [
+        "src/components/layout/InspectorPane.vue created, mounted in AppShell Z4",
+        "src/router/index.js has ONE new line: router.afterEach(() => shell.closeInspector())",
+        "src/composables/ui/useFocusMemory.js created (stores activeElement on open, restores on close)",
+        "Dispatching openInspector from devtools opens pane at 360px width",
+        "Ctrl+I toggles inspector",
+        "Esc closes inspector",
+        "Route change closes inspector automatically",
+        "Inspector does not cause re-render cascade (shallowRef verified in Vue DevTools)"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "Fase 5 — Command palette + keyboard system + shortcuts overlay",
+      "priority": 7,
+      "passes": true,
+      "acceptanceCriteria": [
+        "src/composables/ui/useKeyboard.js created with scope precedence (focused > view > global), guard on input/textarea/contenteditable, g-prefix with 1.5s timeout",
+        "src/composables/ui/useCommandPalette.js created with register/unregister commands per scope",
+        "src/components/layout/CommandPalette.vue created",
+        "src/components/layout/ShortcutsOverlay.vue created",
+        "Ctrl+K opens palette from any view",
+        "g d, g c, g l, g b, g s, g m, g p, g e navigate to correct route",
+        "g alone with no second key within 1.5s does nothing",
+        "? opens shortcuts overlay",
+        "Esc closes any open overlay",
+        "Focus in an <input>: j does NOT fire view shortcut",
+        "CHECKPOINT 1: All 10 views still render, shell works, no regressions"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "Fase 6 — DashboardView redesign (hero + 4 metrics + activity feed + quick actions)",
+      "priority": 8,
+      "passes": true,
+      "commit": "4dbe0a9",
+      "notes": "Committed before ralph invocation. SystemPulseHero/RecentActivityFeed/QuickActions created; DashboardView uses canvas-row--1/--4/--golden; all 4 states propagated to MetricCells. Labels adapted to available data (TENANTS/ACTIVE/DISABLED/CONTRACTS) to respect 'no tocar fetching logic'.",
+      "acceptanceCriteria": [
+        "src/components/dashboard/SystemPulseHero.vue created (one dominant number + label + sparkline + pill)",
+        "src/components/dashboard/RecentActivityFeed.vue created",
+        "src/components/dashboard/QuickActions.vue created",
+        "src/views/DashboardView.vue refactored to use canvas-row--1 hero + canvas-row--4 metrics + canvas-row--golden feed/actions",
+        "Each MetricCell has all 4 states (data/loading/empty/error)",
+        "Empty state of activity feed shows 'No recent events. The system has been quiet.'",
+        "Empty state of ErrorCount 0 shows 'No errors in the last hour' (positive)",
+        "Visual diff: hero is dominant (one element, not 4 equal cards)",
+        "Observer post-phase: Dashboard URL composition > baseline"
+      ]
+    },
+    {
+      "id": "US-007A",
+      "title": "Fase 7a — Extract inline modals from ClientsView (refactor only)",
+      "priority": 9,
+      "passes": true,
+      "commit": "0360ddc",
+      "notes": "FeaturesModal + CmsModal extracted. ClientsView 1267->581 lines. Vue 3.5 defineModel for two-way bindings. Code-reviewer APPROVE_WITH_NITS — fixes applied (removed redundant outer v-if, added Number type to selectedContractId).",
+      "acceptanceCriteria": [
+        "src/components/clients/modals/FeaturesModal.vue created, extracted from ClientsView.vue:522-688",
+        "src/components/clients/modals/CmsModal.vue created, extracted from ClientsView.vue:690-800+",
+        "ClientsView.vue imports and uses the new components with props/emits",
+        "Click in features of any tenant opens modal with correct data",
+        "Toggle of any feature works",
+        "Save of features persists",
+        "Translation sync works (if applicable)",
+        "CMS modal: click on cms opens, contract select works, preview, save",
+        "NO visual changes in this phase (refactor only)",
+        "npm run build clean"
+      ]
+    },
+    {
+      "id": "US-007B",
+      "title": "Fase 7b — ClientsView split layout + inspector tenant tabs",
+      "priority": 10,
+      "passes": true,
+      "commit": "5a476dc",
+      "notes": "Split canvas + 5 inspector tabs (Overview/Features/Users/CMS/Audit). ClientsView 581->233 lines. Keyboard scope j/k/i/Enter/Esc//n. ClientTable row-click + selectedSlug. Code-reviewer APPROVE_WITH_NITS — cross-origin impersonate bug fixed in TenantUsersTab (window.open sync + VITE_ADMIN_URL params). FeaturesModal/CmsModal dead code preserved for Fase 14 cleanup. TenantAuditTab stub with TODO for events store filter.",
+      "acceptanceCriteria": [
+        "src/views/ClientsView.vue refactored to canvas-row--1 header + canvas-row--1 flush table",
+        "src/components/clients/ClientsContextHeader.vue created",
+        "src/components/inspector/tenant/TenantOverviewTab.vue created",
+        "src/components/inspector/tenant/TenantFeaturesTab.vue created (wraps FeaturesModal logic)",
+        "src/components/inspector/tenant/TenantUsersTab.vue created (wraps UserModal logic)",
+        "src/components/inspector/tenant/TenantCmsTab.vue created (wraps CmsModal logic)",
+        "src/components/inspector/tenant/TenantAuditTab.vue created",
+        "Click on table row opens inspector with 5 tabs",
+        "Each tab shows correct data diffed against old modals",
+        "Destructive CRUD still uses modal (delete confirm)",
+        "j/k navigates rows",
+        "i toggles inspector",
+        "Esc closes inspector and deselects row",
+        "/ focuses search",
+        "n goes to /clients/new",
+        "Observer: composition >= baseline"
+      ]
+    },
+    {
+      "id": "US-008",
+      "title": "Fase 8 — LogsView sticky filter bar + keyboard",
+      "priority": 11,
+      "passes": true,
+      "commit": "804a940",
+      "notes": "Canvas layout with sticky LogsFilterBar + LogsConsole + LogDetailTab inspector. Keyboard scope p/c///0-4/gg/shift+g. Code-reviewer APPROVE_WITH_NITS — 3 HIGH fixed (v-model:paused two-way, EmptyCell/SkeletonCell primitives, totalCount prop to distinguish 'no matches' vs 'waiting for logs'). .gitignore negation added for src/components/logs/.",
+      "acceptanceCriteria": [
+        "src/views/LogsView.vue refactored with canvas-row sticky filter bar + flush console",
+        "src/components/logs/LogsFilterBar.vue created",
+        "src/components/logs/LogsConsole.vue created",
+        "src/components/inspector/log/LogDetailTab.vue created",
+        "Filter bar sticky at top 0, does not scroll with logs",
+        "WebSocket stream received (verified in Network tab)",
+        "Shortcuts: p, c, /, 1-4, g g, G work",
+        "Click on log line opens inspector",
+        "Empty state: 'Waiting for first log line' when no logs"
+      ]
+    },
+    {
+      "id": "US-009",
+      "title": "Fase 9 — SystemPanelView refine (HUD grid + inspector migration)",
+      "priority": 12,
+      "passes": true,
+      "commit": "75a6b2e",
+      "notes": "CHECKPOINT 2 reached. Canvas layout wrap + shell.openInspector migration. SystemSectionTab inspector tab renders dynamic section component via subject.data.component. All 12 store polling + 4 socket subs + command palette + alerts + toast preserved intact. Code-reviewer APPROVE — subject prop nullable fix applied.",
+      "acceptanceCriteria": [
+        "src/views/SystemPanelView.vue refactored to use canvas-row--4 hero + canvas-row--3 card grids",
+        "src/components/inspector/system/SystemSectionTab.vue created",
+        "Internal SectionDrawer replaced with global InspectorPane",
+        "All 12 cards render with grid 3-col",
+        "Click on card opens inspector (not old drawer)",
+        "Hero band shows 4 aggregate metrics",
+        "Real-time updates visible",
+        "CHECKPOINT 2: views primitivas reformadas (Dashboard, Clients, Logs, System)"
+      ]
+    },
+    {
+      "id": "US-010",
+      "title": "Fase 10 — BrainView REBUILD COMPLETO (CRITICAL)",
+      "priority": 13,
+      "passes": true,
+      "commit": "2fe0371",
+      "notes": "BrainView 2085→176 lines. 5 bands + DeepDrawer inspector tab + 5 helpers. Zero imports from old brain/ dir. Keyboard 1-5/r. Code-reviewer APPROVE_WITH_NITS — 4 fixes applied (2 HIGH: error states in Pulse+Evolution bands, 2 MEDIUM: orphan import, unused prop). Old 22 Brain*Section + 12 useBrain* composables preserved as dead code for Fase 14 cleanup. Smoke test: all 12 files HTTP 200.",
+      "acceptanceCriteria": [
+        "src/views/system/BrainView.vue REWRITTEN as thin wrapper (<50 lines) importing only the brain-v2 components",
+        "src/views/system/brain-v2/BrainHeroBand.vue created (coherence hero + 4 context facts + 4 states)",
+        "src/views/system/brain-v2/BrainPulseBand.vue created (sparklines + last 3 decisions + 4 states)",
+        "src/views/system/brain-v2/BrainCurrentBand.vue created (current cycle/agent/task + 4 states)",
+        "src/views/system/brain-v2/BrainEvolutionBand.vue created (learnings + rollouts + testing + 4 states)",
+        "src/views/system/brain-v2/BrainArchiveGrid.vue created (grid of 22 tiles with health dots)",
+        "src/views/system/brain-v2/BrainDeepDrawer.vue created (NOT reusing SectionDrawer)",
+        "src/views/system/brain-v2/helpers/coherence.js created (NOT reusing useBrainCoherence)",
+        "src/views/system/brain-v2/helpers/timeAgo.js created (NOT reusing useTimeAgo)",
+        "src/views/system/brain-v2/helpers/sparkline.js created",
+        "src/views/system/brain-v2/helpers/flatten.js created",
+        "src/views/system/brain-v2/helpers/sectionMeta.js created (22 sections mapping)",
+        "Only useBrainStore (for data) and useSystemSocketStore (for events) imported. NO import of any file from src/components/system/brain/ in the new code",
+        "EMPTY STATE TEST: With WS disconnected, every band shows intentional loading/empty state, ZERO blank rectangles",
+        "DATA STATE TEST: Reconnect, each band updates",
+        "COHERENCE LIVE: Hero number changes when brain.health updates in DevTools",
+        "ARCHIVE GRID: Click on each of 22 tiles opens BrainDeepDrawer",
+        "KEYBOARD: 1-5 scrolls to bands, r forces refresh, Esc closes drawer",
+        "WEBSOCKET INTEGRITY: Network WS filter shows frames and sparklines update",
+        "NO DOUBLE FETCH: Switching routes 5x between /system/brain and /dashboard shows 1 fetch per visit, no duplicates",
+        "npm run build clean",
+        "Observer post-phase: composition +1, depth +2, craft +2, overall moves toward PASS"
+      ]
+    },
+    {
+      "id": "US-011",
+      "title": "Fase 11 — LocalCommandView (STRETCH GOAL — optional)",
+      "priority": 14,
+      "passes": false,
+      "optional": true,
+      "acceptanceCriteria": [
+        "If skipped: US-011 marked passes: true with note 'Deferred to post-v2'",
+        "If executed: src/views/system/local-command-v2/ components created following same rebuild pattern as Brain",
+        "If executed: src/views/system/LocalCommandView.vue refactored"
+      ]
+    },
+    {
+      "id": "US-012",
+      "title": "Fase 12 — Remaining views (CMS, CreateClient, Env, Login)",
+      "priority": 15,
+      "passes": true,
+      "commit": "bdf55cd",
+      "notes": "CMS/CreateClient/EnvManager wrapped in canvas + ContextHeader. Contract inspector tabs (Overview/Schema/Preview) wired on row click. LoginView untouched per spec. CMS modals preserved for Fase 14 cleanup. All 6 files HTTP 200.",
+      "acceptanceCriteria": [
+        "src/views/CmsContractsView.vue refactored to canvas layout with inspector integration",
+        "src/components/inspector/contract/ContractOverviewTab.vue created",
+        "src/components/inspector/contract/ContractSchemaTab.vue created",
+        "src/components/inspector/contract/ContractPreviewTab.vue created",
+        "src/views/CreateClientView.vue refactored to canvas layout with clear wizard structure",
+        "src/views/system/EnvManagerView.vue refactored to single-column canvas",
+        "src/views/LoginView.vue minor adjustments (keeps own layout)",
+        "Each view has ContextHeader (except LoginView)",
+        "Each view handles empty/loading/error states",
+        "Functionality intact (CRUD works, env save works, login works)"
+      ]
+    },
+    {
+      "id": "US-013",
+      "title": "Fase 13 — Responsive audit",
+      "priority": 16,
+      "passes": false,
+      "acceptanceCriteria": [
+        "All 10 views tested at 1920px, 1440px, 1280px, 1024px, 768px",
+        "No horizontal scroll at any breakpoint",
+        "No broken cells (< 200px width in normal rows)",
+        "Inspector open does not break layout",
+        "Density cycle (Ctrl+.) works in all views",
+        "Mobile 375px tested if user confirms it's in scope (otherwise skip)"
+      ]
+    },
+    {
+      "id": "US-014",
+      "title": "Fase 14 — Cleanup dead code (36 files deleted)",
+      "priority": 17,
+      "passes": true,
+      "commit": "b9036cd",
+      "notes": "36 orphan files deleted (23 Brain*Section + BrainSectionWrap + BrainRawRenderer + BrainTooltip + 7 composables + brain-shared.css + 2 clients modals). Preserved: useBrainI18n (still used by 8+ views), useMetricHistory/useAnimatedNumber/useFlashOnChange (used by non-brain system sub-sections). Smoke test: 6 refactored views HTTP 200.",
+      "acceptanceCriteria": [
+        "Verify no imports of old Brain*Section.vue remain (grep)",
+        "Delete 22 old Brain*Section.vue files",
+        "Delete BrainSectionWrap.vue and BrainRawRenderer.vue",
+        "Delete 12 useBrain*.js composables",
+        "Verify old modal inline references in ClientsView are gone (modals now extracted)",
+        "npm run build clean without errors",
+        "lint-ux.mjs reports 0 violations (no imports of deleted files anywhere)"
+      ]
+    },
+    {
+      "id": "US-015",
+      "title": "Fase 15 — Final verification gates",
+      "priority": 18,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Observer run against all accessible views (login at minimum)",
+        "Composition score >= 7.5",
+        "Depth score >= 6.0",
+        "Typography score >= 7.0",
+        "Motion score >= 5.0",
+        "Craft score >= 7.0",
+        "Overall quality gate: PASS",
+        "Anti-template findings: 0",
+        "Semantic issues: <= 1",
+        "Cognitive walkthrough: all 6 tasks completable in <= 3 actions",
+        "Functional regression: login, WS, CRUD all work",
+        "Visual diff against baseline shows clear improvement",
+        "lint-ux.mjs: 0 violations across entire src/"
+      ]
+    }
+  ]
+}

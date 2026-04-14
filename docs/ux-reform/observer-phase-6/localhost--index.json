@@ -1,0 +1,13 @@
+{
+  "domain": "localhost",
+  "capturedAt": "2026-04-11T02:21:59.652Z",
+  "totalPages": 1,
+  "pages": [
+    {
+      "pagePath": "/",
+      "dirName": "localhost",
+      "url": "http://localhost:5181",
+      "sections": 1
+    }
+  ]
+}

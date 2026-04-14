@@ -4,17 +4,17 @@
       "date": "2025-04",
       "project": "baseline",
       "section": "Hero",
-      "sectionType": null,
+      "sectionType": "hero",
       "element": "Diagonal text overlap",
       "description": "Display heading rotated -3deg overlapping a full-bleed image with clip-path reveal",
-      "whyItWorked": "Creates immediate visual tension and breaks the \"centered heading\" pattern. Strong composition signal.",
+      "whyItWorked": "Creates immediate visual tension and breaks the 'centered heading' pattern. Strong composition signal.",
       "userRating": null
     },
     {
       "date": "2025-04",
       "project": "baseline",
       "section": "Nav",
-      "sectionType": null,
+      "sectionType": "nav",
       "element": "Contextual micro-interactions",
       "description": "Nav items that shift color/weight based on scroll section, with magnetic hover on CTA",
       "whyItWorked": "Makes nav feel alive without being distracting. Good craft dimension score.",
@@ -24,7 +24,7 @@
       "date": "2025-04",
       "project": "baseline",
       "section": "Features",
-      "sectionType": null,
+      "sectionType": "features",
       "element": "Staggered card cascade",
       "description": "Bento grid with cards entering via ScrollTrigger.batch(), alternating from left/right with depth shadows",
       "whyItWorked": "Reliable high-scorer. Combines stagger + depth + asymmetric grid for 3 excellence dimensions at once.",
@@ -34,19 +34,19 @@
       "date": "2025-04",
       "project": "baseline",
       "section": "Footer",
-      "sectionType": null,
+      "sectionType": "footer",
       "element": "Parallax depth close",
       "description": "Footer with 3 parallax layers (bg texture, content, floating accent) collapsing on scroll end",
-      "whyItWorked": "Distinctive close to page. Most footers are flat — this adds depth as a signature.",
+      "whyItWorked": "Distinctive close to page. Most footers are flat -- this adds depth as a signature.",
       "userRating": null
     },
     {
       "date": "2026-04-02",
       "project": "Coque",
       "section": "Hero",
-      "sectionType": null,
+      "sectionType": "hero",
       "element": "Phantom architecture back-type",
-      "description": "Oversized \"COQUE\" at 22vw behind gradient mesh, 3-plane parallax (30%/15%/8%), front-content bottom-left",
+      "description": "Oversized 'COQUE' at 22vw behind gradient mesh, 3-plane parallax (30%/15%/8%), front-content bottom-left",
       "whyItWorked": "Back-type as spatial anchor creates depth without imagery. Avoids the dark-image-on-dark trap.",
       "userRating": null
     },
@@ -54,17 +54,18 @@
       "date": "2026-04-02",
       "project": "Coque",
       "section": "FeaturedWork",
-      "sectionType": null,
+      "sectionType": "portfolio",
       "element": "Curtain reveal clip-path",
       "description": "Each project reveals left-to-right via clip-path: inset() at 1000ms power3.inOut on light theme",
       "whyItWorked": "Slow curtain-pull makes each project feel like an event. Light section provides breathing room.",
-      "userRating": null
+      "userRating": null,
+      "ruleNote": "Pre-RULE-007 (600ms cap). 1000ms intentional for portfolio slow-reveal context."
     },
     {
       "date": "2026-04-02",
       "project": "Coque",
       "section": "Marquee",
-      "sectionType": null,
+      "sectionType": "marquee",
       "element": "Contra-scroll kinetic",
       "description": "Two rows at different speeds (60px/s vs 45px/s) in opposite directions, pause on hover",
       "whyItWorked": "Speed differential prevents mechanical feel. Display + mono rows add typographic contrast.",
@@ -74,220 +75,10 @@
       "date": "2026-04-02",
       "project": "Coque",
       "section": "CTA",
-      "sectionType": null,
+      "sectionType": "cta",
       "element": "Repulsion field",
       "description": "Headline words push away from cursor while CTA button pulls toward it (magnetic + repulsion)",
-      "whyItWorked": "Gravitational tension creates micro-narrative — everything points toward the action button.",
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "section": "reference",
-      "sectionType": "reference",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "practice-v2",
-      "section": "S-Hero",
-      "sectionType": "hero",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "practice-v2",
-      "section": "S-Pricing",
-      "sectionType": "pricing",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "practice-v2",
-      "section": "S-Contact",
-      "sectionType": "contact",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
-      "userRating": null
-    },
-    {
-      "date": "2026-04-08",
-      "project": "practice-v2",
-      "section": "S-Cta",
-      "sectionType": "cta",
-      "element": null,
-      "description": null,
-      "whyItWorked": null,
+      "whyItWorked": "Gravitational tension creates micro-narrative -- everything points toward the action button.",
       "userRating": null
     }
   ],
@@ -308,5 +99,11 @@
       "feedback": "Horizontally scrolling ticker with brand logos",
       "lesson": "Feels cheap and distracting. Only works for testimonial quotes with careful pacing."
     }
-  ]
+  ],
+  "_meta": {
+    "cleanedAt": "2026-04-10",
+    "cleanReason": "Audit V1: removed 33 all-null shell entries (17 reference stubs + 16 practice stubs with no element/description/whyItWorked). Only real signatures with actual content retained. 41 -> 8 approved entries.",
+    "removedCount": 33,
+    "removedProjects": ["artemshcherban-com (9)", "artefakt-mov (8)", "practice-v2 (4)", "practice-v2-iyo (4)", "practice-v2-cyber (8)"]
+  }
 }

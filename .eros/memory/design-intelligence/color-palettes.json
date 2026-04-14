@@ -4,8 +4,9 @@
       "date": "2026-04-01",
       "project": "Forge Studio",
       "mood": "dark cinematic editorial",
-      "canvas": "#0f0d0a (warm amber)",
-      "accent": "#c4843e (copper) + #e8d5b5 (wheat)",
+      "themeType": "dark",
+      "canvas": "#0f0d0a",
+      "accent": "#c4843e, #e8d5b5",
       "reaction": "approved by user",
       "lesson": "Copper on warm amber = editorial warmth without red aggression. Differentiated from griflan red. Warm temperature intentional throughout.",
       "userRating": null,
@@ -15,8 +16,9 @@
       "date": "2026-04-02",
       "project": "Coque",
       "mood": "dark+light cinematic brutalism",
-      "canvas": "#0d0b14 (cool violet) + #f5f3ee (warm light)",
-      "accent": "#FF4D00 (electric vermillion) + #B8D4E3 (ice blue)",
+      "themeType": "dual",
+      "canvas": "#0d0b14 (dark) + #f5f3ee (light)",
+      "accent": "#FF4D00, #B8D4E3",
       "reaction": "auto-approved by brain",
       "lesson": "Cool violet canvas = creative depth. Vermillion accent avoids copper (Forge) and purple (AI). Dual-theme palette with dark/light rhythm. 5.2:1 contrast on accent.",
       "userRating": null,
@@ -26,6 +28,7 @@
       "date": "2026-04-04",
       "project": "peritas-tech",
       "mood": "dark cyberpunk",
+      "themeType": "dark",
       "canvas": "#0a0a0f",
       "accent": "#00f0ff, #ff00aa, #ffe600, #b8fe02",
       "reaction": "auto-approved",
@@ -37,10 +40,11 @@
       "date": "2026-04-04",
       "project": "gentile-natalia",
       "mood": "architectural restrained glass cinematic",
+      "themeType": "dark",
       "canvas": "#0b100e",
-      "accent": "#b8b0a4,#d4cec6,#f3f0ec",
+      "accent": "#b8b0a4, #d4cec6, #f3f0ec",
       "reaction": "user approved",
-      "lesson": "Monochromatic green-tinted near-black with warm stone accents. No chromatic accent — color from photography only. Adapted from fluid.glass (#0b1012 blue-tint shifted to #0b100e green-tint for warmth). First project with zero chromatic accent.",
+      "lesson": "Monochromatic green-tinted near-black with warm stone accents. No chromatic accent -- color from photography only. First project with zero chromatic accent.",
       "userRating": null,
       "validations": 1
     },
@@ -48,6 +52,7 @@
       "date": "2026-04-05",
       "project": "practice-10",
       "mood": "minimal",
+      "themeType": "dark",
       "canvas": "#0a0a12",
       "accent": "#c47d52",
       "reaction": null,
@@ -59,6 +64,7 @@
       "date": "2026-04-05",
       "project": "practice-17",
       "mood": "minimal",
+      "themeType": "dark",
       "canvas": "#0b0b0c",
       "accent": "#8fae8b",
       "reaction": null,
@@ -68,19 +74,9 @@
     },
     {
       "date": "2026-04-05",
-      "project": "artefakt-mov",
-      "mood": "reference",
-      "canvas": "#000000",
-      "accent": "#ffffff",
-      "reaction": "reference-excellent",
-      "lesson": "From https://artefakt.mov.",
-      "userRating": null,
-      "validations": 1
-    },
-    {
-      "date": "2026-04-05",
       "project": "practice-21",
       "mood": "playful",
+      "themeType": "dark",
       "canvas": "#0c0a12",
       "accent": "#b8fe02",
       "reaction": null,
@@ -90,33 +86,12 @@
     },
     {
       "date": "2026-04-08",
-      "project": "artemshcherban-com",
-      "mood": "reference",
-      "canvas": "#0f0f0f",
-      "accent": "#fed008, #f6f6f6, #f0f0f0",
-      "reaction": "reference-excellent",
-      "lesson": "From https://artemshcherban.com/.",
-      "userRating": null,
-      "validations": 1
-    },
-    {
-      "date": "2026-04-08",
-      "project": "artefakt-mov",
-      "mood": "reference",
-      "canvas": "#000000",
-      "accent": "#ffffff",
-      "reaction": "reference-excellent",
-      "lesson": "From https://artefakt.mov.",
-      "userRating": null,
-      "validations": 1
-    },
-    {
-      "date": "2026-04-08",
       "project": "practice-v2",
       "mood": "minimal",
+      "themeType": "dark",
       "canvas": "#0c0b08",
       "accent": "#b8a078",
-      "reaction": "Warm amber void with aged brass — single accent discipline",
+      "reaction": "Warm amber void with aged brass -- single accent discipline",
       "lesson": "Warm amber near-black creates envelope of warmth. Brass accent at 6.8:1 contrast used sparingly. Differentiated from cool blue (#0a0a12) and sage (#0b0b0c) minimal palettes.",
       "userRating": null,
       "validations": 1
@@ -129,5 +104,31 @@
       "reason": "Purple gradient = #1 AI fingerprint. Never use.",
       "source": "seed"
     }
-  ]
+  ],
+  "references": [
+    {
+      "date": "2026-04-08",
+      "project": "artemshcherban-com",
+      "canvas": "#0f0f0f",
+      "accent": "#fed008, #f6f6f6, #f0f0f0",
+      "lesson": "Bold yellow accent on near-black. High contrast single chromatic accent. Minimal palette with maximum impact.",
+      "url": "https://artemshcherban.com/"
+    },
+    {
+      "date": "2026-04-08",
+      "project": "artefakt-mov",
+      "canvas": "#000000",
+      "accent": "#ffffff",
+      "lesson": "Pure B&W. Violates near-black rule but works through extreme contrast and typography as the only design tool. Exception that proves the rule.",
+      "url": "https://artefakt.mov/"
+    }
+  ],
+  "knownGaps": [
+    "Zero light-canvas palettes in working history. Massive blind spot for light-theme projects.",
+    "Only 1 warm palette (Forge), 1 cool (practice-10), rest neutral. Color temperature skill underdeveloped."
+  ],
+  "_meta": {
+    "cleanedAt": "2026-04-10",
+    "cleanReason": "Audit V1: deduplicated artefakt-mov (was listed twice), moved reference palettes to separate 'references' section with actual lessons, added themeType field, added knownGaps, enriched reference lessons."
+  }
 }

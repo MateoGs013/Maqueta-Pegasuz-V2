@@ -471,8 +471,17 @@ const stopDevServer = (server) => {
 
 const runObserver = async (projectDir, port) => {
   const observerDir = path.join(projectDir, '.brain', 'observer')
+  const manifestPath = path.join(observerDir, 'localhost', 'manifest.json')
+
+  // Clear stale observer data before running fresh analysis.
+  // Without this, a failed observer run would leave the old manifest on disk,
+  // and subsequent reads would return cached scores from a previous session.
+  try {
+    await fs.rm(path.join(observerDir, 'localhost'), { recursive: true, force: true })
+  } catch {}
   await ensureDir(observerDir)
 
+  const startedAt = Date.now()
   log(`Running observer on localhost:${port}...`)
 
   try {
@@ -485,8 +494,20 @@ const runObserver = async (projectDir, port) => {
     return null
   }
 
-  // Read results
-  const manifest = await readJson(path.join(observerDir, 'localhost', 'manifest.json'))
+  // Read results — verify the manifest is fresh (created after we started)
+  const manifest = await readJson(manifestPath)
+  if (!manifest) {
+    log('Observer produced no manifest — scores will be null')
+    return null
+  }
+
+  // Freshness check: reject manifests older than this run
+  const capturedAt = manifest.capturedAt ? new Date(manifest.capturedAt).getTime() : 0
+  if (capturedAt < startedAt - 5000) {
+    log(`Observer manifest is stale (capturedAt ${manifest.capturedAt || 'missing'}, started ${new Date(startedAt).toISOString()}). Discarding.`)
+    return null
+  }
+
   const analysisMd = await readText(path.join(observerDir, 'localhost', 'analysis.md'))
 
   return { manifest, analysisMd }

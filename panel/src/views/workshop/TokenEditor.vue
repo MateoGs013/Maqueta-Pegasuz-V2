@@ -264,6 +264,7 @@ function scrollToToken(name) {
 
 <template>
   <div class="editor-shell">
+    <h1 class="sr-only">Editor de tokens</h1>
     <!-- ── LEFT: Token groups ── -->
     <div class="token-col">
       <div class="token-head">

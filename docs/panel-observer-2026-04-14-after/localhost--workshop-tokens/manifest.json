@@ -1,0 +1,290 @@
+{
+  "version": 2,
+  "url": "http://localhost:4403/workshop/tokens",
+  "domain": "localhost",
+  "pagePath": "/workshop/tokens",
+  "dirName": "localhost--workshop-tokens",
+  "capturedAt": "2026-04-14T22:00:21.725Z",
+  "isLocal": false,
+  "geometry": {
+    "visualBalance": {
+      "score": 5,
+      "type": "asymmetric-unbalanced",
+      "centerOfMass": {
+        "x": 0.526,
+        "y": 0.499
+      },
+      "quadrants": {
+        "topLeft": 0.014,
+        "topRight": 0.004,
+        "bottomLeft": 0.103,
+        "bottomRight": 0.88
+      }
+    },
+    "overlap": {
+      "intentional": 0,
+      "elements": []
+    },
+    "surprise": {
+      "count": 0,
+      "types": []
+    }
+  },
+  "aesthetics": {
+    "colorHarmony": {
+      "score": 5,
+      "type": "mixed",
+      "temperature": "warm",
+      "saturationRange": [
+        6,
+        100
+      ],
+      "aiFingerprint": false,
+      "uniqueColors": 8
+    },
+    "whitespace": {
+      "globalRatio": 0.15,
+      "perSection": [
+        0
+      ],
+      "rhythm": 0,
+      "verdict": "crowded"
+    },
+    "typography": {
+      "score": 8,
+      "sizeRatio": 2,
+      "modularScale": 1.333,
+      "levels": 3,
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "hasCustomSpacing": true,
+      "lineHeightConsistency": true
+    }
+  },
+  "semantic": {
+    "score": 9.5,
+    "headingHierarchy": "correct",
+    "landmarks": [
+      "navigation",
+      "main"
+    ],
+    "interactiveNamed": 91,
+    "issues": [
+      "missing-skip-link"
+    ]
+  },
+  "antiTemplate": {
+    "score": 10,
+    "isTemplate": false,
+    "layoutVariety": 1,
+    "signatures": [
+      {
+        "section": 0,
+        "features": []
+      }
+    ],
+    "findings": []
+  },
+  "depthMetrics": {
+    "zIndexLayers": [],
+    "zIndexCount": 0,
+    "clipPathCount": 0,
+    "backdropFilterCount": 0,
+    "shadowCount": 1,
+    "shadowVariety": 1,
+    "overlapElements": 1,
+    "hasPseudoElements": false,
+    "hasGrain": false,
+    "canvasLayerCount": 0
+  },
+  "motionProfile": {
+    "cssTransitions": {
+      "count": 10,
+      "cubicBeziers": [
+        "cubic-bezier(0.16, 1, 0.3, 1)",
+        "cubic-bezier(.16, 1, .3, 1)"
+      ],
+      "cubicBezierCount": 2,
+      "avgDuration": 0.23
+    },
+    "cssAnimations": {
+      "count": 1,
+      "hasStagger": false,
+      "runtimeAnimations": 1,
+      "revealElements": 0,
+      "gsapStyledElements": 1
+    },
+    "gsap": {
+      "active": false,
+      "tweenCount": 0,
+      "scrollTrigger": false,
+      "scrollTriggerCount": 0,
+      "scrollTriggerScrub": false,
+      "scrollTriggerScrubCount": 0
+    },
+    "wheelStates": {
+      "isWheelDriven": true,
+      "statesCaptured": 0
+    }
+  },
+  "compositionMetrics": {
+    "textAlignmentVariety": 3,
+    "avgPaddingAsymmetry": 0,
+    "containerBreaks": 0,
+    "isSingleViewport": true,
+    "subCompositions": 0
+  },
+  "typographyMetrics": {
+    "sizeRatio": 2,
+    "sizeCount": 3,
+    "weightCount": 4,
+    "hasLetterSpacing": true,
+    "hasClamp": false
+  },
+  "excellenceSignals": {
+    "composition": "MEDIUM",
+    "depth": "WEAK",
+    "typography": "STRONG",
+    "motion": "WEAK",
+    "craft": "MEDIUM",
+    "_scores": {
+      "composition": 5.5,
+      "depth": 0,
+      "typography": 8,
+      "motion": 1.4,
+      "craft": 6.1,
+      "signals": {
+        "composition": "MEDIUM",
+        "depth": "WEAK",
+        "typography": "STRONG",
+        "motion": "WEAK",
+        "craft": "MEDIUM"
+      }
+    }
+  },
+  "qualityGates": {
+    "contrast": {
+      "signal": "FAIL",
+      "passRate": 75,
+      "failingAA": 1,
+      "passingAA": 3,
+      "totalPairs": 4,
+      "minRatio": 2.34,
+      "avgRatio": 10,
+      "failingSamples": [
+        {
+          "tag": "a",
+          "fg": "rgb(240, 231, 216)",
+          "bg": "rgba(255, 106, 0, 0.06)",
+          "ratio": 2.34,
+          "large": false
+        }
+      ]
+    },
+    "animations": {
+      "clean": true,
+      "total": 0,
+      "high": 0,
+      "medium": 0,
+      "patterns": []
+    },
+    "images": {
+      "total": 0,
+      "signal": "PASS",
+      "avgScore": 100,
+      "issues": []
+    },
+    "headings": {
+      "signal": "PASS",
+      "h1Count": 1,
+      "totalHeadings": 1,
+      "skippedLevels": [],
+      "issues": [],
+      "structure": [
+        {
+          "level": 1,
+          "text": "Editor de tokens"
+        }
+      ]
+    },
+    "meta": {
+      "signal": "FAIL",
+      "score": 0
+    },
+    "overall": "FAIL"
+  },
+  "wheelStates": {
+    "isWheelDriven": true,
+    "statesCaptured": 0
+  },
+  "palette": {
+    "textColors": [
+      {
+        "hex": "#f0e7d8",
+        "frequency": 2
+      },
+      {
+        "hex": "#ff6a00",
+        "frequency": 1
+      },
+      {
+        "hex": "#8a8578",
+        "frequency": 1
+      }
+    ],
+    "bgColors": [
+      {
+        "hex": "#0a0a0b",
+        "frequency": 3
+      },
+      {
+        "hex": "#ff6a00",
+        "frequency": 2
+      },
+      {
+        "hex": "#3ee8b5",
+        "frequency": 1
+      }
+    ]
+  },
+  "screenshots": {
+    "desktop": 1,
+    "mobile": 1
+  },
+  "desktop": {
+    "frames": 1,
+    "frameFiles": [
+      "desktop/frame-000.png"
+    ],
+    "sections": [
+      {
+        "file": "desktop/frame-000.png",
+        "sectionTag": "viewport-chunk",
+        "sectionClass": "",
+        "scrollY": 0,
+        "height": 900
+      }
+    ],
+    "fullPage": "full-page-desktop.png"
+  },
+  "mobile": {
+    "frames": 1,
+    "frameFiles": [
+      "mobile/frame-000.png"
+    ],
+    "sections": [
+      {
+        "file": "mobile/frame-000.png",
+        "sectionTag": "viewport-chunk",
+        "sectionClass": "",
+        "scrollY": 0,
+        "height": 812
+      }
+    ],
+    "fullPage": "full-page-mobile.png"
+  }
+}

@@ -80,7 +80,7 @@ const isActive = (to) => {
       <!-- Memory pulse -->
       <div class="sb-pulse" v-if="stats">
         <div class="pulse-bar">
-          <div class="pulse-fill" :style="{ width: Math.min(100, stats.totalDataPoints / 2) + '%' }"></div>
+          <div class="pulse-fill" :style="{ transform: `scaleX(${Math.min(1, stats.totalDataPoints / 200)})` }"></div>
         </div>
         <span class="pulse-text">{{ stats.totalDataPoints }} data points</span>
       </div>
@@ -158,8 +158,9 @@ const isActive = (to) => {
   height: 2px; background: var(--surface); overflow: hidden; margin-bottom: 4px;
 }
 .pulse-fill {
-  height: 100%; background: var(--accent);
-  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+  height: 100%; width: 100%; background: var(--accent);
+  transform-origin: left center; transform: scaleX(0);
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .pulse-text { font: 400 9px var(--font-mono); color: var(--text-dim); letter-spacing: 0.06em; }
 

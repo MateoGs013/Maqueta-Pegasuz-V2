@@ -40,6 +40,7 @@ const formatTitle = (title) => {
 
 <template>
   <div class="panel-page diary-page">
+    <h1 class="sr-only">Diario de Eros</h1>
     <div class="diary-header grid-row">
       <div class="cell">
         <p class="label">Diario de Eros</p>

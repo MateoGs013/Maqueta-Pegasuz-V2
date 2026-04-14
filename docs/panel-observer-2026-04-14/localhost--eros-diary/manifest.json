@@ -1,0 +1,302 @@
+{
+  "version": 2,
+  "url": "http://localhost:4400/eros/diary",
+  "domain": "localhost",
+  "pagePath": "/eros/diary",
+  "dirName": "localhost--eros-diary",
+  "capturedAt": "2026-04-14T21:40:19.074Z",
+  "isLocal": false,
+  "geometry": {
+    "visualBalance": {
+      "score": 7,
+      "type": "asymmetric-unbalanced",
+      "centerOfMass": {
+        "x": 0.465,
+        "y": 0.481
+      },
+      "quadrants": {
+        "topLeft": 0.111,
+        "topRight": 0,
+        "bottomLeft": 0.157,
+        "bottomRight": 0.731
+      }
+    },
+    "overlap": {
+      "intentional": 0,
+      "elements": []
+    },
+    "surprise": {
+      "count": 0,
+      "types": []
+    }
+  },
+  "aesthetics": {
+    "colorHarmony": {
+      "score": 5,
+      "type": "mixed",
+      "temperature": "warm",
+      "saturationRange": [
+        7,
+        100
+      ],
+      "aiFingerprint": false,
+      "uniqueColors": 7
+    },
+    "whitespace": {
+      "globalRatio": 0.53,
+      "perSection": [
+        0.05
+      ],
+      "rhythm": 0,
+      "verdict": "balanced"
+    },
+    "typography": {
+      "score": 8,
+      "sizeRatio": 1.8,
+      "modularScale": 1.125,
+      "levels": 4,
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "hasCustomSpacing": true,
+      "lineHeightConsistency": true
+    }
+  },
+  "semantic": {
+    "score": 7.5,
+    "headingHierarchy": "missing-h1",
+    "landmarks": [
+      "navigation",
+      "main"
+    ],
+    "interactiveNamed": 100,
+    "issues": [
+      "heading-hierarchy: missing-h1",
+      "missing-skip-link"
+    ]
+  },
+  "antiTemplate": {
+    "score": 8,
+    "isTemplate": false,
+    "layoutVariety": 1,
+    "signatures": [
+      {
+        "section": 0,
+        "features": []
+      }
+    ],
+    "findings": [
+      "missing-surprise"
+    ]
+  },
+  "depthMetrics": {
+    "zIndexLayers": [],
+    "zIndexCount": 0,
+    "clipPathCount": 0,
+    "backdropFilterCount": 0,
+    "shadowCount": 1,
+    "shadowVariety": 1,
+    "overlapElements": 0,
+    "hasPseudoElements": false,
+    "hasGrain": false,
+    "canvasLayerCount": 0
+  },
+  "motionProfile": {
+    "cssTransitions": {
+      "count": 8,
+      "cubicBeziers": [
+        "cubic-bezier(0.16, 1, 0.3, 1)",
+        "cubic-bezier(.16, 1, .3, 1)"
+      ],
+      "cubicBezierCount": 2,
+      "avgDuration": 0.26
+    },
+    "cssAnimations": {
+      "count": 1,
+      "hasStagger": false,
+      "runtimeAnimations": 1,
+      "revealElements": 0,
+      "gsapStyledElements": 0
+    },
+    "gsap": {
+      "active": false,
+      "tweenCount": 0,
+      "scrollTrigger": false,
+      "scrollTriggerCount": 0,
+      "scrollTriggerScrub": false,
+      "scrollTriggerScrubCount": 0
+    },
+    "wheelStates": {
+      "isWheelDriven": true,
+      "statesCaptured": 0
+    }
+  },
+  "compositionMetrics": {
+    "textAlignmentVariety": 4,
+    "avgPaddingAsymmetry": 0,
+    "containerBreaks": 0,
+    "isSingleViewport": true,
+    "subCompositions": 0
+  },
+  "typographyMetrics": {
+    "sizeRatio": 1.8,
+    "sizeCount": 4,
+    "weightCount": 4,
+    "hasLetterSpacing": true,
+    "hasClamp": false
+  },
+  "excellenceSignals": {
+    "composition": "MEDIUM",
+    "depth": "WEAK",
+    "typography": "STRONG",
+    "motion": "WEAK",
+    "craft": "MEDIUM",
+    "_scores": {
+      "composition": 6.1,
+      "depth": 0,
+      "typography": 8,
+      "motion": 1.1,
+      "craft": 5.5,
+      "signals": {
+        "composition": "MEDIUM",
+        "depth": "WEAK",
+        "typography": "STRONG",
+        "motion": "WEAK",
+        "craft": "MEDIUM"
+      }
+    }
+  },
+  "qualityGates": {
+    "contrast": {
+      "signal": "FAIL",
+      "passRate": 67,
+      "failingAA": 1,
+      "passingAA": 2,
+      "totalPairs": 3,
+      "minRatio": 2.34,
+      "avgRatio": 8,
+      "failingSamples": [
+        {
+          "tag": "a",
+          "fg": "rgb(240, 231, 216)",
+          "bg": "rgba(255, 106, 0, 0.06)",
+          "ratio": 2.34,
+          "large": false
+        }
+      ]
+    },
+    "animations": {
+      "clean": false,
+      "total": 1,
+      "high": 1,
+      "medium": 0,
+      "patterns": [
+        {
+          "type": "forbidden-transition",
+          "element": "div.pulse-fill",
+          "property": "width",
+          "severity": "HIGH"
+        }
+      ]
+    },
+    "images": {
+      "total": 0,
+      "signal": "PASS",
+      "avgScore": 100,
+      "issues": []
+    },
+    "headings": {
+      "signal": "FAIL",
+      "h1Count": 0,
+      "totalHeadings": 0,
+      "skippedLevels": [],
+      "issues": [
+        "no-headings",
+        "missing-h1"
+      ],
+      "structure": []
+    },
+    "meta": {
+      "signal": "FAIL",
+      "score": 0
+    },
+    "overall": "FAIL"
+  },
+  "wheelStates": {
+    "isWheelDriven": true,
+    "statesCaptured": 0
+  },
+  "palette": {
+    "textColors": [
+      {
+        "hex": "#f0e7d8",
+        "frequency": 2
+      },
+      {
+        "hex": "#ff6a00",
+        "frequency": 1
+      },
+      {
+        "hex": "#8a8578",
+        "frequency": 1
+      }
+    ],
+    "bgColors": [
+      {
+        "hex": "#0a0a0b",
+        "frequency": 2
+      },
+      {
+        "hex": "#ff6a00",
+        "frequency": 2
+      },
+      {
+        "hex": "#3ee8b5",
+        "frequency": 1
+      },
+      {
+        "hex": "#ffffff",
+        "frequency": 1
+      }
+    ]
+  },
+  "screenshots": {
+    "desktop": 1,
+    "mobile": 1
+  },
+  "desktop": {
+    "frames": 1,
+    "frameFiles": [
+      "desktop/frame-000.png"
+    ],
+    "sections": [
+      {
+        "file": "desktop/frame-000.png",
+        "sectionTag": "viewport-chunk",
+        "sectionClass": "",
+        "scrollY": 0,
+        "height": 900
+      }
+    ],
+    "fullPage": "full-page-desktop.png"
+  },
+  "mobile": {
+    "frames": 1,
+    "frameFiles": [
+      "mobile/frame-000.png"
+    ],
+    "sections": [
+      {
+        "file": "mobile/frame-000.png",
+        "sectionTag": "viewport-chunk",
+        "sectionClass": "",
+        "scrollY": 0,
+        "height": 812
+      }
+    ],
+    "fullPage": "full-page-mobile.png"
+  }
+}

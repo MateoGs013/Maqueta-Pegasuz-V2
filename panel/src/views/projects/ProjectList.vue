@@ -15,6 +15,7 @@ const pct = (done, total) => total > 0 ? Math.round(done / total * 100) : 0
 
 <template>
   <div class="list-page">
+    <h1 class="sr-only">Proyectos</h1>
     <!-- Table header -->
     <div class="list-head">
       <span class="col-name">Proyecto</span>

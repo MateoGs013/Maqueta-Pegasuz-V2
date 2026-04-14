@@ -248,6 +248,7 @@ onUnmounted(() => {
 
 <template>
   <div class="panel-page">
+    <h1 class="sr-only">Training de Eros</h1>
     <!-- IMPACT -->
     <div class="grid-row grid-row--impact" v-if="impact">
       <div class="cell metric-cell">
