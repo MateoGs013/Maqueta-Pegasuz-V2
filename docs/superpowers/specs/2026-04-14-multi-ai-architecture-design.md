@@ -217,8 +217,11 @@ All phases commit-safe, reversible, testable. Total estimated effort: **12-16 ho
 ### Phase 4 — Defense in depth (1 h, risk: low)
 - Add `SessionStart` hook to `.claude/settings.json`: inject EROS.md + AGENTS.md
 - Write `scripts/eros-doctor.mjs`: validate structure, paths, references
+  - **Anti-contamination rule:** flag `AGENTS.md` if it contains AI-specific jargon (`Claude`, `Gemini`, `Codex`, `Skill()`, `Task(subagent_type)`, `activate_skill`, `@include`). These belong in adapter files, not the neutral orchestrator.
+  - **Cross-reference rule:** CLAUDE.md + GEMINI.md must reference EROS + AGENTS; if not, warn.
+  - **Path integrity rule:** no `.claude/` references in `.eros/` files; no `.eros/` references missing their target file.
 - Run `eros-doctor` and confirm green
-- **Validation:** New session shows auto-injected context; doctor passes
+- **Validation:** New session shows auto-injected context; doctor passes all three rules
 
 ### Phase 4.5 — Documentation path migration (2 h, risk: low)
 Update existing documentation to reflect new `.eros/` paths. Audit identified ~8 files needing updates:
