@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const scriptsDir = path.resolve(__dirname, '..', 'scripts')
-const runtimeFile = path.resolve(__dirname, '..', '.claude', 'front-brain', 'runtime', 'runs.generated.json')
+const runtimeFile = path.resolve(__dirname, '..', '.eros', 'eros-feed', 'runtime', 'runs.generated.json')
 
 export default function erosPlugin() {
   let watchProcess = null
@@ -39,7 +39,7 @@ export default function erosPlugin() {
 
   const startWatch = () => {
     if (watchProcess) return
-    const script = path.join(scriptsDir, 'sync-front-brain-runs.mjs')
+    const script = path.join(scriptsDir, 'pipeline', 'sync-eros-feed-runs.mjs')
     watchProcess = spawn(process.execPath, [script, '--watch'], {
       cwd: scriptsDir,
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -684,12 +684,12 @@ export default function erosPlugin() {
       } catch { /* file doesn't exist yet */ }
 
       // NOTE: startWatch() removed from auto-start.
-      // It was spawning sync-front-brain-runs.mjs --watch, which opened a
+      // It was spawning sync-eros-feed-runs.mjs --watch, which opened a
       // recursive fs.watch handle on EVERY .brain/ dir on the Desktop (20+
       // watchers). On Windows that exhausts the per-process handle limit
       // after a few hours of use, killing vite silently with no Event Viewer
       // entry. The watch script can still be invoked manually if needed:
-      //   node ../scripts/sync-front-brain-runs.mjs --watch
+      //   node ../scripts/pipeline/sync-eros-feed-runs.mjs --watch
       // Re-enable here only if you understand the file-handle implications.
     },
 

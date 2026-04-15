@@ -1,5 +1,5 @@
 import { ref, computed, shallowRef } from 'vue'
-import initialCache from '@front-brain-runtime/runs.generated.json'
+import initialCache from '@eros-feed-runtime/runs.generated.json'
 import {
   allBlueprints,
   blueprintManifest,
@@ -267,7 +267,7 @@ export const blueprintStats = {
   trendTags: [...new Set(allBlueprints.flatMap((i) => i.trendTags))].sort(),
 }
 
-export const frontBrainSnapshot = computed(() => ({
+export const erosFeedSnapshot = computed(() => ({
   id: activeRun.value.id, sourceType: activeRun.value.sourceType, sourcePath: activeRun.value.sourcePath,
   legacyBridge: activeRun.value.legacyBridge, designMarkdown: designMarkdown.value,
   decisionsMarkdown: decisionsMarkdown.value, reviewMarkdown: reviewMarkdown.value,
