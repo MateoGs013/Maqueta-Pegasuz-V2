@@ -228,7 +228,7 @@ const normalizeBrief = ({ brief, projectDir }) => {
   const projectName = String(brief.name || path.basename(projectDir) || 'Untitled Project').trim()
   const slug = slugify(brief.slug || projectName)
   const type = String(brief.type || 'creative-studio').trim()
-  const description = String(brief.description || 'A modern frontend project bootstrapped through the hybrid front-brain contract.').trim()
+  const description = String(brief.description || 'A modern frontend project bootstrapped through the hybrid eros-feed contract.').trim()
   const audience = String(brief.audience || 'Design-conscious customers looking for a premium digital experience.').trim()
   const pages = toArray(brief.pages)
   const pageList = pages.length > 0 ? pages : ['home']
@@ -424,7 +424,7 @@ const buildQueueJson = ({ hasReferences }) => {
     done: [
       createTask('setup/identity', 'ceo', 'done'),
       createTask('setup/create-dir', 'ceo', 'done'),
-      createTask('setup/front-brain-bootstrap', 'ceo', 'done'),
+      createTask('setup/eros-feed-bootstrap', 'ceo', 'done'),
     ],
   }
 }
@@ -616,9 +616,9 @@ const buildApprovalsLog = () => `# Approvals — pending
 
 const buildDecisionsLog = (brief, blueprintSelection) => `# Decisions — ${brief.name}
 
-## D-001 | Front-brain bootstrap | setup
+## D-001 | Eros-feed bootstrap | setup
 - **Choice:** Emit native hybrid runtime artifacts before the first design task.
-- **Path:** bootstrap/front-brain
+- **Path:** bootstrap/eros-feed
 - **User:** pending
 - **Learn:** New projects should begin with machine-readable state, not rely on later bridge migration.
 
@@ -760,7 +760,7 @@ const main = async () => {
   const projectDir = path.resolve(projectArg)
   const briefInput = await resolveBrief({ args, projectDir })
   const result = await bootstrapProject({ projectDir, briefInput })
-  console.log(`Bootstrapped front-brain artifacts for ${result.brief.name} at ${projectDir}`)
+  console.log(`Bootstrapped eros-feed artifacts for ${result.brief.name} at ${projectDir}`)
 }
 
 const isEntrypoint =

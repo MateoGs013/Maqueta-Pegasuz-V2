@@ -7,8 +7,8 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const repoDir = path.resolve(__dirname, '..', '..')
 const desktopDir = path.join(os.homedir(), 'Desktop')
-const exampleDir = path.join(repoDir, '.eros', 'front-brain', 'examples', 'demo-run')
-const runtimeDir = path.join(repoDir, '.eros', 'front-brain', 'runtime')
+const exampleDir = path.join(repoDir, '.eros', 'eros-feed', 'examples', 'demo-run')
+const runtimeDir = path.join(repoDir, '.eros', 'eros-feed', 'runtime')
 const outputFile = path.join(runtimeDir, 'runs.generated.json')
 
 const defaultThresholds = {
@@ -194,7 +194,7 @@ const inferLegacyDesignMarkdown = ({ identityContent, decisionsContent, stateFie
 - Project: ${identity.Type ? titleCase(folderName) : titleCase(folderName)}
 - Type: ${brandType}
 - Mode: ${mode}
-- Goal: Legacy markdown run imported into the front-brain bridge so the panel can inspect it alongside modern hybrid runs
+- Goal: Legacy markdown run imported into the eros-feed bridge so the panel can inspect it alongside modern hybrid runs
 
 ## Brand Intent
 
@@ -277,7 +277,7 @@ const inferLegacySnapshot = ({ folderName, sourceDir, stateContent, identityCont
   const projectName = cleanProjectName(stateFields.Project || titleCase(folderName))
   const projectType = identity.Type || 'Legacy project'
   const nextAction = stopped
-    ? 'Migrate this project to the hybrid front-brain contract before resuming autonomous delivery.'
+    ? 'Migrate this project to the hybrid eros-feed contract before resuming autonomous delivery.'
     : 'Complete hybrid state emission so observer and critic can take over.'
   const legacyHeroName = extractDecisionChoice(decisionsContent, 'D-001')?.match(/`(S-[^`]+)`/)?.[1] ?? 'S-AmbientAtmosphere'
   const legacyNavName = extractDecisionChoice(decisionsContent, 'D-002')?.match(/`(N-[^`]+)`/)?.[1] ?? 'N-Contextual'
@@ -332,7 +332,7 @@ ${nextAction}
       {
         type: 'migration',
         severity: 'medium',
-        message: 'Hybrid front-brain artifacts are missing; automation confidence is intentionally reduced.',
+        message: 'Hybrid eros-feed artifacts are missing; automation confidence is intentionally reduced.',
       },
     ],
   }
@@ -620,7 +620,7 @@ await fs.mkdir(runtimeDir, { recursive: true })
 const output = await buildOutput()
 await fs.writeFile(outputFile, `${JSON.stringify(output, null, 2)}\n`, 'utf8')
 
-console.log(`Synced ${output.runs.length} front-brain run(s) to ${path.relative(repoDir, outputFile)}`)
+console.log(`Synced ${output.runs.length} eros-feed run(s) to ${path.relative(repoDir, outputFile)}`)
 
 // ── Watch mode: --watch flag for continuous .brain/ monitoring ──
 if (process.argv.includes('--watch')) {

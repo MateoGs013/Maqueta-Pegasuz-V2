@@ -1,12 +1,12 @@
-# Front-Brain Schema
+# Eros Feed Schema
 
-Implementation contract for Maqueta's Claude-first front-brain.
+Implementation contract for Maqueta's Claude-first eros-feed.
 
 This document operationalizes the ideas from `BRAIN_FRONTEND_LOGICO.md` into repo artifacts, runtime expectations, and panel-facing data.
 
 ## 1. Intent
 
-The front-brain is the control layer for autonomous frontend generation. It is responsible for:
+The eros-feed is the control layer for autonomous frontend generation. It is responsible for:
 
 - reading the brief and references
 - generating `DESIGN.md`
@@ -22,7 +22,7 @@ The front-brain is the control layer for autonomous frontend generation. It is r
 - `.eros/pipeline.md` defines orchestration
 - `.eros/brain-config.md` defines thresholds and approval logic
 - `.claude/agents/*.md` define worker behavior
-- `.eros/front-brain/` stores front-brain contracts, fixtures, and examples
+- `.eros/eros-feed/` stores eros-feed contracts, fixtures, and examples
 
 `AGENTS.md` and `.agents/` are compatibility surfaces for Codex and should not diverge from `.claude`.
 
@@ -159,7 +159,7 @@ Multimodal structured critique for:
 
 ### Decision output
 
-The brain produces a combined scorecard and one of:
+The eros-feed produces a combined scorecard and one of:
 
 - `approve`
 - `retry`
@@ -170,7 +170,7 @@ Flag is reserved for persistent contrast risk, persistent brand incoherence, or 
 
 ## 7. Panel Contract
 
-The panel is the internal backoffice for the front-brain. It must consume structured artifacts rather than ad hoc strings.
+The panel is the internal backoffice for the eros-feed. It must consume structured artifacts rather than ad hoc strings.
 
 Minimum views:
 
@@ -188,7 +188,7 @@ The panel may render Markdown where helpful, but its primary state must come fro
 The example implementation lives under:
 
 ```text
-.eros/front-brain/examples/demo-run/
+.eros/eros-feed/examples/demo-run/
 ```
 
 This fixture is the reference payload for panel development until live project ingestion is wired.

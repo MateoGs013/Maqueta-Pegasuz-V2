@@ -1,6 +1,6 @@
-# Front-Brain Workspace
+# Eros Feed Workspace
 
-This directory contains the implementation contract, fixtures, and structured examples for the Maqueta front-brain.
+This directory contains the implementation contract, fixtures, and structured examples for the Maqueta eros-feed.
 
 ## Purpose
 
@@ -10,10 +10,10 @@ This directory contains the implementation contract, fixtures, and structured ex
 
 ## Key files
 
-- `../FRONT_BRAIN_SCHEMA.md`: canonical implementation contract.
+- `../EROS_FEED_SCHEMA.md`: canonical implementation contract.
 - `examples/demo-run/`: reference payload for panel development and schema validation.
 - `runtime/`: generated cache consumed by the panel after syncing real projects.
-- `../../scripts/pipeline/bootstrap-front-brain.mjs`: canonical project bootstrapper for emitting hybrid artifacts from intake data.
+- `../../scripts/pipeline/bootstrap-eros-feed.mjs`: canonical project bootstrapper for emitting hybrid artifacts from intake data.
 - `../../scripts/pipeline/init-project.mjs`: end-to-end project initializer that copies scaffold, writes intake, and invokes the bootstrapper.
 - `../../scripts/pipeline/select-blueprints.mjs`: automatic hero/nav selector that emits structured direction candidates.
 - `../../scripts/quality/refresh-quality.mjs`: deterministic quality refresh that promotes observer artifacts into scorecard, critic, visual debt, and review outputs.
