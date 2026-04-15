@@ -117,13 +117,13 @@ Floating pill at top-right switches between panels. Keyboard: `1/2/3` for nav, `
 |---------|---------|
 | `cd panel && npm run dev` | Start dual panel (syncs runs first) |
 | `npm run build` (in panel or scaffold) | Production build |
-| `node scripts/brain/state.mjs query --project "<path>"` | Read current brain state |
+| `node scripts/eros-core/state.mjs query --project "<path>"` | Read current eros state |
 | `node .eros/scripts/eros-doctor.mjs` | Validate multi-AI architecture integrity |
 | `cd scripts && npm run init:project -- --brief-file "<path>"` | Create a new project from template |
-| `npm run bootstrap:brain -- --project "<path>"` | Bootstrap brain contract on existing project |
+| `npm run bootstrap:feed -- --project "<path>"` | Bootstrap eros-feed contract on existing project |
 | `npm run select:blueprints -- --project "<path>"` | Rerun seed selection |
 | `npm run refresh:quality -- --project "<path>"` | Refresh observer, critic, scorecard, debt |
-| `npm run sync:runs` | Sync front-brain runs (`--watch` for live panel) |
+| `npm run sync:feed` | Sync eros-feed runs (`--watch` for live panel) |
 
 ## Design Philosophy
 
@@ -161,7 +161,7 @@ Eros is moving toward a Stitch-like workflow:
 7. Workshop-based token/component editing with staged apply
 8. Final review summary with no mandatory human intervention
 
-Execution details in `.eros/front-brain/ROADMAP.md`.
+Execution details in `.eros/eros-feed/ROADMAP.md`.
 
 ## Contributing
 
@@ -179,10 +179,10 @@ Execution details in `.eros/front-brain/ROADMAP.md`.
 **Repo state:**
 - [Repo status](./docs/STATUS.md)
 - [Pipeline](./.eros/pipeline.md)
-- [Brain config](./.eros/brain-config.md)
-- [Front-Brain schema](./.eros/FRONT_BRAIN_SCHEMA.md)
-- [Front-Brain workspace](./.eros/front-brain/README.md)
-- [Front-Brain roadmap](./.eros/front-brain/ROADMAP.md)
+- [Eros config](./.eros/config.md)
+- [Eros-Feed schema](./.eros/EROS_FEED_SCHEMA.md)
+- [Eros-Feed workspace](./.eros/eros-feed/README.md)
+- [Eros-Feed roadmap](./.eros/eros-feed/ROADMAP.md)
 
 **Architecture decisions:**
 - [Multi-AI architecture spec](./docs/specs/2026-04-14-multi-ai-architecture.md)

@@ -26,7 +26,7 @@ echo ""
 
 # ── 1. Start watch mode in background ──
 echo -e "${G}[1/2]${R} Iniciando watch mode..."
-node "$SCRIPT_DIR/sync-front-brain-runs.mjs" --watch &
+node "$SCRIPT_DIR/../pipeline/sync-eros-feed-runs.mjs" --watch &
 WATCH_PID=$!
 echo -e "  ${D}PID: $WATCH_PID${R}"
 echo ""
