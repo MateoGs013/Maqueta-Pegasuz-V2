@@ -80,7 +80,7 @@ Rationale: these are **observations** (panel state captures), not **docs** (huma
 |------|-----|-----|
 | `docs/PLAN-HARDENING-AUDIT.md` | `docs/plans/hardening-audit.md` | Status: `in-progress` |
 | `docs/PLAN-OBSERVER-V2.md` | `docs/plans/observer-v2.md` | Status: `in-progress` |
-| `docs/PLAN-OBSERVER-V3.md` | `docs/plans/observer-v3.md` | Status: (V3 extends V2, still active) |
+| `docs/PLAN-OBSERVER-V3.md` | `docs/plans/observer-v3.md` | Status: active (not yet implemented, confirmed 2026-04-14) |
 | `docs/PLAN-VERCEL-DEPLOY.md` | `docs/plans/vercel-deploy.md` | Status: `in-progress` |
 
 ### Completed plans → `docs/archive/plans/`
@@ -135,7 +135,7 @@ Rationale: these are **observations** (panel state captures), not **docs** (huma
 ### Deletions
 
 - `docs/superpowers/` (empty after moves)
-- `docs/PLANS-STATUS.md` — content absorbed into `docs/plans/README.md` (active table) and each plan's own header (historical detail)
+- `docs/PLANS-STATUS.md` — **delete, do not archive.** Active status absorbs into `docs/plans/README.md` (compact table). Narrative historical detail (e.g. 2026-04-10 verification sweep) absorbs into each relevant plan's "History" section. Rationale: git preserves the full file history (`git log --follow`); archiving a frozen status aggregator invites drift (two sources of truth) and is YAGNI for an AI-friendly layout.
 
 ### Preserved unchanged
 
