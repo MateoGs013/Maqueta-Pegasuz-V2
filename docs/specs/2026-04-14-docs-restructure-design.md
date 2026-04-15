@@ -47,8 +47,8 @@ docs/
 │   ├── observer-upgrade-prompt.md
 │   └── reference-analysis-fluid-glass.md
 │
-├── libraries/                # pattern libraries (renamed from _libraries/)
-│   └── ... (unchanged content)
+├── _libraries/               # pattern libraries (KEEP underscore — template source convention)
+│   └── ... (unchanged)
 │
 └── archive/                  # completed + deprecated
     ├── README.md            # "Why archive exists + how to read it"
@@ -68,7 +68,7 @@ Rationale: these are **observations** (panel state captures), not **docs** (huma
 
 1. **Status as directory hierarchy** — `plans/` vs `archive/plans/` is visible via `ls`. No need to open each file and parse a `Status:` frontmatter tag.
 2. **README.md at every subdir** — AI orientation in ≤30s from any level.
-3. **One naming convention**: kebab-case lowercase everywhere. Drop ALL-CAPS, drop `PLAN-` prefix (the directory already tells you it's a plan), drop `_libraries` underscore.
+3. **Kebab-case lowercase** for docs content files/dirs. Drop ALL-CAPS + `PLAN-` prefix (directory already tells you). **Exception:** underscore-prefixed dirs (`_libraries/`, `_project-scaffold/`, `_components/`) retain the underscore — it encodes "template source, copied to new projects" and is load-bearing semantic convention across `scripts/init-project.mjs` + `.eros/agents/*`.
 4. **Cross-ref integrity**: audit all external references BEFORE moves; update in the same commit as the move.
 5. **Enforcement via eros-doctor**: 3 new rules prevent drift (see below).
 
@@ -122,8 +122,9 @@ Rationale: these are **observations** (panel state captures), not **docs** (huma
 
 | From | To | Why |
 |------|-----|-----|
-| `docs/_libraries/` | `docs/libraries/` | Drop underscore — not a private convention |
 | `docs/ux-reform/` | `docs/archive/ux-reform/` | Historical observer phases |
+
+**Not renamed:** `docs/_libraries/` stays (9 cross-refs including `scripts/init-project.mjs` and agents treat the underscore as the "template source" marker, same as `_project-scaffold/`).
 
 ### Out of `docs/`
 
