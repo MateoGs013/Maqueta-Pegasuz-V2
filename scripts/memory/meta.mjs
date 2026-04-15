@@ -134,7 +134,7 @@ const cmdGaps = async () => {
 
 const cmdReflect = async (projectDir) => {
   if (!projectDir) fail('Missing --project argument.')
-  const brainDir = path.join(projectDir, '.brain')
+  const erosDir = path.join(projectDir, '.eros')
 
   // Light a pucho — reflecting on a closed project is the archetypal
   // Eros moment. The pucho is lit at the start of the analysis and
@@ -147,8 +147,8 @@ const cmdReflect = async (projectDir) => {
   }).catch(() => null)
 
   // Read project data
-  const scorecard = await readJson(path.join(brainDir, 'reports', 'quality', 'scorecard.json'))
-  const manifest  = await readJson(path.join(brainDir, 'observer', 'localhost', 'manifest.json'))
+  const scorecard = await readJson(path.join(erosDir, 'reports', 'quality', 'scorecard.json'))
+  const manifest  = await readJson(path.join(erosDir, 'observer', 'localhost', 'manifest.json'))
   const mem = await loadMemory()
 
   // Helper: extract numeric score from dimension data
@@ -183,7 +183,7 @@ const cmdReflect = async (projectDir) => {
 
   // Discover build tasks from queue
   const existingTypeCounts = countBy(mem.sectionPatterns.patterns, p => p.sectionType)
-  const queueJson = await readJson(path.join(brainDir, 'queue.json'))
+  const queueJson = await readJson(path.join(erosDir, 'queue.json'))
   const doneTasks = queueJson?.done || queueJson?.tasks?.filter(t => t.status === 'done') || []
   const buildTasks = doneTasks.filter(t => /^(build\/)?S-/.test(t.id || t.task || ''))
 
@@ -481,13 +481,13 @@ const cmdPersonality = async () => {
     const desktopDir = path.join(os.default.homedir(), 'Desktop')
     const { promises: fsP } = await import('node:fs')
     const entries = await fsP.readdir(desktopDir, { withFileTypes: true })
-    const brainCount = (await Promise.all(
+    const erosCount = (await Promise.all(
       entries.filter(e => e.isDirectory() && e.name !== 'maqueta')
         .map(async e => {
-          try { await fsP.access(path.join(desktopDir, e.name, '.brain')); return true } catch { return false }
+          try { await fsP.access(path.join(desktopDir, e.name, '.eros')); return true } catch { return false }
         })
     )).filter(Boolean).length
-    if (brainCount > projectCount) projectCount = brainCount
+    if (erosCount > projectCount) projectCount = erosCount
   } catch {}
   const ruleCount = mem.rules.rules.filter(r => r.status === 'PROMOTED').length
   const personalityBrief = coreValues.length > 0 ? coreValues.map(v => v.value).join(' + ') : 'Developing'

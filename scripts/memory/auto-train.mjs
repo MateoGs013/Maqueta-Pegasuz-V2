@@ -470,7 +470,7 @@ const stopDevServer = (server) => {
 // ---------------------------------------------------------------------------
 
 const runObserver = async (projectDir, port) => {
-  const observerDir = path.join(projectDir, '.brain', 'observer')
+  const observerDir = path.join(projectDir, '.eros', 'observer')
   const manifestPath = path.join(observerDir, 'localhost', 'manifest.json')
 
   // Clear stale observer data before running fresh analysis.
@@ -858,8 +858,8 @@ const findProjectDir = async (slug) => {
   // Try exact slug
   const direct = path.join(desktopDir, slug)
   if (await fs.access(direct).then(() => true).catch(() => false)) {
-    const hasBrain = await fs.access(path.join(direct, '.brain')).then(() => true).catch(() => false)
-    if (hasBrain) return direct
+    const hasEros = await fs.access(path.join(direct, '.eros')).then(() => true).catch(() => false)
+    if (hasEros) return direct
   }
 
   // Search Desktop for practice projects
@@ -867,8 +867,8 @@ const findProjectDir = async (slug) => {
   for (const e of entries) {
     if (!e.isDirectory() || e.name === 'maqueta' || e.name === 'Maqueta-Pegasuz-V2') continue
     if (e.name.includes('practice') || e.name.includes(slug)) {
-      const brainPath = path.join(desktopDir, e.name, '.brain')
-      if (await fs.access(brainPath).then(() => true).catch(() => false)) {
+      const erosPath = path.join(desktopDir, e.name, '.eros')
+      if (await fs.access(erosPath).then(() => true).catch(() => false)) {
         return path.join(desktopDir, e.name)
       }
     }
@@ -1012,7 +1012,7 @@ const runFullSession = async (sessionNum, maxRetries) => {
   try {
     const previewDir = path.join(memDir, 'previews', brief.id)
     await ensureDir(previewDir)
-    const observerLocal = path.join(projectDir, '.brain', 'observer', 'localhost')
+    const observerLocal = path.join(projectDir, '.eros', 'observer', 'localhost')
     const framesToSave = [
       'full-page-desktop.png',
       'full-page-mobile.png',

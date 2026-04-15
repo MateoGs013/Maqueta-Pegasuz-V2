@@ -170,11 +170,11 @@ const cmdReview = async (args) => {
   if (!project) fail('--project is required')
 
   const slug = path.basename(project)
-  const brainDir = path.join(project, '.brain')
+  const erosDir = path.join(project, '.eros')
 
   // Read scorecard
-  const scorecard = await readJson(path.join(brainDir, 'reports', 'quality', 'scorecard.json'))
-  const manifest = await readJson(path.join(brainDir, 'observer', 'localhost', 'manifest.json'))
+  const scorecard = await readJson(path.join(erosDir, 'reports', 'quality', 'scorecard.json'))
+  const manifest = await readJson(path.join(erosDir, 'observer', 'localhost', 'manifest.json'))
   const observerScore = scorecard?.observerScore || scorecard?.finalScore || 0
   const finalScore = scorecard?.finalScore || 0
   const excellence = manifest?.excellenceSignals || {}
