@@ -121,6 +121,53 @@ scanDirForLegacyRefs(join(REPO_ROOT, '.eros'));
 // RULE 7: No legacy .agents/ directory
 warn(!existsSync(join(REPO_ROOT, '.agents')), `Legacy .agents/ directory still exists — delete in Phase 5`);
 
+// RULE 8 (docs entry point): docs/README.md must exist
+assert(
+  existsSync(join(REPO_ROOT, 'docs', 'README.md')),
+  'Missing docs/README.md — AI entry point required for docs/ layout',
+);
+
+// RULE 9 (no legacy naming): no PLAN-*.md files in docs/ root
+const docsRootDir = join(REPO_ROOT, 'docs');
+if (existsSync(docsRootDir)) {
+  const legacyPlans = readdirSync(docsRootDir).filter((f) => /^PLAN-.*\.md$/.test(f));
+  if (legacyPlans.length > 0) {
+    issues.push(
+      `Legacy PLAN-*.md files in docs/ root: ${legacyPlans.join(', ')}. Move to docs/plans/ (active) or docs/archive/plans/ (implemented).`,
+    );
+  }
+}
+
+// RULE 10 (docs is prose): no image files in docs/ — observations belong in .eros/memory/
+function scanDocsForImages(dir) {
+  if (!existsSync(dir)) return [];
+  const imageExts = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif']);
+  const found = [];
+  const walk = (d) => {
+    for (const entry of readdirSync(d)) {
+      const full = join(d, entry);
+      if (statSync(full).isDirectory()) {
+        walk(full);
+      } else {
+        const dot = entry.lastIndexOf('.');
+        if (dot !== -1 && imageExts.has(entry.slice(dot).toLowerCase())) {
+          found.push(relative(REPO_ROOT, full).replace(/\\/g, '/'));
+        }
+      }
+    }
+  };
+  walk(dir);
+  return found;
+}
+const docsImages = scanDocsForImages(docsRootDir);
+if (docsImages.length > 0) {
+  const preview = docsImages.slice(0, 5).join(', ');
+  const extra = docsImages.length > 5 ? ` +${docsImages.length - 5} more` : '';
+  issues.push(
+    `Image files in docs/ (relocate to .eros/memory/observations/): ${preview}${extra}`,
+  );
+}
+
 // Report
 console.log('\n=== Eros Doctor Report ===\n');
 if (issues.length === 0 && warnings.length === 0) {
