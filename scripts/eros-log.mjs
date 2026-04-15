@@ -6,7 +6,7 @@ import {
   readText,
   out,
   fail,
-} from './eros-utils.mjs'
+} from './lib/utils.mjs'
 
 // ---------------------------------------------------------------------------
 // eros-log.mjs — Decision & Approval Logger

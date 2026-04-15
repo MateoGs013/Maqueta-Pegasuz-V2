@@ -29,7 +29,7 @@ import { fileURLToPath } from 'node:url'
 import { execFile, spawn } from 'node:child_process'
 import { promises as fs, existsSync } from 'node:fs'
 import net from 'node:net'
-import { parseArgs, readJson, writeJson, readText, ensureDir, out, fail, today } from './eros-utils.mjs'
+import { parseArgs, readJson, writeJson, readText, ensureDir, out, fail, today } from './lib/utils.mjs'
 import { appendEvent } from './eros-feed.mjs'
 import { smokePucho } from './eros-pucho.mjs'
 

@@ -24,7 +24,7 @@ import {
   out,
   fail,
   today,
-} from './eros-utils.mjs'
+} from './lib/utils.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

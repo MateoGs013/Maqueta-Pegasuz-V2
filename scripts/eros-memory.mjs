@@ -26,7 +26,7 @@ import {
   out as output,
   fail,
   today,
-} from './eros-utils.mjs';
+} from './lib/utils.mjs';
 
 // ---------------------------------------------------------------------------
 // Paths

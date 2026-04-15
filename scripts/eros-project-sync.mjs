@@ -24,7 +24,7 @@ import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { parseArgs, readJson, writeJson, ensureDir, exists, out, fail } from './eros-utils.mjs'
+import { parseArgs, readJson, writeJson, ensureDir, exists, out, fail } from './lib/utils.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')

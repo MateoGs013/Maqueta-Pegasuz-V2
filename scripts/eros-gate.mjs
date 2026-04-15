@@ -11,7 +11,7 @@ import {
   writeJson,
   out,
   fail,
-} from './eros-utils.mjs'
+} from './lib/utils.mjs'
 
 // ---------------------------------------------------------------------------
 // eros-gate.mjs — Gate Engine

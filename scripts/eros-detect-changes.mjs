@@ -22,7 +22,7 @@ import {
   parseArgs,
   out as output,
   fail,
-} from './eros-utils.mjs'
+} from './lib/utils.mjs'
 
 const execFile = promisify(execFileCb)
 

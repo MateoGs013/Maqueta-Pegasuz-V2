@@ -33,7 +33,7 @@
 
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseArgs, out, fail, readJson, writeJson } from './eros-utils.mjs'
+import { parseArgs, out, fail, readJson, writeJson } from './lib/utils.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')

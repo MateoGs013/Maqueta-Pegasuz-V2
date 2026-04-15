@@ -2,7 +2,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFile } from 'node:child_process'
 import { query } from '@anthropic-ai/claude-agent-sdk'
-import { parseArgs, readJson, out, fail } from './eros-utils.mjs'
+import { parseArgs, readJson, out, fail } from './lib/utils.mjs'
 
 // ---------------------------------------------------------------------------
 // eros-chat.mjs — Talk to Eros (dynamic, SDK-powered)

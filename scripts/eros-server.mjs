@@ -26,7 +26,7 @@ import { existsSync } from 'node:fs'
 import net from 'node:net'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseArgs, out, fail, readJson, writeJson, ensureDir } from './eros-utils.mjs'
+import { parseArgs, out, fail, readJson, writeJson, ensureDir } from './lib/utils.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

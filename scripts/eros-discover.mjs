@@ -16,7 +16,7 @@ import { chromium } from 'playwright'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFile } from 'node:child_process'
-import { parseArgs, readJson, writeJson, out, fail, today } from './eros-utils.mjs'
+import { parseArgs, readJson, writeJson, out, fail, today } from './lib/utils.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')

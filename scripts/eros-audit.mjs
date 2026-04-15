@@ -21,7 +21,7 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseArgs, readJson, readText, writeJson, ensureDir, out, fail } from './eros-utils.mjs'
+import { parseArgs, readJson, readText, writeJson, ensureDir, out, fail } from './lib/utils.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

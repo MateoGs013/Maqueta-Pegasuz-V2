@@ -11,7 +11,7 @@ import {
   out,
   fail,
   today,
-} from './eros-utils.mjs'
+} from './lib/utils.mjs'
 
 // ---------------------------------------------------------------------------
 // eros-train.mjs — Training System V2

@@ -20,7 +20,7 @@ import {
   writeText,
   out as outputJson,
   fail,
-} from './eros-utils.mjs'
+} from './lib/utils.mjs'
 
 // ---------------------------------------------------------------------------
 // Constants
