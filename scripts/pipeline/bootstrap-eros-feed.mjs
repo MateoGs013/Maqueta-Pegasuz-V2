@@ -567,7 +567,7 @@ const buildCriticJson = (brief) => ({
   brandAlignment: 'pending',
   verdict: 'pending',
   notes: [
-    'Front-brain bootstrap completed.',
+    'Eros-feed bootstrap completed.',
     'Generate DESIGN.md-driven creative direction before trusting critic output.',
   ],
   issues: [],
@@ -600,7 +600,7 @@ const buildReviewSummary = (brief, nextAction) => `# Review Summary — ${brief.
 
 ## Current State
 
-- Front-brain bootstrap completed
+- Eros-feed bootstrap completed
 - Hybrid Markdown + JSON runtime contract emitted
 - No observer or critic pass has run yet
 

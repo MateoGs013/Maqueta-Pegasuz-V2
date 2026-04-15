@@ -9,7 +9,7 @@ import {
   normalizeBrief,
   parseArgs,
   readJson,
-} from './bootstrap-front-brain.mjs'
+} from './bootstrap-eros-feed.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -125,7 +125,7 @@ const writeInitializationSummary = async ({ projectDir, brief, installSkipped })
 ## Status
 
 - Project scaffold copied
-- Front-brain bootstrap emitted
+- Eros-feed bootstrap emitted
 - Blueprint selector emitted
 - Libraries copied into \`docs/_libraries\`
 - npm install: ${installSkipped ? 'skipped' : 'completed'}
