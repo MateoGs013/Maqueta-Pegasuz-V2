@@ -8,7 +8,8 @@ Completed plans and deprecated proposals. Files here were active at some point i
 |--------|----------|
 | [`plans/`](./plans/) | Plans marked `implemented` — historical record of what was built |
 | [`proposals/`](./proposals/) | Aspirational docs, earlier-version workflows, external-product briefs |
-| [`ux-reform/`](./ux-reform/) | Observer-phase captures from the V2→V3 reform arc |
+
+Observer-phase captures from the V2→V3 reform arc live under `.eros/memory/observations/ux-reform/` (raw data artifacts, not prose).
 
 ## Why archive instead of delete
 
