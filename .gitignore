@@ -57,9 +57,8 @@ vite-watchdog.log
 .claude/todos/
 .claude/projects/
 .claude/worktrees/
-.claude/front-brain/runtime/runs.generated.json
 .claude/scheduled_tasks.lock
-.eros/front-brain/runtime/runs.generated.json
+.eros/eros-feed/runtime/runs.generated.json
 scripts/.eros/
 
 # OMC runtime state (HUD cache only — PRD/specs/progress are tracked)
