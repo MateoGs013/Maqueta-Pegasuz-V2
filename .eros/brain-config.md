@@ -238,7 +238,7 @@ auto_promote: true                 # brain promotes without asking
 
 ## Observer Integration (v4)
 
-The General Observer (`scripts/capture-refs.mjs`) is now used in two modes:
+The General Observer (`scripts/archive/capture-refs.mjs` — legacy V1, superseded by `scripts/observer/` multi-pass architecture) was used in two modes:
 
 ### Mode A: Reference analysis (setup/capture-refs task)
 ```bash

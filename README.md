@@ -101,7 +101,7 @@ Floating pill at top-right switches between panels. Keyboard: `1/2/3` for nav, `
 |---------|---------|
 | `cd panel && npm run dev` | Start dual panel (syncs runs first) |
 | `npm run build` (in panel or scaffold) | Production build |
-| `node scripts/eros-state.mjs query --project "<path>"` | Read current brain state |
+| `node scripts/brain/state.mjs query --project "<path>"` | Read current brain state |
 | `node .eros/scripts/eros-doctor.mjs` | Validate multi-AI architecture integrity |
 | `cd scripts && npm run init:project -- --brief-file "<path>"` | Create a new project from template |
 | `npm run bootstrap:brain -- --project "<path>"` | Bootstrap brain contract on existing project |
