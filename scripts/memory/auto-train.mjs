@@ -131,7 +131,7 @@ const discoverAndStudyReference = async () => {
   // Discover
   let discovery
   try {
-    discovery = await callScript('eros-discover.mjs', ['--study', '--count', '1'], 600000)
+    discovery = await callScript('../dev/discover.mjs', ['--study', '--count', '1'], 600000)
     log(`Discovered ${discovery.discovered || 0} sites, studied ${discovery.studied || 0}`)
   } catch (err) {
     log(`Discovery failed: ${err.message?.slice(0, 80)}`)
@@ -189,7 +189,7 @@ const discoverAndStudyReference = async () => {
 
 const generateBriefFromReference = async (ref) => {
   // Get gap analysis to also target weaknesses
-  const gaps = await callScript('eros-meta.mjs', ['gaps'])
+  const gaps = await callScript('./meta.mjs', ['gaps'])
 
   // ── Anti-convergencia: load recent sessions to avoid repetition ──
   // Without this, Eros picks the same gap-targeted mood/technique
@@ -485,7 +485,7 @@ const runObserver = async (projectDir, port) => {
   log(`Running observer on localhost:${port}...`)
 
   try {
-    await callScript('eros-observer.mjs', [
+    await callScript('../observer/observer.mjs', [
       '--local', '--port', String(port), '--no-discover', observerDir,
     ], 180000)
     log('Observer complete')
@@ -520,7 +520,7 @@ const runObserver = async (projectDir, port) => {
 const runAudit = async (projectDir) => {
   log('Running quality audit...')
   try {
-    const result = await callScript('eros-audit.mjs', ['--project', projectDir], 60000)
+    const result = await callScript('../quality/audit.mjs', ['--project', projectDir], 60000)
     log(`Audit: ${result.overall?.pct || 0}% — ${result.pass ? 'PASS' : 'FAIL'}`)
     return result
   } catch (err) {
@@ -555,7 +555,7 @@ const runGates = async (projectDir) => {
   for (const section of sectionFiles) {
     const taskId = `build/${section}`
     try {
-      const gate = await callScript('eros-gate.mjs', [
+      const gate = await callScript('../brain/gate.mjs', [
         'post', '--project', projectDir, '--task', taskId,
       ], 30000)
 
@@ -799,16 +799,16 @@ const learnFromSession = async (projectDir, observerData, auditResult, gateResul
   log('Learning from session...')
 
   // Correct (learn from edits)
-  try { await callScript('eros-train.mjs', ['correct', '--project', projectDir], 60000) } catch {}
+  try { await callScript('./train.mjs', ['correct', '--project', projectDir], 60000) } catch {}
 
   // Reflect
-  try { await callScript('eros-meta.mjs', ['reflect', '--project', projectDir], 60000) } catch {}
+  try { await callScript('./meta.mjs', ['reflect', '--project', projectDir], 60000) } catch {}
 
   // Update personality
-  try { await callScript('eros-meta.mjs', ['personality'], 30000) } catch {}
+  try { await callScript('./meta.mjs', ['personality'], 30000) } catch {}
 
   // Promote rules
-  try { await callScript('eros-memory.mjs', ['promote'], 30000) } catch {}
+  try { await callScript('./memory.mjs', ['promote'], 30000) } catch {}
 
   // Record practice result
   const avgScore = gateResults.sections.length > 0
@@ -1197,7 +1197,7 @@ const main = async () => {
   log('═══════════════════════════════════════════')
   log('')
 
-  const statsBefore = await callScript('eros-memory.mjs', ['stats']).catch(() => null)
+  const statsBefore = await callScript('./memory.mjs', ['stats']).catch(() => null)
   log(`Memory before: ${statsBefore?.totalDataPoints || '?'} data points`)
   log('')
 
@@ -1250,7 +1250,7 @@ const main = async () => {
   }
 
   // Final stats
-  const statsAfter = await callScript('eros-memory.mjs', ['stats']).catch(() => null)
+  const statsAfter = await callScript('./memory.mjs', ['stats']).catch(() => null)
 
   log('═══════════════════════════════════════════')
   log(' TRAINING V2 COMPLETE')
@@ -1260,7 +1260,7 @@ const main = async () => {
 
   // Final personality
   try {
-    const personality = await callScript('eros-meta.mjs', ['personality'])
+    const personality = await callScript('./meta.mjs', ['personality'])
     log(`State: ${personality.identity?.currentState}`)
     log(`Philosophy: ${personality.voice?.philosophy}`)
   } catch {}

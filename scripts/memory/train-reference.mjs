@@ -242,7 +242,7 @@ const cmdLearn = async (args) => {
   // Learn fonts
   if (analysis.fonts?.length >= 2) {
     try {
-      await callScript('eros-memory.mjs', [
+      await callScript('./memory.mjs', [
         'learn', '--event', 'font_selected',
         '--data', JSON.stringify({
           project: analysis.slug,
@@ -261,7 +261,7 @@ const cmdLearn = async (args) => {
   // Learn palette
   if (analysis.palette?.length >= 2) {
     try {
-      await callScript('eros-memory.mjs', [
+      await callScript('./memory.mjs', [
         'learn', '--event', 'palette_selected',
         '--data', JSON.stringify({
           project: analysis.slug,
@@ -280,7 +280,7 @@ const cmdLearn = async (args) => {
   for (const tech of analysis.techniques || []) {
     const techScore = ratings.techniques?.[tech] ?? overall ?? 7.0
     try {
-      await callScript('eros-memory.mjs', [
+      await callScript('./memory.mjs', [
         'learn', '--event', 'section_approved',
         '--data', JSON.stringify({
           project: analysis.slug,
@@ -303,7 +303,7 @@ const cmdLearn = async (args) => {
       .map(([k, v]) => `${k}:${v}`)
       .join(', ')
     try {
-      await callScript('eros-memory.mjs', [
+      await callScript('./memory.mjs', [
         'learn', '--event', 'section_approved',
         '--data', JSON.stringify({
           project: analysis.slug,
@@ -324,7 +324,7 @@ const cmdLearn = async (args) => {
   for (const item of (analysis.borrow || []).slice(0, 3)) {
     if (!item || item.length < 10) continue
     try {
-      await callScript('eros-memory.mjs', [
+      await callScript('./memory.mjs', [
         'learn', '--event', 'rule_discovered',
         '--data', JSON.stringify({
           text: item,
@@ -339,7 +339,7 @@ const cmdLearn = async (args) => {
   for (const item of (analysis.avoid || []).slice(0, 2)) {
     if (!item || item.length < 10) continue
     try {
-      await callScript('eros-memory.mjs', [
+      await callScript('./memory.mjs', [
         'learn', '--event', 'rule_discovered',
         '--data', JSON.stringify({
           text: `AVOID: ${item}`,

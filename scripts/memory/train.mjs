@@ -37,7 +37,7 @@ const callScript = (script, args, timeoutMs = 60000) => new Promise((resolve, re
   })
 })
 
-const callMemory = (args) => callScript('eros-memory.mjs', args)
+const callMemory = (args) => callScript('./memory.mjs', args)
 
 const inferSectionType = (name) => {
   const n = name.toLowerCase()
@@ -136,7 +136,7 @@ const cmdCorrect = async (args) => {
 
   // Run eros-detect-changes.mjs
   try {
-    detectResult = await callScript('eros-detect-changes.mjs', [
+    detectResult = await callScript('../observer/detect-changes.mjs', [
       '--project', project,
       ...(args['dry-run'] ? ['--dry-run'] : []),
     ])
@@ -193,7 +193,7 @@ const cmdReview = async (args) => {
   // Detect which sections the user edited (git diff)
   let editedSections = []
   try {
-    const detectResult = await callScript('eros-detect-changes.mjs', ['--project', project, '--dry-run'])
+    const detectResult = await callScript('../observer/detect-changes.mjs', ['--project', project, '--dry-run'])
     editedSections = (detectResult?.changes || []).map(c => c.section).filter(Boolean)
   } catch { /* no git or no changes */ }
 
@@ -385,7 +385,7 @@ const cmdStudy = async (args) => {
 
   let sessionResult
   try {
-    sessionResult = await callScript('eros-train-reference.mjs', ['session', '--url', url], 300000)
+    sessionResult = await callScript('./train-reference.mjs', ['session', '--url', url], 300000)
   } catch (err) {
     fail(`Reference analysis failed: ${err.message}`)
   }
@@ -399,7 +399,7 @@ const cmdStudy = async (args) => {
   // Auto-rate based on Awwwards = high quality (8+)
   const autoRating = 8.5
   try {
-    const result = await callScript('eros-train-reference.mjs', [
+    const result = await callScript('./train-reference.mjs', [
       'learn',
       '--analysis', sessionResult.analysisPath || '',
       '--ratings', JSON.stringify({
@@ -454,7 +454,7 @@ const processStudyFeedback = async (analysis, feedback, statsBefore) => {
 
   // Learn via eros-train-reference.mjs learn
   try {
-    const result = await callScript('eros-train-reference.mjs', [
+    const result = await callScript('./train-reference.mjs', [
       'learn',
       '--analysis', analysis.refDir ? path.join(analysis.refDir, 'analysis.json') : '',
       '--ratings', JSON.stringify({

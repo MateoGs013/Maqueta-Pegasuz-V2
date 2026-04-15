@@ -2,7 +2,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFile } from 'node:child_process'
 import { query } from '@anthropic-ai/claude-agent-sdk'
-import { parseArgs, readJson, out, fail } from './lib/utils.mjs'
+import { parseArgs, readJson, out, fail } from '../lib/utils.mjs'
 
 // ---------------------------------------------------------------------------
 // eros-chat.mjs — Talk to Eros (dynamic, SDK-powered)
@@ -14,7 +14,7 @@ import { parseArgs, readJson, out, fail } from './lib/utils.mjs'
 // ---------------------------------------------------------------------------
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const memDir = path.resolve(__dirname, '..', '.eros', 'memory', 'design-intelligence')
+const memDir = path.resolve(__dirname, '..', '..', '.eros', 'memory', 'design-intelligence')
 
 const callScript = (script, args) => new Promise((resolve, reject) => {
   execFile(process.execPath, [path.join(__dirname, script), ...args], { cwd: __dirname, timeout: 30000 }, (err, stdout) => {
@@ -33,11 +33,11 @@ const buildErosContext = async () => {
   const revisions = (await readJson(path.join(memDir, 'revision-patterns.json')))?.patterns || []
 
   let gaps = null
-  try { gaps = await callScript('eros-meta.mjs', ['gaps']) } catch {}
+  try { gaps = await callScript('../memory/meta.mjs', ['gaps']) } catch {}
 
   // Fresh stats (more accurate than personality.json which may be stale)
   let stats = null
-  try { stats = await callScript('eros-memory.mjs', ['stats']) } catch {}
+  try { stats = await callScript('../memory/memory.mjs', ['stats']) } catch {}
 
   // Count real projects on Desktop
   let projectCount = 0

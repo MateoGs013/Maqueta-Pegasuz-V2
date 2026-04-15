@@ -768,7 +768,7 @@ const cmdDone = async (projectDir, resultArg) => {
 
     if (recovery.escalateToFlag) {
       // Max retries reached, flag it
-      try { await callScript('eros-log.mjs', ['flag', '--project', projectDir, '--task', taskId, '--reason', 'Output verification failed after max retries']) } catch { /* best effort */ }
+      try { await callScript('../dev/log.mjs', ['flag', '--project', projectDir, '--task', taskId, '--reason', 'Output verification failed after max retries']) } catch { /* best effort */ }
       await flagInternal(projectDir, taskId, 'Output verification failed after max retries')
       const reloaded = await loadState(projectDir)
       const nextAction = resolveAction(reloaded.stateJson.currentTask, reloaded.stateJson, reloaded.queueJson, projectDir)
@@ -790,7 +790,7 @@ const cmdDone = async (projectDir, resultArg) => {
 
   if (needsGate(taskId)) {
     try {
-      const gateResult = await callScript('eros-gate.mjs', ['post', '--project', projectDir, '--task', taskId])
+      const gateResult = await callScript('./gate.mjs', ['post', '--project', projectDir, '--task', taskId])
       gateVerdict = gateResult.verdict || 'APPROVE'
       gateScore = gateResult.score ?? null
       gateReason = gateResult.reason || null
@@ -807,13 +807,13 @@ const cmdDone = async (projectDir, resultArg) => {
     const logArgs = ['approve', '--project', projectDir, '--task', taskId]
     if (gateScore != null) logArgs.push('--score', String(gateScore))
     if (result.signature) logArgs.push('--signature', result.signature)
-    try { await callScript('eros-log.mjs', logArgs) } catch { /* best effort */ }
+    try { await callScript('../dev/log.mjs', logArgs) } catch { /* best effort */ }
 
     // Fire memory hooks
     const hooks = resolveMemoryHooks(taskId, { ...result, verdict: 'APPROVE', score: gateScore }, stateJson)
     for (const hook of hooks) {
       try {
-        await callScript('eros-memory.mjs', ['learn', '--event', hook.event, '--data', JSON.stringify(hook.data)])
+        await callScript('../memory/memory.mjs', ['learn', '--event', hook.event, '--data', JSON.stringify(hook.data)])
       } catch { /* best effort — memory hooks should not block pipeline */ }
     }
 
@@ -841,7 +841,7 @@ const cmdDone = async (projectDir, resultArg) => {
     }, attempt)
 
     if (recovery.escalateToFlag) {
-      try { await callScript('eros-log.mjs', ['flag', '--project', projectDir, '--task', taskId, '--reason', gateReason || 'Gate retry limit reached']) } catch { /* best effort */ }
+      try { await callScript('../dev/log.mjs', ['flag', '--project', projectDir, '--task', taskId, '--reason', gateReason || 'Gate retry limit reached']) } catch { /* best effort */ }
       await flagInternal(projectDir, taskId, gateReason || 'Gate retry limit reached')
       const reloaded = await loadState(projectDir)
       const nextAction = resolveAction(reloaded.stateJson.currentTask, reloaded.stateJson, reloaded.queueJson, projectDir)
@@ -855,7 +855,7 @@ const cmdDone = async (projectDir, resultArg) => {
 
   } else {
     // FLAG
-    try { await callScript('eros-log.mjs', ['flag', '--project', projectDir, '--task', taskId, '--reason', gateReason || 'Gate returned FLAG']) } catch { /* best effort */ }
+    try { await callScript('../dev/log.mjs', ['flag', '--project', projectDir, '--task', taskId, '--reason', gateReason || 'Gate returned FLAG']) } catch { /* best effort */ }
     await flagInternal(projectDir, taskId, gateReason || 'Gate returned FLAG')
     const reloaded = await loadState(projectDir)
     const nextAction = resolveAction(reloaded.stateJson.currentTask, reloaded.stateJson, reloaded.queueJson, projectDir)

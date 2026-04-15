@@ -60,7 +60,7 @@ const cmdGenerate = async () => {
   await ensureDir(PRACTICE_DIR)
 
   // Get gap analysis
-  const gaps = await callScript('eros-meta.mjs', ['gaps'])
+  const gaps = await callScript('./meta.mjs', ['gaps'])
 
   // Load last practice to enforce anti-convergence
   const history = await loadHistory()

@@ -16,10 +16,10 @@ import { chromium } from 'playwright'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFile } from 'node:child_process'
-import { parseArgs, readJson, writeJson, out, fail, today } from './lib/utils.mjs'
+import { parseArgs, readJson, writeJson, out, fail, today } from '../lib/utils.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const maquetaDir = path.resolve(__dirname, '..')
+const maquetaDir = path.resolve(__dirname, '..', '..')
 const discoveryFile = path.join(maquetaDir, '.eros', 'memory', 'design-intelligence', 'discovered-references.json')
 
 const log = (msg) => process.stderr.write(`[eros-discover] ${msg}\n`)
@@ -143,7 +143,7 @@ const scrapeAwwwards = async (maxItems = 10) => {
 const studySite = async (site) => {
   log(`Studying ${site.title} (${site.siteUrl})...`)
   try {
-    const result = await callScript('eros-train.mjs', ['study', '--url', site.siteUrl], 300000)
+    const result = await callScript('../memory/train.mjs', ['study', '--url', site.siteUrl], 300000)
     return { ...site, studied: true, result }
   } catch (err) {
     log(`  Failed: ${err.message}`)
@@ -233,7 +233,7 @@ const main = async () => {
 
   // Update memory stats
   let stats = null
-  try { stats = await callScript('eros-memory.mjs', ['stats']) } catch {}
+  try { stats = await callScript('../memory/memory.mjs', ['stats']) } catch {}
 
   log('═══════════════════════════════════════════')
   log(' DISCOVERY COMPLETE')
