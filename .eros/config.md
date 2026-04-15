@@ -1,4 +1,4 @@
-# Brain Configuration — V6.1 → V7 (Eros Script Architecture)
+# Eros Configuration — V7 (Script-Driven)
 
 Central configuration for autonomous behavior, approval thresholds, and memory rules.
 

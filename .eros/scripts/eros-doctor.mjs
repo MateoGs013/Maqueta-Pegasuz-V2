@@ -30,7 +30,7 @@ const erosDirs = ['.eros', '.eros/agents', '.eros/workflows', '.eros/memory', '.
 for (const dir of erosDirs) {
   assert(existsSync(join(REPO_ROOT, dir)), `Missing .eros/ subdirectory: ${dir}`);
 }
-const erosFiles = ['.eros/pipeline.md', '.eros/brain-config.md'];
+const erosFiles = ['.eros/pipeline.md', '.eros/config.md'];
 for (const file of erosFiles) {
   assert(existsSync(join(REPO_ROOT, file)), `Missing canonical brain file: ${file}`);
 }
