@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const repoDir = path.resolve(__dirname, '..')
+const repoDir = path.resolve(__dirname, '..', '..')
 const desktopDir = path.join(os.homedir(), 'Desktop')
 const exampleDir = path.join(repoDir, '.eros', 'front-brain', 'examples', 'demo-run')
 const runtimeDir = path.join(repoDir, '.eros', 'front-brain', 'runtime')

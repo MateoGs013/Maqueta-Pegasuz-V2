@@ -34,7 +34,7 @@ import { appendEvent } from '../panel/feed.mjs'
 import { smokePucho } from '../dev/pucho.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const maquetaDir = path.resolve(__dirname, '..')
+const maquetaDir = path.resolve(__dirname, '..', '..')
 const desktopDir = path.join(process.env.HOME || process.env.USERPROFILE, 'Desktop')
 const memDir = path.join(maquetaDir, '.eros', 'memory', 'design-intelligence')
 

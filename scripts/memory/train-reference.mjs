@@ -31,7 +31,7 @@ const execFile = promisify(execFileCb)
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const maquetaDir = path.resolve(__dirname, '..')
+const maquetaDir = path.resolve(__dirname, '..', '..')
 const defaultOutDir = path.join(maquetaDir, '_training-refs')
 
 const parseArgs = (argv) => {

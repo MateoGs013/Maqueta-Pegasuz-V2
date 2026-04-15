@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url'
 import os from 'node:os'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const maquetaDir = path.resolve(__dirname, '..')
+const maquetaDir = path.resolve(__dirname, '..', '..')
 
 // ---- Resolve target dir ---------------------------------------------------
 const arg = process.argv[2] || 'panel'

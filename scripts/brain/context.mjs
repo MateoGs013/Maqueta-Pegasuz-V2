@@ -29,8 +29,8 @@ import {
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const maquetaDir = path.resolve(__dirname, '..')
-const MEMORY_DIR = path.resolve(__dirname, '..', '.eros', 'memory', 'design-intelligence')
+const maquetaDir = path.resolve(__dirname, '..', '..')
+const MEMORY_DIR = path.resolve(__dirname, '..', '..', '.eros', 'memory', 'design-intelligence')
 
 // Read personality.json and format as markdown block
 const readPersonality = async () => {

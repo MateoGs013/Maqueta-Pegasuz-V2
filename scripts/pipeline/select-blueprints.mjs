@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { heroes, navs } from '../_components/blueprints.manifest.js'
+import { heroes, navs } from '../../_components/blueprints.manifest.js'
 
 const keywordTagMap = [
   { test: /cinematic|film|launch|campaign|showcase/i, tags: ['cinematic'] },

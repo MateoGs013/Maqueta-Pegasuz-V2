@@ -366,7 +366,7 @@ const cmdStudy = async (args) => {
   // If --feedback provided, go straight to learning
   if (args.feedback) {
     // Find existing analysis
-    const maquetaDir = path.resolve(__dirname, '..')
+    const maquetaDir = path.resolve(__dirname, '..', '..')
     const slug = url.replace(/https?:\/\//, '').replace(/[^a-z0-9]+/gi, '-').replace(/-+$/, '')
     const analysisPath = path.join(maquetaDir, '_training-refs', slug, 'analysis.json')
     const analysis = await readJson(analysisPath)
@@ -416,7 +416,7 @@ const cmdStudy = async (args) => {
   // Step 3: Read observer manifest for rich data (screenshots, excellence, etc.)
   let manifest = null
   const slugDir = url.replace(/https?:\/\//, '').replace(/[^a-z0-9]+/gi, '-').replace(/-+$/, '')
-  const maquetaDir = path.resolve(__dirname, '..')
+  const maquetaDir = path.resolve(__dirname, '..', '..')
   const manifestPath = path.join(maquetaDir, '_training-refs', slugDir, slugDir, 'manifest.json')
   manifest = await readJson(manifestPath)
   // Try alternate path

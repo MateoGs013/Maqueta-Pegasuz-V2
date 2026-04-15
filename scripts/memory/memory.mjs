@@ -34,7 +34,7 @@ import {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const MEMORY_DIR = path.resolve(__dirname, '..', '.eros', 'memory', 'design-intelligence');
+const MEMORY_DIR = path.resolve(__dirname, '..', '..', '.eros', 'memory', 'design-intelligence');
 
 const FILES = {
   fontPairings:        'font-pairings',

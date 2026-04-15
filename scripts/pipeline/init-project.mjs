@@ -13,7 +13,7 @@ import {
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const repoDir = path.resolve(__dirname, '..')
+const repoDir = path.resolve(__dirname, '..', '..')
 const scaffoldDir = path.join(repoDir, '_project-scaffold')
 const librariesDir = path.join(repoDir, 'docs', '_libraries')
 const desktopDir = path.join(os.homedir(), 'Desktop')
@@ -187,7 +187,7 @@ const main = async () => {
   try {
     await new Promise((resolve, reject) => {
       execFile(process.execPath, [
-        path.join(__dirname, 'eros-project-sync.mjs'), 'init', '--project', projectDir,
+        path.join(__dirname, 'project-sync.mjs'), 'init', '--project', projectDir,
       ], { cwd: __dirname, timeout: 60000 }, (err, stdout, stderr) => {
         if (stderr) process.stderr.write(stderr)
         if (err) { reject(err); return }

@@ -8,7 +8,7 @@
     "init:project": "node pipeline/init-project.mjs",
     "refresh:quality": "node quality/refresh-quality.mjs",
     "select:blueprints": "node pipeline/select-blueprints.mjs",
-    "tokens": "node generate-tokens.js",
+    "tokens": "node panel/generate-tokens.js",
     "sync:runs": "node pipeline/sync-front-brain-runs.mjs",
     "eros:state": "node brain/state.mjs",
     "eros:memory": "node memory/memory.mjs",
