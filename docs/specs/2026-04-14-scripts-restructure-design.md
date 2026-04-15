@@ -231,7 +231,7 @@ From the audit (excluding `docs/archive/**` which is frozen historical):
 |------|-------------|---------|
 | `panel/package.json` | `../scripts/sync-front-brain-runs.mjs` | `../scripts/pipeline/sync-front-brain-runs.mjs` |
 | `panel/package.json` | `../scripts/start-workspace.sh` | `../scripts/dev/start-workspace.sh` |
-| `.eros/brain-config.md:241` | `scripts/capture-refs.mjs` | `scripts/archive/capture-refs.mjs` (with note: legacy, see observer/) |
+| `.eros/config.md:241` | `scripts/capture-refs.mjs` | `scripts/archive/capture-refs.mjs` (with note: legacy, see observer/) |
 | `.eros/front-eros-core/README.md:16` | `scripts/bootstrap-front-brain.mjs` | `scripts/pipeline/bootstrap-front-brain.mjs` |
 | `.eros/front-eros-core/README.md:17` | `scripts/init-project.mjs` | `scripts/pipeline/init-project.mjs` |
 | `.eros/front-eros-core/README.md:18` | `scripts/select-blueprints.mjs` | `scripts/pipeline/select-blueprints.mjs` |
@@ -288,7 +288,7 @@ Commit-safe phases. Each phase independently reversible via `git revert`.
 6. **Move `observer/` scripts** (6 files into existing subdir) + imports + aliases + observer `README.md`.
 7. **Move `quality/`, `pipeline/`, `panel/`, `dev/`** (21 files) + imports + aliases. Grouped since no cross-category conflicts.
 8. **Archive 3 deprecated scripts** to `archive/` + `archive/README.md` explaining each.
-9. **Update external refs**: `panel/package.json`, `.eros/brain-config.md`, `.eros/front-eros-core/README.md`, `.eros/front-brain/runtime/README.md`, root `README.md` scripts table.
+9. **Update external refs**: `panel/package.json`, `.eros/config.md`, `.eros/front-eros-core/README.md`, `.eros/front-brain/runtime/README.md`, root `README.md` scripts table.
 10. **Extend `eros-doctor`** with RULE 11/12/13 (TDD: fixture-based).
 11. **Final validation**: `eros-doctor` clean, `npm run <every alias>` smoke-loads, grep audit shows zero stale refs.
 

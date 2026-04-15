@@ -25,7 +25,7 @@ Desktop/
     .codex/                  <- Codex adapter: AGENTS.override.md, config.toml
 
   {project-slug}/            <- NEW PROJECT (created from template)
-    .brain/                  <- working memory (micro-task state, context, reports)
+    .eros/                  <- working memory (micro-task state, context, reports)
     docs/                    <- design docs (generated) + _libraries (copied)
     _ref-captures/           <- reference screenshots (temporary)
     src/                     <- Vue 3 app (from scaffold)
@@ -42,31 +42,31 @@ Vue 3 (`<script setup>`) + Vite + Vue Router + Pinia · GSAP 3 + ScrollTrigger +
 
 | Layer | Location | Purpose | Lifetime |
 |-------|----------|---------|----------|
-| Working Memory | `$PROJECT_DIR/.brain/` | Hot state: tasks, context, reports, approvals | Per project |
+| Working Memory | `$PROJECT_DIR/.eros/` | Hot state: tasks, context, reports, approvals | Per project |
 | Long-Term Memory | `$MAQUETA_DIR/.eros/memory/design-intelligence/` | Cross-project intelligence | Permanent |
-| Session State | `$PROJECT_DIR/.brain/state.md` | Crash recovery | Per project |
+| Session State | `$PROJECT_DIR/.eros/state.md` | Crash recovery | Per project |
 
 ## Autonomous Brain Loop
 
-1. Read `.brain/state.md` — where am I?
-2. Read `.brain/queue.md` — what's next?
+1. Read `.eros/state.md` — where am I?
+2. Read `.eros/queue.md` — what's next?
 3. INTERPRET — read design-intelligence, inject Memory Insights
 4. Execute ONE micro-task — context file | agent spawn | integration
-5. AUTO-EVALUATE — pass/fail vs brain-config thresholds
+5. AUTO-EVALUATE — pass/fail vs config thresholds
 6. MEMORY HOOK — write learning to design-intelligence immediately
 7. Log to approvals.md + decisions.md; update queue + state
 
 ## Agent Registry
 
-Agents live in `.eros/agents/`. The CEO orchestrator writes a context file to `.brain/context/`, then spawns the agent which reads ONE file. Agents never "read the docs" — context is pre-computed.
+Agents live in `.eros/agents/`. The CEO orchestrator writes a context file to `.eros/context/`, then spawns the agent which reads ONE file. Agents never "read the docs" — context is pre-computed.
 
 | Agent | Input | Output |
 |-------|-------|--------|
-| `designer` | `.brain/context/design-brief.md` | `docs/tokens.md` + `docs/pages/*.md` |
-| `builder` | `.brain/context/S-{Name}.md` | `S-{Name}.vue` + `.brain/reports/S-{Name}.md` |
-| `polisher` | `.brain/context/motion.md` | composables + `.brain/reports/motion.md` |
+| `designer` | `.eros/context/design-brief.md` | `docs/tokens.md` + `docs/pages/*.md` |
+| `builder` | `.eros/context/S-{Name}.md` | `S-{Name}.vue` + `.eros/reports/S-{Name}.md` |
+| `polisher` | `.eros/context/motion.md` | composables + `.eros/reports/motion.md` |
 | `reference-analyst` | `_ref-captures/` | `docs/reference-analysis.md` |
-| `evaluator` | agent output + brain-config thresholds | pass/fail verdict |
+| `evaluator` | agent output + config thresholds | pass/fail verdict |
 
 ## Workflow Registry
 
@@ -146,7 +146,7 @@ Validates multi-AI architecture integrity: required root files, canonical `.eros
 
 - Soul: `EROS.md`
 - Runtime loop: `.eros/pipeline.md`
-- Thresholds: `.eros/brain-config.md`
+- Thresholds: `.eros/config.md`
 - Schema contracts: `.eros/EROS_FEED_SCHEMA.md`
 - Claude specifics: `CLAUDE.md`
 - Gemini specifics: `GEMINI.md`

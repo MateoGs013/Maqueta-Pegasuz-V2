@@ -14,7 +14,7 @@
 |---|---------|------|------|-------|
 | 1 | Internal orchestration module | `scripts/brain/` | `scripts/eros-core/` | Phase 1 |
 | 2 | Panel runtime feed subsystem | `front-brain` (path + symbols) | `eros-feed` | Phase 2 |
-| 3 | Per-project working memory | `.brain/` (inside every generated project) | `.eros-run/` | Phase 3 |
+| 3 | Per-project working memory | `.brain/` (inside every generated project) | `.eros/` | Phase 3 |
 
 ---
 
@@ -463,7 +463,7 @@ gh pr create --title "refactor: rename scripts/brain → scripts/eros-core" --bo
 
 ## Not included (future PRs)
 - Phase 2: `front-brain` → `eros-feed` (panel subsystem)
-- Phase 3: `.brain/` → `.eros-run/` (per-project working memory)
+- Phase 3: `.brain/` → `.eros/` (per-project working memory)
 
 ## Test plan
 - [x] `node .eros/scripts/eros-doctor.mjs` → exit 0
@@ -963,7 +963,7 @@ gh pr create --title "refactor: rename front-brain → eros-feed (panel subsyste
 - Fix pre-existing `.claude/front-brain/` reference bug in `vite-plugin-eros.js`
 
 ## Not included
-- Phase 3: `.brain/` → `.eros-run/` (per-project working memory + migration of Desktop projects)
+- Phase 3: `.brain/` → `.eros/` (per-project working memory + migration of Desktop projects)
 - `ErosBrain.vue` view name + `"Creative Brain"` UX string (product decisions)
 
 ## Test plan
@@ -979,7 +979,7 @@ EOF
 
 ---
 
-# Phase 3 — Rename `.brain/` → `.eros-run/`
+# Phase 3 — Rename `.brain/` → `.eros/`
 
 **Prerequisite:** Phases 1 and 2 merged to main.
 
@@ -990,9 +990,9 @@ EOF
 **Files affected (~40):**
 
 Structure:
-- Rename: `_project-scaffold/.brain/` → `_project-scaffold/.eros-run/`
-- Rename: `.eros/eros-feed/examples/demo-run/.brain/` → `.eros/eros-feed/examples/demo-run/.eros-run/`
-- Rename: `.eros/brain-config.md` → `.eros/eros-run-config.md`
+- Rename: `_project-scaffold/.brain/` → `_project-scaffold/.eros/`
+- Rename: `.eros/eros-feed/examples/demo-run/.brain/` → `.eros/eros-feed/examples/demo-run/.eros/`
+- Rename: `.eros/brain-config.md` → `.eros/config.md`
 
 Scripts (path literals):
 - `scripts/eros-core/state.mjs`, `context.mjs`, `gate.mjs` (~56 refs total, all `.brain/`)
@@ -1017,7 +1017,7 @@ Agents:
 
 Docs:
 - `.eros/pipeline.md` (35 `.brain` refs)
-- `.eros/eros-run-config.md` (after rename) (7 refs)
+- `.eros/config.md` (after rename) (7 refs)
 - `.eros/workflows/project.md`
 - `docs/plans/hardening-audit.md`, active `2026-04-14-*.md` plans
 - Active specs
@@ -1027,7 +1027,7 @@ Config:
 - `.gitignore` line 53 (`/.brain/`)
 
 Migration:
-- NEW: `scripts/dev/migrate-eros-run.mjs` (one-shot migration script for Desktop projects)
+- NEW: `scripts/dev/migrate-eros.mjs` (one-shot migration script for Desktop projects)
 
 ---
 
@@ -1061,23 +1061,23 @@ Expected: a text file listing every Desktop project that currently has a `.brain
 ### Task 3.2: Write the migration script
 
 **Files:**
-- Create: `scripts/dev/migrate-eros-run.mjs`
+- Create: `scripts/dev/migrate-eros.mjs`
 
 - [ ] **Step 1: Write the migration script**
 
-Create `scripts/dev/migrate-eros-run.mjs` with:
+Create `scripts/dev/migrate-eros.mjs` with:
 
 ```javascript
 #!/usr/bin/env node
 /**
- * migrate-eros-run.mjs — one-shot migration of .brain/ → .eros-run/
+ * migrate-eros.mjs — one-shot migration of .brain/ → .eros/
  * for every project under the user's Desktop.
  *
  * Usage:
- *   node scripts/dev/migrate-eros-run.mjs --dry-run      # preview
- *   node scripts/dev/migrate-eros-run.mjs --execute      # do it
+ *   node scripts/dev/migrate-eros.mjs --dry-run      # preview
+ *   node scripts/dev/migrate-eros.mjs --execute      # do it
  *
- * Idempotent: if .eros-run/ already exists and .brain/ doesn't, skip.
+ * Idempotent: if .eros/ already exists and .brain/ doesn't, skip.
  */
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
@@ -1097,12 +1097,12 @@ for (const e of entries) {
 
   const projectDir = path.join(desktopDir, e.name)
   const brainDir = path.join(projectDir, '.brain')
-  const erosRunDir = path.join(projectDir, '.eros-run')
+  const erosDir = path.join(projectDir, '.eros')
 
   let hasBrain = false
   let hasErosRun = false
   try { await fs.access(brainDir); hasBrain = true } catch {}
-  try { await fs.access(erosRunDir); hasErosRun = true } catch {}
+  try { await fs.access(erosDir); hasErosRun = true } catch {}
 
   if (!hasBrain && !hasErosRun) continue
 
@@ -1120,7 +1120,7 @@ for (const e of entries) {
     results.migrated.push(e.name + ' (dry-run)')
   } else {
     try {
-      await fs.rename(brainDir, erosRunDir)
+      await fs.rename(brainDir, erosDir)
       results.migrated.push(e.name)
     } catch (err) {
       results.errors.push(`${e.name}: ${err.message}`)
@@ -1136,7 +1136,7 @@ process.exit(results.errors.length > 0 ? 1 : 0)
 
 Run:
 ```bash
-node scripts/dev/migrate-eros-run.mjs --dry-run
+node scripts/dev/migrate-eros.mjs --dry-run
 ```
 
 Expected output (example):
@@ -1154,13 +1154,13 @@ The count in `migrated` should match (or exceed by 1) the count from `.brain/mig
 
 - [ ] **Step 3: If conflicts exist, resolve them**
 
-If the output shows `conflicts` (a project has both `.brain/` AND `.eros-run/`), **stop**. These are projects where someone partially migrated. Inspect manually, pick the authoritative one, delete the other, then re-run dry-run.
+If the output shows `conflicts` (a project has both `.brain/` AND `.eros/`), **stop**. These are projects where someone partially migrated. Inspect manually, pick the authoritative one, delete the other, then re-run dry-run.
 
 - [ ] **Step 4: Commit the script (before running it)**
 
 ```bash
-git add scripts/dev/migrate-eros-run.mjs
-git commit -m "feat(scripts): add migrate-eros-run.mjs for .brain → .eros-run Desktop migration"
+git add scripts/dev/migrate-eros.mjs
+git commit -m "feat(scripts): add migrate-eros.mjs for .brain → .eros Desktop migration"
 ```
 
 ---
@@ -1168,27 +1168,27 @@ git commit -m "feat(scripts): add migrate-eros-run.mjs for .brain → .eros-run 
 ### Task 3.3: Rename the scaffold and example directories
 
 **Files:**
-- Move: `_project-scaffold/.brain/` → `_project-scaffold/.eros-run/`
-- Move: `.eros/eros-feed/examples/demo-run/.brain/` → `.eros/eros-feed/examples/demo-run/.eros-run/`
+- Move: `_project-scaffold/.brain/` → `_project-scaffold/.eros/`
+- Move: `.eros/eros-feed/examples/demo-run/.brain/` → `.eros/eros-feed/examples/demo-run/.eros/`
 
 - [ ] **Step 1: Rename scaffold**
 
 ```bash
-git mv _project-scaffold/.brain _project-scaffold/.eros-run
+git mv _project-scaffold/.brain _project-scaffold/.eros
 ```
 
 - [ ] **Step 2: Rename demo-run example**
 
 ```bash
-git mv .eros/eros-feed/examples/demo-run/.brain .eros/eros-feed/examples/demo-run/.eros-run
+git mv .eros/eros-feed/examples/demo-run/.brain .eros/eros-feed/examples/demo-run/.eros
 ```
 
 - [ ] **Step 3: Verify content unchanged**
 
 Run:
 ```bash
-ls _project-scaffold/.eros-run/
-ls .eros/eros-feed/examples/demo-run/.eros-run/
+ls _project-scaffold/.eros/
+ls .eros/eros-feed/examples/demo-run/.eros/
 ```
 
 Expected: same file lists as before (state.md, state.json, queue.md, etc.).
@@ -1197,26 +1197,26 @@ Expected: same file lists as before (state.md, state.json, queue.md, etc.).
 
 ```bash
 git add _project-scaffold/ .eros/eros-feed/examples/
-git commit -m "refactor: rename scaffold/demo .brain/ → .eros-run/"
+git commit -m "refactor: rename scaffold/demo .brain/ → .eros/"
 ```
 
 ---
 
-### Task 3.4: Rename `.eros/brain-config.md` → `.eros/eros-run-config.md`
+### Task 3.4: Rename `.eros/brain-config.md` → `.eros/config.md`
 
 **Files:**
-- Move: `.eros/brain-config.md` → `.eros/eros-run-config.md`
+- Move: `.eros/brain-config.md` → `.eros/config.md`
 - Modify: `.eros/scripts/eros-doctor.mjs` line 33
 
 - [ ] **Step 1: Rename the file**
 
 ```bash
-git mv .eros/brain-config.md .eros/eros-run-config.md
+git mv .eros/brain-config.md .eros/config.md
 ```
 
 - [ ] **Step 2: Update its heading**
 
-Edit `.eros/eros-run-config.md` line 1.
+Edit `.eros/config.md` line 1.
 
 From:
 ```markdown
@@ -1239,7 +1239,7 @@ const erosFiles = ['.eros/pipeline.md', '.eros/brain-config.md'];
 
 To:
 ```javascript
-const erosFiles = ['.eros/pipeline.md', '.eros/eros-run-config.md'];
+const erosFiles = ['.eros/pipeline.md', '.eros/config.md'];
 ```
 
 - [ ] **Step 4: Verify eros-doctor still passes**
@@ -1253,8 +1253,8 @@ Expected: exit 0.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add .eros/brain-config.md .eros/eros-run-config.md .eros/scripts/eros-doctor.mjs
-git commit -m "refactor: rename .eros/brain-config.md → eros-run-config.md + update doctor"
+git add .eros/brain-config.md .eros/config.md .eros/scripts/eros-doctor.mjs
+git commit -m "refactor: rename .eros/brain-config.md → config.md + update doctor"
 ```
 
 ---
@@ -1273,14 +1273,14 @@ Run:
 grep -n "\.brain" scripts/eros-core/state.mjs
 ```
 
-For every hit, replace `.brain` (preceded by `/` or `'` or `"` or ` ` — path context) with `.eros-run`. Do **not** replace the word `brain` when it's in prose (comments, log messages describing the concept). Focus on path literals.
+For every hit, replace `.brain` (preceded by `/` or `'` or `"` or ` ` — path context) with `.eros`. Do **not** replace the word `brain` when it's in prose (comments, log messages describing the concept). Focus on path literals.
 
 Example change:
 ```javascript
 // Before:
 const stateFile = path.join(projectDir, '.brain', 'state.json')
 // After:
-const stateFile = path.join(projectDir, '.eros-run', 'state.json')
+const stateFile = path.join(projectDir, '.eros', 'state.json')
 ```
 
 - [ ] **Step 2: Same for context.mjs and gate.mjs**
@@ -1315,7 +1315,7 @@ Expected: exit 0.
 
 ```bash
 git add scripts/eros-core/
-git commit -m "refactor(eros-core): rewrite .brain/ path literals → .eros-run/ + update state.md header"
+git commit -m "refactor(eros-core): rewrite .brain/ path literals → .eros/ + update state.md header"
 ```
 
 ---
@@ -1337,17 +1337,17 @@ Run:
 grep -n "\.brain\|# Brain" scripts/pipeline/bootstrap-eros-feed.mjs
 ```
 
-Replace `.brain/` path literals → `.eros-run/`. Also update the `# Brain State` template string literal (line ~376) to `# Eros Run State`. Update the `<!-- Brain writes ... -->` and `<!-- Brain appends ... -->` comments (lines ~614, ~646) to `<!-- Eros writes automatic approvals and flags here. -->` and similar.
+Replace `.brain/` path literals → `.eros/`. Also update the `# Brain State` template string literal (line ~376) to `# Eros Run State`. Update the `<!-- Brain writes ... -->` and `<!-- Brain appends ... -->` comments (lines ~614, ~646) to `<!-- Eros writes automatic approvals and flags here. -->` and similar.
 
 - [ ] **Step 2: Update `scripts/pipeline/sync-eros-feed-runs.mjs`**
 
-Same treatment — replace `.brain/` path literals with `.eros-run/`.
+Same treatment — replace `.brain/` path literals with `.eros/`.
 
 - [ ] **Step 3: Commit pipeline**
 
 ```bash
 git add scripts/pipeline/
-git commit -m "refactor(pipeline): rewrite .brain/ paths → .eros-run/"
+git commit -m "refactor(pipeline): rewrite .brain/ paths → .eros/"
 ```
 
 - [ ] **Step 4: Update `scripts/quality/refresh-quality.mjs`**
@@ -1367,18 +1367,18 @@ Minor updates (2 each). Same pattern.
 
 ```bash
 git add scripts/quality/
-git commit -m "refactor(quality): rewrite .brain/ paths → .eros-run/"
+git commit -m "refactor(quality): rewrite .brain/ paths → .eros/"
 ```
 
 - [ ] **Step 7: Update `scripts/memory/{memory,auto-train,meta,train}.mjs`**
 
-Each has a handful of `.brain/` refs. Same pattern — path literals only. The `scripts/memory/auto-train.mjs` lines 861-862 check for `.brain` existence to detect if a dir is a project; update the path check to `.eros-run`. Also rename the local variable `hasBrain` → `hasErosRun`.
+Each has a handful of `.brain/` refs. Same pattern — path literals only. The `scripts/memory/auto-train.mjs` lines 861-862 check for `.brain` existence to detect if a dir is a project; update the path check to `.eros`. Also rename the local variable `hasBrain` → `hasErosRun`.
 
 - [ ] **Step 8: Commit memory**
 
 ```bash
 git add scripts/memory/
-git commit -m "refactor(memory): rewrite .brain/ paths → .eros-run/"
+git commit -m "refactor(memory): rewrite .brain/ paths → .eros/"
 ```
 
 - [ ] **Step 9: Update `scripts/panel/server.mjs` (3 refs)**
@@ -1387,9 +1387,9 @@ Standard path replacement.
 
 - [ ] **Step 10: Update `scripts/dev/*.{mjs,sh}`**
 
-Shell scripts too: `auto-practice.sh`, `start-workspace.sh`. These have `.brain` refs inside bash. Replace with `.eros-run`.
+Shell scripts too: `auto-practice.sh`, `start-workspace.sh`. These have `.brain` refs inside bash. Replace with `.eros`.
 
-For `scripts/dev/test-e2e.mjs` (23 refs), this is a test fixture generator — replace all `.brain/` → `.eros-run/` and the `# Brain State` string literal.
+For `scripts/dev/test-e2e.mjs` (23 refs), this is a test fixture generator — replace all `.brain/` → `.eros/` and the `# Brain State` string literal.
 
 - [ ] **Step 11: Update `scripts/observer/detect-changes.mjs` (1 ref)**
 
@@ -1399,7 +1399,7 @@ Trivial.
 
 ```bash
 git add scripts/panel/ scripts/dev/ scripts/observer/
-git commit -m "refactor(scripts): rewrite remaining .brain/ paths → .eros-run/ (panel, dev, observer)"
+git commit -m "refactor(scripts): rewrite remaining .brain/ paths → .eros/ (panel, dev, observer)"
 ```
 
 ---
@@ -1425,7 +1425,7 @@ const manifestPath = path.join(os.default.homedir(), 'Desktop', slug, '.brain', 
 
 To:
 ```javascript
-const manifestPath = path.join(os.default.homedir(), 'Desktop', slug, '.eros-run', 'observer', 'localhost', 'manifest.json')
+const manifestPath = path.join(os.default.homedir(), 'Desktop', slug, '.eros', 'observer', 'localhost', 'manifest.json')
 ```
 
 - [ ] **Step 3: Update line 201 comment**
@@ -1437,7 +1437,7 @@ From:
 
 To:
 ```javascript
-// REST: list projects with .eros-run/ (any project on Desktop)
+// REST: list projects with .eros/ (any project on Desktop)
 ```
 
 - [ ] **Step 4: Update line 222 (`brainDir` variable + path)**
@@ -1456,14 +1456,14 @@ try {
 
 To:
 ```javascript
-const erosRunDir = path.join(desktopDir, e.name, '.eros-run')
+const erosDir = path.join(desktopDir, e.name, '.eros')
 try {
-  await fsP.access(erosRunDir)
-  const state = JSON.parse(await fsP.readFile(path.join(erosRunDir, 'state.json'), 'utf8').catch(() => '{}'))
-  const scorecard = JSON.parse(await fsP.readFile(path.join(erosRunDir, 'reports', 'quality', 'scorecard.json'), 'utf8').catch(() => '{}'))
+  await fsP.access(erosDir)
+  const state = JSON.parse(await fsP.readFile(path.join(erosDir, 'state.json'), 'utf8').catch(() => '{}'))
+  const scorecard = JSON.parse(await fsP.readFile(path.join(erosDir, 'reports', 'quality', 'scorecard.json'), 'utf8').catch(() => '{}'))
   ...
-  path.join(erosRunDir, 'observer', 'localhost', 'frame-000.png'),
-  path.join(erosRunDir, 'observer', 'localhost', 'full-page-desktop.png'),
+  path.join(erosDir, 'observer', 'localhost', 'frame-000.png'),
+  path.join(erosDir, 'observer', 'localhost', 'full-page-desktop.png'),
 ```
 
 - [ ] **Step 5: Update line 246 comment**
@@ -1475,7 +1475,7 @@ From:
 
 To:
 ```javascript
-} catch { /* no .eros-run */ }
+} catch { /* no .eros */ }
 ```
 
 - [ ] **Step 6: Update line 409 (preview candidate path)**
@@ -1487,7 +1487,7 @@ path.join(desktopDir, slug, '.brain', 'observer', 'localhost', filename),
 
 To:
 ```javascript
-path.join(desktopDir, slug, '.eros-run', 'observer', 'localhost', filename),
+path.join(desktopDir, slug, '.eros', 'observer', 'localhost', filename),
 ```
 
 - [ ] **Step 7: Update line 688 (warning comment)**
@@ -1499,7 +1499,7 @@ From:
 
 To:
 ```javascript
-// recursive fs.watch handle on EVERY .eros-run/ dir on the Desktop (20+
+// recursive fs.watch handle on EVERY .eros/ dir on the Desktop (20+
 ```
 
 - [ ] **Step 8: Rebuild panel**
@@ -1514,7 +1514,7 @@ Expected: clean build.
 
 ```bash
 git add panel/vite-plugin-eros.js
-git commit -m "refactor(panel): rewrite .brain/ paths → .eros-run/ in vite plugin"
+git commit -m "refactor(panel): rewrite .brain/ paths → .eros/ in vite plugin"
 ```
 
 ---
@@ -1526,7 +1526,7 @@ git commit -m "refactor(panel): rewrite .brain/ paths → .eros-run/ in vite plu
 
 - [ ] **Step 1: Update line 18 (compact-resume hook) — path literal**
 
-The hook scans `/c/Users/mateo/Desktop/*/.brain/state.md`. Replace with `.eros-run/state.md`:
+The hook scans `/c/Users/mateo/Desktop/*/.brain/state.md`. Replace with `.eros/state.md`:
 
 Find:
 ```
@@ -1535,7 +1535,7 @@ for f in /c/Users/mateo/Desktop/*/.brain/state.md
 
 Replace with:
 ```
-for f in /c/Users/mateo/Desktop/*/.eros-run/state.md
+for f in /c/Users/mateo/Desktop/*/.eros/state.md
 ```
 
 - [ ] **Step 2: Update line 27 (resume hook) — same pattern**
@@ -1553,11 +1553,11 @@ Find (4 regex patterns in the command):
 \.brain/decisions\.md$
 ```
 
-Replace each `\.brain/` with `\.eros-run/`:
+Replace each `\.brain/` with `\.eros/`:
 ```
-\.eros-run/(state\.md|state\.json|queue\.md|queue\.json)$
-\.eros-run/approvals\.md$
-\.eros-run/decisions\.md$
+\.eros/(state\.md|state\.json|queue\.md|queue\.json)$
+\.eros/approvals\.md$
+\.eros/decisions\.md$
 ```
 
 - [ ] **Step 4: Update line 67 (PostToolUse regex)**
@@ -1569,7 +1569,7 @@ Find:
 
 Replace with:
 ```
-\.eros-run/reports/S-.*\.md$
+\.eros/reports/S-.*\.md$
 ```
 
 - [ ] **Step 5: Verify settings.json is valid JSON**
@@ -1585,7 +1585,7 @@ Expected: `valid`.
 
 ```bash
 git add .claude/settings.json
-git commit -m "refactor(hooks): update Claude settings hooks for .eros-run/ path"
+git commit -m "refactor(hooks): update Claude settings hooks for .eros/ path"
 ```
 
 ---
@@ -1603,7 +1603,7 @@ For each agent file, run:
 grep -n "\.brain\|brain-config" <file>
 ```
 
-Replace `.brain/` → `.eros-run/` and `brain-config.md` → `eros-run-config.md` throughout.
+Replace `.brain/` → `.eros/` and `brain-config.md` → `config.md` throughout.
 
 Leave references to the concept "brain" as a narrative term untouched (e.g., "the autonomous brain" — decide case by case whether prose stays or adapts to "the Eros orchestrator"). Conservative choice: only touch path literals; leave narrative prose alone in this PR to keep diff reviewable.
 
@@ -1611,7 +1611,7 @@ Leave references to the concept "brain" as a narrative term untouched (e.g., "th
 
 ```bash
 git add .eros/agents/ .claude/agents/
-git commit -m "refactor(agents): rewrite .brain/ paths → .eros-run/ in agent contracts"
+git commit -m "refactor(agents): rewrite .brain/ paths → .eros/ in agent contracts"
 ```
 
 ---
@@ -1621,25 +1621,25 @@ git commit -m "refactor(agents): rewrite .brain/ paths → .eros-run/ in agent c
 **Files:**
 - Modify: `.eros/pipeline.md` (35 `.brain` + 46 `brain` refs — pick path literals)
 - Modify: `.eros/workflows/project.md`
-- Modify: `.eros/eros-run-config.md` (the one we just renamed — 7 `.brain` refs inside)
+- Modify: `.eros/config.md` (the one we just renamed — 7 `.brain` refs inside)
 
 - [ ] **Step 1: `.eros/pipeline.md`**
 
-Find every `.brain/` path reference (with escape `\.brain` context) and replace with `.eros-run/`. This file is the core operational contract — be thorough.
+Find every `.brain/` path reference (with escape `\.brain` context) and replace with `.eros/`. This file is the core operational contract — be thorough.
 
 - [ ] **Step 2: `.eros/workflows/project.md`**
 
 Same pattern.
 
-- [ ] **Step 3: `.eros/eros-run-config.md`**
+- [ ] **Step 3: `.eros/config.md`**
 
-Internal refs like `.brain/approvals.md`, `.brain/observer/`, `.brain/reports/quality/` → `.eros-run/`.
+Internal refs like `.brain/approvals.md`, `.brain/observer/`, `.brain/reports/quality/` → `.eros/`.
 
 - [ ] **Step 4: Commit**
 
 ```bash
 git add .eros/
-git commit -m "docs: rewrite .brain/ → .eros-run/ in .eros pipeline, workflows, config"
+git commit -m "docs: rewrite .brain/ → .eros/ in .eros pipeline, workflows, config"
 ```
 
 ---
@@ -1665,7 +1665,7 @@ Be surgical. Replace only literal `.brain/` paths. Narrative uses of "brain" (e.
 
 ```bash
 git add docs/ .omc/prd.json .omc/progress.txt README.md AGENTS.md
-git commit -m "docs: rewrite .brain/ → .eros-run/ in active docs, PRD, progress"
+git commit -m "docs: rewrite .brain/ → .eros/ in active docs, PRD, progress"
 ```
 
 ---
@@ -1686,25 +1686,25 @@ From:
 
 To:
 ```
-# Lab scratch at repo root (NOT .eros-run/ inside projects)
-/.eros-run/
+# Lab scratch at repo root (NOT .eros/ inside projects)
+/.eros/
 /BRIEF-*.md
 ```
 
-Also: the local `/.brain/` directory (where we put baseline snapshots) — rename it to `/.eros-run/` locally or delete its contents post-merge. For now, this PR ignores the new name — be aware the baseline snapshot files (`baseline-snapshot/*.txt`) are currently in `.brain/` locally and won't be tracked either way.
+Also: the local `/.brain/` directory (where we put baseline snapshots) — rename it to `/.eros/` locally or delete its contents post-merge. For now, this PR ignores the new name — be aware the baseline snapshot files (`baseline-snapshot/*.txt`) are currently in `.brain/` locally and won't be tracked either way.
 
 - [ ] **Step 2: Rename local `.brain/` working directory (one-shot, untracked)**
 
 Run (locally, not committed — just housekeeping):
 ```bash
-mv .brain .eros-run 2>/dev/null || true
+mv .brain .eros 2>/dev/null || true
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add .gitignore
-git commit -m "chore(gitignore): update lab-scratch path .brain → .eros-run"
+git commit -m "chore(gitignore): update lab-scratch path .brain → .eros"
 ```
 
 ---
@@ -1720,7 +1720,7 @@ Make sure no process holds file handles on `Desktop/*/.brain/`.
 - [ ] **Step 2: Execute the migration script**
 
 ```bash
-node scripts/dev/migrate-eros-run.mjs --execute
+node scripts/dev/migrate-eros.mjs --execute
 ```
 
 Expected output: JSON with every Desktop project in `migrated`, empty `errors`, empty `conflicts`.
@@ -1738,8 +1738,8 @@ done
 Expected: no output.
 
 ```bash
-count=$(ls -d ~/Desktop/*/.eros-run 2>/dev/null | wc -l)
-echo "Projects with .eros-run: $count"
+count=$(ls -d ~/Desktop/*/.eros 2>/dev/null | wc -l)
+echo "Projects with .eros: $count"
 ```
 
 Expected count: matches the baseline from Task 3.1.
@@ -1795,20 +1795,20 @@ Expected remaining `brain` hits: UX strings (`Creative Brain`, `Brain State` gen
 
 ```bash
 git push -u origin refactor/rename-brain-to-eros-phase-3
-gh pr create --title "refactor: rename .brain/ → .eros-run/ (per-project working memory)" --body "$(cat <<'EOF'
+gh pr create --title "refactor: rename .brain/ → .eros/ (per-project working memory)" --body "$(cat <<'EOF'
 ## Summary
-- Rename `.brain/` working-memory dir → `.eros-run/` in scaffold, examples, and all per-project references
-- Rename `.eros/brain-config.md` → `.eros/eros-run-config.md`
+- Rename `.brain/` working-memory dir → `.eros/` in scaffold, examples, and all per-project references
+- Rename `.eros/brain-config.md` → `.eros/config.md`
 - Update all hardcoded path literals in scripts (eros-core, pipeline, quality, memory, dev, panel, observer)
-- Update `panel/vite-plugin-eros.js` to scan `Desktop/*/.eros-run/`
+- Update `panel/vite-plugin-eros.js` to scan `Desktop/*/.eros/`
 - Update `.claude/settings.json` hook regexes (compact, resume, pre-tool-use, post-tool-use)
 - Update all agent files (.eros/agents/, .claude/agents/)
 - Update `.eros/pipeline.md`, `.eros/workflows/project.md`, active docs, PRD, progress
 - Update `.gitignore` lab-scratch path
-- Add `scripts/dev/migrate-eros-run.mjs` and execute it on Desktop projects
+- Add `scripts/dev/migrate-eros.mjs` and execute it on Desktop projects
 
 ## Migration impact
-- N projects on Desktop migrated from `.brain/` to `.eros-run/` (see migration-baseline/)
+- N projects on Desktop migrated from `.brain/` to `.eros/` (see migration-baseline/)
 - Panel project list verified intact post-migration
 - No data loss — `git mv` preserves history for scaffold/example; Desktop projects use `fs.rename()` (atomic on same FS)
 
@@ -1823,7 +1823,7 @@ gh pr create --title "refactor: rename .brain/ → .eros-run/ (per-project worki
 ## Rollback
 If the panel breaks post-merge, revert this PR AND run:
 ```bash
-for d in ~/Desktop/*/.eros-run; do mv "$d" "${d%.eros-run}.brain"; done
+for d in ~/Desktop/*/.eros; do mv "$d" "${d%.eros}.brain"; done
 ```
 EOF
 )"
@@ -1858,7 +1858,7 @@ Expected: reference count dropped from ~1295 to the residuals listed below.
 git log --oneline origin/main | head -20
 ```
 
-Expected: three commits titled `refactor: rename scripts/brain → scripts/eros-core`, `refactor: rename front-brain → eros-feed`, `refactor: rename .brain/ → .eros-run/`.
+Expected: three commits titled `refactor: rename scripts/brain → scripts/eros-core`, `refactor: rename front-brain → eros-feed`, `refactor: rename .brain/ → .eros/`.
 
 ---
 
@@ -1868,11 +1868,11 @@ Each phase is atomic. Rollback = revert its PR.
 
 - **Phase 1 rollback:** `git revert <phase-1-merge-commit>`. No filesystem migration needed.
 - **Phase 2 rollback:** `git revert <phase-2-merge-commit>`. Panel will regenerate runtime files under the old path on next build.
-- **Phase 3 rollback:** `git revert <phase-3-merge-commit>` + shell script to rename every `Desktop/*/.eros-run/` back to `.brain/`:
+- **Phase 3 rollback:** `git revert <phase-3-merge-commit>` + shell script to rename every `Desktop/*/.eros/` back to `.brain/`:
 
 ```bash
-for d in ~/Desktop/*/.eros-run; do
-  mv "$d" "${d%.eros-run}.brain"
+for d in ~/Desktop/*/.eros; do
+  mv "$d" "${d%.eros}.brain"
 done
 ```
 

@@ -63,7 +63,7 @@ wc -l .brain/scripts-migration-external-refs.txt
 cat .brain/scripts-migration-external-refs.txt
 ```
 
-Expected: ~10 lines covering `panel/package.json` (2 refs), `.eros/brain-config.md` (1), `.eros/front-eros-core/README.md` (4), `.eros/eros-feed/runtime/README.md` (1), root `README.md` (multiple), plus any agent refs.
+Expected: ~10 lines covering `panel/package.json` (2 refs), `.eros/config.md` (1), `.eros/front-eros-core/README.md` (4), `.eros/eros-feed/runtime/README.md` (1), root `README.md` (multiple), plus any agent refs.
 
 - [ ] **Step 3: Check agent files for script spawn paths**
 
@@ -1251,7 +1251,7 @@ each. capture npm alias updated; scripts/ root now contains no .mjs/.js/
 
 **Files:**
 - Modify: `panel/package.json` (2 refs)
-- Modify: `.eros/brain-config.md` (1 ref)
+- Modify: `.eros/config.md` (1 ref)
 - Modify: `.eros/front-eros-core/README.md` (4 refs)
 - Modify: `.eros/eros-feed/runtime/README.md` (1 ref)
 - Modify: `README.md` (root — scripts table)
@@ -1275,7 +1275,7 @@ Replace with:
     "workspace": "bash ../scripts/dev/start-workspace.sh"
 ```
 
-- [ ] **Step 2: Fix `.eros/brain-config.md:241`**
+- [ ] **Step 2: Fix `.eros/config.md:241`**
 
 Find:
 
@@ -1393,7 +1393,7 @@ Expected: two `OK` lines.
 
 Run:
 ```bash
-git add panel/package.json .eros/brain-config.md .eros/front-eros-core/README.md .eros/eros-feed/runtime/README.md README.md
+git add panel/package.json .eros/config.md .eros/front-eros-core/README.md .eros/eros-feed/runtime/README.md README.md
 git commit -m "docs: update external references to new scripts/ layout
 
 panel/package.json (2 refs: sync:runs + workspace), .eros/brain-config
@@ -1705,7 +1705,7 @@ Run after all tasks complete:
 - [ ] All 19 npm aliases resolve to existing files
 - [ ] Every moved script smoke-loads without `ERR_MODULE_NOT_FOUND`
 - [ ] `panel/package.json` `sync:feed` and `workspace` point to correct new paths
-- [ ] `.eros/brain-config.md`, `.eros/front-eros-core/README.md`, `.eros/eros-feed/runtime/README.md` updated
+- [ ] `.eros/config.md`, `.eros/front-eros-core/README.md`, `.eros/eros-feed/runtime/README.md` updated
 - [ ] Root `README.md` scripts table reflects new paths
 - [ ] Zero stale refs from grep audit (excluding `docs/archive/`)
 - [ ] Branch pushed
