@@ -122,7 +122,7 @@ export default function erosPlugin() {
         if (!slug) { res.writeHead(400); res.end('{"error":"?project= required"}'); return }
         try {
           const os = await import('node:os')
-          const manifestPath = path.join(os.default.homedir(), 'Desktop', slug, '.brain', 'observer', 'localhost', 'manifest.json')
+          const manifestPath = path.join(os.default.homedir(), 'Desktop', slug, '.eros', 'observer', 'localhost', 'manifest.json')
           const raw = await fsP.readFile(manifestPath, 'utf8')
           res.writeHead(200, { 'Content-Type': 'application/json' })
           res.end(raw)
@@ -198,10 +198,11 @@ export default function erosPlugin() {
         return next
       }
 
-      // REST: list projects with .brain/ (any project on Desktop)
+      // REST: list projects with .eros/ (any project on Desktop)
       // Cached for 10s — scanning Desktop + reading 5 files per project is
       // expensive when there are 20+ practice projects, and the panel hits
       // this endpoint on every navigation.
+      // NOTE: 'Eros' is excluded from the scan — it is the master repo, not a practice project.
       let projectsCache = null
       let projectsCacheAt = 0
       const PROJECTS_TTL = 10000
@@ -218,19 +219,19 @@ export default function erosPlugin() {
           const entries = await fsP.readdir(desktopDir, { withFileTypes: true })
           const projects = []
           for (const e of entries) {
-            if (!e.isDirectory() || e.name === 'maqueta') continue
-            const brainDir = path.join(desktopDir, e.name, '.brain')
+            if (!e.isDirectory() || e.name === 'maqueta' || e.name === 'Eros') continue
+            const erosDir = path.join(desktopDir, e.name, '.eros')
             try {
-              await fsP.access(brainDir)
-              const state = JSON.parse(await fsP.readFile(path.join(brainDir, 'state.json'), 'utf8').catch(() => '{}'))
-              const scorecard = JSON.parse(await fsP.readFile(path.join(brainDir, 'reports', 'quality', 'scorecard.json'), 'utf8').catch(() => '{}'))
+              await fsP.access(erosDir)
+              const state = JSON.parse(await fsP.readFile(path.join(erosDir, 'state.json'), 'utf8').catch(() => '{}'))
+              const scorecard = JSON.parse(await fsP.readFile(path.join(erosDir, 'reports', 'quality', 'scorecard.json'), 'utf8').catch(() => '{}'))
               const sections = await fsP.readdir(path.join(desktopDir, e.name, 'src', 'components', 'sections')).catch(() => [])
               // Find preview thumbnail (observer frame-000.png or preview.png)
               let preview = null
               const previewCandidates = [
                 path.join(desktopDir, e.name, 'preview.png'),
-                path.join(brainDir, 'observer', 'localhost', 'frame-000.png'),
-                path.join(brainDir, 'observer', 'localhost', 'full-page-desktop.png'),
+                path.join(erosDir, 'observer', 'localhost', 'frame-000.png'),
+                path.join(erosDir, 'observer', 'localhost', 'full-page-desktop.png'),
               ]
               for (const p of previewCandidates) {
                 try { await fsP.access(p); preview = `/__eros/preview/${e.name}/${path.basename(p)}`; break } catch {}
@@ -243,7 +244,7 @@ export default function erosPlugin() {
                 sections: sections.filter(f => f.endsWith('.vue')),
                 preview,
               })
-            } catch { /* no .brain */ }
+            } catch { /* no .eros */ }
           }
           projectsCache = JSON.stringify(projects)
           projectsCacheAt = Date.now()
@@ -406,7 +407,7 @@ export default function erosPlugin() {
           const desktopDir = path.join(os.default.homedir(), 'Desktop')
           const candidates = [
             path.join(desktopDir, slug, filename),
-            path.join(desktopDir, slug, '.brain', 'observer', 'localhost', filename),
+            path.join(desktopDir, slug, '.eros', 'observer', 'localhost', filename),
           ]
           for (const p of candidates) {
             try {
@@ -685,7 +686,7 @@ export default function erosPlugin() {
 
       // NOTE: startWatch() removed from auto-start.
       // It was spawning sync-eros-feed-runs.mjs --watch, which opened a
-      // recursive fs.watch handle on EVERY .brain/ dir on the Desktop (20+
+      // recursive fs.watch handle on EVERY .eros/ dir on the Desktop (20+
       // watchers). On Windows that exhausts the per-process handle limit
       // after a few hours of use, killing vite silently with no Event Viewer
       // entry. The watch script can still be invoked manually if needed:
