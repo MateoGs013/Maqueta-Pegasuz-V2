@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * eros-mood.mjs — Derived emotional state for Eros.
+ * dev/mood.mjs — Derived emotional state for Eros.
  *
  * Reads recent training sessions + feed events + personality to compute
  * a current mood. The mood is NOT a random pick — it's a summary of
@@ -19,8 +19,8 @@
  *   }
  *
  * Usage:
- *   node eros-mood.mjs                # prints JSON
- *   node eros-mood.mjs --explain      # prints JSON with signal breakdown
+ *   node dev/mood.mjs                # prints JSON
+ *   node dev/mood.mjs --explain      # prints JSON with signal breakdown
  */
 
 import path from 'node:path'

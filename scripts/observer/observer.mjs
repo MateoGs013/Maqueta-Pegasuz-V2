@@ -12,11 +12,11 @@
  *   6. Motion      — CSS transitions/animations, GSAP, ScrollTrigger, wheel states
  *
  * Usage:
- *   node eros-observer.mjs <url> [output-dir]
- *   node eros-observer.mjs --local --port 5173 <output-dir>
- *   node eros-observer.mjs --batch <url1> <url2> --out <dir>
- *   node eros-observer.mjs --no-discover <url> [output-dir]
- *   node eros-observer.mjs --max-pages 3 <url> [output-dir]
+ *   node observer/observer.mjs <url> [output-dir]
+ *   node observer/observer.mjs --local --port 5173 <output-dir>
+ *   node observer/observer.mjs --batch <url1> <url2> --out <dir>
+ *   node observer/observer.mjs --no-discover <url> [output-dir]
+ *   node observer/observer.mjs --max-pages 3 <url> [output-dir]
  */
 
 import { chromium } from 'playwright'
@@ -28,11 +28,11 @@ const args = process.argv.slice(2)
 
 if (args.length === 0) {
   console.error(`Usage:
-  Single:    node eros-observer.mjs <url> [output-dir]
-  Batch:     node eros-observer.mjs --batch <url1> <url2> ... [--out <dir>]
-  No crawl:  node eros-observer.mjs --no-discover <url> [output-dir]
-  Max pages: node eros-observer.mjs --max-pages 3 <url> [output-dir]
-  Local:     node eros-observer.mjs --local [--port 5173] [output-dir]`)
+  Single:    node observer/observer.mjs <url> [output-dir]
+  Batch:     node observer/observer.mjs --batch <url1> <url2> ... [--out <dir>]
+  No crawl:  node observer/observer.mjs --no-discover <url> [output-dir]
+  Max pages: node observer/observer.mjs --max-pages 3 <url> [output-dir]
+  Local:     node observer/observer.mjs --local [--port 5173] [output-dir]`)
   process.exit(1)
 }
 

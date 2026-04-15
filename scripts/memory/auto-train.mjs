@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * eros-auto-train.mjs V2 — Real pipeline training
+ * memory/auto-train.mjs V2 — Real pipeline training
  *
  * Same workflow as a manual project:
  *   1. Discover reference on Awwwards
@@ -17,11 +17,11 @@
  *  12. Cleanup
  *
  * Usage:
- *   node eros-auto-train.mjs                    # 1 session
- *   node eros-auto-train.mjs --count 3          # 3 sessions
- *   node eros-auto-train.mjs --dry-run          # preview without building
- *   node eros-auto-train.mjs --skip-discover    # skip Awwwards (use random brief)
- *   node eros-auto-train.mjs --max-retries 2    # retry limit per section (default 1)
+ *   node memory/auto-train.mjs                    # 1 session
+ *   node memory/auto-train.mjs --count 3          # 3 sessions
+ *   node memory/auto-train.mjs --dry-run          # preview without building
+ *   node memory/auto-train.mjs --skip-discover    # skip Awwwards (use random brief)
+ *   node memory/auto-train.mjs --max-retries 2    # retry limit per section (default 1)
  */
 
 import path from 'node:path'

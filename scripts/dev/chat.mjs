@@ -10,7 +10,7 @@ import { parseArgs, readJson, out, fail } from '../lib/utils.mjs'
 // Uses Claude Agent SDK with Eros's personality + memory injected.
 // Responds as Eros, not as generic Claude.
 //
-// Usage: node eros-chat.mjs --message "qué opinás de glass morphism?"
+// Usage: node dev/chat.mjs --message "qué opinás de glass morphism?"
 // ---------------------------------------------------------------------------
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * eros-deploy.mjs — Deploy a built project to Vercel preview.
+ * dev/deploy.mjs — Deploy a built project to Vercel preview.
  *
  * Usage:
- *   node eros-deploy.mjs deploy --project /path/to/project [--no-prod]
- *   node eros-deploy.mjs list
- *   node eros-deploy.mjs remove --project <slug>
+ *   node dev/deploy.mjs deploy --project /path/to/project [--no-prod]
+ *   node dev/deploy.mjs list
+ *   node dev/deploy.mjs remove --project <slug>
  *
  * Requires: Vercel CLI (npm i -g vercel) + `vercel login` once per machine.
  *

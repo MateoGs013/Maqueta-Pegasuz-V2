@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * eros-project-sync.mjs — Project archive sync across machines
+ * pipeline/project-sync.mjs — Project archive sync across machines
  *
  * Uses a single GitHub repo (pegasuz-projects) with one branch per project.
  * Projects created on any machine can be pulled on any other.

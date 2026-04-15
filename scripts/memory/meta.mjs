@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * eros-meta.mjs — Metacognition engine for Eros.
+ * memory/meta.mjs — Metacognition engine for Eros.
  *
  * Subcommands:
  *   gaps                   — analyze memory weaknesses and blind spots

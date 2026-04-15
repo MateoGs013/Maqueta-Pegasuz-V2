@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * eros-feed.mjs — Activity feed for Eros.
+ * panel/feed.mjs — Activity feed for Eros.
  *
  * Stores a chronological log of events (project completions, study events,
  * rule promotions, personality updates, reflections) so the panel can show
@@ -16,13 +16,13 @@
  *   }
  *
  * Usage (as CLI, for scripts to hook into):
- *   node eros-feed.mjs append --type project-completed --title "IYO" \
+ *   node panel/feed.mjs append --type project-completed --title "IYO" \
  *        --detail "Audit 50% · 4 secciones · 8m" --mood reflective
- *   node eros-feed.mjs list [--limit 20]
- *   node eros-feed.mjs clear
+ *   node panel/feed.mjs list [--limit 20]
+ *   node panel/feed.mjs clear
  *
- * Usage (as import, from other .mjs scripts):
- *   import { appendEvent } from './eros-feed.mjs'
+ * Usage (as import, from other .mjs scripts in category subdirs):
+ *   import { appendEvent } from '../panel/feed.mjs'
  *   await appendEvent({ type: 'project-completed', title: '...', detail: '...' })
  */
 

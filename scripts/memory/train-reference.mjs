@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * eros-train-reference.mjs — Reference Training Mode
+ * memory/train-reference.mjs — Reference Training Mode
  *
  * Train Eros from external reference sites without building a project.
  * Analyze sites you love (or hate), rate them, and propagate learnings
@@ -14,11 +14,11 @@
  *   list      — list all reference training sessions
  *
  * Usage:
- *   node eros-train-reference.mjs analyze --url "https://sirnik.co" --out "./training-refs"
- *   node eros-train-reference.mjs learn --analysis "./training-refs/sirnik-co/analysis.json" --ratings '{"overall":9,"composition":9,...}'
- *   node eros-train-reference.mjs compare --a "./a/analysis.json" --b "./b/analysis.json"
- *   node eros-train-reference.mjs session --url "https://sirnik.co" --out "./training-refs"
- *   node eros-train-reference.mjs list --dir "./training-refs"
+ *   node memory/train-reference.mjs analyze --url "https://sirnik.co" --out "./training-refs"
+ *   node memory/train-reference.mjs learn --analysis "./training-refs/sirnik-co/analysis.json" --ratings '{"overall":9,"composition":9,...}'
+ *   node memory/train-reference.mjs compare --a "./a/analysis.json" --b "./b/analysis.json"
+ *   node memory/train-reference.mjs session --url "https://sirnik.co" --out "./training-refs"
+ *   node memory/train-reference.mjs list --dir "./training-refs"
  */
 
 import { promises as fs } from 'node:fs'

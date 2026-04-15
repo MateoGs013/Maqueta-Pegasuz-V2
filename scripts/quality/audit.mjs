@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * eros-audit.mjs — Quality Chain for Auto-Training V2
+ * quality/audit.mjs — Quality Chain for Auto-Training V2
  *
  * Runs 5 audit layers against a built project, using observer output
  * and source code analysis. Returns a structured scorecard.
@@ -13,9 +13,9 @@
  *   5. perf       — lazy loading, async/defer scripts, no will-change preventive
  *
  * Usage:
- *   node eros-audit.mjs --project <path>                    # full audit
- *   node eros-audit.mjs --project <path> --layer a11y       # single layer
- *   node eros-audit.mjs --project <path> --observer <path>  # with observer data
+ *   node quality/audit.mjs --project <path>                    # full audit
+ *   node quality/audit.mjs --project <path> --layer a11y       # single layer
+ *   node quality/audit.mjs --project <path> --observer <path>  # with observer data
  */
 
 import { promises as fs } from 'node:fs'

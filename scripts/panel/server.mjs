@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * eros-server.mjs — Declarative dev server management for project pipelines.
+ * panel/server.mjs — Declarative dev server management for project pipelines.
  *
  * Previously, dev-server lifecycle was embedded inside eros-auto-train.mjs
  * (startDevServer / stopDevServer). That tied server management to the
@@ -16,9 +16,9 @@
  *   { pid, port, startedAt, cwd }
  *
  * Usage:
- *   node eros-server.mjs start  --project /path/to/project [--port 5173]
- *   node eros-server.mjs stop   --project /path/to/project
- *   node eros-server.mjs status --project /path/to/project
+ *   node panel/server.mjs start  --project /path/to/project [--port 5173]
+ *   node panel/server.mjs stop   --project /path/to/project
+ *   node panel/server.mjs status --project /path/to/project
  */
 
 import { spawn } from 'node:child_process'

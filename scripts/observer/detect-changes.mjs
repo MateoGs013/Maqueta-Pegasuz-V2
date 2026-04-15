@@ -6,9 +6,9 @@
  * through eros-memory.mjs learn --event user_change.
  *
  * Usage:
- *   node eros-detect-changes.mjs --project "$PROJECT_DIR"
- *   node eros-detect-changes.mjs --project "$PROJECT_DIR" --since "2 hours ago"
- *   node eros-detect-changes.mjs --project "$PROJECT_DIR" --dry-run
+ *   node observer/detect-changes.mjs --project "$PROJECT_DIR"
+ *   node observer/detect-changes.mjs --project "$PROJECT_DIR" --since "2 hours ago"
+ *   node observer/detect-changes.mjs --project "$PROJECT_DIR" --dry-run
  *
  * All output is JSON to stdout. Errors go to stderr with exit code 1.
  * No external dependencies.

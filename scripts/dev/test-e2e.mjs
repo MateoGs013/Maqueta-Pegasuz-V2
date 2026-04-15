@@ -12,7 +12,7 @@
  * Creates a temp project directory, runs through the pipeline, verifies results.
  * Cleans up after itself.
  *
- * Usage: node eros-test-e2e.mjs
+ * Usage: node dev/test-e2e.mjs
  */
 
 import { promises as fs } from 'node:fs'

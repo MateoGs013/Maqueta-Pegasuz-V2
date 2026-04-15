@@ -11,9 +11,9 @@
  * Backward compatible with V2 manifest format (adds v3 fields).
  *
  * Usage:
- *   node eros-observer-v3.mjs <url> [output-dir]
- *   node eros-observer-v3.mjs --local --port 5173 [output-dir]
- *   node eros-observer-v3.mjs --config <path-to-config.json> <url> [output-dir]
+ *   node observer/observer-v3.mjs <url> [output-dir]
+ *   node observer/observer-v3.mjs --local --port 5173 [output-dir]
+ *   node observer/observer-v3.mjs --config <path-to-config.json> <url> [output-dir]
  */
 
 import { chromium } from 'playwright'
@@ -29,10 +29,10 @@ const args = process.argv.slice(2)
 
 if (args.length === 0) {
   console.error(`Usage:
-  node eros-observer-v3.mjs <url> [output-dir]
-  node eros-observer-v3.mjs --local --port 5173 [output-dir]
-  node eros-observer-v3.mjs --config ./observer/config.json <url> [output-dir]
-  node eros-observer-v3.mjs --passes structural,perceptual <url> [output-dir]`)
+  node observer/observer-v3.mjs <url> [output-dir]
+  node observer/observer-v3.mjs --local --port 5173 [output-dir]
+  node observer/observer-v3.mjs --config ./observer/config.json <url> [output-dir]
+  node observer/observer-v3.mjs --passes structural,perceptual <url> [output-dir]`)
   process.exit(1)
 }
 

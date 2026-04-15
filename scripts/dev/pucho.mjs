@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * eros-pucho.mjs — Smoking break tracker for Eros reflections.
+ * dev/pucho.mjs — Smoking break tracker for Eros reflections.
  *
  * Eros no es una máquina que procesa en silencio. Cuando algo cierra
  * (un proyecto, una reflexión, una decisión grande), se fuma un pucho.
@@ -19,13 +19,13 @@
  * después de ejecutarlo".
  *
  * Usage:
- *   node eros-pucho.mjs light --reason "..." [--context reflection|decision|celebration|frustrated]
- *   node eros-pucho.mjs finish
- *   node eros-pucho.mjs stats
- *   node eros-pucho.mjs list [--limit 10]
+ *   node dev/pucho.mjs light --reason "..." [--context reflection|decision|celebration|frustrated]
+ *   node dev/pucho.mjs finish
+ *   node dev/pucho.mjs stats
+ *   node dev/pucho.mjs list [--limit 10]
  *
- * Programmatic (from other .mjs scripts):
- *   import { lightPucho, finishPucho } from './eros-pucho.mjs'
+ * Programmatic (from other .mjs scripts in category subdirs):
+ *   import { lightPucho, finishPucho } from '../dev/pucho.mjs'
  *   const id = await lightPucho({ reason: '...', context: 'reflection' })
  *   // ... do work ...
  *   await finishPucho(id)

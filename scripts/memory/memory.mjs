@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * eros-memory.mjs
+ * memory/memory.mjs
  * SINGLE AUTHORITY for all reads/writes to .eros/memory/design-intelligence/
  * Claude never writes to memory files directly — always through this script.
  *

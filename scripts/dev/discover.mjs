@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 /**
- * eros-discover.mjs — Eros discovers references from Awwwards
+ * dev/discover.mjs — Eros discovers references from Awwwards
  *
  * Scrapes Awwwards Sites of the Day, extracts real URLs,
  * and feeds them to eros-train study for autonomous learning.
  *
  * Usage:
- *   node eros-discover.mjs                    # discover + list 10 recent winners
- *   node eros-discover.mjs --study            # discover + study top 3 automatically
- *   node eros-discover.mjs --study --count 5  # study top 5
- *   node eros-discover.mjs --list             # just list, don't study
+ *   node dev/discover.mjs                    # discover + list 10 recent winners
+ *   node dev/discover.mjs --study            # discover + study top 3 automatically
+ *   node dev/discover.mjs --study --count 5  # study top 5
+ *   node dev/discover.mjs --list             # just list, don't study
  */
 
 import { chromium } from 'playwright'
