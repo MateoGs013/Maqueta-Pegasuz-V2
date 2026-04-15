@@ -1,6 +1,6 @@
 import { shallowRef, computed } from 'vue'
 
-// Single source of truth for memory data. Also imported by frontBrain.js
+// Single source of truth for memory data. Also imported by erosFeed.js
 // (consumers like Eros.vue, Calidad.vue) — previously both modules kept
 // their own local memoryData and polled independently, doubling traffic.
 export const memoryData = shallowRef({
@@ -22,7 +22,7 @@ export const fetchMemory = async () => {
     const data = await res.json()
     // Preserve previous values for fields the API returned as null (file
     // missing). Keeps the tree always non-null so downstream computed
-    // exports in both useMemory.js and frontBrain.js never crash.
+    // exports in both useMemory.js and erosFeed.js never crash.
     memoryData.value = {
       techniqueScores: data.techniqueScores ?? memoryData.value.techniqueScores,
       fontPairings: data.fontPairings ?? memoryData.value.fontPairings,

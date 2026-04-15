@@ -5,7 +5,7 @@ import {
   criticNotes,
   debtItems,
   debtSummary,
-  frontBrainSnapshot,
+  erosFeedSnapshot,
   memoryFonts,
   memoryTechniques,
   observerExcellence,
@@ -20,7 +20,7 @@ import {
   retryInstructions,
   scoreSummary,
   sectionBreakdown,
-} from '@/data/frontBrain.js'
+} from '@/data/erosFeed.js'
 
 const hasV2 = computed(() => observerExcellence.value !== null)
 
@@ -276,8 +276,8 @@ const maxTechScore = computed(() => {
     </div>
 
     <!-- REVIEW -->
-    <div v-if="frontBrainSnapshot.reviewMarkdown" class="cell">
-      <MarkdownDocument eyebrow="Review" title="Resumen de revision" :content="frontBrainSnapshot.reviewMarkdown" />
+    <div v-if="erosFeedSnapshot.reviewMarkdown" class="cell">
+      <MarkdownDocument eyebrow="Review" title="Resumen de revision" :content="erosFeedSnapshot.reviewMarkdown" />
     </div>
   </div>
 </template>

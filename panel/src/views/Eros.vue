@@ -7,7 +7,7 @@ import {
   memoryTechniques,
   memoryFonts,
   observerExcellence,
-} from '@/data/frontBrain.js'
+} from '@/data/erosFeed.js'
 
 const hasV2 = computed(() => observerExcellence.value !== null)
 

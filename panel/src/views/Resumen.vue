@@ -9,7 +9,7 @@ import {
   runOverview,
   queueColumns,
   timeline,
-} from '@/data/frontBrain.js'
+} from '@/data/erosFeed.js'
 
 const hasV2 = computed(() => observerExcellence.value !== null)
 const v2Dims = computed(() => {

@@ -5,7 +5,7 @@ import {
   activeRunId,
   panelMeta,
   runCatalog,
-} from '@/data/frontBrain.js'
+} from '@/data/erosFeed.js'
 import { useEros } from '@/composables/useEros.js'
 
 const route = useRoute()
