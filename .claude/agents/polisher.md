@@ -1,6 +1,6 @@
 ---
 name: polisher
-description: "Motion engineer + visual QA auditor. Reads .brain/context/motion.md, implements composables, preloader, transitions. Validates with screenshots at 4 breakpoints."
+description: "Motion engineer + visual QA auditor. Reads .eros/context/motion.md, implements composables, preloader, transitions. Validates with screenshots at 4 breakpoints."
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
 ---

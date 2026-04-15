@@ -11,9 +11,9 @@ You evaluate completed work. You read three sources, cross-reference them, and p
 
 ## Inputs
 
-CEO runs `node eros-context.mjs evaluate --section S-{Name}` which writes `.brain/context/evaluate-S-{Name}.md` with:
-- Builder report path: `.brain/reports/S-{Name}.md`
-- Observer analysis path: `.brain/observer/localhost/analysis.md`
+CEO runs `node eros-context.mjs evaluate --section S-{Name}` which writes `.eros/context/evaluate-S-{Name}.md` with:
+- Builder report path: `.eros/reports/S-{Name}.md`
+- Observer analysis path: `.eros/observer/localhost/analysis.md`
 - Section type (from `sectionClassifications` in observer manifest)
 - Dynamic threshold (score minimum for this section type, computed by `eros-memory.mjs threshold`)
 - Memory snapshot: historical avg score + technique effectiveness for this type
@@ -42,7 +42,7 @@ Only proceed to the Evidence Matrix if all three inputs validate.
 
 ## Output
 
-Write `.brain/evaluations/S-{Name}.md`:
+Write `.eros/evaluations/S-{Name}.md`:
 
 ```markdown
 # Evaluation: S-{Name}
@@ -113,7 +113,7 @@ Any of the following:
 - Contrast gate FAIL (accessibility risk — user must decide)
 - 3+ excellence signals WEAK after 2 retries
 - Builder score < 6 after 2 retries
-→ Log `[NEEDS-REVIEW]` in `.brain/approvals.md`, pipeline never blocks.
+→ Log `[NEEDS-REVIEW]` in `.eros/approvals.md`, pipeline never blocks.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: builder
-description: "Builds immersive Vue 3 sections from cinematic descriptions. Reads .brain/context/S-{Name}.md, self-previews, self-corrects. One section per task. Static only."
+description: "Builds immersive Vue 3 sections from cinematic descriptions. Reads .eros/context/S-{Name}.md, self-previews, self-corrects. One section per task. Static only."
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
 ---
@@ -12,7 +12,7 @@ Read the Design Philosophy in CLAUDE.md — especially the Excellence Standard.
 
 ## Input
 
-Read `$PROJECT_DIR/.brain/context/S-{Name}.md` — CEO pre-computed all context:
+Read `$PROJECT_DIR/.eros/context/S-{Name}.md` — CEO pre-computed all context:
 - Design tokens (only what this section needs)
 - Recipe card + cinematic description + exact copy
 - Library snippets (layout pattern, motion code, interaction CSS)
@@ -31,7 +31,7 @@ Also read for measurable criteria:
 ## Output
 
 1. `$PROJECT_DIR/src/components/sections/S-{Name}.vue` — the component
-2. `$PROJECT_DIR/.brain/reports/S-{Name}.md` — self-assessment report
+2. `$PROJECT_DIR/.eros/reports/S-{Name}.md` — self-assessment report
 
 ## Preview Loop — MANDATORY
 
@@ -44,7 +44,7 @@ AFTER writing S-{Name}.vue:
 5. PASS B (reference comparison): similar density/craft? techniques I missed?
 6. SCORE on Excellence Standard dimensions
 7. Score < 7 → fix weakest dimension → re-screenshot → re-score (max 3 loops)
-8. Write report to .brain/reports/S-{Name}.md
+8. Write report to .eros/reports/S-{Name}.md
 ```
 
 ### Hero section — extra gate (run BEFORE scoring)
@@ -170,7 +170,7 @@ onBeforeUnmount(() => mm?.revert())
 - **Hero sections:** no "dark bg + heading + subtitle + CTA button + decorative line" pattern
 - **Hero sections:** structural visual element required (image/blob/oversized-type/3D occupying ≥30% viewport)
 
-## Report Format (.brain/reports/S-{Name}.md)
+## Report Format (.eros/reports/S-{Name}.md)
 
 ```markdown
 # Report: S-{Name}

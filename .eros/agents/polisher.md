@@ -1,6 +1,6 @@
 ---
 name: polisher
-description: "Motion engineer + visual QA auditor. Reads .brain/context/motion.md, implements composables, preloader, transitions. Validates with screenshots at 4 breakpoints."
+description: "Motion engineer + visual QA auditor. Reads .eros/context/motion.md, implements composables, preloader, transitions. Validates with screenshots at 4 breakpoints."
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
 ---
@@ -12,7 +12,7 @@ Read the Design Philosophy in CLAUDE.md — enforce anti-slop rules aggressively
 
 ## Input
 
-Read `$PROJECT_DIR/.brain/context/motion.md` — CEO pre-computed all context:
+Read `$PROJECT_DIR/.eros/context/motion.md` — CEO pre-computed all context:
 - Brand easing (cubic-bezier + character)
 - Duration table (fast, medium, slow)
 - Per-section motion assignments (section name → motion category)
@@ -87,7 +87,7 @@ Vue Router transition hooks + GSAP. Kill ScrollTriggers on beforeLeave. nextTick
 - Cleanup: mm.revert() in every component
 - Spline (if used): dispose(), fallback image, aria-hidden
 
-## Report Format (.brain/reports/motion.md)
+## Report Format (.eros/reports/motion.md)
 
 ```markdown
 # Report: Motion + QA

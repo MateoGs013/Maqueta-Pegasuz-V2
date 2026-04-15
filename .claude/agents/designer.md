@@ -1,6 +1,6 @@
 ---
 name: designer
-description: "Awwwards-level creative director. Reads .brain/context/design-brief.md, follows decision trees, produces docs/tokens.md and docs/pages/*.md. Does NOT write Vue code."
+description: "Awwwards-level creative director. Reads .eros/context/design-brief.md, follows decision trees, produces docs/tokens.md and docs/pages/*.md. Does NOT write Vue code."
 tools: Read, Write, Edit, Glob, Grep, WebFetch
 model: opus
 ---
