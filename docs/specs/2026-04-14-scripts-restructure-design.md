@@ -35,7 +35,7 @@ scripts/
 ├── lib/                            # shared helpers (every script depends on utils)
 │   └── utils.mjs                   # ← was eros-utils.mjs
 │
-├── brain/                          # orchestration: state/context/gate (core autonomous loop)
+├── eros-core/                      # orchestration: state/context/gate (core autonomous loop)
 │   ├── state.mjs                   # ← was eros-state.mjs
 │   ├── context.mjs                 # ← was eros-context.mjs
 │   └── gate.mjs                    # ← was eros-gate.mjs
@@ -106,7 +106,7 @@ scripts/
 
 1. **Domain-based subdirs** mirroring the brain pipeline (`brain → memory → observer → quality`) + infrastructure (`pipeline`, `panel`, `dev`). Matches `.eros/pipeline.md`'s conceptual model.
 2. **`lib/` for shared code**. `utils.mjs` is imported by ~20 scripts; it lives in its own dir to signal "shared library, not a command".
-3. **Drop `eros-` prefix inside subdirs**. The path already encodes ownership (`scripts/brain/state.mjs`). Keep prefix ONLY in `archive/` filenames to preserve historical recognizability.
+3. **Drop `eros-` prefix inside subdirs**. The path already encodes ownership (`scripts/eros-core/state.mjs`). Keep prefix ONLY in `archive/` filenames to preserve historical recognizability.
 4. **`archive/` consistent with `docs/archive/`** — no underscore. The `_` prefix is reserved for "template source copied to new projects" (`_libraries/`, `_project-scaffold/`, `_components/`) — archive content is historical, not template source, so no underscore.
 5. **`README.md` at every subdir level** — AI orientation in ≤30s from any entry point.
 6. **Deprecate-then-move for 3 orphans** — don't just relocate, archive with reason notes.
@@ -115,13 +115,13 @@ scripts/
 
 ## File mapping (complete)
 
-### brain/ (3 scripts + 1 lib)
+### eros-core/ (3 scripts + 1 lib)
 
 | From | To | LOC |
 |------|-----|-----|
-| `scripts/eros-state.mjs` | `scripts/brain/state.mjs` | 936 |
-| `scripts/eros-context.mjs` | `scripts/brain/context.mjs` | 605 |
-| `scripts/eros-gate.mjs` | `scripts/brain/gate.mjs` | 669 |
+| `scripts/eros-state.mjs` | `scripts/eros-core/state.mjs` | 936 |
+| `scripts/eros-context.mjs` | `scripts/eros-core/context.mjs` | 605 |
+| `scripts/eros-gate.mjs` | `scripts/eros-core/gate.mjs` | 669 |
 | `scripts/eros-utils.mjs` | `scripts/lib/utils.mjs` | 119 |
 
 ### memory/ (6 scripts)
@@ -208,7 +208,7 @@ Existing files at `scripts/observer/` remain unchanged: `config.json`, `pass-int
 
 ### Internal imports (within `scripts/`)
 
-Every script that moves needs its import paths updated. Current pattern is `from './eros-utils.mjs'` (same-dir import). After move, most scripts live one level deep (e.g., `scripts/brain/state.mjs`) and need `from '../lib/utils.mjs'`.
+Every script that moves needs its import paths updated. Current pattern is `from './eros-utils.mjs'` (same-dir import). After move, most scripts live one level deep (e.g., `scripts/eros-core/state.mjs`) and need `from '../lib/utils.mjs'`.
 
 **Cross-category imports** (rarer, but present):
 - `memory/auto-train.mjs` imports `../panel/feed.mjs` + `../dev/pucho.mjs`
@@ -232,12 +232,12 @@ From the audit (excluding `docs/archive/**` which is frozen historical):
 | `panel/package.json` | `../scripts/sync-front-brain-runs.mjs` | `../scripts/pipeline/sync-front-brain-runs.mjs` |
 | `panel/package.json` | `../scripts/start-workspace.sh` | `../scripts/dev/start-workspace.sh` |
 | `.eros/brain-config.md:241` | `scripts/capture-refs.mjs` | `scripts/archive/capture-refs.mjs` (with note: legacy, see observer/) |
-| `.eros/front-brain/README.md:16` | `scripts/bootstrap-front-brain.mjs` | `scripts/pipeline/bootstrap-front-brain.mjs` |
-| `.eros/front-brain/README.md:17` | `scripts/init-project.mjs` | `scripts/pipeline/init-project.mjs` |
-| `.eros/front-brain/README.md:18` | `scripts/select-blueprints.mjs` | `scripts/pipeline/select-blueprints.mjs` |
-| `.eros/front-brain/README.md:19` | `scripts/refresh-quality.mjs` | `scripts/quality/refresh-quality.mjs` |
+| `.eros/front-eros-core/README.md:16` | `scripts/bootstrap-front-brain.mjs` | `scripts/pipeline/bootstrap-front-brain.mjs` |
+| `.eros/front-eros-core/README.md:17` | `scripts/init-project.mjs` | `scripts/pipeline/init-project.mjs` |
+| `.eros/front-eros-core/README.md:18` | `scripts/select-blueprints.mjs` | `scripts/pipeline/select-blueprints.mjs` |
+| `.eros/front-eros-core/README.md:19` | `scripts/refresh-quality.mjs` | `scripts/quality/refresh-quality.mjs` |
 | `.eros/front-brain/runtime/README.md:15` | `scripts/sync-front-brain-runs.mjs` | `scripts/pipeline/sync-front-brain-runs.mjs` |
-| `README.md` (scripts table) | `scripts/eros-state.mjs` (existing fixed line) | `scripts/brain/state.mjs` (plus other rows) |
+| `README.md` (scripts table) | `scripts/eros-state.mjs` (existing fixed line) | `scripts/eros-core/state.mjs` (plus other rows) |
 
 ### npm aliases in `scripts/package.json`
 
@@ -253,10 +253,10 @@ All 19 aliases updated to new paths. Examples:
     "select:blueprints": "node pipeline/select-blueprints.mjs",
     "tokens": "node panel/generate-tokens.js",
     "sync:runs": "node pipeline/sync-front-brain-runs.mjs",
-    "eros:state": "node brain/state.mjs",
+    "eros:state": "node eros-core/state.mjs",
     "eros:memory": "node memory/memory.mjs",
-    "eros:gate": "node brain/gate.mjs",
-    "eros:context": "node brain/context.mjs",
+    "eros:gate": "node eros-core/gate.mjs",
+    "eros:context": "node eros-core/context.mjs",
     "eros:log": "node dev/log.mjs",
     "eros:train": "node memory/train.mjs",
     "eros:detect": "node observer/detect-changes.mjs",
@@ -281,33 +281,33 @@ Extend `.eros/scripts/eros-doctor.mjs` with three new rules:
 Commit-safe phases. Each phase independently reversible via `git revert`.
 
 1. **Audit** — `.brain/scripts-migration-internal-imports.txt` enumerates every `./` import. Plan Task 1.
-2. **Scaffold subdirs + READMEs** — `brain/`, `memory/`, `observer/`, `quality/`, `pipeline/`, `panel/`, `dev/`, `lib/`, `archive/` each get a `README.md`. `scripts/README.md` as entry point. No moves yet.
+2. **Scaffold subdirs + READMEs** — `eros-core/`, `memory/`, `observer/`, `quality/`, `pipeline/`, `panel/`, `dev/`, `lib/`, `archive/` each get a `README.md`. `scripts/README.md` as entry point. No moves yet.
 3. **Move `lib/utils.mjs`** + update all importers in one atomic commit. Highest-dependency move goes first so subsequent moves have a stable target.
-4. **Move `brain/` scripts** (3 files) + update internal imports + npm aliases.
+4. **Move `eros-core/` scripts** (3 files) + update internal imports + npm aliases.
 5. **Move `memory/` scripts** (6 files) + imports + aliases.
 6. **Move `observer/` scripts** (6 files into existing subdir) + imports + aliases + observer `README.md`.
 7. **Move `quality/`, `pipeline/`, `panel/`, `dev/`** (21 files) + imports + aliases. Grouped since no cross-category conflicts.
 8. **Archive 3 deprecated scripts** to `archive/` + `archive/README.md` explaining each.
-9. **Update external refs**: `panel/package.json`, `.eros/brain-config.md`, `.eros/front-brain/README.md`, `.eros/front-brain/runtime/README.md`, root `README.md` scripts table.
+9. **Update external refs**: `panel/package.json`, `.eros/brain-config.md`, `.eros/front-eros-core/README.md`, `.eros/front-brain/runtime/README.md`, root `README.md` scripts table.
 10. **Extend `eros-doctor`** with RULE 11/12/13 (TDD: fixture-based).
 11. **Final validation**: `eros-doctor` clean, `npm run <every alias>` smoke-loads, grep audit shows zero stale refs.
 
 ## Success criteria
 
 - [ ] `node .eros/scripts/eros-doctor.mjs` — "All checks passed" with 13 rules active
-- [ ] `ls scripts/` shows: `README.md`, `package.json`, `package-lock.json`, `archive/`, `brain/`, `dev/`, `examples/`, `lib/`, `memory/`, `observer/`, `panel/`, `pipeline/`, `quality/` (and `node_modules/` gitignored)
+- [ ] `ls scripts/` shows: `README.md`, `package.json`, `package-lock.json`, `archive/`, `eros-core/`, `dev/`, `examples/`, `lib/`, `memory/`, `observer/`, `panel/`, `pipeline/`, `quality/` (and `node_modules/` gitignored)
 - [ ] No `eros-*.mjs` at `scripts/` root (RULE 12 passes)
 - [ ] Every category subdir + `lib/` + `archive/` has a `README.md` (RULE 13 passes)
-- [ ] Every internal import resolves (fresh `node -e "import('./scripts/brain/state.mjs')"` smoke tests load without `ERR_MODULE_NOT_FOUND`)
+- [ ] Every internal import resolves (fresh `node -e "import('./scripts/eros-core/state.mjs')"` smoke tests load without `ERR_MODULE_NOT_FOUND`)
 - [ ] `grep -rn "scripts/eros-\|scripts/capture-refs\|scripts/multimodal-critic\|scripts/lint-ux\|scripts/init-project\|scripts/bootstrap-front-brain\|scripts/select-blueprints\|scripts/refresh-quality\|scripts/sync-front-brain-runs\|scripts/generate-tokens\|scripts/vite-watchdog\|scripts/start-workspace" --exclude-dir=scripts --exclude-dir=docs/archive --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.brain --exclude-dir=.omc .` returns 0 hits outside legacy/archive contexts
 - [ ] `cd panel && npm run sync:runs` still works (verifies `panel/package.json` update)
 - [ ] `cd scripts && npm run eros:state` smoke-loads (verifies alias + internal imports)
 
 ## Tradeoffs
 
-**Chosen over additive README-only approach** (alt B): physical organization scales past 50 scripts and makes `ls scripts/brain/` self-documenting. README-only keeps files flat — invites regression as scripts pile up.
+**Chosen over additive README-only approach** (alt B): physical organization scales past 50 scripts and makes `ls scripts/eros-core/` self-documenting. README-only keeps files flat — invites regression as scripts pile up.
 
-**Chosen over keeping `eros-` prefix inside subdirs**: the prefix is redundant inside `scripts/brain/` — the path already says "this is an Eros brain script". Dropping it matches the docs/ migration (we dropped `PLAN-` prefix the same way). Archive preserves original filenames because recognizability of historical commands (e.g., `capture-refs.mjs`) is higher-value there than consistency.
+**Chosen over keeping `eros-` prefix inside subdirs**: the prefix is redundant inside `scripts/eros-core/` — the path already says "this is an Eros brain script". Dropping it matches the docs/ migration (we dropped `PLAN-` prefix the same way). Archive preserves original filenames because recognizability of historical commands (e.g., `capture-refs.mjs`) is higher-value there than consistency.
 
 **Chosen not to split monoliths** (`eros-memory.mjs` at 1437 LOC, `eros-observer.mjs` at 1849 LOC): out of scope. Splitting is a future refactor that needs its own spec. This migration only relocates.
 
