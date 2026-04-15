@@ -49,8 +49,8 @@ vite-watchdog.log
 # Vite cache
 .vite/
 
-# Lab scratch at repo root (NOT .brain/ inside projects)
-/.brain/
+# Lab scratch at repo root (NOT .eros/ inside projects)
+/.eros-scratch/
 /BRIEF-*.md
 
 # Claude Code local session data
