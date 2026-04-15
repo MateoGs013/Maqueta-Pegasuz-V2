@@ -53,8 +53,24 @@ Eros/
 ├── panel/           # Dual Vue panel: Eros (quality observability) + Workshop (ABM editor)
 ├── _project-scaffold/   # Template copied to each new project
 ├── _components/     # Curated seed library (heroes, navs as creative anchors)
-├── docs/            # Plans, design libraries, specs
-└── scripts/         # eros-*.mjs orchestration scripts
+│
+├── docs/            # Documentation — see docs/README.md (AI entry point)
+│   ├── plans/       # Active (in-progress) plans
+│   ├── specs/       # Formal design specs (permanent record)
+│   ├── references/  # Reusable briefs + aesthetic guides
+│   ├── _libraries/  # Pattern libraries copied to new projects (template source)
+│   └── archive/     # Completed plans + deprecated proposals
+│
+└── scripts/         # Operational CLI — see scripts/README.md (AI entry point)
+    ├── brain/       # Orchestration core (state, context, gate)
+    ├── memory/      # Learning (memory, meta, train, practice, auto-train)
+    ├── observer/    # Vision (observer passes, detection, lint)
+    ├── quality/     # Audit, critic, refresh-quality
+    ├── pipeline/    # Project init, bootstrap, sync
+    ├── panel/       # Panel dev server, feed, tokens, watchdog
+    ├── dev/         # Developer workflows (chat, test, deploy, mood)
+    ├── lib/         # Shared helpers (utils.mjs)
+    └── archive/     # Deprecated scripts (capture-refs V1, etc.)
 ```
 
 **Golden rule:** `.eros/` is the source of truth. `.claude/`, `.gemini/`, `.codex/` contain only adapters — never content.
@@ -156,14 +172,22 @@ Execution details in `.eros/front-brain/ROADMAP.md`.
 
 ## Canonical Docs
 
+**AI entry points:**
+- [Docs overview](./docs/README.md) — map of `docs/` with links to active plans, specs, references, archive
+- [Scripts overview](./scripts/README.md) — category map of `scripts/` with npm aliases and conventions
+
+**Repo state:**
 - [Repo status](./docs/STATUS.md)
 - [Pipeline](./.eros/pipeline.md)
 - [Brain config](./.eros/brain-config.md)
 - [Front-Brain schema](./.eros/FRONT_BRAIN_SCHEMA.md)
 - [Front-Brain workspace](./.eros/front-brain/README.md)
 - [Front-Brain roadmap](./.eros/front-brain/ROADMAP.md)
+
+**Architecture decisions:**
 - [Multi-AI architecture spec](./docs/specs/2026-04-14-multi-ai-architecture.md)
 - [Docs restructure spec](./docs/specs/2026-04-14-docs-restructure-design.md)
+- [Scripts restructure spec](./docs/specs/2026-04-14-scripts-restructure-design.md)
 
 ## License
 

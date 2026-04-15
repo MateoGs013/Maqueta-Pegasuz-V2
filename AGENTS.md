@@ -17,8 +17,8 @@ Desktop/
     _project-scaffold/       <- Vue 3 starter (copied to new projects)
     _components/             <- curated seed library (heroes/navs as creative anchors)
     panel/                   <- dual panel: Eros (quality) + Workshop (ABM editor)
-    docs/_libraries/         <- pattern libraries (copied to new projects)
-    scripts/                 <- capture-refs.mjs, generate-tokens.js, eros-*.mjs
+    docs/                    <- plans/specs/references/_libraries/archive (see docs/README.md)
+    scripts/                 <- brain/memory/observer/quality/pipeline/panel/dev/lib/archive (see scripts/README.md)
     .eros/                   <- canonical brain: agents, workflows, memory, pipeline
     .claude/                 <- Claude adapter: skills, agent wrappers, settings
     .gemini/                 <- Gemini adapter: settings, overrides
