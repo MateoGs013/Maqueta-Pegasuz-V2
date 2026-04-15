@@ -10,7 +10,7 @@ import {
   writeText,
   out,
   fail,
-} from './lib/utils.mjs'
+} from '../lib/utils.mjs'
 
 // ---------------------------------------------------------------------------
 // eros-context.mjs — Context File Builder
