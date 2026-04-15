@@ -79,7 +79,7 @@ npm run init:project -- \
   --project "$PROJECT_DIR"
 ```
 
-`init-project.mjs` copies the scaffold and libraries, writes the intake payload, runs the bootstrapper, and can install dependencies. `bootstrap-front-brain.mjs` remains the lower-level idempotent emitter when the project already exists and only needs hybrid artifacts refreshed.
+`init-project.mjs` copies the scaffold and libraries, writes the intake payload, runs the bootstrapper, and can install dependencies. `bootstrap-eros-feed.mjs` remains the lower-level idempotent emitter when the project already exists and only needs hybrid artifacts refreshed.
 
 **Why micro-tasks:** Each task is small enough that context can compact between tasks.
 After compaction, `.brain/` files are the ground truth — not conversation memory.

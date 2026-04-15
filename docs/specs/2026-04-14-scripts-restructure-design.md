@@ -15,7 +15,7 @@ The multi-AI refactor established `.eros/` as canonical brain; the `docs/` restr
 - **37 files flat at `scripts/` root** — 24,127 LOC total, no README, no categorization
 - **Massive cross-ref surface**: 20+ internal `./eros-utils.mjs` imports, several cross-script imports (`auto-train → feed + pucho`), 19 npm aliases in `scripts/package.json`, 2 refs in `panel/package.json`, 6+ refs across `.eros/` docs, root `README.md` scripts table, agent spawn paths
 - **Deprecated code lives next to current**: `capture-refs.mjs` (V1, explicitly deprecated by commit `5b7cdd2`), `eros-orchestrator.mjs` (orphaned per V9 proposal audit), `eros-migrate-audits.mjs` (one-shot migration, ran)
-- **Naming inconsistency**: most scripts are `eros-<name>.mjs`, but `init-project`, `bootstrap-front-brain`, `select-blueprints`, `refresh-quality`, `sync-front-brain-runs`, `multimodal-critic`, `lint-ux`, `generate-tokens`, `vite-watchdog` are bare (no prefix)
+- **Naming inconsistency**: most scripts are `eros-<name>.mjs`, but `init-project`, `bootstrap-eros-feed`, `select-blueprints`, `refresh-quality`, `sync-eros-feed-runs`, `multimodal-critic`, `lint-ux`, `generate-tokens`, `vite-watchdog` are bare (no prefix)
 - **Mixed extensions**: `.mjs` (33), `.js` (1), `.py` (2), `.sh` (2) — no convention about where each belongs
 - **`scripts/observer/` already exists** as a subdir with `config.json` + 5 pass-`.mjs` files + `scoring-engine.mjs` — a working precedent to extend
 - **Monoliths**: `capture-refs.mjs` (3,214 LOC), `eros-observer.mjs` (1,849 LOC), `eros-memory.mjs` (1,437 LOC), `eros-auto-train.mjs` (1,307 LOC) — AI-hostile to read in one window (not refactored here; just relocated)
@@ -70,10 +70,10 @@ scripts/
 │
 ├── pipeline/                       # project init / bootstrap / sync
 │   ├── init-project.mjs            # (unchanged name)
-│   ├── bootstrap-front-brain.mjs   # (unchanged name)
+│   ├── bootstrap-eros-feed.mjs     # ← was bootstrap-front-brain.mjs
 │   ├── select-blueprints.mjs       # (unchanged name)
 │   ├── project-sync.mjs            # ← was eros-project-sync.mjs
-│   └── sync-front-brain-runs.mjs   # (unchanged name)
+│   └── sync-eros-feed-runs.mjs     # ← was sync-front-brain-runs.mjs
 │
 ├── panel/                          # panel dev server + feed
 │   ├── server.mjs                  # ← was eros-server.mjs
@@ -99,7 +99,7 @@ scripts/
 │   └── eros-migrate-audits.mjs     # 370 LOC, one-shot migration, ran
 │
 └── examples/                       # (unchanged)
-    └── front-brain-brief.example.json
+    └── eros-feed-brief.example.json
 ```
 
 ### Design principles
@@ -161,10 +161,10 @@ Existing files at `scripts/observer/` remain unchanged: `config.json`, `pass-int
 | From | To | LOC |
 |------|-----|-----|
 | `scripts/init-project.mjs` | `scripts/pipeline/init-project.mjs` | 207 |
-| `scripts/bootstrap-front-brain.mjs` | `scripts/pipeline/bootstrap-front-brain.mjs` | 783 |
+| `scripts/bootstrap-front-brain.mjs` | `scripts/pipeline/bootstrap-eros-feed.mjs` | 783 |
 | `scripts/select-blueprints.mjs` | `scripts/pipeline/select-blueprints.mjs` | 527 |
 | `scripts/eros-project-sync.mjs` | `scripts/pipeline/project-sync.mjs` | 436 |
-| `scripts/sync-front-brain-runs.mjs` | `scripts/pipeline/sync-front-brain-runs.mjs` | 734 |
+| `scripts/sync-front-brain-runs.mjs` | `scripts/pipeline/sync-eros-feed-runs.mjs` | 734 |
 
 ### panel/ (4 scripts)
 
@@ -201,7 +201,7 @@ Existing files at `scripts/observer/` remain unchanged: `config.json`, `pass-int
 
 - `scripts/package.json` (content updated — paths only, same file location)
 - `scripts/package-lock.json` (unchanged)
-- `scripts/examples/` (unchanged — contains `front-brain-brief.example.json`)
+- `scripts/examples/` (contains `eros-feed-brief.example.json`)
 - `scripts/node_modules/` (gitignored, unchanged)
 
 ## Cross-reference update strategy

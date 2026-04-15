@@ -63,7 +63,7 @@ wc -l .brain/scripts-migration-external-refs.txt
 cat .brain/scripts-migration-external-refs.txt
 ```
 
-Expected: ~10 lines covering `panel/package.json` (2 refs), `.eros/brain-config.md` (1), `.eros/front-eros-core/README.md` (4), `.eros/front-brain/runtime/README.md` (1), root `README.md` (multiple), plus any agent refs.
+Expected: ~10 lines covering `panel/package.json` (2 refs), `.eros/brain-config.md` (1), `.eros/front-eros-core/README.md` (4), `.eros/eros-feed/runtime/README.md` (1), root `README.md` (multiple), plus any agent refs.
 
 - [ ] **Step 3: Check agent files for script spawn paths**
 
@@ -143,7 +143,7 @@ AI entry point for `scripts/`. Domain-organized Node helpers that power the auto
 | [`memory/`](./memory/) | Learning — memory, meta, train, practice, auto-train | Everything that writes to `.eros/memory/design-intelligence/` |
 | [`observer/`](./observer/) | Vision — observer passes, detection, lint, saliency/aesthetic | Scoring a project, detecting visual changes, perceptual analysis |
 | [`quality/`](./quality/) | Audit, critic, scorecard refresh | Quality gate, multimodal critique, refresh-quality runs |
-| [`pipeline/`](./pipeline/) | Project init, bootstrap, sync | Creating new projects, syncing front-brain runs, blueprint selection |
+| [`pipeline/`](./pipeline/) | Project init, bootstrap, sync | Creating new projects, syncing eros-feed runs, blueprint selection |
 | [`panel/`](./panel/) | Panel dev server, feed, tokens, watchdog | Running the panel, generating tokens, vite dev-server watchdog |
 | [`dev/`](./dev/) | Developer workflows + integrations | chat, test-e2e, deploy, mood, log, workspace start |
 | [`lib/`](./lib/) | Shared helpers imported by many scripts | `import` from `./lib/utils.mjs` for `parseArgs`, `readJson`, `fail`, etc. |
@@ -297,10 +297,10 @@ Project initialization, bootstrap, and synchronization.
 | File | Purpose | Entry point |
 |------|---------|-------------|
 | [`init-project.mjs`](./init-project.mjs) | End-to-end project initializer — copies scaffold, writes intake, invokes bootstrapper. | `npm run init:project` |
-| [`bootstrap-front-brain.mjs`](./bootstrap-front-brain.mjs) | Canonical project bootstrapper — emits hybrid artifacts from intake data. | `npm run bootstrap:brain` |
+| [`bootstrap-eros-feed.mjs`](./bootstrap-eros-feed.mjs) | Canonical project bootstrapper — emits hybrid artifacts from intake data. | `npm run bootstrap:feed` |
 | [`select-blueprints.mjs`](./select-blueprints.mjs) | Automatic hero/nav selector — emits structured direction candidates. | `npm run select:blueprints` |
 | [`project-sync.mjs`](./project-sync.mjs) | Project sync — keeps project state aligned with brain. | (CLI) `node pipeline/project-sync.mjs` |
-| [`sync-front-brain-runs.mjs`](./sync-front-brain-runs.mjs) | Syncs front-brain runs for panel consumption. Also invoked by `panel/package.json`. | `npm run sync:runs` |
+| [`sync-eros-feed-runs.mjs`](./sync-eros-feed-runs.mjs) | Syncs eros-feed runs for panel consumption. Also invoked by `panel/package.json`. | `npm run sync:feed` |
 
 All scripts import `../lib/utils.mjs`.
 ```
@@ -953,10 +953,10 @@ with:
 Run:
 ```bash
 cd scripts && node -e "import('./pipeline/init-project.mjs').then(() => console.log('init-project OK')).catch(e => { console.error(e.message); process.exit(1); })" && cd ..
-cd scripts && node -e "import('./pipeline/bootstrap-front-brain.mjs').then(() => console.log('bootstrap OK')).catch(e => { console.error(e.message); process.exit(1); })" && cd ..
+cd scripts && node -e "import('./pipeline/bootstrap-eros-feed.mjs').then(() => console.log('bootstrap OK')).catch(e => { console.error(e.message); process.exit(1); })" && cd ..
 cd scripts && node -e "import('./pipeline/select-blueprints.mjs').then(() => console.log('select OK')).catch(e => { console.error(e.message); process.exit(1); })" && cd ..
 cd scripts && node -e "import('./pipeline/project-sync.mjs').then(() => console.log('project-sync OK')).catch(e => { console.error(e.message); process.exit(1); })" && cd ..
-cd scripts && node -e "import('./pipeline/sync-front-brain-runs.mjs').then(() => console.log('sync-runs OK')).catch(e => { console.error(e.message); process.exit(1); })" && cd ..
+cd scripts && node -e "import('./pipeline/sync-eros-feed-runs.mjs').then(() => console.log('sync-runs OK')).catch(e => { console.error(e.message); process.exit(1); })" && cd ..
 ```
 
 Expected: five `OK` lines.
@@ -1253,7 +1253,7 @@ each. capture npm alias updated; scripts/ root now contains no .mjs/.js/
 - Modify: `panel/package.json` (2 refs)
 - Modify: `.eros/brain-config.md` (1 ref)
 - Modify: `.eros/front-eros-core/README.md` (4 refs)
-- Modify: `.eros/front-brain/runtime/README.md` (1 ref)
+- Modify: `.eros/eros-feed/runtime/README.md` (1 ref)
 - Modify: `README.md` (root — scripts table)
 - Verify: any agent file cross-refs from `.eros/agents/`, `.claude/agents/`
 
@@ -1305,24 +1305,24 @@ Find:
 Replace with:
 
 ```
-- `../../scripts/pipeline/bootstrap-front-brain.mjs`: canonical project bootstrapper for emitting hybrid artifacts from intake data.
+- `../../scripts/pipeline/bootstrap-eros-feed.mjs`: canonical project bootstrapper for emitting hybrid artifacts from intake data.
 - `../../scripts/pipeline/init-project.mjs`: end-to-end project initializer that copies scaffold, writes intake, and invokes the bootstrapper.
 - `../../scripts/pipeline/select-blueprints.mjs`: automatic hero/nav selector that emits structured direction candidates.
 - `../../scripts/quality/refresh-quality.mjs`: deterministic quality refresh that promotes observer artifacts into scorecard, critic, visual debt, and review outputs.
 ```
 
-- [ ] **Step 4: Fix `.eros/front-brain/runtime/README.md:15`**
+- [ ] **Step 4: Fix `.eros/eros-feed/runtime/README.md:15`**
 
 Find:
 
 ```
-This file is generated by `scripts/sync-front-brain-runs.mjs` and is intentionally ignored by git.
+This file is generated by `scripts/sync-eros-feed-runs.mjs` and is intentionally ignored by git.
 ```
 
 Replace with:
 
 ```
-This file is generated by `scripts/pipeline/sync-front-brain-runs.mjs` and is intentionally ignored by git.
+This file is generated by `scripts/pipeline/sync-eros-feed-runs.mjs` and is intentionally ignored by git.
 ```
 
 - [ ] **Step 5: Fix root `README.md` scripts table**
@@ -1361,7 +1361,7 @@ If matches found, update each file using Edit tool with the new path per the map
 
 Run:
 ```bash
-grep -rn "scripts/eros-[a-z-]*\.mjs\|scripts/capture-refs\|scripts/multimodal-critic\|scripts/lint-ux\|scripts/init-project\|scripts/bootstrap-front-brain\|scripts/select-blueprints\|scripts/refresh-quality\|scripts/sync-front-brain-runs\|scripts/generate-tokens\|scripts/vite-watchdog\|scripts/start-workspace" \
+grep -rn "scripts/eros-[a-z-]*\.mjs\|scripts/capture-refs\|scripts/multimodal-critic\|scripts/lint-ux\|scripts/init-project\|scripts/bootstrap-eros-feed\|scripts/select-blueprints\|scripts/refresh-quality\|scripts/sync-eros-feed-runs\|scripts/generate-tokens\|scripts/vite-watchdog\|scripts/start-workspace" \
   --exclude-dir=scripts --exclude-dir=node_modules --exclude-dir=.git \
   --exclude-dir=.brain --exclude-dir=.omc --exclude-dir="docs/archive" . 2>&1 | head -20
 ```
@@ -1372,18 +1372,18 @@ Expected: no output. If matches remain, update them and re-run.
 
 Run:
 ```bash
-cd panel && node -e "const s = require('./package.json').scripts; console.log(s['sync:runs']); console.log(s['workspace']);" && cd ..
+cd panel && node -e "const s = require('./package.json').scripts; console.log(s['sync:feed']); console.log(s['workspace']);" && cd ..
 ```
 
 Expected:
 ```
-node ../scripts/pipeline/sync-front-brain-runs.mjs
+node ../scripts/pipeline/sync-eros-feed-runs.mjs
 bash ../scripts/dev/start-workspace.sh
 ```
 
 Verify the referenced files actually exist:
 ```bash
-test -f scripts/pipeline/sync-front-brain-runs.mjs && echo OK
+test -f scripts/pipeline/sync-eros-feed-runs.mjs && echo OK
 test -f scripts/dev/start-workspace.sh && echo OK
 ```
 
@@ -1393,7 +1393,7 @@ Expected: two `OK` lines.
 
 Run:
 ```bash
-git add panel/package.json .eros/brain-config.md .eros/front-eros-core/README.md .eros/front-brain/runtime/README.md README.md
+git add panel/package.json .eros/brain-config.md .eros/front-eros-core/README.md .eros/eros-feed/runtime/README.md README.md
 git commit -m "docs: update external references to new scripts/ layout
 
 panel/package.json (2 refs: sync:runs + workspace), .eros/brain-config
@@ -1643,7 +1643,7 @@ for f in eros-core/state.mjs eros-core/context.mjs eros-core/gate.mjs \
          memory/memory.mjs memory/meta.mjs memory/train.mjs memory/train-reference.mjs memory/practice.mjs memory/auto-train.mjs \
          observer/observer.mjs observer/observer-v3.mjs observer/detect-changes.mjs observer/lint-ux.mjs \
          quality/audit.mjs quality/multimodal-critic.mjs quality/refresh-quality.mjs \
-         pipeline/init-project.mjs pipeline/bootstrap-front-brain.mjs pipeline/select-blueprints.mjs pipeline/project-sync.mjs pipeline/sync-front-brain-runs.mjs \
+         pipeline/init-project.mjs pipeline/bootstrap-eros-feed.mjs pipeline/select-blueprints.mjs pipeline/project-sync.mjs pipeline/sync-eros-feed-runs.mjs \
          panel/server.mjs panel/feed.mjs panel/vite-watchdog.mjs \
          dev/chat.mjs dev/pucho.mjs dev/discover.mjs dev/test-e2e.mjs dev/mood.mjs dev/log.mjs dev/deploy.mjs \
          lib/utils.mjs; do
@@ -1663,7 +1663,7 @@ Expected: `failures: 0`. If any load fails, fix the specific import and re-run.
 
 Run:
 ```bash
-grep -rn "scripts/eros-[a-z-]*\.mjs\|scripts/capture-refs\|scripts/multimodal-critic\|scripts/lint-ux\|scripts/init-project\|scripts/bootstrap-front-brain\|scripts/select-blueprints\|scripts/refresh-quality\|scripts/sync-front-brain-runs\|scripts/generate-tokens\|scripts/vite-watchdog\|scripts/start-workspace" \
+grep -rn "scripts/eros-[a-z-]*\.mjs\|scripts/capture-refs\|scripts/multimodal-critic\|scripts/lint-ux\|scripts/init-project\|scripts/bootstrap-eros-feed\|scripts/select-blueprints\|scripts/refresh-quality\|scripts/sync-eros-feed-runs\|scripts/generate-tokens\|scripts/vite-watchdog\|scripts/start-workspace" \
   --exclude-dir=scripts --exclude-dir=node_modules --exclude-dir=.git \
   --exclude-dir=.brain --exclude-dir=.omc --exclude-dir="docs/archive" . 2>&1 | head -10
 ```
@@ -1704,8 +1704,8 @@ Run after all tasks complete:
 - [ ] Every required subdir has `README.md`
 - [ ] All 19 npm aliases resolve to existing files
 - [ ] Every moved script smoke-loads without `ERR_MODULE_NOT_FOUND`
-- [ ] `panel/package.json` `sync:runs` and `workspace` point to correct new paths
-- [ ] `.eros/brain-config.md`, `.eros/front-eros-core/README.md`, `.eros/front-brain/runtime/README.md` updated
+- [ ] `panel/package.json` `sync:feed` and `workspace` point to correct new paths
+- [ ] `.eros/brain-config.md`, `.eros/front-eros-core/README.md`, `.eros/eros-feed/runtime/README.md` updated
 - [ ] Root `README.md` scripts table reflects new paths
 - [ ] Zero stale refs from grep audit (excluding `docs/archive/`)
 - [ ] Branch pushed
