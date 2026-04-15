@@ -374,7 +374,7 @@ const main = async () => {
 
   // Load observer data if available
   let observer = null
-  const observerPath = args.observer || path.join(project, '.brain', 'observer', 'localhost', 'manifest.json')
+  const observerPath = args.observer || path.join(project, '.eros', 'observer', 'localhost', 'manifest.json')
   observer = await readJson(observerPath)
 
   // Run layers
@@ -399,7 +399,7 @@ const main = async () => {
   }
 
   // Save scorecard
-  const reportDir = path.join(project, '.brain', 'reports', 'quality')
+  const reportDir = path.join(project, '.eros', 'reports', 'quality')
   await ensureDir(reportDir)
   await writeJson(path.join(reportDir, 'audit.json'), scorecard)
 
