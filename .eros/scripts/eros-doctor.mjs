@@ -168,6 +168,39 @@ if (docsImages.length > 0) {
   );
 }
 
+// RULE 11 (scripts entry point): scripts/README.md must exist
+assert(
+  existsSync(join(REPO_ROOT, 'scripts', 'README.md')),
+  'Missing scripts/README.md — AI entry point required for scripts/ layout',
+);
+
+// RULE 12 (no legacy root scripts): no eros-*.mjs files at scripts/ root
+const scriptsRootDir = join(REPO_ROOT, 'scripts');
+if (existsSync(scriptsRootDir)) {
+  const legacyScripts = readdirSync(scriptsRootDir).filter((f) => /^eros-.*\.mjs$/.test(f));
+  if (legacyScripts.length > 0) {
+    issues.push(
+      `Legacy eros-*.mjs files at scripts/ root: ${legacyScripts.join(', ')}. Move into a category subdir (brain/, memory/, observer/, quality/, pipeline/, panel/, dev/) or scripts/archive/.`,
+    );
+  }
+}
+
+// RULE 13 (every category has README): each scripts/ subdir must have a README.md
+const requiredScriptsSubdirs = ['brain', 'memory', 'observer', 'quality', 'pipeline', 'panel', 'dev', 'lib', 'archive'];
+if (existsSync(scriptsRootDir)) {
+  for (const subdir of requiredScriptsSubdirs) {
+    const subdirPath = join(scriptsRootDir, subdir);
+    if (!existsSync(subdirPath)) {
+      issues.push(`Missing scripts/${subdir}/ subdirectory — scripts restructure incomplete`);
+      continue;
+    }
+    const readmePath = join(subdirPath, 'README.md');
+    if (!existsSync(readmePath)) {
+      issues.push(`Missing scripts/${subdir}/README.md — every category subdir needs an entry point`);
+    }
+  }
+}
+
 // Report
 console.log('\n=== Eros Doctor Report ===\n');
 if (issues.length === 0 && warnings.length === 0) {
