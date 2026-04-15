@@ -83,11 +83,11 @@ const detectPhase = (taskId, queueJson = null) => {
 // File paths
 // ---------------------------------------------------------------------------
 
-const brainPaths = (projectDir) => ({
-  stateJson: path.join(projectDir, '.brain', 'state.json'),
-  stateMd: path.join(projectDir, '.brain', 'state.md'),
-  queueJson: path.join(projectDir, '.brain', 'queue.json'),
-  queueMd: path.join(projectDir, '.brain', 'queue.md'),
+const erosPaths = (projectDir) => ({
+  stateJson: path.join(projectDir, '.eros', 'state.json'),
+  stateMd: path.join(projectDir, '.eros', 'state.md'),
+  queueJson: path.join(projectDir, '.eros', 'queue.json'),
+  queueMd: path.join(projectDir, '.eros', 'queue.md'),
 })
 
 // ---------------------------------------------------------------------------
@@ -95,7 +95,7 @@ const brainPaths = (projectDir) => ({
 // ---------------------------------------------------------------------------
 
 const loadState = async (projectDir) => {
-  const paths = brainPaths(projectDir)
+  const paths = erosPaths(projectDir)
   const stateJson = (await readJson(paths.stateJson)) ?? {
     project: { name: 'Unknown', slug: 'unknown', type: 'unknown' },
     mode: 'autonomous',
@@ -131,7 +131,7 @@ const renderStateMd = (stateJson) => {
   const slug = stateJson.project?.slug || 'unknown'
   const sections = stateJson.sections || { done: 0, total: 0 }
 
-  return `# Brain State
+  return `# Eros State
 - **Project:** ${projectName} (${slug})
 - **Phase:** ${stateJson.currentPhase || 'unknown'}
 - **Task:** ${stateJson.currentTask || 'none'}
@@ -203,7 +203,7 @@ ${pendingLines.length > 0 ? pendingLines.join('\n') : '- (none)'}
 // ---------------------------------------------------------------------------
 
 const persistAll = async (projectDir, stateJson, queueJson) => {
-  const paths = brainPaths(projectDir)
+  const paths = erosPaths(projectDir)
 
   stateJson.lastUpdated = new Date().toISOString()
 
@@ -350,7 +350,7 @@ const advanceInternal = async (projectDir, taskId, score, decision, gateResult) 
   if (found.list !== 'active') fail(`Task "${taskId}" is not active (found in ${found.list}).`)
 
   // Gate enforcement: verify gate result file exists and matches
-  const gateFile = path.join(projectDir, '.brain', 'gates', `${taskId.replace(/\//g, '--')}.json`)
+  const gateFile = path.join(projectDir, '.eros', 'gates', `${taskId.replace(/\//g, '--')}.json`)
   const gateData = await readJson(gateFile)
 
   if (!gateData) {
@@ -573,8 +573,8 @@ const cmdCheckGate = async (projectDir) => {
 
   const recoveryActions = []
 
-  // Check 1: observer ran — analysis.md must exist in .brain/observer/
-  const observerDir = path.join(projectDir, '.brain', 'observer')
+  // Check 1: observer ran — analysis.md must exist in .eros/observer/
+  const observerDir = path.join(projectDir, '.eros', 'observer')
   const analysisGlob = path.join(observerDir, 'localhost', 'analysis.md')
   const analysisFallback = path.join(observerDir, 'analysis.md')
   if (await exists(analysisGlob)) {
@@ -587,7 +587,7 @@ const cmdCheckGate = async (projectDir) => {
   }
 
   // Check 2: quality refreshed — scorecard.json must exist
-  const scorecardPath = path.join(projectDir, '.brain', 'reports', 'quality', 'scorecard.json')
+  const scorecardPath = path.join(projectDir, '.eros', 'reports', 'quality', 'scorecard.json')
   const scorecard = await readJson(scorecardPath)
   if (scorecard) {
     checks.qualityRefreshed = { pass: true, detail: 'scorecard.json found' }
@@ -633,7 +633,7 @@ const cmdCheckGate = async (projectDir) => {
   const buildSectionTasks = (queueJson.done || []).filter(
     (t) => /^build\/S-/.test(t.id) && (t.status === 'done' || t.status === 'flagged')
   )
-  const evaluationsDir = path.join(projectDir, '.brain', 'evaluations')
+  const evaluationsDir = path.join(projectDir, '.eros', 'evaluations')
   const missingEvaluations = []
 
   for (const task of buildSectionTasks) {
@@ -818,7 +818,7 @@ const cmdDone = async (projectDir, resultArg) => {
     }
 
     // Advance state (write gate file first so advance doesn't complain)
-    const gateFilePath = path.join(projectDir, '.brain', 'gates', `${taskId.replace(/\//g, '--')}.json`)
+    const gateFilePath = path.join(projectDir, '.eros', 'gates', `${taskId.replace(/\//g, '--')}.json`)
     await ensureDir(path.dirname(gateFilePath))
     await writeJson(gateFilePath, { verdict: 'APPROVE', score: gateScore, reason: gateReason, timestamp: new Date().toISOString() })
 
