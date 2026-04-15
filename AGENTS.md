@@ -18,7 +18,7 @@ Desktop/
     _components/             <- curated seed library (heroes/navs as creative anchors)
     panel/                   <- dual panel: Eros (quality) + Workshop (ABM editor)
     docs/                    <- plans/specs/references/_libraries/archive (see docs/README.md)
-    scripts/                 <- brain/memory/observer/quality/pipeline/panel/dev/lib/archive (see scripts/README.md)
+    scripts/                 <- eros-core/memory/observer/quality/pipeline/panel/dev/lib/archive (see scripts/README.md)
     .eros/                   <- canonical brain: agents, workflows, memory, pipeline
     .claude/                 <- Claude adapter: skills, agent wrappers, settings
     .gemini/                 <- Gemini adapter: settings, overrides
@@ -134,12 +134,20 @@ Before marking a section done:
 - [ ] No default easing — all cubic-bezier or GSAP named
 - [ ] Asymmetric composition — not centered-everything
 
+## Health Check (mandatory before every PR)
+
+```bash
+node .eros/scripts/eros-doctor.mjs
+```
+
+Validates multi-AI architecture integrity: required root files, canonical `.eros/` docs, scripts subdir structure, agent contracts, legacy-ref detection. **Must exit 0** before opening or updating a PR. Any agent finishing a task — worker or lead — runs this before reporting complete.
+
 ## References
 
 - Soul: `EROS.md`
 - Runtime loop: `.eros/pipeline.md`
 - Thresholds: `.eros/brain-config.md`
-- Schema contracts: `.eros/FRONT_BRAIN_SCHEMA.md`
+- Schema contracts: `.eros/EROS_FEED_SCHEMA.md`
 - Claude specifics: `CLAUDE.md`
 - Gemini specifics: `GEMINI.md`
 - Codex overrides: `.codex/AGENTS.override.md`
