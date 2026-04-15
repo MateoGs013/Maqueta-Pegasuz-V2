@@ -1,6 +1,6 @@
 # Eros Panel — Observer Sweep AFTER fixes (2026-04-14)
 
-Verificación post-fix de los 3 bugs reales detectados en `docs/panel-observer-2026-04-14/SUMMARY.md`.
+Verificación post-fix de los 3 bugs reales detectados en `../2026-04-14/SUMMARY.md`.
 
 ## Verdict comparado (antes → después)
 

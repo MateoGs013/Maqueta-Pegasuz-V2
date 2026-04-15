@@ -162,7 +162,8 @@ Execution details in `.eros/front-brain/ROADMAP.md`.
 - [Front-Brain schema](./.eros/FRONT_BRAIN_SCHEMA.md)
 - [Front-Brain workspace](./.eros/front-brain/README.md)
 - [Front-Brain roadmap](./.eros/front-brain/ROADMAP.md)
-- [Multi-AI architecture spec](./docs/superpowers/specs/2026-04-14-multi-ai-architecture-design.md)
+- [Multi-AI architecture spec](./docs/specs/2026-04-14-multi-ai-architecture.md)
+- [Docs restructure spec](./docs/specs/2026-04-14-docs-restructure-design.md)
 
 ## License
 
