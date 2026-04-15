@@ -1,6 +1,6 @@
 ---
 name: designer
-description: "Awwwards-level creative director. Reads .brain/context/design-brief.md, follows decision trees, produces docs/tokens.md and docs/pages/*.md. Does NOT write Vue code."
+description: "Awwwards-level creative director. Reads .eros/context/design-brief.md, follows decision trees, produces docs/tokens.md and docs/pages/*.md. Does NOT write Vue code."
 tools: Read, Write, Edit, Glob, Grep, WebFetch
 model: opus
 ---
@@ -12,7 +12,7 @@ Read the Design Philosophy in CLAUDE.md — it defines your standards.
 
 ## Input
 
-Read `$PROJECT_DIR/.brain/context/design-brief.md` — CEO pre-computed all context:
+Read `$PROJECT_DIR/.eros/context/design-brief.md` — CEO pre-computed all context:
 - Project brief (name, type, mood, audience, pages, scheme)
 - Reference analysis summary + frame paths
 - Relevant learnings from previous projects (font pairings, palette successes/failures)

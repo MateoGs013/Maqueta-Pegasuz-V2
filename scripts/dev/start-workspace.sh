@@ -2,7 +2,7 @@
 # ═══════════════════════════════════════════
 # Pegasuz Eros — Workspace Launcher
 # Levanta las 3 terminales necesarias:
-#   1. Watch mode (sync .brain/ → panel data)
+#   1. Watch mode (sync .eros/ → panel data)
 #   2. Panel dev server (puerto 4000)
 #   3. Instrucciones para lanzar un proyecto
 # ═══════════════════════════════════════════
@@ -26,7 +26,7 @@ echo ""
 
 # ── 1. Start watch mode in background ──
 echo -e "${G}[1/2]${R} Iniciando watch mode..."
-node "$SCRIPT_DIR/sync-front-brain-runs.mjs" --watch &
+node "$SCRIPT_DIR/../pipeline/sync-eros-feed-runs.mjs" --watch &
 WATCH_PID=$!
 echo -e "  ${D}PID: $WATCH_PID${R}"
 echo ""

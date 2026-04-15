@@ -1,6 +1,6 @@
 ---
 name: builder
-description: "Builds immersive Vue 3 sections from cinematic descriptions. Reads .brain/context/S-{Name}.md, self-previews, self-corrects. One section per task. Static only."
+description: "Builds immersive Vue 3 sections from cinematic descriptions. Reads .eros/context/S-{Name}.md, self-previews, self-corrects. One section per task. Static only."
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
 ---

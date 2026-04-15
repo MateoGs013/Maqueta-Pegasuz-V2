@@ -89,7 +89,7 @@ No usar referencias externas. Creatividad libre."
   echo ""
 
   # 4. Reflect and learn
-  if [ -d "$PROJECT_DIR/.brain" ]; then
+  if [ -d "$PROJECT_DIR/.eros" ]; then
     echo "[eros] Reflecting on $PROJECT_SLUG..."
     cd "$SCRIPTS_DIR"
     node eros-train.mjs correct --project "$PROJECT_DIR" 2>/dev/null || true
@@ -97,7 +97,7 @@ No usar referencias externas. Creatividad libre."
     node eros-meta.mjs personality 2>/dev/null > /dev/null || true
     echo "[eros] Practice recorded."
   else
-    echo "[eros] No .brain/ found — project may not have been created."
+    echo "[eros] No .eros/ found — project may not have been created."
   fi
 
   echo ""

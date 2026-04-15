@@ -181,9 +181,9 @@ const cmdInit = async (args) => {
   }
 
   // Update registry
-  const brainIdentity = await readJson(path.join(resolvedDir, '.brain', 'identity.json'))
+  const erosIdentity = await readJson(path.join(resolvedDir, '.eros', 'identity.json'))
   await updateRegistryEntry(slug, {
-    name: brainIdentity?.name || slug,
+    name: erosIdentity?.name || slug,
     branch: slug,
     remote: REMOTE_URL,
     projectDir: resolvedDir,

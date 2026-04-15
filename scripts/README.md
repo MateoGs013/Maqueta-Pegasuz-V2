@@ -6,11 +6,11 @@ AI entry point for `scripts/`. Domain-organized Node helpers that power the auto
 
 | Subdir | What lives here | When to use |
 |--------|----------------|-------------|
-| [`brain/`](./brain/) | Orchestration core — state, context, gate | The autonomous loop: what to do next, gate checks, task advancement |
+| [`eros-core/`](./eros-core/) | Orchestration core — state, context, gate | The autonomous loop: what to do next, gate checks, task advancement |
 | [`memory/`](./memory/) | Learning — memory, meta, train, practice, auto-train | Everything that writes to `.eros/memory/design-intelligence/` |
 | [`observer/`](./observer/) | Vision — observer passes, detection, lint, saliency/aesthetic | Scoring a project, detecting visual changes, perceptual analysis |
 | [`quality/`](./quality/) | Audit, critic, scorecard refresh | Quality gate, multimodal critique, refresh-quality runs |
-| [`pipeline/`](./pipeline/) | Project init, bootstrap, sync | Creating new projects, syncing front-brain runs, blueprint selection |
+| [`pipeline/`](./pipeline/) | Project init, bootstrap, sync | Creating new projects, syncing eros-feed runs, blueprint selection |
 | [`panel/`](./panel/) | Panel dev server, feed, tokens, watchdog | Running the panel, generating tokens, vite dev-server watchdog |
 | [`dev/`](./dev/) | Developer workflows + integrations | chat, test-e2e, deploy, mood, log, workspace start |
 | [`lib/`](./lib/) | Shared helpers imported by many scripts | `import` from `./lib/utils.mjs` for `parseArgs`, `readJson`, `fail`, etc. |
@@ -30,7 +30,7 @@ npm run observe
 Direct:
 
 ```bash
-cd scripts && node brain/state.mjs --project <path>
+cd scripts && node eros-core/state.mjs --project <path>
 ```
 
 ## Conventions

@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "sync:runs": "node ../scripts/pipeline/sync-front-brain-runs.mjs",
-    "dev": "npm run sync:runs && vite --port 4000",
-    "build": "npm run sync:runs && vite build --emptyOutDir false",
+    "sync:feed": "node ../scripts/pipeline/sync-eros-feed-runs.mjs",
+    "dev": "npm run sync:feed && vite --port 4000",
+    "build": "npm run sync:feed && vite build --emptyOutDir false",
     "preview": "vite preview",
     "workspace": "bash ../scripts/dev/start-workspace.sh"
   },

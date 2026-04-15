@@ -15,7 +15,7 @@ import {
 // ---------------------------------------------------------------------------
 // eros-context.mjs — Context File Builder
 //
-// Assembles .brain/context/{task}.md files mechanically.
+// Assembles .eros/context/{task}.md files mechanically.
 // Always injects Memory Insights + Reference Observatory blocks.
 // Claude never assembles context files by hand.
 //
@@ -237,7 +237,7 @@ const loadLibrarySnippets = async (sectionType) => {
 
 // Read reference observatory
 const readObservatory = async (project) => {
-  const obsPath = path.join(project, '.brain', 'context', 'reference-observatory.md')
+  const obsPath = path.join(project, '.eros', 'context', 'reference-observatory.md')
   return await readText(obsPath)
 }
 
@@ -255,8 +255,8 @@ const cmdDesignBrief = async (args) => {
   const project = args.project
   if (!project) fail('--project is required')
 
-  const identity = await readText(path.join(project, '.brain', 'identity.md'))
-  if (!identity) fail('.brain/identity.md not found')
+  const identity = await readText(path.join(project, '.eros', 'identity.md'))
+  if (!identity) fail('.eros/identity.md not found')
 
   const refAnalysis = await readText(path.join(project, 'docs', 'reference-analysis.md'))
   const observatory = await readObservatory(project)
@@ -302,7 +302,7 @@ const cmdDesignBrief = async (args) => {
     }
   }
 
-  const contextPath = path.join(project, '.brain', 'context', 'design-brief.md')
+  const contextPath = path.join(project, '.eros', 'context', 'design-brief.md')
   await writeText(contextPath, parts.join('\n'))
 
   out({
@@ -392,7 +392,7 @@ const cmdSection = async (args) => {
     }
   }
 
-  const contextPath = path.join(project, '.brain', 'context', `${section}.md`)
+  const contextPath = path.join(project, '.eros', 'context', `${section}.md`)
   await writeText(contextPath, parts.join('\n'))
 
   out({
@@ -421,11 +421,11 @@ const cmdEvaluate = async (args) => {
   const threshold = await callThreshold(sectionType)
 
   // Read builder report
-  const reportPath = path.join(project, '.brain', 'reports', `${section}.md`)
+  const reportPath = path.join(project, '.eros', 'reports', `${section}.md`)
   const report = await readText(reportPath)
 
   // Read observer analysis
-  const observerPath = path.join(project, '.brain', 'observer', 'localhost', 'analysis.md')
+  const observerPath = path.join(project, '.eros', 'observer', 'localhost', 'analysis.md')
   const observer = await readText(observerPath)
 
   const parts = [
@@ -445,7 +445,7 @@ const cmdEvaluate = async (args) => {
     observer || '_Observer has not run yet._',
   ]
 
-  const contextPath = path.join(project, '.brain', 'context', `evaluate-${section}.md`)
+  const contextPath = path.join(project, '.eros', 'context', `evaluate-${section}.md`)
   await writeText(contextPath, parts.join('\n'))
 
   out({
@@ -522,7 +522,7 @@ const cmdMotion = async (args) => {
     parts.push('## Motion Hints from Page Docs', '', pageMotionHints)
   }
 
-  const contextPath = path.join(project, '.brain', 'context', 'motion.md')
+  const contextPath = path.join(project, '.eros', 'context', 'motion.md')
   await writeText(contextPath, parts.join('\n'))
 
   out({
@@ -562,7 +562,7 @@ const cmdAtmosphere = async (args) => {
     if (excerpt) parts.push('## Design DNA (excerpt)', '', excerpt, '')
   }
 
-  const contextPath = path.join(project, '.brain', 'context', 'atmosphere.md')
+  const contextPath = path.join(project, '.eros', 'context', 'atmosphere.md')
   await writeText(contextPath, parts.join('\n'))
 
   out({

@@ -48,7 +48,7 @@ const buildErosContext = async () => {
     const entries = await fsP.readdir(desktopDir, { withFileTypes: true })
     for (const e of entries) {
       if (!e.isDirectory() || e.name === 'maqueta') continue
-      try { await fsP.access(path.join(desktopDir, e.name, '.brain')); projectCount++ } catch {}
+      try { await fsP.access(path.join(desktopDir, e.name, '.eros')); projectCount++ } catch {}
     }
   } catch {}
 
@@ -60,7 +60,7 @@ const buildErosContext = async () => {
 ## Your Identity
 ${p.identity?.essence || 'Fuerza creativa primordial.'}
 State: ${p.identity?.currentState || 'Growing'}
-Projects completed: ${projectCount} (on Desktop with .brain/)
+Projects completed: ${projectCount} (on Desktop with .eros/)
 Data points in memory: ${dataPoints}
 Patterns: ${stats?.sectionPatterns || '?'} | Techniques: ${stats?.techniqueScores || '?'} | Rules: ${stats?.rules?.total || '?'}
 

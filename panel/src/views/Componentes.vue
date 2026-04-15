@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { categories, all } from '@/registry.js'
-import { selectedBlueprints } from '@/data/frontBrain.js'
+import { selectedBlueprints } from '@/data/erosFeed.js'
 
 const route = useRoute()
 const router = useRouter()

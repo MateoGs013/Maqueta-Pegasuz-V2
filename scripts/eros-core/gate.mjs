@@ -17,7 +17,7 @@ import {
 // eros-gate.mjs — Gate Engine
 //
 // Evaluates pre/post conditions for every task.
-// post and designer subcommands write a gate result file to .brain/gates/{task}.json
+// post and designer subcommands write a gate result file to .eros/gates/{task}.json
 // so that eros-state.mjs advance can verify the gate was run.
 //
 // Subcommands:
@@ -36,7 +36,7 @@ const isNonEmpty = async (filePath) => {
 }
 
 const writeGateResult = async (project, taskId, result) => {
-  const gateDir = path.join(project, '.brain', 'gates')
+  const gateDir = path.join(project, '.eros', 'gates')
   await ensureDir(gateDir)
   const fileName = taskId.replace(/\//g, '--') + '.json'
   const filePath = path.join(gateDir, fileName)
@@ -89,11 +89,11 @@ const preChecks = {
   ],
 
   'setup/create-dir': async (project) => [
-    { name: 'identity.md exists', pass: await isNonEmpty(path.join(project, '.brain', 'identity.md')) },
+    { name: 'identity.md exists', pass: await isNonEmpty(path.join(project, '.eros', 'identity.md')) },
   ],
 
   'setup/capture-refs': async (project) => [
-    { name: 'identity.md exists', pass: await isNonEmpty(path.join(project, '.brain', 'identity.md')) },
+    { name: 'identity.md exists', pass: await isNonEmpty(path.join(project, '.eros', 'identity.md')) },
   ],
 
   'setup/analyze-refs': async (project) => [
@@ -105,11 +105,11 @@ const preChecks = {
   ],
 
   'design/brief': async (project) => [
-    { name: 'identity.md exists', pass: await isNonEmpty(path.join(project, '.brain', 'identity.md')) },
+    { name: 'identity.md exists', pass: await isNonEmpty(path.join(project, '.eros', 'identity.md')) },
   ],
 
   'design/tokens': async (project) => [
-    { name: 'context/design-brief.md exists', pass: await isNonEmpty(path.join(project, '.brain', 'context', 'design-brief.md')) },
+    { name: 'context/design-brief.md exists', pass: await isNonEmpty(path.join(project, '.eros', 'context', 'design-brief.md')) },
   ],
 
   'design/pages': async (project) => [
@@ -131,7 +131,7 @@ const preChecks = {
   ],
 
   'build/atmosphere': async (project) => [
-    { name: 'context/atmosphere.md exists', pass: await isNonEmpty(path.join(project, '.brain', 'context', 'atmosphere.md')) },
+    { name: 'context/atmosphere.md exists', pass: await isNonEmpty(path.join(project, '.eros', 'context', 'atmosphere.md')) },
   ],
 
   'context/motion': async (project) => [
@@ -140,7 +140,7 @@ const preChecks = {
   ],
 
   'polish/motion': async (project) => [
-    { name: 'context/motion.md exists', pass: await isNonEmpty(path.join(project, '.brain', 'context', 'motion.md')) },
+    { name: 'context/motion.md exists', pass: await isNonEmpty(path.join(project, '.eros', 'context', 'motion.md')) },
   ],
 
   'integrate/router': async (project) => [
@@ -156,7 +156,7 @@ const preChecks = {
   ],
 
   'integrate/seo': async (project) => [
-    { name: 'identity.md exists', pass: await isNonEmpty(path.join(project, '.brain', 'identity.md')) },
+    { name: 'identity.md exists', pass: await isNonEmpty(path.join(project, '.eros', 'identity.md')) },
   ],
 
   'review/observer': async (project) => [
@@ -168,15 +168,15 @@ const preChecks = {
   ],
 
   'review/final': async (project) => [
-    { name: 'observer final ran', pass: await exists(path.join(project, '.brain', 'observer', 'final')) },
+    { name: 'observer final ran', pass: await exists(path.join(project, '.eros', 'observer', 'final')) },
   ],
 
   'review/sections': async (project) => [
-    { name: 'observer analysis exists', pass: await isNonEmpty(path.join(project, '.brain', 'observer', 'localhost', 'analysis.md')) },
+    { name: 'observer analysis exists', pass: await isNonEmpty(path.join(project, '.eros', 'observer', 'localhost', 'analysis.md')) },
   ],
 
   'cleanup/retrospective': async (project) => [
-    { name: 'decisions.md exists', pass: await isNonEmpty(path.join(project, '.brain', 'decisions.md')) },
+    { name: 'decisions.md exists', pass: await isNonEmpty(path.join(project, '.eros', 'decisions.md')) },
   ],
 
   'cleanup/promote-rules': async () => [
@@ -205,7 +205,7 @@ const getSectionPreChecks = async (project, taskId) => {
     return [
       {
         name: `context/${sectionName}.md exists`,
-        pass: await isNonEmpty(path.join(project, '.brain', 'context', `${sectionName}.md`)),
+        pass: await isNonEmpty(path.join(project, '.eros', 'context', `${sectionName}.md`)),
       },
     ]
   }
@@ -223,11 +223,11 @@ const getSectionPreChecks = async (project, taskId) => {
     return [
       {
         name: `reports/${sectionName}.md exists`,
-        pass: await isNonEmpty(path.join(project, '.brain', 'reports', `${sectionName}.md`)),
+        pass: await isNonEmpty(path.join(project, '.eros', 'reports', `${sectionName}.md`)),
       },
       {
         name: 'observer analysis exists',
-        pass: await isNonEmpty(path.join(project, '.brain', 'observer', 'localhost', 'analysis.md')),
+        pass: await isNonEmpty(path.join(project, '.eros', 'observer', 'localhost', 'analysis.md')),
       },
     ]
   }
@@ -271,7 +271,7 @@ const cmdPost = async (args) => {
   const taskId = args.task
   if (!taskId) fail('--task is required')
 
-  const brainDir = path.join(project, '.brain')
+  const brainDir = path.join(project, '.eros')
 
   // Helper: output result AND write gate file
   const emitResult = async (result) => {
@@ -406,14 +406,14 @@ const cmdPost = async (args) => {
 
   // For other tasks — check output exists and is non-empty
   const outputMap = {
-    'setup/identity': '.brain/identity.md',
+    'setup/identity': '.eros/identity.md',
     'setup/create-dir': 'src',
-    'design/brief': '.brain/context/design-brief.md',
+    'design/brief': '.eros/context/design-brief.md',
     'design/pages': 'docs/pages',
     'setup/scaffold': 'src/main.js',
     'setup/gen-tokens': 'src/styles/tokens.css',
-    'context/motion': '.brain/context/motion.md',
-    'polish/motion': '.brain/reports/motion.md',
+    'context/motion': '.eros/context/motion.md',
+    'polish/motion': '.eros/reports/motion.md',
     'integrate/router': 'src/router/index.js',
     'integrate/views': 'src/views',
     'integrate/app': 'src/App.vue',
@@ -522,7 +522,7 @@ const cmdCompletion = async (args) => {
   const project = args.project
   if (!project) fail('--project is required')
 
-  const brainDir = path.join(project, '.brain')
+  const brainDir = path.join(project, '.eros')
   const checks = {}
   const recoveryActions = []
 
@@ -537,7 +537,7 @@ const cmdCompletion = async (args) => {
     pass: observerRan,
     detail: observerRan ? 'analysis.md found' : 'no analysis.md in observer/',
   }
-  if (!observerRan) recoveryActions.push('Run observer: node capture-refs.mjs --local --port 5173 .brain/observer/')
+  if (!observerRan) recoveryActions.push('Run observer: node capture-refs.mjs --local --port 5173 .eros/observer/')
 
   // 2. Quality refreshed (scorecard.json exists)
   const scorecardPath = path.join(brainDir, 'reports', 'quality', 'scorecard.json')

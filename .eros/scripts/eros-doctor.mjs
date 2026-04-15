@@ -30,7 +30,7 @@ const erosDirs = ['.eros', '.eros/agents', '.eros/workflows', '.eros/memory', '.
 for (const dir of erosDirs) {
   assert(existsSync(join(REPO_ROOT, dir)), `Missing .eros/ subdirectory: ${dir}`);
 }
-const erosFiles = ['.eros/pipeline.md', '.eros/brain-config.md'];
+const erosFiles = ['.eros/pipeline.md', '.eros/config.md'];
 for (const file of erosFiles) {
   assert(existsSync(join(REPO_ROOT, file)), `Missing canonical brain file: ${file}`);
 }
@@ -180,13 +180,13 @@ if (existsSync(scriptsRootDir)) {
   const legacyScripts = readdirSync(scriptsRootDir).filter((f) => /^eros-.*\.mjs$/.test(f));
   if (legacyScripts.length > 0) {
     issues.push(
-      `Legacy eros-*.mjs files at scripts/ root: ${legacyScripts.join(', ')}. Move into a category subdir (brain/, memory/, observer/, quality/, pipeline/, panel/, dev/) or scripts/archive/.`,
+      `Legacy eros-*.mjs files at scripts/ root: ${legacyScripts.join(', ')}. Move into a category subdir (eros-core/, memory/, observer/, quality/, pipeline/, panel/, dev/) or scripts/archive/.`,
     );
   }
 }
 
 // RULE 13 (every category has README): each scripts/ subdir must have a README.md
-const requiredScriptsSubdirs = ['brain', 'memory', 'observer', 'quality', 'pipeline', 'panel', 'dev', 'lib', 'archive'];
+const requiredScriptsSubdirs = ['eros-core', 'memory', 'observer', 'quality', 'pipeline', 'panel', 'dev', 'lib', 'archive'];
 if (existsSync(scriptsRootDir)) {
   for (const subdir of requiredScriptsSubdirs) {
     const subdirPath = join(scriptsRootDir, subdir);

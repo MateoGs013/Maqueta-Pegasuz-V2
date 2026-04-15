@@ -386,10 +386,10 @@ const summarizeVisualDebt = (items) => {
 }
 
 const updateStateMarkdown = async ({ projectDir, stateJson, blocker }) => {
-  const targetPath = path.join(projectDir, '.brain', 'state.md')
+  const targetPath = path.join(projectDir, '.eros', 'state.md')
   const previousContent = await readText(targetPath)
   const previousFields = markdownFieldMap(previousContent)
-  const content = `# Brain State
+  const content = `# Eros State
 - **Project:** ${stateJson.project?.name || 'Project'} (${stateJson.project?.slug || 'project'})
 - **Phase:** ${titleCase(stateJson.currentPhase || 'quality')}
 - **Task:** ${stateJson.currentTask || 'quality/refresh'}
@@ -404,7 +404,7 @@ const updateStateMarkdown = async ({ projectDir, stateJson, blocker }) => {
 }
 
 const updateReviewSummary = async ({ projectDir, projectName, scorecard, visualDebt, observer, critic, nextAction }) => {
-  const targetPath = path.join(projectDir, '.brain', 'reviews', 'REVIEW-SUMMARY.md')
+  const targetPath = path.join(projectDir, '.eros', 'reviews', 'REVIEW-SUMMARY.md')
   const content = `# Review Summary — ${projectName}
 
 ## Quality Snapshot
@@ -444,9 +444,9 @@ const findObserverSourceDir = async (projectDir, explicitSource, { maxAgeMs = 0 
   }
 
   directCandidates.push(
-    path.join(projectDir, '.brain', 'observer', 'localhost'),
-    path.join(projectDir, '.brain', 'observer', 'final', 'localhost'),
-    path.join(projectDir, '.brain', 'observer', 'final'),
+    path.join(projectDir, '.eros', 'observer', 'localhost'),
+    path.join(projectDir, '.eros', 'observer', 'final', 'localhost'),
+    path.join(projectDir, '.eros', 'observer', 'final'),
     path.join(projectDir, 'docs', 'review', 'final'),
   )
 
@@ -476,7 +476,7 @@ const findObserverSourceDir = async (projectDir, explicitSource, { maxAgeMs = 0 
 
 const runObserver = async ({ projectDir, port = 5173 }) => {
   const scriptPath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'capture-refs.mjs')
-  const observerDir = path.join(projectDir, '.brain', 'observer')
+  const observerDir = path.join(projectDir, '.eros', 'observer')
   await ensureDir(observerDir)
 
   await new Promise((resolve, reject) => {
@@ -505,11 +505,11 @@ const refreshQuality = async ({
   criticMode = multimodalCriticDefaults.defaultMode,
   criticModel = multimodalCriticDefaults.defaultModel,
 }) => {
-  const statePath = path.join(projectDir, '.brain', 'state.json')
-  const metricsPath = path.join(projectDir, '.brain', 'metrics.json')
-  const rulesPath = path.join(projectDir, '.brain', 'control', 'rules.json')
+  const statePath = path.join(projectDir, '.eros', 'state.json')
+  const metricsPath = path.join(projectDir, '.eros', 'metrics.json')
+  const rulesPath = path.join(projectDir, '.eros', 'control', 'rules.json')
   const designPath = path.join(projectDir, 'DESIGN.md')
-  const selectionPath = path.join(projectDir, '.brain', 'blueprints', 'selection.json')
+  const selectionPath = path.join(projectDir, '.eros', 'blueprints', 'selection.json')
 
   const state = await readJson(statePath, {})
   const metrics = await readJson(metricsPath, {})
@@ -633,11 +633,11 @@ const refreshQuality = async ({
     nextAction,
   }
 
-  await archiveReports(path.join(projectDir, '.brain', 'reports'))
-  await writeJson(path.join(projectDir, '.brain', 'reports', 'quality', 'observer.json'), observer)
-  await writeJson(path.join(projectDir, '.brain', 'reports', 'quality', 'critic.json'), critic)
-  await writeJson(path.join(projectDir, '.brain', 'reports', 'quality', 'scorecard.json'), scorecard)
-  await writeJson(path.join(projectDir, '.brain', 'reports', 'visual-debt.json'), visualDebt)
+  await archiveReports(path.join(projectDir, '.eros', 'reports'))
+  await writeJson(path.join(projectDir, '.eros', 'reports', 'quality', 'observer.json'), observer)
+  await writeJson(path.join(projectDir, '.eros', 'reports', 'quality', 'critic.json'), critic)
+  await writeJson(path.join(projectDir, '.eros', 'reports', 'quality', 'scorecard.json'), scorecard)
+  await writeJson(path.join(projectDir, '.eros', 'reports', 'visual-debt.json'), visualDebt)
   await writeJson(metricsPath, updatedMetrics)
   await writeJson(statePath, updatedState)
   await updateStateMarkdown({

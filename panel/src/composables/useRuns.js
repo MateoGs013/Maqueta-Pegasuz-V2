@@ -1,5 +1,5 @@
 import { shallowRef, computed } from 'vue'
-import initialCache from '@front-brain-runtime/runs.generated.json'
+import initialCache from '@eros-feed-runtime/runs.generated.json'
 
 const runtimeCache = shallowRef(initialCache)
 let dataSource = null

@@ -312,7 +312,7 @@ const summarizeObserver = (observer, blueprintSelection) => {
 }
 
 const buildCriticPrompt = ({ observer, blueprintSelection, designMarkdown, rulesConfig, imageLabels }) => `
-You are the multimodal visual critic for Maqueta's front-brain quality loop.
+You are the multimodal visual critic for Maqueta's eros-feed quality loop.
 Evaluate the supplied screenshots and produce a structured critic response for a modern frontend build.
 
 Hard constraints:
@@ -458,7 +458,7 @@ const requestMultimodalCritic = async ({ observer, sourceDir, blueprintSelection
     response_format: {
       type: 'json_schema',
       json_schema: {
-        name: 'front_brain_visual_critic',
+        name: 'eros_feed_visual_critic',
         strict: true,
         schema: CRITIC_SCHEMA,
       },

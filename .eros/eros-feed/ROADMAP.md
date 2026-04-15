@@ -1,11 +1,11 @@
-# Front-Brain Roadmap
+# Eros Feed Roadmap
 
-Execution roadmap for moving Maqueta toward a Stitch-like autonomous frontend brain.
+Execution roadmap for moving Maqueta toward a Stitch-like autonomous frontend eros-feed.
 
 ## Current baseline
 
 - `.claude/` is the canonical architecture namespace.
-- `_project-scaffold/` ships the hybrid front-brain contract.
+- `_project-scaffold/` ships the hybrid eros-feed contract.
 - `_components/blueprints.manifest.js` exposes structured seed metadata plus contract aliases.
 - `panel/` is now a working backoffice over the demo-run fixture:
   - Runs

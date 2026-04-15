@@ -9,7 +9,7 @@ import {
   normalizeBrief,
   parseArgs,
   readJson,
-} from './bootstrap-front-brain.mjs'
+} from './bootstrap-eros-feed.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -119,13 +119,13 @@ const runInstall = async (projectDir) => {
 }
 
 const writeInitializationSummary = async ({ projectDir, brief, installSkipped }) => {
-  const selection = await readJson(path.join(projectDir, '.brain', 'blueprints', 'selection.json'), null)
+  const selection = await readJson(path.join(projectDir, '.eros', 'blueprints', 'selection.json'), null)
   const content = `# Project Init
 
 ## Status
 
 - Project scaffold copied
-- Front-brain bootstrap emitted
+- Eros-feed bootstrap emitted
 - Blueprint selector emitted
 - Libraries copied into \`docs/_libraries\`
 - npm install: ${installSkipped ? 'skipped' : 'completed'}
@@ -144,7 +144,7 @@ const writeInitializationSummary = async ({ projectDir, brief, installSkipped })
 - Direction: ${selection?.selection?.chosenDirectionId ?? 'pending'}
 `
 
-  const targetPath = path.join(projectDir, '.brain', 'reports', 'project-init.md')
+  const targetPath = path.join(projectDir, '.eros', 'reports', 'project-init.md')
   await ensureDir(path.dirname(targetPath))
   await fs.writeFile(targetPath, content.trimEnd() + '\n', 'utf8')
 }

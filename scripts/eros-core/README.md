@@ -1,4 +1,4 @@
-# brain/
+# eros-core/
 
 Orchestration core — scripts that drive the autonomous next/done loop and gate decisions.
 

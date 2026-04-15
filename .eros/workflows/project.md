@@ -77,7 +77,7 @@ Parse the user's brief:
 
 ## FIRST ACTION — Check for Active Project
 
-Glob for `Desktop/*/.brain/state.md` (not inside maqueta).
+Glob for `Desktop/*/.eros/state.md` (not inside maqueta).
 - If found → query state → resume from current task via the loop
 - If not found → fresh project → ask user for project details
 

@@ -49,17 +49,16 @@ vite-watchdog.log
 # Vite cache
 .vite/
 
-# Lab scratch at repo root (NOT .brain/ inside projects)
-/.brain/
+# Lab scratch at repo root (NOT .eros/ inside projects)
+/.eros-scratch/
 /BRIEF-*.md
 
 # Claude Code local session data
 .claude/todos/
 .claude/projects/
 .claude/worktrees/
-.claude/front-brain/runtime/runs.generated.json
 .claude/scheduled_tasks.lock
-.eros/front-brain/runtime/runs.generated.json
+.eros/eros-feed/runtime/runs.generated.json
 scripts/.eros/
 
 # OMC runtime state (HUD cache only — PRD/specs/progress are tracked)
