@@ -22,7 +22,7 @@ Override by including in the brief:
 ## Auto-Approval Thresholds
 
 The brain evaluates every agent output against these thresholds.
-Pass → continue. Fail → retry (max `retry_max`). Still fail → log to `.brain/approvals.md` + continue.
+Pass → continue. Fail → retry (max `retry_max`). Still fail → log to `.eros/approvals.md` + continue.
 
 ```yaml
 designer_gate:
@@ -40,7 +40,7 @@ builder_gate:
 
 evaluator_gate:
   # Composite score = observer + critic + design-dna compliance + memory confidence.
-  # Structured outputs are persisted to .brain/reports/quality/{observer,critic,scorecard}.json
+  # Structured outputs are persisted to .eros/reports/quality/{observer,critic,scorecard}.json
   # STRONG=10, MEDIUM=7, WEAK=4 | PASS=10, WARN=7, FAIL=0
   approve_threshold: composite >= score_minimum AND all_excellence MEDIUM+ AND no_gate_FAIL AND critic_brand_alignment >= MEDIUM
   retry_threshold:   composite >= score_minimum - 1.5 OR 1-2 signals WEAK OR critic_genericity = MEDIUM
@@ -177,7 +177,7 @@ before_polish_task:
 
 ---
 
-## Approvals Log (`.brain/approvals.md`)
+## Approvals Log (`.eros/approvals.md`)
 
 Every auto-approval is logged here. User reads this when they want — it never blocks.
 
@@ -199,8 +199,8 @@ Phase 5 CANNOT close unless these conditions are met. This is not advisory — i
 
 ```yaml
 completion_gate:
-  observer_ran: true                    # .brain/observer/ must have analysis.md
-  quality_refreshed: true               # .brain/reports/quality/scorecard.json must exist
+  observer_ran: true                    # .eros/observer/ must have analysis.md
+  quality_refreshed: true               # .eros/reports/quality/scorecard.json must exist
   scorecard_nonzero: true               # scorecard.finalScore > 0
   queue_complete: true                  # all queue.json tasks status = "done"
   evaluations_complete: true            # every build/S-* has matching evaluations/*.md
@@ -250,7 +250,7 @@ node capture-refs.mjs <url> $PROJECT_DIR/_ref-captures
 
 ### Mode B: Own-project QA (review/sections and review/final tasks)
 ```bash
-node capture-refs.mjs --local --port 5173 $PROJECT_DIR/.brain/observer
+node capture-refs.mjs --local --port 5173 $PROJECT_DIR/.eros/observer
 ```
 - Observes the project running locally
 - Output: manifest.json + analysis.md with **Excellence Standard scores**
@@ -261,8 +261,8 @@ node capture-refs.mjs --local --port 5173 $PROJECT_DIR/.brain/observer
 
 When evaluating builder output, the CEO must:
 1. Run observer on localhost AFTER the dev server is running
-2. Read `.brain/observer/{localhost}/analysis.md`
-3. Compare `excellenceSignals` against `brain-config.md` thresholds:
+2. Read `.eros/observer/{localhost}/analysis.md`
+3. Compare `excellenceSignals` against `config.md` thresholds:
    - All dimensions must be MEDIUM or STRONG
    - WEAK on any dimension → flag in `approvals.md`, trigger retry
 4. Inject observer findings into next context file as "## Observer Signals" block

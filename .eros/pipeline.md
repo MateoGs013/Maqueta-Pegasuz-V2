@@ -1,10 +1,10 @@
-# Pipeline V6.1 → V7 — Autonomous Brain (Eros Script Architecture)
+# Pipeline V7 — Autonomous Brain (Eros Script Architecture)
 
 ## Core Concept: Three Memory Layers
 
 ```
-Layer 1: Working Memory   → $PROJECT_DIR/.brain/     (per-project, hot state)
-Layer 2: Session State    → $PROJECT_DIR/.brain/state.md + state.json  (crash recovery + machine state)
+Layer 1: Working Memory   → $PROJECT_DIR/.eros/     (per-project, hot state)
+Layer 2: Session State    → $PROJECT_DIR/.eros/state.md + state.json  (crash recovery + machine state)
 Layer 3: Long-Term Memory → $MAQUETA_DIR/.eros/memory/design-intelligence/  (cross-project)
 ```
 
@@ -15,7 +15,7 @@ Layer 3: Long-Term Memory → $MAQUETA_DIR/.eros/memory/design-intelligence/  (c
 4. Agent reads ONE context file → does ONE task → writes to `reports/{task}.md`
 5. CEO runs `node eros-gate.mjs post` → auto-evaluates against thresholds → approve or retry
 6. CEO runs `node eros-memory.mjs learn` → writes learnings immediately to long-term memory
-7. CEO runs `node eros-log.mjs` → logs decision to `.brain/approvals.md` + `.brain/decisions.md`
+7. CEO runs `node eros-log.mjs` → logs decision to `.eros/approvals.md` + `.eros/decisions.md`
 8. CEO runs `node eros-state.mjs advance` → atomically updates state.md, queue.md, queue.json
 9. Repeat until queue is empty
 
@@ -31,7 +31,7 @@ Every generated project should expose this minimum contract:
 ```text
 $PROJECT_DIR/
   DESIGN.md
-  .brain/
+  .eros/
     state.md
     state.json
     metrics.json
@@ -75,14 +75,14 @@ The canonical way to initialize a new project and emit this contract is:
 ```bash
 cd "$MAQUETA_DIR/scripts"
 npm run init:project -- \
-  --brief-file "$PROJECT_DIR/.brain/context/intake.json" \
+  --brief-file "$PROJECT_DIR/.eros/context/intake.json" \
   --project "$PROJECT_DIR"
 ```
 
 `init-project.mjs` copies the scaffold and libraries, writes the intake payload, runs the bootstrapper, and can install dependencies. `bootstrap-eros-feed.mjs` remains the lower-level idempotent emitter when the project already exists and only needs hybrid artifacts refreshed.
 
 **Why micro-tasks:** Each task is small enough that context can compact between tasks.
-After compaction, `.brain/` files are the ground truth — not conversation memory.
+After compaction, `.eros/` files are the ground truth — not conversation memory.
 
 **Default mode is autonomous.** No human gates unless the brief includes "interactive" or "supervised".
 
@@ -99,12 +99,12 @@ Never write project files inside maqueta. Only read: scaffold, libraries, script
 
 ---
 
-## .brain/ Directory (Working Memory)
+## .eros/ Directory (Working Memory)
 
 Created at project start. Deleted at project completion (learnings already persisted to long-term memory).
 
 ```
-$PROJECT_DIR/.brain/
+$PROJECT_DIR/.eros/
   state.md          ← 15 lines: current phase, next task, blockers
   state.json        ← machine-readable run state for retries, panel, and automations
   metrics.json      ← scorecards, retries, debt counts, and aggregate quality state
@@ -134,7 +134,7 @@ $PROJECT_DIR/.brain/
 ### state.md Format (lightweight — read first on every turn)
 
 ```markdown
-# Brain State
+# Eros State
 - **Project:** {name} ({slug})
 - **Phase:** {current phase name}
 - **Task:** {current micro-task ID from queue}
@@ -178,7 +178,7 @@ $PROJECT_DIR/.brain/
 # Context: {task name}
 
 ## Memory Insights
-← CEO injects this block BEFORE spawning. Read brain-config.md § Interpretation.
+← CEO injects this block BEFORE spawning. Read config.md § Interpretation.
 
 | Topic | Insight | Confidence |
 |-------|---------|-----------|
@@ -233,9 +233,9 @@ $PROJECT_DIR/.brain/
 
 | Agent | Role | Reads | Writes |
 |-------|------|-------|--------|
-| `designer` | Visual identity | `.brain/context/design-brief.md` | `DESIGN.md` + `docs/tokens.md` + `docs/pages/*.md` |
-| `builder` | Section components | `.brain/context/S-{Name}.md` + `DESIGN.md` | `src/components/sections/S-{Name}.vue` + `.brain/reports/S-{Name}.md` |
-| `polisher` | Motion + QA | `.brain/context/motion.md` | `src/composables/use*.js` + `.brain/reports/motion.md` |
+| `designer` | Visual identity | `.eros/context/design-brief.md` | `DESIGN.md` + `docs/tokens.md` + `docs/pages/*.md` |
+| `builder` | Section components | `.eros/context/S-{Name}.md` + `DESIGN.md` | `src/components/sections/S-{Name}.vue` + `.eros/reports/S-{Name}.md` |
+| `polisher` | Motion + QA | `.eros/context/motion.md` | `src/composables/use*.js` + `.eros/reports/motion.md` |
 | `reference-analyst` | Analyze references | `_ref-captures/` + `docs/_libraries/` | `docs/reference-analysis.md` |
 
 **Context management rule:** CEO writes the context file. Agent reads ONE file.
@@ -251,17 +251,17 @@ Each task has: ID, agent, input, output, gate. Tasks run sequentially unless mar
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `setup/identity` | ceo | user message | `.brain/identity.md` | Brief is complete |
+| `setup/identity` | ceo | user message | `.eros/identity.md` | Brief is complete |
 | `setup/create-dir` | ceo | identity.md | `$PROJECT_DIR/` created | Directory exists |
 | `setup/capture-refs` | ceo | identity.md URLs | `_ref-captures/` + `analysis.md` per page | Screenshots + analysis.md captured |
 | `setup/analyze-refs` | reference-analyst | `_ref-captures/` (`analysis.md` + `manifest.json` + screenshots) | `docs/reference-analysis.md` | 9-point gate |
-| `setup/observatory` | ceo | `_ref-captures/{domain}/analysis.md` | `.brain/context/reference-observatory.md` | content strategy + rhythm + baseline extracted |
+| `setup/observatory` | ceo | `_ref-captures/{domain}/analysis.md` | `.eros/context/reference-observatory.md` | content strategy + rhythm + baseline extracted |
 
 ### Phase 1: Creative Direction (Designer)
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `design/brief` | ceo | identity + ref-analysis + learnings | `.brain/context/design-brief.md` | Context file complete |
+| `design/brief` | ceo | identity + ref-analysis + learnings | `.eros/context/design-brief.md` | Context file complete |
 | `design/tokens` | designer | `context/design-brief.md` | `DESIGN.md` + `docs/tokens.md` | 12-point validation |
 | `design/pages` | designer | `context/design-brief.md` + `DESIGN.md` + tokens.md | `docs/pages/*.md` | Section validation |
 | `review/creative` | ceo | tokens.md + pages/*.md | autonomous: save screenshots; interactive: user approval | Memory hooks fire regardless of mode |
@@ -269,7 +269,7 @@ Each task has: ID, agent, input, output, gate. Tasks run sequentially unless mar
 **Memory hooks fire immediately (both modes):**
 - `design-intelligence/font-pairings.md` (pairing + reaction)
 - `design-intelligence/color-palettes.md` (palette + reaction)
-- `.brain/decisions.md` (D-001: Font, D-002: Palette, etc.)
+- `.eros/decisions.md` (D-001: Font, D-002: Palette, etc.)
 
 ### Phase 2: Scaffold (CEO)
 
@@ -277,7 +277,7 @@ Each task has: ID, agent, input, output, gate. Tasks run sequentially unless mar
 |---------|-------|-------|--------|------|
 | `setup/scaffold` | ceo | `_project-scaffold/` | `$PROJECT_DIR/src/` | Files copied |
 | `setup/gen-tokens` | ceo | `docs/tokens.md` | `src/styles/tokens.css` | CSS generated |
-| `build/atmosphere` | builder | `.brain/context/atmosphere.md` | `AtmosphereCanvas.vue` + report | 5-point check |
+| `build/atmosphere` | builder | `.eros/context/atmosphere.md` | `AtmosphereCanvas.vue` + report | 5-point check |
 
 ### Phase 3: Sections (Builder — parallel-safe between independent sections)
 
@@ -285,16 +285,16 @@ For EACH section:
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `context/S-{Name}` | ceo | `DESIGN.md` + tokens.md + pages/{page}.md + _libraries/ + learnings + observatory | `.brain/context/S-{Name}.md` | Context file complete + dynamic threshold resolved |
+| `context/S-{Name}` | ceo | `DESIGN.md` + tokens.md + pages/{page}.md + _libraries/ + learnings + observatory | `.eros/context/S-{Name}.md` | Context file complete + dynamic threshold resolved |
 | `build/S-{Name}` | builder | `context/S-{Name}.md` | `S-{Name}.vue` + `reports/S-{Name}.md` | Excellence Standard + Preview Loop |
-| `observe/S-{Name}` | ceo | dev server at localhost:5173 | `.brain/observer/localhost/analysis.md` | Observer runs without error |
-| `evaluate/S-{Name}` | evaluator | `context/evaluate-S-{Name}.md` | `.brain/evaluations/S-{Name}.md` | APPROVE / RETRY / FLAG decision |
+| `observe/S-{Name}` | ceo | dev server at localhost:5173 | `.eros/observer/localhost/analysis.md` | Observer runs without error |
+| `evaluate/S-{Name}` | evaluator | `context/evaluate-S-{Name}.md` | `.eros/evaluations/S-{Name}.md` | APPROVE / RETRY / FLAG decision |
 
 After ALL sections pass:
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `review/observer` | ceo | dev server at localhost | `.brain/observer/analysis.md` + `.brain/reports/quality/*.json` | Observer runs without error |
+| `review/observer` | ceo | dev server at localhost | `.eros/observer/analysis.md` + `.eros/reports/quality/*.json` | Observer runs without error |
 | `review/sections` | ceo | observer analysis.md + screenshots | autonomous: save to docs/review/ + continue; interactive: user approval | All excellenceSignals MEDIUM+ |
 
 **Memory hooks fire immediately (both modes):**
@@ -302,13 +302,13 @@ After ALL sections pass:
 - `design-intelligence/section-patterns.md` (layout+motion+score)
 - `design-intelligence/technique-scores.md` (update usage + avg)
 - `design-intelligence/revision-patterns.md` (if user requested changes)
-- `.brain/decisions.md` (D-NNN per section)
+- `.eros/decisions.md` (D-NNN per section)
 
 ### Phase 4: Motion (Polisher)
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `context/motion` | ceo | `DESIGN.md` + tokens.md + pages/*.md + section list | `.brain/context/motion.md` | Context file complete |
+| `context/motion` | ceo | `DESIGN.md` + tokens.md + pages/*.md + section list | `.eros/context/motion.md` | Context file complete |
 | `polish/motion` | polisher | `context/motion.md` | composables + preloader + report | Visual QA 4 breakpoints |
 
 ### Phase 5: Integration (CEO)
@@ -319,14 +319,14 @@ After ALL sections pass:
 | `integrate/views` | ceo | section list per page | `src/views/*.vue` | Views render |
 | `integrate/app` | ceo | component list | `src/App.vue` | App shell complete |
 | `integrate/seo` | ceo | identity + pages | meta tags per page | Tags present |
-| `review/observer-final` | ceo | dev server at localhost | `.brain/observer/final-analysis.md` + `.brain/reports/quality/*.json` | Observer runs without error |
+| `review/observer-final` | ceo | dev server at localhost | `.eros/observer/final-analysis.md` + `.eros/reports/quality/*.json` | Observer runs without error |
 | `review/final` | ceo | observer final-analysis.md + screenshots | autonomous: REVIEW-SUMMARY.md + continue; interactive: user approval | All excellenceSignals MEDIUM+ |
 
 ### Phase 6: Retrospective (CEO)
 
 | Task ID | Agent | Input | Output | Gate |
 |---------|-------|-------|--------|------|
-| `cleanup/retrospective` | ceo | `.brain/decisions.md` + reports/ | verify long-term memory updated | All learnings persisted |
+| `cleanup/retrospective` | ceo | `.eros/decisions.md` + reports/ | verify long-term memory updated | All learnings persisted |
 | `cleanup/promote-rules` | ceo | `design-intelligence/rules.md` | promote 3+ validated rules | Rules promoted |
 | `cleanup/delete-temp` | ceo | `_ref-captures/`, `docs/review/` | directories deleted | Clean project |
 
@@ -348,11 +348,11 @@ ON EVERY TURN:
        → Run `node eros-state.mjs advance` → mark task [DONE], advance to next
 
   3. IF task is "build/*":
-       → Spawn builder: "Read $PROJECT_DIR/.brain/context/{X}.md, write component + report"
-       → Run observer: node capture-refs.mjs --local --port 5173 .brain/observer/
+       → Spawn builder: "Read $PROJECT_DIR/.eros/context/{X}.md, write component + report"
+       → Run observer: node capture-refs.mjs --local --port 5173 .eros/observer/
        → Refresh quality: npm run refresh:quality -- --project "$PROJECT_DIR"
        → Write context/evaluate-{X}.md (report path + observer path + threshold)
-       → Spawn evaluator: "Read context/evaluate-{X}.md, write .brain/evaluations/{X}.md"
+       → Spawn evaluator: "Read context/evaluate-{X}.md, write .eros/evaluations/{X}.md"
        → Run `node eros-gate.mjs post --task {task-id}` → read evaluation decision:
            APPROVE → run `node eros-log.mjs` + `node eros-state.mjs advance`
            RETRY   → re-dispatch builder with retry instructions (max retry_max)
@@ -360,7 +360,7 @@ ON EVERY TURN:
            FLAG    → run `node eros-log.mjs --flag` + `node eros-state.mjs advance`
 
   3b. IF task is "design/*" or "polish/*":
-       → Spawn agent: "Read $PROJECT_DIR/.brain/context/{X}.md, write output + report"
+       → Spawn agent: "Read $PROJECT_DIR/.eros/context/{X}.md, write output + report"
        → Run `node eros-gate.mjs post --task {task-id}` → auto-evaluate against thresholds:
            PASS → run `node eros-log.mjs` + `node eros-state.mjs advance`
            FAIL → re-dispatch with specific failures (max retry_max)
@@ -391,7 +391,7 @@ ON EVERY TURN:
 
 ## Operating Modes
 
-Read `brain-config.md` for full threshold definitions.
+Read `config.md` for full threshold definitions.
 
 ### Autonomous (DEFAULT)
 
@@ -423,18 +423,18 @@ Slowest mode — use only for experimental or high-stakes projects.
 After every agent task, brain evaluates the report:
 
 ```
-PASS criteria (from brain-config.md):
+PASS criteria (from config.md):
   designer_gate: 12/12 points + decision trees used
   builder_gate: all Excellence dimensions + signature + score >= 7 + 0 anti-AI patterns
   visual_qa: 3+ layers + no broken + mobile designed + density >= 3
 
 ON PASS:
-  → append to .brain/approvals.md: [AUTO-APPROVED] {task} | score: {X} | {timestamp}
+  → append to .eros/approvals.md: [AUTO-APPROVED] {task} | score: {X} | {timestamp}
   → mark [DONE] in queue
   → trigger memory hooks
 
 ON FAIL (after retry_max = 2):
-  → append to .brain/approvals.md: [NEEDS-REVIEW] {task} | failed: {dimension} | {timestamp}
+  → append to .eros/approvals.md: [NEEDS-REVIEW] {task} | failed: {dimension} | {timestamp}
   → mark [DONE] in queue (never blocks)
   → continue to next task
 ```
@@ -570,13 +570,13 @@ Phase 5 CANNOT be marked as "Complete" unless ALL of the following are true:
 
 ### Hard Requirements
 
-1. **Observer ran:** `.brain/observer/` directory exists AND contains at least one `analysis.md` file with non-empty content. If the observer never ran, Phase 5 is BLOCKED.
+1. **Observer ran:** `.eros/observer/` directory exists AND contains at least one `analysis.md` file with non-empty content. If the observer never ran, Phase 5 is BLOCKED.
 
-2. **refresh-quality ran:** `.brain/reports/quality/scorecard.json` exists AND `finalScore > 0`. A scorecard with `finalScore: 0` means the quality loop never executed — Phase 5 is BLOCKED.
+2. **refresh-quality ran:** `.eros/reports/quality/scorecard.json` exists AND `finalScore > 0`. A scorecard with `finalScore: 0` means the quality loop never executed — Phase 5 is BLOCKED.
 
 3. **Queue is complete:** Every task in `queue.json` has `status: "done"`. No task can be left as `"pending"` or `"in_progress"` when Phase 5 closes.
 
-4. **Evaluations exist:** For every `build/S-{Name}` task, a corresponding `.brain/evaluations/S-{Name}.md` file MUST exist with an APPROVE, RETRY, or FLAG decision.
+4. **Evaluations exist:** For every `build/S-{Name}` task, a corresponding `.eros/evaluations/S-{Name}.md` file MUST exist with an APPROVE, RETRY, or FLAG decision.
 
 ### Enforcement Algorithm
 
@@ -584,8 +584,8 @@ Phase 5 CANNOT be marked as "Complete" unless ALL of the following are true:
 
 ```
 BEFORE marking Phase 5 as "Complete":
-  1. Check: does .brain/observer/ contain analysis.md? → NO → BLOCK
-  2. Check: does .brain/reports/quality/scorecard.json exist? → NO → BLOCK
+  1. Check: does .eros/observer/ contain analysis.md? → NO → BLOCK
+  2. Check: does .eros/reports/quality/scorecard.json exist? → NO → BLOCK
   3. Read scorecard.json → is finalScore > 0? → NO → BLOCK
   4. Read queue.json → are all tasks "done"? → NO → BLOCK
   5. Count build/S-* tasks → count evaluations/*.md → match? → NO → BLOCK

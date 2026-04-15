@@ -20,7 +20,7 @@ The eros-feed is the control layer for autonomous frontend generation. It is res
 `.claude/` is the canonical architecture namespace.
 
 - `.eros/pipeline.md` defines orchestration
-- `.eros/brain-config.md` defines thresholds and approval logic
+- `.eros/config.md` defines thresholds and approval logic
 - `.claude/agents/*.md` define worker behavior
 - `.eros/eros-feed/` stores eros-feed contracts, fixtures, and examples
 
@@ -33,7 +33,7 @@ Every generated project must expose the following hybrid contract:
 ```text
 PROJECT_DIR/
   DESIGN.md
-  .brain/
+  .eros/
     state.json
     metrics.json
     queue.json
