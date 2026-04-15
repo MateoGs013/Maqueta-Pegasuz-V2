@@ -16,11 +16,11 @@
     "eros:context": "node brain/context.mjs",
     "eros:log": "node eros-log.mjs",
     "eros:train": "node memory/train.mjs",
-    "eros:detect": "node eros-detect-changes.mjs",
+    "eros:detect": "node observer/detect-changes.mjs",
     "eros:test": "node eros-test-e2e.mjs",
     "eros:ref": "node memory/train-reference.mjs",
-    "observe": "node eros-observer.mjs",
-    "observe:local": "node eros-observer.mjs --local"
+    "observe": "node observer/observer.mjs",
+    "observe:local": "node observer/observer.mjs --local"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.92",
