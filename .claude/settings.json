@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'echo \"\"; echo \"═══ EROS IDENTITY ═══\"; PFILE=\"/c/Users/mateo/Desktop/Eros/.eros/memory/design-intelligence/personality.json\"; if [ -f \"$PFILE\" ]; then node -e \"const p=JSON.parse(require(\\\"fs\\\").readFileSync(\\\"$PFILE\\\",\\\"utf8\\\"));console.log(\\\"Voice:\\\",p.voice?.tone);console.log(\\\"Philosophy:\\\",p.voice?.philosophy);console.log(\\\"Values:\\\",(p.values?.core||[]).map(v=>v.value).join(\\\", \\\"))\" 2>/dev/null; fi; echo \"\"; echo \"═══ ACTIVE PROJECTS ═══\"; found=0; for f in /c/Users/mateo/Desktop/*/.brain/state.md; do if [ -f \"$f\" ]; then proj=$(dirname $(dirname \"$f\")); echo \"\"; echo \"Project: $(basename $proj)\"; cat \"$f\"; found=1; fi; done; if [ $found -eq 0 ]; then echo \"No active projects.\"; fi; echo \"═══════════════════════\"'"
+            "command": "bash -c 'echo \"\"; echo \"═══ EROS IDENTITY ═══\"; PFILE=\"/c/Users/mateo/Desktop/Eros/.eros/memory/design-intelligence/personality.json\"; if [ -f \"$PFILE\" ]; then node -e \"const p=JSON.parse(require(\\\"fs\\\").readFileSync(\\\"$PFILE\\\",\\\"utf8\\\"));console.log(\\\"Voice:\\\",p.voice?.tone);console.log(\\\"Philosophy:\\\",p.voice?.philosophy);console.log(\\\"Values:\\\",(p.values?.core||[]).map(v=>v.value).join(\\\", \\\"))\" 2>/dev/null; fi; echo \"\"; echo \"═══ ACTIVE PROJECTS ═══\"; found=0; for f in /c/Users/mateo/Desktop/*/.eros/state.md; do if [ -f \"$f\" ]; then proj=$(dirname $(dirname \"$f\")); echo \"\"; echo \"Project: $(basename $proj)\"; cat \"$f\"; found=1; fi; done; if [ $found -eq 0 ]; then echo \"No active projects.\"; fi; echo \"═══════════════════════\"'"
           }
         ]
       },
@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'echo \"\"; echo \"═══ EROS ═══\"; PFILE=\"/c/Users/mateo/Desktop/Eros/.eros/memory/design-intelligence/personality.json\"; if [ -f \"$PFILE\" ]; then node -e \"const p=JSON.parse(require(\\\"fs\\\").readFileSync(\\\"$PFILE\\\",\\\"utf8\\\"));console.log(\\\"Voice:\\\",p.voice?.tone);console.log(\\\"Philosophy:\\\",p.voice?.philosophy)\" 2>/dev/null; fi; for f in /c/Users/mateo/Desktop/*/.brain/state.md; do if [ -f \"$f\" ]; then proj=$(dirname $(dirname \"$f\")); echo \"\"; echo \"═══ $(basename $proj) ═══\"; cat \"$f\"; echo \"═══════════════════════\"; fi; done'"
+            "command": "bash -c 'echo \"\"; echo \"═══ EROS ═══\"; PFILE=\"/c/Users/mateo/Desktop/Eros/.eros/memory/design-intelligence/personality.json\"; if [ -f \"$PFILE\" ]; then node -e \"const p=JSON.parse(require(\\\"fs\\\").readFileSync(\\\"$PFILE\\\",\\\"utf8\\\"));console.log(\\\"Voice:\\\",p.voice?.tone);console.log(\\\"Philosophy:\\\",p.voice?.philosophy)\" 2>/dev/null; fi; for f in /c/Users/mateo/Desktop/*/.eros/state.md; do if [ -f \"$f\" ]; then proj=$(dirname $(dirname \"$f\")); echo \"\"; echo \"═══ $(basename $proj) ═══\"; cat \"$f\"; echo \"═══════════════════════\"; fi; done'"
           }
         ]
       }
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; BLOCKED=false; MSG=\"\"; if echo \"$FILE\" | grep -qE \"\\.brain/(state\\.md|state\\.json|queue\\.md|queue\\.json)$\"; then BLOCKED=true; MSG=\"Use eros-state.mjs instead of writing directly to state/queue files.\"; fi; if echo \"$FILE\" | grep -qE \"\\.brain/approvals\\.md$\"; then BLOCKED=true; MSG=\"Use eros-log.mjs approve/flag instead of writing directly to approvals.md.\"; fi; if echo \"$FILE\" | grep -qE \"\\.brain/decisions\\.md$\"; then BLOCKED=true; MSG=\"Use eros-log.mjs decision instead of writing directly to decisions.md.\"; fi; if echo \"$FILE\" | grep -qE \"design-intelligence/.*\\.(json|md)$\" && ! echo \"$FILE\" | grep -qE \"Eros/scripts/\"; then BLOCKED=true; MSG=\"Use eros-memory.mjs learn instead of writing directly to design-intelligence files.\"; fi; if [ \"$BLOCKED\" = true ]; then echo \"\"; echo \"[EROS ENFORCE] BLOCKED: $MSG\"; echo \"  File: $FILE\"; echo \"  These files are owned by eros-* scripts. Run the appropriate script.\"; exit 2; fi'"
+            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; BLOCKED=false; MSG=\"\"; if echo \"$FILE\" | grep -qE \"\\.eros/(state\\.md|state\\.json|queue\\.md|queue\\.json)$\"; then BLOCKED=true; MSG=\"Use eros-state.mjs instead of writing directly to state/queue files.\"; fi; if echo \"$FILE\" | grep -qE \"\\.eros/approvals\\.md$\"; then BLOCKED=true; MSG=\"Use eros-log.mjs approve/flag instead of writing directly to approvals.md.\"; fi; if echo \"$FILE\" | grep -qE \"\\.eros/decisions\\.md$\"; then BLOCKED=true; MSG=\"Use eros-log.mjs decision instead of writing directly to decisions.md.\"; fi; if echo \"$FILE\" | grep -qE \"design-intelligence/.*\\.(json|md)$\" && ! echo \"$FILE\" | grep -qE \"Eros/scripts/\"; then BLOCKED=true; MSG=\"Use eros-memory.mjs learn instead of writing directly to design-intelligence files.\"; fi; if [ \"$BLOCKED\" = true ]; then echo \"\"; echo \"[EROS ENFORCE] BLOCKED: $MSG\"; echo \"  File: $FILE\"; echo \"  These files are owned by eros-* scripts. Run the appropriate script.\"; exit 2; fi'"
           }
         ]
       }
@@ -64,7 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"\\.brain/reports/S-.*\\.md$\"; then HAS_SCREENSHOT=$(grep -ciE \"screenshot|desktop.*mobile|mobile.*desktop|preview_screenshot\" \"$FILE\" 2>/dev/null || echo 0); HAS_SCORE=$(grep -ciE \"score|excellence standard\" \"$FILE\" 2>/dev/null || echo 0); if [ \"$HAS_SCREENSHOT\" -eq 0 ] || [ \"$HAS_SCORE\" -eq 0 ]; then echo \"\"; echo \"[PREVIEW LOOP] Builder report missing preview loop evidence.\"; [ \"$HAS_SCREENSHOT\" -eq 0 ] && echo \"  - No screenshot/viewport mentions found\"; [ \"$HAS_SCORE\" -eq 0 ] && echo \"  - No quality scoring mentions found\"; fi; fi'"
+            "command": "bash -c 'FILE=\"$TOOL_INPUT_FILE_PATH\"; if echo \"$FILE\" | grep -qE \"\\.eros/reports/S-.*\\.md$\"; then HAS_SCREENSHOT=$(grep -ciE \"screenshot|desktop.*mobile|mobile.*desktop|preview_screenshot\" \"$FILE\" 2>/dev/null || echo 0); HAS_SCORE=$(grep -ciE \"score|excellence standard\" \"$FILE\" 2>/dev/null || echo 0); if [ \"$HAS_SCREENSHOT\" -eq 0 ] || [ \"$HAS_SCORE\" -eq 0 ]; then echo \"\"; echo \"[PREVIEW LOOP] Builder report missing preview loop evidence.\"; [ \"$HAS_SCREENSHOT\" -eq 0 ] && echo \"  - No screenshot/viewport mentions found\"; [ \"$HAS_SCORE\" -eq 0 ] && echo \"  - No quality scoring mentions found\"; fi; fi'"
           }
         ]
       }
