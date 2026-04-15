@@ -12,7 +12,7 @@
  *   - auto-train (via the existing callScript helper)
  *   - a human at the terminal
  *
- * State lives in `<project>/.brain/server.json`:
+ * State lives in `<project>/.eros/server.json`:
  *   { pid, port, startedAt, cwd }
  *
  * Usage:
@@ -39,7 +39,7 @@ const NPX_CLI = findFirst([
 
 const log = (msg) => process.stderr.write(`[eros-server] ${msg}\n`)
 
-const serverStatePath = (projectDir) => path.join(projectDir, '.brain', 'server.json')
+const serverStatePath = (projectDir) => path.join(projectDir, '.eros', 'server.json')
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -206,7 +206,7 @@ Usage:
   node eros-server.mjs stop   --project <path>
   node eros-server.mjs status --project <path>
 
-State file: <project>/.brain/server.json
+State file: <project>/.eros/server.json
 `)
     process.exit(1)
   }
