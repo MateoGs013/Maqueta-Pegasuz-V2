@@ -15,5 +15,5 @@
   "retriesUsed": 0,
   "retryBudget": 3,
   "lastReviewAt": null,
-  "nextAction": "Write .brain/context/design-brief.md with memory insights and spawn the designer."
+  "nextAction": "Write .eros/context/design-brief.md with memory insights and spawn the designer."
 }
