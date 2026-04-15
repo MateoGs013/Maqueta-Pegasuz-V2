@@ -2,7 +2,7 @@
 # ═══════════════════════════════════════════
 # Pegasuz Eros — Workspace Launcher
 # Levanta las 3 terminales necesarias:
-#   1. Watch mode (sync .brain/ → panel data)
+#   1. Watch mode (sync .eros/ → panel data)
 #   2. Panel dev server (puerto 4000)
 #   3. Instrucciones para lanzar un proyecto
 # ═══════════════════════════════════════════

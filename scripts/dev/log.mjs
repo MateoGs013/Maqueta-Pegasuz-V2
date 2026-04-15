@@ -49,7 +49,7 @@ const cmdApprove = async (args) => {
   const verdict = args.verdict || 'approved'
   const ts = timestamp()
 
-  const approvalsPath = path.join(project, '.brain', 'approvals.md')
+  const approvalsPath = path.join(project, '.eros','approvals.md')
   const existing = await readText(approvalsPath)
 
   // Create header if file is new
@@ -77,7 +77,7 @@ const cmdFlag = async (args) => {
   const score = args.score || '—'
   const ts = timestamp()
 
-  const approvalsPath = path.join(project, '.brain', 'approvals.md')
+  const approvalsPath = path.join(project, '.eros','approvals.md')
   const existing = await readText(approvalsPath)
 
   const projectName = path.basename(project)
@@ -106,7 +106,7 @@ const cmdDecision = async (args) => {
   const lesson = args.lesson || '—'
   const user = args.user || 'pending'
 
-  const decisionsPath = path.join(project, '.brain', 'decisions.md')
+  const decisionsPath = path.join(project, '.eros','decisions.md')
   const existing = await readText(decisionsPath)
 
   const projectName = path.basename(project)
@@ -138,7 +138,7 @@ const cmdQualityGate = async (args) => {
   const passed = args.passed !== 'false'
   const ts = timestamp()
 
-  const approvalsPath = path.join(project, '.brain', 'approvals.md')
+  const approvalsPath = path.join(project, '.eros','approvals.md')
   const existing = await readText(approvalsPath)
 
   const projectName = path.basename(project)

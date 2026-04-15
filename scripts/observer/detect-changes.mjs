@@ -84,7 +84,7 @@ async function gitDiff(projectDir, since) {
 const SKIP_PATTERNS = [
   /package-lock\.json/,
   /node_modules\//,
-  /\.brain\//,
+  /\.eros\//,
   /\.vite\//,
   /dist\//,
 ]

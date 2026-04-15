@@ -76,18 +76,18 @@ const exists = async (filePath) => {
 const main = async () => {
   // Create temp project directory
   const tmpDir = path.join(os.tmpdir(), `eros-test-${Date.now()}`)
-  const brainDir = path.join(tmpDir, '.brain')
+  const erosDir = path.join(tmpDir, '.eros')
 
   process.stdout.write(`\n\x1b[1mEros V7 — End-to-End Integration Test\x1b[0m\n`)
   process.stdout.write(`Project: ${tmpDir}\n\n`)
 
   try {
     // Bootstrap minimal project structure
-    await fs.mkdir(path.join(brainDir, 'context'), { recursive: true })
-    await fs.mkdir(path.join(brainDir, 'reports'), { recursive: true })
-    await fs.mkdir(path.join(brainDir, 'evaluations'), { recursive: true })
-    await fs.mkdir(path.join(brainDir, 'observer', 'localhost'), { recursive: true })
-    await fs.mkdir(path.join(brainDir, 'reports', 'quality'), { recursive: true })
+    await fs.mkdir(path.join(erosDir,'context'), { recursive: true })
+    await fs.mkdir(path.join(erosDir,'reports'), { recursive: true })
+    await fs.mkdir(path.join(erosDir,'evaluations'), { recursive: true })
+    await fs.mkdir(path.join(erosDir,'observer', 'localhost'), { recursive: true })
+    await fs.mkdir(path.join(erosDir,'reports', 'quality'), { recursive: true })
     await fs.mkdir(path.join(tmpDir, 'src', 'components', 'sections'), { recursive: true })
     await fs.mkdir(path.join(tmpDir, 'src', 'router'), { recursive: true })
     await fs.mkdir(path.join(tmpDir, 'src', 'views'), { recursive: true })
@@ -123,11 +123,11 @@ const main = async () => {
       done: [],
     }
 
-    await fs.writeFile(path.join(brainDir, 'state.json'), JSON.stringify(initialState, null, 2))
-    await fs.writeFile(path.join(brainDir, 'state.md'), '# Brain State\n- **Phase:** discovery\n')
-    await fs.writeFile(path.join(brainDir, 'queue.json'), JSON.stringify(initialQueue, null, 2))
-    await fs.writeFile(path.join(brainDir, 'queue.md'), '# Task Queue\n')
-    await fs.writeFile(path.join(brainDir, 'identity.md'), '# Identity: Test Project\n- **Type:** portfolio\n')
+    await fs.writeFile(path.join(erosDir,'state.json'), JSON.stringify(initialState, null, 2))
+    await fs.writeFile(path.join(erosDir,'state.md'), '# Eros State\n- **Phase:** discovery\n')
+    await fs.writeFile(path.join(erosDir,'queue.json'), JSON.stringify(initialQueue, null, 2))
+    await fs.writeFile(path.join(erosDir,'queue.md'), '# Task Queue\n')
+    await fs.writeFile(path.join(erosDir,'identity.md'), '# Identity: Test Project\n- **Type:** portfolio\n')
 
     // ─── TEST 1: State Query ───
     process.stdout.write(`\x1b[1m1. State Machine\x1b[0m\n`)
@@ -152,8 +152,8 @@ const main = async () => {
     assert(postResult.verdict === 'APPROVE', 'post-gate approves setup/identity (identity.md exists)')
 
     // Verify gate file was written
-    const gateFile = path.join(brainDir, 'gates', 'setup--identity.json')
-    assert(await exists(gateFile), 'gate result file written to .brain/gates/')
+    const gateFile = path.join(erosDir,'gates', 'setup--identity.json')
+    assert(await exists(gateFile), 'gate result file written to .eros/gates/')
 
     // ─── TEST 5: Advance (with gate enforcement) ───
     const advanceResult = await run('eros-state.mjs', [
@@ -164,7 +164,7 @@ const main = async () => {
     assert(advanceResult.newTask === 'design/brief', 'advance finds next pending task')
 
     // Verify queue state
-    const queueAfter = await readJson(path.join(brainDir, 'queue.json'))
+    const queueAfter = await readJson(path.join(erosDir,'queue.json'))
     assert(queueAfter.done.length === 1, 'queue.json has 1 done task')
     assert(queueAfter.pending.length === 3, 'queue.json has 3 pending tasks')
 
@@ -225,8 +225,8 @@ const main = async () => {
     assert(decisionLog.logged === 'decision', 'decision log recorded')
 
     // Verify files exist
-    assert(await exists(path.join(brainDir, 'approvals.md')), 'approvals.md created')
-    assert(await exists(path.join(brainDir, 'decisions.md')), 'decisions.md created')
+    assert(await exists(path.join(erosDir,'approvals.md')), 'approvals.md created')
+    assert(await exists(path.join(erosDir,'decisions.md')), 'decisions.md created')
 
     // ─── TEST 12: Init Sections ───
     process.stdout.write(`\n\x1b[1m5. Section Pipeline\x1b[0m\n`)
@@ -253,7 +253,7 @@ const main = async () => {
     await fs.writeFile(path.join(sectionsDir, 'S-Features.vue'), '<template><div>features</div></template>')
 
     // Create fake scorecard for review
-    await fs.writeFile(path.join(brainDir, 'reports', 'quality', 'scorecard.json'),
+    await fs.writeFile(path.join(erosDir,'reports', 'quality', 'scorecard.json'),
       JSON.stringify({ observerScore: 8.0, finalScore: 7.5, decision: 'approve' }))
 
     // Test review (generates smart highlights)
@@ -291,9 +291,9 @@ const main = async () => {
       pending: [{ id: 'observe/S-Test', agent: 'ceo', status: 'pending' }],
       done: [],
     }
-    await fs.writeFile(path.join(brainDir, 'queue.json'), JSON.stringify(retryQueue, null, 2))
+    await fs.writeFile(path.join(erosDir,'queue.json'), JSON.stringify(retryQueue, null, 2))
     const retryState = { ...initialState, currentTask: 'build/S-Test', taskStatus: 'in_progress', attempt: 1 }
-    await fs.writeFile(path.join(brainDir, 'state.json'), JSON.stringify(retryState, null, 2))
+    await fs.writeFile(path.join(erosDir,'state.json'), JSON.stringify(retryState, null, 2))
 
     const retryResult = await run('eros-state.mjs', [
       'retry', '--project', tmpDir, '--task', 'build/S-Test', '--reason', 'depth WEAK',
@@ -313,7 +313,7 @@ const main = async () => {
     process.stdout.write(`\n\x1b[1m9. Orchestrator V8\x1b[0m\n`)
 
     // Reset state for orchestrator tests
-    await fs.writeFile(path.join(brainDir, 'state.json'), JSON.stringify({
+    await fs.writeFile(path.join(erosDir,'state.json'), JSON.stringify({
       project: { name: 'Test Project', slug: 'test-project', type: 'portfolio' },
       mode: 'autonomous',
       currentPhase: 'creative',
@@ -330,7 +330,7 @@ const main = async () => {
       nextAction: null,
     }, null, 2))
 
-    await fs.writeFile(path.join(brainDir, 'queue.json'), JSON.stringify({
+    await fs.writeFile(path.join(erosDir,'queue.json'), JSON.stringify({
       active: [],
       pending: [
         { id: 'design/brief', agent: 'ceo', status: 'pending' },
@@ -352,7 +352,7 @@ const main = async () => {
     // Test next for spawn-agent task
     // Complete design/brief first (write the expected output)
     await fs.writeFile(
-      path.join(brainDir, 'context', 'design-brief.md'),
+      path.join(erosDir,'context', 'design-brief.md'),
       'Design brief with memory insights, reference observatory, and identity data. This file has enough content to pass size check.\n'
     )
     const doneResult1 = await run('eros-state.mjs', ['done', '--project', tmpDir, '--result', '{"success":true}'])
