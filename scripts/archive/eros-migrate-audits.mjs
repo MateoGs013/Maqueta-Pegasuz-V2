@@ -31,10 +31,10 @@ import { promises as fs, existsSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseArgs, readJson, writeJson, readText, ensureDir, out, fail, today } from './lib/utils.mjs'
+import { parseArgs, readJson, writeJson, readText, ensureDir, out, fail, today } from '../lib/utils.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const maquetaDir = path.resolve(__dirname, '..')
+const maquetaDir = path.resolve(__dirname, '..', '..')
 const memDir = path.join(maquetaDir, '.eros', 'memory', 'design-intelligence')
 const historyPath = path.join(memDir, 'training-history.json')
 const previewsRoot = path.join(memDir, 'previews')

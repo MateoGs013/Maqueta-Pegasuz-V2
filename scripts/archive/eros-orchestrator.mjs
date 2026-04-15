@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const MAQUETA_DIR = path.resolve(__dirname, '..')
+const MAQUETA_DIR = path.resolve(__dirname, '..', '..')
 const SCRIPTS = __dirname
 
 // ---------------------------------------------------------------------------
