@@ -373,7 +373,7 @@ const buildIdentityMarkdown = (brief) => `# Identity: ${brief.name}
 - **Constraints:** ${brief.constraints.length > 0 ? brief.constraints.join('; ') : 'none'}
 `
 
-const buildStateMarkdown = ({ brief, activeTask, phaseLabel, nextAction }) => `# Brain State
+const buildStateMarkdown = ({ brief, activeTask, phaseLabel, nextAction }) => `# Eros State
 - **Project:** ${brief.name} (${brief.slug})
 - **Phase:** ${phaseLabel}
 - **Task:** ${activeTask}
@@ -679,7 +679,7 @@ const resolveBrief = async ({ args, projectDir }) => {
     return readJson(targetPath, {})
   }
 
-  const fallbackPath = path.join(projectDir, '.brain', 'context', 'intake.json')
+  const fallbackPath = path.join(projectDir, '.eros', 'context', 'intake.json')
   if (await exists(fallbackPath)) {
     return readJson(fallbackPath, {})
   }
@@ -692,20 +692,20 @@ const bootstrapProject = async ({ projectDir, briefInput = {} }) => {
   const hasReferences = brief.references.length > 0
   const nextAction = hasReferences
     ? 'Capture references, write reference-observatory, and then enrich design-brief context with memory insights.'
-    : 'Write .brain/context/design-brief.md with memory insights and spawn the designer for tokens and page planning.'
+    : 'Write .eros/context/design-brief.md with memory insights and spawn the designer for tokens and page planning.'
   const phaseLabel = hasReferences ? 'Phase 0.5: References' : 'Phase 1: Creative Direction'
   const activeTask = hasReferences ? 'setup/capture-refs' : 'design/brief'
   const queueJson = buildQueueJson({ hasReferences })
   const designMarkdown = buildDesignMarkdown(brief)
 
   await ensureDir(projectDir)
-  await ensureDir(path.join(projectDir, '.brain', 'context'))
-  await ensureDir(path.join(projectDir, '.brain', 'control'))
-  await ensureDir(path.join(projectDir, '.brain', 'blueprints'))
-  await ensureDir(path.join(projectDir, '.brain', 'reports', 'quality'))
-  await ensureDir(path.join(projectDir, '.brain', 'reviews'))
+  await ensureDir(path.join(projectDir, '.eros', 'context'))
+  await ensureDir(path.join(projectDir, '.eros', 'control'))
+  await ensureDir(path.join(projectDir, '.eros', 'blueprints'))
+  await ensureDir(path.join(projectDir, '.eros', 'reports', 'quality'))
+  await ensureDir(path.join(projectDir, '.eros', 'reviews'))
 
-  await writeJson(path.join(projectDir, '.brain', 'context', 'intake.json'), {
+  await writeJson(path.join(projectDir, '.eros', 'context', 'intake.json'), {
     ...briefInput,
     normalized: {
       name: brief.name,
@@ -717,7 +717,7 @@ const bootstrapProject = async ({ projectDir, briefInput = {} }) => {
       bannedSeeds: brief.bannedSeeds,
     },
   })
-  await writeText(path.join(projectDir, '.brain', 'context', 'intake.md'), buildIntakeMarkdown(brief))
+  await writeText(path.join(projectDir, '.eros', 'context', 'intake.md'), buildIntakeMarkdown(brief))
   await writeText(path.join(projectDir, 'DESIGN.md'), designMarkdown)
   const blueprintSelection = await selectBlueprintDirections({
     projectDir,
@@ -725,21 +725,21 @@ const bootstrapProject = async ({ projectDir, briefInput = {} }) => {
     designMarkdown,
     persist: true,
   })
-  await writeText(path.join(projectDir, '.brain', 'identity.md'), buildIdentityMarkdown(brief))
-  await writeText(path.join(projectDir, '.brain', 'state.md'), buildStateMarkdown({ brief, activeTask, phaseLabel, nextAction }))
-  await writeJson(path.join(projectDir, '.brain', 'state.json'), buildStateJson({ brief, hasReferences, nextAction }))
-  await writeText(path.join(projectDir, '.brain', 'queue.md'), buildQueueMarkdown({ brief, queueJson }))
-  await writeJson(path.join(projectDir, '.brain', 'queue.json'), queueJson)
-  await writeJson(path.join(projectDir, '.brain', 'metrics.json'), buildMetricsJson())
-  await writeJson(path.join(projectDir, '.brain', 'control', 'rules.json'), buildRulesJson(brief))
-  await writeText(path.join(projectDir, '.brain', 'approvals.md'), buildApprovalsLog())
-  await writeText(path.join(projectDir, '.brain', 'decisions.md'), buildDecisionsLog(brief, blueprintSelection))
-  await writeText(path.join(projectDir, '.brain', 'learnings.md'), buildLearningsLog())
-  await writeJson(path.join(projectDir, '.brain', 'reports', 'quality', 'observer.json'), buildObserverJson(brief))
-  await writeJson(path.join(projectDir, '.brain', 'reports', 'quality', 'critic.json'), buildCriticJson(brief))
-  await writeJson(path.join(projectDir, '.brain', 'reports', 'quality', 'scorecard.json'), buildScorecardJson(brief))
-  await writeJson(path.join(projectDir, '.brain', 'reports', 'visual-debt.json'), buildVisualDebtJson())
-  await writeText(path.join(projectDir, '.brain', 'reviews', 'REVIEW-SUMMARY.md'), buildReviewSummary(brief, nextAction))
+  await writeText(path.join(projectDir, '.eros', 'identity.md'), buildIdentityMarkdown(brief))
+  await writeText(path.join(projectDir, '.eros', 'state.md'), buildStateMarkdown({ brief, activeTask, phaseLabel, nextAction }))
+  await writeJson(path.join(projectDir, '.eros', 'state.json'), buildStateJson({ brief, hasReferences, nextAction }))
+  await writeText(path.join(projectDir, '.eros', 'queue.md'), buildQueueMarkdown({ brief, queueJson }))
+  await writeJson(path.join(projectDir, '.eros', 'queue.json'), queueJson)
+  await writeJson(path.join(projectDir, '.eros', 'metrics.json'), buildMetricsJson())
+  await writeJson(path.join(projectDir, '.eros', 'control', 'rules.json'), buildRulesJson(brief))
+  await writeText(path.join(projectDir, '.eros', 'approvals.md'), buildApprovalsLog())
+  await writeText(path.join(projectDir, '.eros', 'decisions.md'), buildDecisionsLog(brief, blueprintSelection))
+  await writeText(path.join(projectDir, '.eros', 'learnings.md'), buildLearningsLog())
+  await writeJson(path.join(projectDir, '.eros', 'reports', 'quality', 'observer.json'), buildObserverJson(brief))
+  await writeJson(path.join(projectDir, '.eros', 'reports', 'quality', 'critic.json'), buildCriticJson(brief))
+  await writeJson(path.join(projectDir, '.eros', 'reports', 'quality', 'scorecard.json'), buildScorecardJson(brief))
+  await writeJson(path.join(projectDir, '.eros', 'reports', 'visual-debt.json'), buildVisualDebtJson())
+  await writeText(path.join(projectDir, '.eros', 'reviews', 'REVIEW-SUMMARY.md'), buildReviewSummary(brief, nextAction))
 
   return {
     brief,

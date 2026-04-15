@@ -465,7 +465,7 @@ const resolveBrief = async ({ projectDir, briefInput }) => {
     return normalizeBrief(briefInput, projectDir)
   }
 
-  const intake = await readJson(path.join(projectDir, '.brain', 'context', 'intake.json'), {})
+  const intake = await readJson(path.join(projectDir, '.eros', 'context', 'intake.json'), {})
   return normalizeBrief(intake.normalized ? { ...intake, ...intake.normalized } : intake, projectDir)
 }
 
@@ -485,7 +485,7 @@ const selectBlueprintDirections = async ({
   const payload = buildSelectionPayload({ brief, designMarkdown: effectiveDesignMarkdown, context })
 
   if (persist) {
-    await writeJson(path.join(projectDir, '.brain', 'blueprints', 'selection.json'), payload)
+    await writeJson(path.join(projectDir, '.eros', 'blueprints', 'selection.json'), payload)
   }
 
   return payload

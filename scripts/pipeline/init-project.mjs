@@ -119,7 +119,7 @@ const runInstall = async (projectDir) => {
 }
 
 const writeInitializationSummary = async ({ projectDir, brief, installSkipped }) => {
-  const selection = await readJson(path.join(projectDir, '.brain', 'blueprints', 'selection.json'), null)
+  const selection = await readJson(path.join(projectDir, '.eros', 'blueprints', 'selection.json'), null)
   const content = `# Project Init
 
 ## Status
@@ -144,7 +144,7 @@ const writeInitializationSummary = async ({ projectDir, brief, installSkipped })
 - Direction: ${selection?.selection?.chosenDirectionId ?? 'pending'}
 `
 
-  const targetPath = path.join(projectDir, '.brain', 'reports', 'project-init.md')
+  const targetPath = path.join(projectDir, '.eros', 'reports', 'project-init.md')
   await ensureDir(path.dirname(targetPath))
   await fs.writeFile(targetPath, content.trimEnd() + '\n', 'utf8')
 }

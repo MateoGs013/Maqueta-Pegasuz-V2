@@ -365,7 +365,7 @@ ${nextAction}
     decision,
     retryInstructions: [
       nextAction,
-      'Generate DESIGN.md and .brain/*.json so the panel can stop relying on markdown heuristics.',
+      'Generate DESIGN.md and .eros/*.json so the panel can stop relying on markdown heuristics.',
     ],
   }
 
@@ -479,22 +479,22 @@ const enrichStateFromMd = (stateJson, stateMdFields) => {
 
 const loadModernRun = async ({ id, sourceDir, sourceType }) => {
   const designMarkdown = await readText(path.join(sourceDir, 'DESIGN.md'))
-  const decisionsMarkdown = await readText(path.join(sourceDir, '.brain', 'decisions.md'))
-  const reviewMarkdown = await readText(path.join(sourceDir, '.brain', 'reviews', 'REVIEW-SUMMARY.md'))
-  const stateJson = await readJson(path.join(sourceDir, '.brain', 'state.json'), {})
-  const stateMdContent = await readText(path.join(sourceDir, '.brain', 'state.md'))
+  const decisionsMarkdown = await readText(path.join(sourceDir, '.eros', 'decisions.md'))
+  const reviewMarkdown = await readText(path.join(sourceDir, '.eros', 'reviews', 'REVIEW-SUMMARY.md'))
+  const stateJson = await readJson(path.join(sourceDir, '.eros', 'state.json'), {})
+  const stateMdContent = await readText(path.join(sourceDir, '.eros', 'state.md'))
   const state = enrichStateFromMd(stateJson, parseStateMd(stateMdContent))
-  const metrics = await readJson(path.join(sourceDir, '.brain', 'metrics.json'), {})
-  const queue = await readJson(path.join(sourceDir, '.brain', 'queue.json'), { active: [], pending: [], done: [] })
+  const metrics = await readJson(path.join(sourceDir, '.eros', 'metrics.json'), {})
+  const queue = await readJson(path.join(sourceDir, '.eros', 'queue.json'), { active: [], pending: [], done: [] })
   const blueprintSelection = await readJson(
-    path.join(sourceDir, '.brain', 'blueprints', 'selection.json'),
+    path.join(sourceDir, '.eros', 'blueprints', 'selection.json'),
     fallbackBlueprintSelection(),
   )
-  const rulesConfig = await readJson(path.join(sourceDir, '.brain', 'control', 'rules.json'), {
+  const rulesConfig = await readJson(path.join(sourceDir, '.eros', 'control', 'rules.json'), {
     rules: defaultRules,
     thresholds: defaultThresholds,
   })
-  const observer = await readJson(path.join(sourceDir, '.brain', 'reports', 'quality', 'observer.json'), {
+  const observer = await readJson(path.join(sourceDir, '.eros', 'reports', 'quality', 'observer.json'), {
     runId: `observer-${id}`,
     target: 'unknown',
     viewports: [375, 768, 1280, 1440],
@@ -502,7 +502,7 @@ const loadModernRun = async ({ id, sourceDir, sourceType }) => {
     gates: {},
     visualDebt: [],
   })
-  const critic = await readJson(path.join(sourceDir, '.brain', 'reports', 'quality', 'critic.json'), {
+  const critic = await readJson(path.join(sourceDir, '.eros', 'reports', 'quality', 'critic.json'), {
     runId: `critic-${id}`,
     target: 'unknown',
     score: 7,
@@ -511,7 +511,7 @@ const loadModernRun = async ({ id, sourceDir, sourceType }) => {
     notes: [],
     issues: [],
   })
-  const scorecard = await readJson(path.join(sourceDir, '.brain', 'reports', 'quality', 'scorecard.json'), {
+  const scorecard = await readJson(path.join(sourceDir, '.eros', 'reports', 'quality', 'scorecard.json'), {
     target: observer.target,
     observerScore: 7,
     criticScore: 7,
@@ -520,7 +520,7 @@ const loadModernRun = async ({ id, sourceDir, sourceType }) => {
     decision: 'retry',
     retryInstructions: [],
   })
-  const visualDebt = await readJson(path.join(sourceDir, '.brain', 'reports', 'visual-debt.json'), {
+  const visualDebt = await readJson(path.join(sourceDir, '.eros', 'reports', 'visual-debt.json'), {
     summary: { open: 0, critical: 0, medium: 0, low: 0 },
     items: [],
   })
@@ -562,8 +562,8 @@ const discoverDesktopRuns = async () => {
     }
 
     const sourceDir = path.join(desktopDir, entry.name)
-    const hasModernState = await exists(path.join(sourceDir, '.brain', 'state.json'))
-    const hasLegacyState = await exists(path.join(sourceDir, '.brain', 'state.md'))
+    const hasModernState = await exists(path.join(sourceDir, '.eros', 'state.json'))
+    const hasLegacyState = await exists(path.join(sourceDir, '.eros', 'state.md'))
 
     if (!hasModernState && !hasLegacyState) {
       continue
@@ -574,10 +574,10 @@ const discoverDesktopRuns = async () => {
       continue
     }
 
-    const legacyState = await readText(path.join(sourceDir, '.brain', 'state.md'))
-    const identityContent = await readText(path.join(sourceDir, '.brain', 'identity.md'))
-    const queueContent = await readText(path.join(sourceDir, '.brain', 'queue.md'))
-    const decisionsContent = await readText(path.join(sourceDir, '.brain', 'decisions.md'))
+    const legacyState = await readText(path.join(sourceDir, '.eros', 'state.md'))
+    const identityContent = await readText(path.join(sourceDir, '.eros', 'identity.md'))
+    const queueContent = await readText(path.join(sourceDir, '.eros', 'queue.md'))
+    const decisionsContent = await readText(path.join(sourceDir, '.eros', 'decisions.md'))
     const reviewContent = await readText(path.join(sourceDir, 'docs', 'review', 'REVIEW-SUMMARY.md'))
 
     runs.push(
@@ -622,7 +622,7 @@ await fs.writeFile(outputFile, `${JSON.stringify(output, null, 2)}\n`, 'utf8')
 
 console.log(`Synced ${output.runs.length} eros-feed run(s) to ${path.relative(repoDir, outputFile)}`)
 
-// ── Watch mode: --watch flag for continuous .brain/ monitoring ──
+// ── Watch mode: --watch flag for continuous .eros/ monitoring ──
 if (process.argv.includes('--watch')) {
   const { watch } = await import('node:fs')
   let debounceTimer = null
@@ -699,25 +699,25 @@ if (process.argv.includes('--watch')) {
   const watchDirs = []
 
   // Watch example run
-  watchDirs.push(path.join(exampleDir, '.brain'))
+  watchDirs.push(path.join(exampleDir, '.eros'))
 
-  // Watch desktop project .brain/ dirs
+  // Watch desktop project .eros/ dirs
   try {
     const desktopEntries = await fs.readdir(desktopDir, { withFileTypes: true })
     for (const entry of desktopEntries) {
       if (!entry.isDirectory()) continue
-      const brainDir = path.join(desktopDir, entry.name, '.brain')
+      const erosDir = path.join(desktopDir, entry.name, '.eros')
       try {
-        await fs.access(brainDir)
-        watchDirs.push(brainDir)
-      } catch { /* no .brain/ */ }
+        await fs.access(erosDir)
+        watchDirs.push(erosDir)
+      } catch { /* no .eros/ */ }
     }
   } catch { /* desktop read failed */ }
 
   for (const dir of watchDirs) {
     try {
       watch(dir, { recursive: true }, scheduleRebuild)
-      console.log(`[watch] Observando ${path.basename(path.dirname(dir))}/.brain/`)
+      console.log(`[watch] Observando ${path.basename(path.dirname(dir))}/.eros/`)
     } catch { /* watch failed for this dir */ }
   }
 
