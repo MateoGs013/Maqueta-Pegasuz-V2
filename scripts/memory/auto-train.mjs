@@ -29,9 +29,9 @@ import { fileURLToPath } from 'node:url'
 import { execFile, spawn } from 'node:child_process'
 import { promises as fs, existsSync } from 'node:fs'
 import net from 'node:net'
-import { parseArgs, readJson, writeJson, readText, ensureDir, out, fail, today } from './lib/utils.mjs'
-import { appendEvent } from './eros-feed.mjs'
-import { smokePucho } from './eros-pucho.mjs'
+import { parseArgs, readJson, writeJson, readText, ensureDir, out, fail, today } from '../lib/utils.mjs'
+import { appendEvent } from '../panel/feed.mjs'
+import { smokePucho } from '../dev/pucho.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const maquetaDir = path.resolve(__dirname, '..')

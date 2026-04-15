@@ -13,8 +13,8 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseArgs, readJson, readText, writeJson, writeText, out, fail, today } from './lib/utils.mjs'
-import { lightPucho, finishPucho } from './eros-pucho.mjs'
+import { parseArgs, readJson, readText, writeJson, writeText, out, fail, today } from '../lib/utils.mjs'
+import { lightPucho, finishPucho } from '../dev/pucho.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

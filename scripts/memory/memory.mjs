@@ -26,7 +26,7 @@ import {
   out as output,
   fail,
   today,
-} from './lib/utils.mjs';
+} from '../lib/utils.mjs';
 
 // ---------------------------------------------------------------------------
 // Paths
