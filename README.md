@@ -4,6 +4,7 @@
 
 [![Stack: Vue 3](https://img.shields.io/badge/Vue-3-42b883)](https://vuejs.org)
 [![Motion: GSAP 3](https://img.shields.io/badge/GSAP-3-88ce02)](https://gsap.com)
+[![CLI: Go + Bubble Tea](https://img.shields.io/badge/CLI-Go%20%7C%20Bubble%20Tea-6da5b8)](./cli/README.md)
 [![AI-Friendly: Claude · Gemini · Codex](https://img.shields.io/badge/AI-Claude%20%7C%20Gemini%20%7C%20Codex-8e44ad)](./AGENTS.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-f5d76e)](./LICENSE)
 
