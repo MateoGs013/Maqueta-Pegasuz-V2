@@ -67,3 +67,6 @@ scripts/.eros/
 # Internal tool outputs
 panel-dist/
 dist-check/
+
+# Eros CLI (Go) — built artifacts
+cli/bin/

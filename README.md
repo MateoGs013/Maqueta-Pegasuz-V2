@@ -4,6 +4,7 @@
 
 [![Stack: Vue 3](https://img.shields.io/badge/Vue-3-42b883)](https://vuejs.org)
 [![Motion: GSAP 3](https://img.shields.io/badge/GSAP-3-88ce02)](https://gsap.com)
+[![CLI: Go + Bubble Tea](https://img.shields.io/badge/CLI-Go%20%7C%20Bubble%20Tea-00ADD8)](./cli/README.md)
 [![AI-Friendly: Claude · Gemini · Codex](https://img.shields.io/badge/AI-Claude%20%7C%20Gemini%20%7C%20Codex-8e44ad)](./AGENTS.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-f5d76e)](./LICENSE)
 
@@ -29,6 +30,45 @@ cd panel && npm run dev
 # Say: "Nuevo proyecto: <brief>"
 ```
 
+## Eros CLI (v0.1.0 — early preview)
+
+Terminal wizard that collects a project brief in 15 screens, scaffolds the project, and hands off to Claude Code. Go + Bubble Tea. Thin UX layer over `scripts/pipeline/init-project.mjs` — zero domain logic duplicated in Go.
+
+### Install (Windows)
+
+```powershell
+.\scripts\install-cli.ps1
+```
+
+Lands at `%LOCALAPPDATA%\Microsoft\WindowsApps\eros.exe` — always on default PATH via Windows execution aliases. No `setx`, no shell restart. The installer kills any running `eros.exe` first so the binary is never locked.
+
+Requires Go 1.22+ and Node 18+:
+
+```powershell
+winget install GoLang.Go
+winget install OpenJS.NodeJS
+```
+
+### Usage
+
+```powershell
+eros                         # open the wizard
+eros list                    # existing projects in ~/Desktop/
+eros resume <slug>           # reopen Claude Code in a project
+eros template list           # saved templates
+eros --version
+```
+
+First run without a global install:
+
+```powershell
+.\eros.ps1                   # compiles, runs, offers the global install at the end
+```
+
+Key shortcuts inside the wizard: `Enter` confirm · `Esc` back · `Tab` skip optional · `Ctrl+S` save as template · `Ctrl+A` advanced overlay · `Q` quit (splash only).
+
+Full doc, troubleshooting, and architecture: [`cli/README.md`](./cli/README.md).
+
 ## Architecture at a Glance
 
 ```
@@ -50,6 +90,8 @@ Eros/
 ├── .gemini/         # Gemini settings.json + overrides
 ├── .codex/          # Codex AGENTS.override.md + config.toml
 │
+├── cli/             # Terminal wizard CLI — see cli/README.md (AI entry point)
+│                    # Go + Bubble Tea. Thin UX layer over scripts/pipeline.
 ├── panel/           # Dual Vue panel: Eros (quality observability) + Workshop (ABM editor)
 ├── _project-scaffold/   # Template copied to each new project
 ├── _components/     # Curated seed library (heroes, navs as creative anchors)
@@ -175,6 +217,7 @@ Execution details in `.eros/eros-feed/ROADMAP.md`.
 **AI entry points:**
 - [Docs overview](./docs/README.md) — map of `docs/` with links to active plans, specs, references, archive
 - [Scripts overview](./scripts/README.md) — category map of `scripts/` with npm aliases and conventions
+- [CLI overview](./cli/README.md) — category map of `cli/` with install, commands, architecture
 
 **Repo state:**
 - [Repo status](./docs/STATUS.md)
