@@ -29,6 +29,45 @@ cd panel && npm run dev
 # Say: "Nuevo proyecto: <brief>"
 ```
 
+## Eros CLI (v0.1.0)
+
+Wizard fullscreen para arrancar proyectos sin salir de la terminal — Go + Bubble Tea. Recolecta brief en 15 pantallas, scaffolds el proyecto y lanza Claude Code listo para construir.
+
+### Instalar global (Windows)
+
+```powershell
+.\scripts\install-cli.ps1
+```
+
+Copia a `%LOCALAPPDATA%\Microsoft\WindowsApps\eros.exe` (siempre en PATH por default). Sin `setx`, sin restart. Si ya tenés un `eros` corriendo, el script lo mata antes de copiar.
+
+Requiere **Go 1.22+** y **Node 18+**:
+
+```powershell
+winget install GoLang.Go
+winget install OpenJS.NodeJS
+```
+
+### Usar
+
+```powershell
+eros                    # abre el wizard
+eros list               # lista proyectos en ~/Desktop/
+eros resume <slug>      # reabre Claude en un proyecto
+eros template list      # templates guardados
+eros --version
+```
+
+Primera vez desde el repo sin instalar global:
+
+```powershell
+.\eros.ps1              # compila + corre (te ofrece instalar global al terminar)
+```
+
+Shortcuts clave en el wizard: `Enter` confirmar · `Esc` volver · `Tab` saltar opcional · `Ctrl+S` guardar como template · `Ctrl+A` advanced overlay · `Q` salir en splash.
+
+Doc completa: [`cli/README.md`](./cli/README.md) (incluye troubleshooting, comandos, arquitectura).
+
 ## Architecture at a Glance
 
 ```
