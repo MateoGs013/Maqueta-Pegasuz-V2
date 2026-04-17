@@ -101,9 +101,13 @@ const updateProjectPackageJson = async ({ projectDir, brief }) => {
 
 const runInstall = async (projectDir) => {
   await new Promise((resolve, reject) => {
+    // shell:true is required on Windows to spawn .cmd/.bat scripts (npm.cmd).
+    // Without it, Node >= 18 throws EINVAL on Windows. On POSIX it has no
+    // adverse effect since the command is a plain 'npm' binary.
     const child = spawn(npmCommand, ['install'], {
       cwd: projectDir,
       stdio: 'inherit',
+      shell: process.platform === 'win32',
     })
 
     child.on('error', reject)
@@ -172,6 +176,15 @@ const main = async () => {
 
   const { brief: bootstrappedBrief } = await bootstrapProject({ projectDir, briefInput })
   await updateProjectPackageJson({ projectDir, brief: bootstrappedBrief })
+
+  // Persist the intake payload inside the project for auditability.
+  // Consumed by Phase 0 reinterpretation and by the Eros CLI watch mode.
+  if (typeof args['brief-file'] === 'string') {
+    const intakeSource = path.resolve(args['brief-file'])
+    const intakeDest = path.join(projectDir, '.eros', 'context', 'intake.json')
+    await fs.mkdir(path.dirname(intakeDest), { recursive: true })
+    await fs.copyFile(intakeSource, intakeDest)
+  }
 
   if (!skipInstall) {
     await runInstall(projectDir)
