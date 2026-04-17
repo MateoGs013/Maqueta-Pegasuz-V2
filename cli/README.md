@@ -1,217 +1,186 @@
-# eros — CLI
+# Eros — CLI
 
-**v0.1.0 · early preview**
+AI entry point for `cli/`. Go + Bubble Tea terminal wizard that collects a project brief, shells to `scripts/pipeline/init-project.mjs` for scaffolding, then hands off to Claude Code. Thin UX layer — zero domain logic duplicated from the Node pipeline.
 
-Wizard fullscreen para arrancar proyectos con el pipeline de Eros. Go + Bubble Tea.
+**Status:** v0.1.0 (early preview). API and flags may shift between commits. Pin a commit hash for stability.
 
-> Esto es v0 — API y flags pueden cambiar entre commits. Pin a un commit si querés estabilidad.
+## Category map
 
----
+| Directory | What lives here |
+|-----------|----------------|
+| [`cmd/`](./cmd/) | Cobra command definitions (`new`, `list`, `resume`, `template`) |
+| [`internal/brief/`](./internal/brief/) | `Brief` struct matching `normalizeBrief` schema + derivation helpers |
+| [`internal/slug/`](./internal/slug/) | Unicode-safe slugify mirroring the JS version in `bootstrap-eros-feed.mjs` |
+| [`internal/paths/`](./internal/paths/) | Maqueta + project + script path discovery |
+| [`internal/moods/`](./internal/moods/) | Mood profile loader shelling to `scripts/pipeline/export-moods.mjs` |
+| [`internal/projects/`](./internal/projects/) | Scanner for existing Eros projects in `~/Desktop/` |
+| [`internal/runner/`](./internal/runner/) | Process wrappers: node scripts, Claude launch, clipboard |
+| [`internal/config/`](./internal/config/) | Per-user config dir, draft save/load |
+| [`internal/templates/`](./internal/templates/) | Template store (save brief as reusable preset) |
+| [`internal/tui/styles/`](./internal/tui/styles/) | Chrome primitives, theme, logo |
+| [`internal/tui/keys/`](./internal/tui/keys/) | Global keymap |
+| [`internal/tui/wizard/`](./internal/tui/wizard/) | State machine + 15 pantallas |
+| [`testdata/fake-maqueta/`](./testdata/) | Fixture for running tests without the real maqueta |
 
-## TL;DR
+## Install
 
-```powershell
-git clone https://github.com/MateoGs013/eros.git
-cd eros
-.\scripts\install-cli.ps1        # compila + instala global en %LOCALAPPDATA%\Microsoft\WindowsApps
-eros                              # abre el wizard desde cualquier carpeta
-```
-
-Requiere Go 1.22+ y Node 18+ (`winget install GoLang.Go OpenJS.NodeJS`).
-
----
-
-## Instalación
-
-Dos formas, según cuánto lo vayas a usar.
-
-### A) Global (recomendado)
+### Global (recommended)
 
 ```powershell
 .\scripts\install-cli.ps1
 ```
 
-Instala a `%LOCALAPPDATA%\Microsoft\WindowsApps\eros.exe` que ya está en el PATH por default en Win10/11. Funciona inmediatamente — sin restart, sin `setx PATH`. El script además mata cualquier `eros.exe` corriendo antes de copiar, para que el binary no quede lockeado.
+Installs `eros.exe` to `%LOCALAPPDATA%\Microsoft\WindowsApps\` — always on Windows 10/11 default PATH via execution aliases. No shell restart, no `setx`. The installer kills any running `eros.exe` before copying to prevent the binary from being locked.
 
-Verificá:
+Falls back to `%LOCALAPPDATA%\eros\bin\eros.exe` with a user-PATH patch if the primary target is blocked by policy.
+
+Verify:
 
 ```powershell
 eros --version
-# eros version 0.1.0+commit.{hash}
+# eros version 0.1.0+commit.<hash>
 ```
 
-Si `Microsoft\WindowsApps` está bloqueado por política corporativa, el installer cae a `%LOCALAPPDATA%\eros\bin\eros.exe` y patchea el PATH del usuario. En ese caso reiniciá la shell.
-
-### B) Local al repo (sin PATH global)
+### Local to the repo
 
 ```powershell
-.\eros.ps1       # wrapper PowerShell nativo (recomendado)
-.\eros           # wrapper batch — fallback si tenés PSReadLine tuneada
+.\eros.ps1       # PowerShell native wrapper (recommended)
+.\eros           # batch fallback for shells where .ps1 misbehaves
 ```
 
-La primera vez compila solo; después corre instantáneo. Al terminar el primer build te pregunta si querés instalar global (opción A).
+First run compiles automatically; subsequent runs are instant. Offers the global install prompt after the first successful build.
 
----
+## Usage
 
-## Qué hace el wizard
+```powershell
+eros                      # open the wizard (alias of `eros new`)
+eros new [slug]           # interactive wizard
+eros list                 # existing projects in ~/Desktop/ with phase + progress
+eros resume <slug>        # reopen Claude Code in an existing project
+eros template list        # saved templates
+eros template delete <n>  # delete a template
+eros --version
+eros --help
+```
 
-Recolecta un brief en 13 pantallas y scaffolds el proyecto en `~/Desktop/{slug}/`:
+## Wizard flow
 
-| # | Pantalla | Qué pide |
-|---|---|---|
-| 1 | splash | N nuevo · R resume · L proyectos · Q salir |
-| 2 | template_loader | scratch (cero) o cargar template guardado |
-| 3 | name | nombre del proyecto (deriva slug automáticamente) |
-| 4 | type | creative-studio · product-saas · brutalist-editorial · luxury-brand · dashboard-app · portfolio · agency · ecommerce-boutique |
-| 5 | mood | dark cinematic editorial · brutalist bold · luxury refined · product UI (con live preview) |
-| 6 | scheme | dark · light |
-| 7 | pages | home · work · about · contact · ...custom |
-| 8 | mode | autonomous · interactive · supervised |
-| 9 | references | URLs opcionales |
-| 10 | constraints | reglas duras opcionales |
-| 11 | banned_seeds | 31 seed names a evitar |
-| 12 | summary | preview + confirm |
-| 13 | exec | scaffold + bootstrap |
-| 14 | launch | abrir Claude con el proyecto |
+Fifteen screens collect a `Brief`, scaffold a project at `~/Desktop/{slug}/`, and hand off to Claude Code.
 
-Al confirmar:
-1. Copia scaffold a `~/Desktop/{slug}/`.
-2. Bootstrap de `.eros/` (moods, blueprints, libraries, intake.json).
-3. `npm install` visible en la terminal (no adentro del wizard — para que veas el progreso).
-4. Launch de `claude "nuevo proyecto"` en el project dir.
+| # | Screen | Purpose |
+|---|--------|---------|
+| 1  | splash           | Main menu — N new, R resume, L list, Q quit |
+| 2  | template_loader  | Pick a saved template or start from scratch |
+| 3  | name             | Project name (slug derived live) |
+| 4  | type             | Project archetype (creative-studio, product-saas, etc.) |
+| 5  | mood             | Visual direction with live-tinted preview |
+| 6  | scheme           | dark vs light |
+| 7  | pages            | Multi-select predefined + custom pages |
+| 8  | mode             | autonomous · interactive · supervised |
+| 9  | references       | URL-validated reference list (optional) |
+| 10 | constraints      | Freeform hard rules (optional) |
+| 11 | banned_seeds     | 31 seed families to avoid (optional) |
+| 12 | summary          | Review before commit |
+| 13 | exec             | Scaffold + bootstrap `.eros/` |
+| 14 | launch           | `npm install` + launch Claude Code |
+| —  | advanced         | Overlay (Ctrl+A) — audience, description, brand, backend |
+| —  | error            | Retry / edit / copy error / quit on exec failure |
 
----
+## Shortcuts
 
-## Comandos
+| Key | Action |
+|-----|--------|
+| `Enter`       | Confirm / advance |
+| `Esc` · `←`   | Back |
+| `Tab`         | Skip optional screen (references, constraints, banned_seeds) |
+| `Ctrl+C`      | Cancel (saves a draft) |
+| `Ctrl+S`      | Save current brief as a template |
+| `Ctrl+A`      | Open the Advanced overlay |
+| `Ctrl+E`      | Force manual slug editing (on the name screen) |
+| `Ctrl+Y`      | Copy last error to clipboard |
+| `?`           | Context help |
+| `Q`           | Quit (splash only) |
 
-| Comando | Qué hace |
-|---|---|
-| `eros` | Abre el wizard (alias de `eros new`) |
-| `eros new [slug]` | Wizard interactivo |
-| `eros list` | Lista proyectos existentes en `~/Desktop/` con fase y progreso |
-| `eros resume <slug>` | Abre Claude Code en un proyecto existente |
-| `eros template list` | Lista templates guardados |
-| `eros template delete <name>` | Borra un template |
-| `eros --version` | Version + commit |
-| `eros --help` | Ayuda |
+## Requirements
 
----
+- **Go 1.22+** — build. `winget install GoLang.Go` or <https://go.dev/dl/>
+- **Node.js 18+** — the CLI shells to `scripts/pipeline/*.mjs`. `winget install OpenJS.NodeJS`
+- **Claude Code** — handoff target. `npm install -g @anthropic-ai/claude-code`
 
-## Shortcuts del wizard
+If Claude Code is not on PATH, the wizard finishes anyway and copies the equivalent launch command to the clipboard.
 
-| Tecla | Acción |
-|---|---|
-| `Enter` | Confirmar / avanzar |
-| `Esc` · `←` | Volver |
-| `Tab` | Saltar pantalla opcional (referencias, constraints, banned seeds) |
-| `Ctrl+C` | Cancelar (ofrece guardar como draft) |
-| `Ctrl+S` | Guardar brief actual como template reutilizable |
-| `Ctrl+A` | Abrir overlay "Advanced" (audience, description, brand, backend) |
-| `Ctrl+E` | Forzar edición manual del slug (en pantalla de nombre) |
-| `Ctrl+Y` | Copiar último error al clipboard (en pantalla de error) |
-| `?` | Ayuda contextual |
-| `Q` | Salir (en splash) |
+## Configuration
 
----
+| Variable / path | Purpose |
+|-----------------|---------|
+| `EROS_MAQUETA_DIR`                         | Override maqueta path. Default: `~/Desktop/Eros/` |
+| `%APPDATA%\eros\templates\*.json`          | Saved templates (Windows) |
+| `~/.config/eros/templates/*.json`          | Saved templates (Unix) |
+| `%APPDATA%\eros\draft.json`                | Ctrl+C draft autosave |
 
-## Requisitos
+## Architecture
 
-- **Go 1.22+** — para compilar. `winget install GoLang.Go` o https://go.dev/dl/
-- **Node.js 18+** — el CLI shellea a `scripts/pipeline/*.mjs`. `winget install OpenJS.NodeJS`
-- **Claude Code** — para el launch. `npm install -g @anthropic-ai/claude-code`
+The CLI is a **thin UX layer**. Validation, bootstrapping, and scaffolding live in Node (`scripts/pipeline/*.mjs`). The wizard serializes a JSON intake and shells to `init-project.mjs` — zero duplication of pipeline logic in Go.
 
-Sin Claude Code, el wizard termina pero te da el comando exacto para copiar al clipboard y correr manualmente.
+Chrome pipeline in `internal/tui/styles/chrome.go` forces 24-bit truecolor at init and emits raw ANSI SGR for bg padding so the full-bleed NearBlack rectangle paints correctly on every terminal regardless of `colorprofile` detection. `Page(body, w, h)` sizes the content block tight to its widest line (floor `MinBlockWidth=40`, vertical floor `CardHeight=22`), left-aligns lines inside the block so items share a common left edge, and centers the block in the viewport.
 
----
+Full spec: [`docs/superpowers/specs/2026-04-16-eros-cli-design.md`](../docs/superpowers/specs/2026-04-16-eros-cli-design.md).
+Implementation plan: [`docs/superpowers/plans/2026-04-16-eros-cli.md`](../docs/superpowers/plans/2026-04-16-eros-cli.md).
 
-## Configuración
-
-- `EROS_MAQUETA_DIR` — override del path del repo maqueta. Default: `~/Desktop/Eros/`.
-- Templates: `%APPDATA%\eros\templates\*.json` (Windows) · `~/.config/eros/templates/*.json` (unix).
-- Draft de Ctrl+C: `%APPDATA%\eros\draft.json`.
-
----
-
-## Troubleshooting
-
-**`eros` no se reconoce en PS**
-El installer no está en PATH. Corré `.\scripts\install-cli.ps1` en la raíz del repo. Si sigue fallando, verificá que `%LOCALAPPDATA%\Microsoft\WindowsApps` esté en `$env:PATH`.
-
-**Violeta o cuadros raros en el fondo**
-Tu terminal no soporta truecolor o tiene colorprofile no detectable. Probá en Windows Terminal (no en PowerShell ISE / consola legacy).
-
-**La card aparece a la izquierda**
-Estás corriendo un binary viejo. El installer no puede sobrescribir el binario global si hay un `eros.exe` corriendo — matá esos procesos (`Get-Process eros | Stop-Process`) y reinstalá. El script nuevo ya lo hace automáticamente.
-
-**`spawn EINVAL` al terminar el wizard**
-Bug conocido de Node ≥ 18 en Windows con `.cmd` shims sin `shell: true`. Ya está parcheado en `scripts/pipeline/init-project.mjs`; si persiste, actualizá el repo.
-
----
-
-## Desarrollo
+## Development
 
 ```powershell
 cd cli
-go test ./...                     # tests + bleed/jitter guards
+go test ./...                     # unit + bleed + block-stability guards
 go build -o bin/eros.exe ./
 .\bin\eros.exe
 ```
 
-### Estructura
+Regression guards in `internal/tui/wizard/dump_test.go`:
 
-```
-cli/
-├── cmd/               # Cobra commands (root, new, list, resume, template)
-├── internal/
-│   ├── brief/         # Brief struct (matches normalizeBrief schema)
-│   ├── slug/          # Unicode-safe slugify
-│   ├── paths/         # MAQUETA_DIR discovery
-│   ├── moods/         # Shell-out a scripts/pipeline/export-moods.mjs
-│   ├── projects/      # Scan ~/Desktop para proyectos Eros existentes
-│   ├── runner/        # exec wrappers (node, claude, clipboard)
-│   ├── templates/     # Template CRUD
-│   ├── config/        # Config dir + draft save
-│   └── tui/
-│       ├── styles/    # Chrome (card fijo 84×56×22, fixBleed, rawBGPad) + tema + logo ASCII
-│       ├── keys/      # Global keymap
-│       └── wizard/    # 15-screen state machine + pantallas
-└── testdata/
-    └── fake-maqueta/  # Fixture para integration tests
-```
+- `TestDumpAllViews` — renders every pantalla and fails if any line matches the bleed signature (ANSI reset followed by 2+ plain spaces).
+- `TestBlockStableForStableContent` — asserts every rendered line equals viewport width so gutter/block arithmetic stays correct across input states.
 
-### Arquitectura
+Set `EROS_DUMP=<path>` to capture the full ANSI-colored dump of every pantalla for visual QA.
 
-El CLI es una **capa fina de UX**. Toda la lógica de validación, bootstrapping y scaffolding vive en Node (`scripts/pipeline/*.mjs`). El CLI serializa un JSON y shellea a `init-project.mjs` — cero duplicación.
+## Troubleshooting
 
-Ver el spec completo en [`docs/superpowers/specs/2026-04-16-eros-cli-design.md`](../docs/superpowers/specs/2026-04-16-eros-cli-design.md).
+**`eros` not recognized after install**
+The installer did not land in PATH. Run `.\scripts\install-cli.ps1` from the repo root and verify `%LOCALAPPDATA%\Microsoft\WindowsApps` is in `$env:PATH`. If your corporate policy blocks that location, the fallback path (`%LOCALAPPDATA%\eros\bin`) was patched onto user PATH — restart the shell.
 
----
+**Violet bleed in the background**
+Your terminal does not advertise truecolor and lipgloss falls back to plain-space padding. Upgrade to Windows Terminal or a VT-aware terminal. The CLI forces truecolor SGR at init but cannot override a terminal that rewrites escape sequences.
 
-## Roadmap (v0 → v1)
+**Card shifts left**
+You are running a stale global binary. A running `eros.exe` locks the target path; old installers fell through to the fallback silently. Kill running instances (`Get-Process eros | Stop-Process`) and reinstall — the current installer does this automatically.
 
-v0 actual:
-- [x] Wizard 15 pantallas
-- [x] Global install sin `./`
-- [x] Card fijo 84×22 sin jitter
-- [x] TrueColor forzado (sin violet bleed)
-- [x] `npm install` visible post-wizard
+**`spawn EINVAL` on the exec screen**
+Node ≥ 18 on Windows throws `EINVAL` when spawning `.cmd`/`.bat` without `shell: true`. Patched in `scripts/pipeline/init-project.mjs` at HEAD; update the repo.
+
+## For AI agents
+
+1. Working in this directory? The CLI is a UX layer over `scripts/pipeline/init-project.mjs`. Do not duplicate pipeline logic in Go.
+2. Adding a new pantalla? Add a state to `stepXXX` in `internal/tui/wizard/model.go`, a `{step}.go` with `update()` and `view()`, and wire both into `Model.Update` / `Model.View`.
+3. Changing chrome? Read `internal/tui/styles/chrome.go` first. Every helper exists for a specific bleed/jitter root cause — don't revert to `lipgloss.Place` with `WithWhitespaceBackground`.
+4. Touching the `Brief` struct? Field names must match `normalizeBrief` in `scripts/pipeline/bootstrap-eros-feed.mjs` — rename them together or the Node side breaks.
+
+## Roadmap
+
+v0.1 (current):
+- [x] 15-screen wizard (splash → launch)
+- [x] Global install with zero PATH restart
+- [x] Card-tight block + left-aligned content, no jitter
+- [x] Truecolor forced (no violet bleed)
 - [x] Templates save/load
+- [x] Post-wizard `npm install` visible in terminal
 
 v0.2:
-- [ ] `eros resume <slug>` funcional
-- [ ] `eros list` con fase + progreso real
-- [ ] Draft auto-save en Ctrl+C
-- [ ] Stream logs del init-project en vez de spinner mudo
+- [ ] `eros resume <slug>` functional (today it only re-opens Claude, does not resume phase state)
+- [ ] `eros list` with real phase + progress from `.eros/state.md`
+- [ ] Draft autosave on Ctrl+C
+- [ ] Stream init-project logs into the exec pantalla instead of a mute spinner
 
-v1:
-- [ ] Persistent TUI (Approach C del spec)
-- [ ] Live brief editing post-launch
+v1.0:
+- [ ] Persistent TUI (Approach C in the design spec)
+- [ ] Live brief editing after launch
 - [ ] Multi-mood interpolation
-
----
-
-## Estado actual
-
-**v0.1.0** — early preview. Funcional para arrancar proyectos de cero. Flows `resume` y `list` son stubs — usalos al comando solo para debug. API de templates estable.
-
-Reportá bugs con `git log -1` output + terminal + Windows version.

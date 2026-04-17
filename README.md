@@ -29,44 +29,44 @@ cd panel && npm run dev
 # Say: "Nuevo proyecto: <brief>"
 ```
 
-## Eros CLI (v0.1.0)
+## Eros CLI (v0.1.0 — early preview)
 
-Wizard fullscreen para arrancar proyectos sin salir de la terminal — Go + Bubble Tea. Recolecta brief en 15 pantallas, scaffolds el proyecto y lanza Claude Code listo para construir.
+Terminal wizard that collects a project brief in 15 screens, scaffolds the project, and hands off to Claude Code. Go + Bubble Tea. Thin UX layer over `scripts/pipeline/init-project.mjs` — zero domain logic duplicated in Go.
 
-### Instalar global (Windows)
+### Install (Windows)
 
 ```powershell
 .\scripts\install-cli.ps1
 ```
 
-Copia a `%LOCALAPPDATA%\Microsoft\WindowsApps\eros.exe` (siempre en PATH por default). Sin `setx`, sin restart. Si ya tenés un `eros` corriendo, el script lo mata antes de copiar.
+Lands at `%LOCALAPPDATA%\Microsoft\WindowsApps\eros.exe` — always on default PATH via Windows execution aliases. No `setx`, no shell restart. The installer kills any running `eros.exe` first so the binary is never locked.
 
-Requiere **Go 1.22+** y **Node 18+**:
+Requires Go 1.22+ and Node 18+:
 
 ```powershell
 winget install GoLang.Go
 winget install OpenJS.NodeJS
 ```
 
-### Usar
+### Usage
 
 ```powershell
-eros                    # abre el wizard
-eros list               # lista proyectos en ~/Desktop/
-eros resume <slug>      # reabre Claude en un proyecto
-eros template list      # templates guardados
+eros                         # open the wizard
+eros list                    # existing projects in ~/Desktop/
+eros resume <slug>           # reopen Claude Code in a project
+eros template list           # saved templates
 eros --version
 ```
 
-Primera vez desde el repo sin instalar global:
+First run without a global install:
 
 ```powershell
-.\eros.ps1              # compila + corre (te ofrece instalar global al terminar)
+.\eros.ps1                   # compiles, runs, offers the global install at the end
 ```
 
-Shortcuts clave en el wizard: `Enter` confirmar · `Esc` volver · `Tab` saltar opcional · `Ctrl+S` guardar como template · `Ctrl+A` advanced overlay · `Q` salir en splash.
+Key shortcuts inside the wizard: `Enter` confirm · `Esc` back · `Tab` skip optional · `Ctrl+S` save as template · `Ctrl+A` advanced overlay · `Q` quit (splash only).
 
-Doc completa: [`cli/README.md`](./cli/README.md) (incluye troubleshooting, comandos, arquitectura).
+Full doc, troubleshooting, and architecture: [`cli/README.md`](./cli/README.md).
 
 ## Architecture at a Glance
 
@@ -89,6 +89,8 @@ Eros/
 ├── .gemini/         # Gemini settings.json + overrides
 ├── .codex/          # Codex AGENTS.override.md + config.toml
 │
+├── cli/             # Terminal wizard CLI — see cli/README.md (AI entry point)
+│                    # Go + Bubble Tea. Thin UX layer over scripts/pipeline.
 ├── panel/           # Dual Vue panel: Eros (quality observability) + Workshop (ABM editor)
 ├── _project-scaffold/   # Template copied to each new project
 ├── _components/     # Curated seed library (heroes, navs as creative anchors)
@@ -214,6 +216,7 @@ Execution details in `.eros/eros-feed/ROADMAP.md`.
 **AI entry points:**
 - [Docs overview](./docs/README.md) — map of `docs/` with links to active plans, specs, references, archive
 - [Scripts overview](./scripts/README.md) — category map of `scripts/` with npm aliases and conventions
+- [CLI overview](./cli/README.md) — category map of `cli/` with install, commands, architecture
 
 **Repo state:**
 - [Repo status](./docs/STATUS.md)
