@@ -23,7 +23,7 @@ Scripts own all state files. You NEVER write directly to:
 ## Constants
 
 ```
-MAQUETA_DIR = C:\Users\mateo\Desktop\maqueta
+MAQUETA_DIR = C:\Users\mateo\Desktop\Eros
 SCRIPTS     = $MAQUETA_DIR/scripts
 ```
 

@@ -91,7 +91,7 @@ After compaction, `.eros/` files are the ground truth — not conversation memor
 ## Project Isolation
 
 ```
-$MAQUETA_DIR = C:\Users\mateo\Desktop\maqueta     ← read-only template
+$MAQUETA_DIR = C:\Users\mateo\Desktop\Eros     ← read-only template
 $PROJECT_DIR = C:\Users\mateo\Desktop\{slug}       ← all project output
 ```
 

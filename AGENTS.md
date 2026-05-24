@@ -31,7 +31,7 @@ Desktop/
     src/                     <- Vue 3 app (from scaffold)
 ```
 
-- `MAQUETA_DIR` = `C:\Users\mateo\Desktop\maqueta`
+- `MAQUETA_DIR` = `C:\Users\mateo\Desktop\Eros`
 - `PROJECT_DIR` = `C:\Users\mateo\Desktop\{project-slug}`
 
 ## Stack

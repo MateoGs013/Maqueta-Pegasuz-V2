@@ -104,7 +104,7 @@ Eros/
 │   └── archive/     # Completed plans + deprecated proposals
 │
 └── scripts/         # Operational CLI — see scripts/README.md (AI entry point)
-    ├── brain/       # Orchestration core (state, context, gate)
+    ├── eros-core/   # Orchestration core (state, context, gate)
     ├── memory/      # Learning (memory, meta, train, practice, auto-train)
     ├── observer/    # Vision (observer passes, detection, lint)
     ├── quality/     # Audit, critic, refresh-quality

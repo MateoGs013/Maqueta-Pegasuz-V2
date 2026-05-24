@@ -52,12 +52,15 @@ vite-watchdog.log
 # Lab scratch at repo root (NOT .eros/ inside projects)
 /.eros-scratch/
 /BRIEF-*.md
+.brain/
 
 # Claude Code local session data
 .claude/todos/
 .claude/projects/
 .claude/worktrees/
 .claude/scheduled_tasks.lock
+.claude/front-brain/runtime/runs.generated.json
+.claude/memory/
 .eros/eros-feed/runtime/runs.generated.json
 scripts/.eros/
 
