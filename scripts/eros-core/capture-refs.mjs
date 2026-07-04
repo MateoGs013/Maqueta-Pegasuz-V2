@@ -75,6 +75,10 @@ for (let i = 0; i < args.length; i++) {
   } else if ((args[i] === '--path' || args[i] === '--out') && args[i + 1]) {
     outputBase = args[i + 1]
     i++
+  } else if (args[i] === '--batch') {
+    // Routed to flagArgs so the batch-mode logic below activates.
+    // (Without this, the generic --flag rejection makes --batch dead code.)
+    flagArgs.push(args[i])
   } else if (args[i].startsWith('--')) {
     console.error(`Unknown flag: ${args[i]}`)
     process.exit(1)

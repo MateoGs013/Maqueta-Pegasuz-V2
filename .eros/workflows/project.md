@@ -11,12 +11,12 @@ Scripts own all state files. You NEVER write directly to:
 
 | File | Owner script |
 |------|-------------|
-| `state.md`, `state.json` | `eros-state.mjs` |
-| `queue.md`, `queue.json` | `eros-state.mjs` |
-| `approvals.md` | `eros-log.mjs` |
-| `decisions.md` | `eros-log.mjs` |
-| `context/*.md` | `eros-context.mjs` |
-| `design-intelligence/*.json` | `eros-memory.mjs` |
+| `state.md`, `state.json` | `eros-core/state.mjs` |
+| `queue.md`, `queue.json` | `eros-core/state.mjs` |
+| `approvals.md` | `dev/log.mjs` |
+| `decisions.md` | `dev/log.mjs` |
+| `context/*.md` | `eros-core/context.mjs` |
+| `design-intelligence/*.json` | `memory/memory.mjs` |
 
 **Exception:** You DO write `identity.md`, `DESIGN.md`, Vue components, router, views, and App.vue directly.
 
@@ -35,7 +35,7 @@ Every turn follows this sequence. No exceptions.
 
 ```
 1. GET NEXT INSTRUCTION
-   node "$SCRIPTS/eros-state.mjs" next --project "$PROJECT_DIR"
+   node "$SCRIPTS/eros-core/state.mjs" next --project "$PROJECT_DIR"
    → Read JSON: { action, task, agent, prompt, expectedOutputs, plan, step, totalSteps }
 
 2. EXECUTE the action field:
@@ -51,7 +51,7 @@ Every turn follows this sequence. No exceptions.
    If `preCommand` exists, run it BEFORE the main action.
 
 3. REPORT RESULT
-   node "$SCRIPTS/eros-state.mjs" done --project "$PROJECT_DIR" --result '{"success": true}'
+   node "$SCRIPTS/eros-core/state.mjs" done --project "$PROJECT_DIR" --result '{"success": true}'
    → Read JSON: { result: { verdict, score }, next: { ...nextAction } }
 
    The `next` field contains the NEXT instruction — go to step 2.
@@ -91,15 +91,15 @@ Triggers: "train", "entrenar", "training", "aprender de", "learn from", "study"
 
 ```bash
 # 1. Auto-detect manual edits → learn revision patterns
-node "$SCRIPTS/eros-train.mjs" correct --project "$PROJECT_DIR"
+node "$SCRIPTS/memory/train.mjs" correct --project "$PROJECT_DIR"
 
 # 2. Smart review — highlights 3-5 sections needing input
-node "$SCRIPTS/eros-train.mjs" review --project "$PROJECT_DIR"
+node "$SCRIPTS/memory/train.mjs" review --project "$PROJECT_DIR"
 ```
 
 Present highlights naturally. Translate user response to feedback JSON:
 ```bash
-node "$SCRIPTS/eros-train.mjs" review --project "$PROJECT_DIR" --feedback '{
+node "$SCRIPTS/memory/train.mjs" review --project "$PROJECT_DIR" --feedback '{
   "approve": ["S-Hero"],
   "corrections": [{"section": "S-Pricing", "severity": "needs-work", "feedback": "..."}],
   "rules": ["..."],
@@ -110,15 +110,15 @@ node "$SCRIPTS/eros-train.mjs" review --project "$PROJECT_DIR" --feedback '{
 ### B) Reference Study
 
 ```bash
-node "$SCRIPTS/eros-train.mjs" study --url "{url}"
+node "$SCRIPTS/memory/train.mjs" study --url "{url}"
 # Present analysis, ask what they liked
-node "$SCRIPTS/eros-train.mjs" study --url "{url}" --feedback '{"liked": [...], "overall": 9, "mood": "..."}'
+node "$SCRIPTS/memory/train.mjs" study --url "{url}" --feedback '{"liked": [...], "overall": 9, "mood": "..."}'
 ```
 
 ### C) Show Impact
 
 ```bash
-node "$SCRIPTS/eros-train.mjs" impact
+node "$SCRIPTS/memory/train.mjs" impact
 ```
 
 ---
@@ -135,6 +135,6 @@ node "$SCRIPTS/eros-train.mjs" impact
 ## Pipeline Issue Recovery
 
 ```bash
-node "$SCRIPTS/eros-memory.mjs" learn --event pipeline_issue \
+node "$SCRIPTS/memory/memory.mjs" learn --event pipeline_issue \
   --data '{"project":"{slug}","phase":"{phase}","issue":"{what}","resolution":"{how}","prevention":"{avoid}"}'
 ```

@@ -73,7 +73,7 @@ const ACTION_MAP = [
     resolve: (taskId, state, queue, project) => ({
       action: 'ask-user',
       question: 'Describe the project: name, type (portfolio, agency, saas, ecommerce, landing), audience, pages, mood/aesthetic, color scheme, reference URLs (if any), and whether you want autonomous or interactive mode.',
-      expectedOutputs: [p(project, '.brain', 'identity.md'), p(project, '.brain', 'context', 'intake.json')],
+      expectedOutputs: [p(project, '.eros', 'identity.md'), p(project, '.eros', 'context', 'intake.json')],
       onFailure: 'retry',
       plan: 'Phase 0: Discovery. Collecting project identity before any design work.',
     }),
@@ -82,11 +82,11 @@ const ACTION_MAP = [
     test: /^setup\/create-dir$/,
     resolve: (taskId, state, queue, project) => ({
       action: 'run-script',
-      command: `cd "${SCRIPTS}" && node init-project.mjs --brief-file "${p(project, '.brain', 'context', 'intake.json')}" --project "${project}"`,
+      command: `cd "${p(SCRIPTS, '..', 'pipeline')}" && node init-project.mjs --brief-file "${p(project, '.eros', 'context', 'intake.json')}" --project "${project}"`,
       expectedOutputs: [
         p(project, 'DESIGN.md'),
-        p(project, '.brain', 'state.json'),
-        p(project, '.brain', 'queue.json'),
+        p(project, '.eros', 'state.json'),
+        p(project, '.eros', 'queue.json'),
       ],
       onFailure: 'retry',
       plan: 'Phase 0: Discovery. Initializing project directory and brain structure.',
@@ -118,8 +118,8 @@ const ACTION_MAP = [
     test: /^setup\/observatory$/,
     resolve: (taskId, state, queue, project) => ({
       action: 'write-code',
-      instruction: `Read ${p(project, '_ref-captures')}/**/analysis.md files. Extract into ${p(project, '.brain', 'context', 'reference-observatory.md')}: Content Strategy Pattern (section type sequence), Color Rhythm, Excellence Baseline (per dimension), Quality Baseline (per gate), Key Techniques to Borrow (top 3), Patterns to Avoid (top 2).`,
-      expectedOutputs: [p(project, '.brain', 'context', 'reference-observatory.md')],
+      instruction: `Read ${p(project, '_ref-captures')}/**/analysis.md files. Extract into ${p(project, '.eros', 'context', 'reference-observatory.md')}: Content Strategy Pattern (section type sequence), Color Rhythm, Excellence Baseline (per dimension), Quality Baseline (per gate), Key Techniques to Borrow (top 3), Patterns to Avoid (top 2).`,
+      expectedOutputs: [p(project, '.eros', 'context', 'reference-observatory.md')],
       onFailure: 'retry',
       plan: 'Phase 0: Discovery. Building reference observatory from captured analyses.',
     }),
@@ -136,7 +136,7 @@ const ACTION_MAP = [
       return {
         action: 'run-script',
         command: `node "${p(SCRIPTS, 'eros-context.mjs')}" design-brief --project "${project}"${moodArg}`,
-        expectedOutputs: [p(project, '.brain', 'context', 'design-brief.md')],
+        expectedOutputs: [p(project, '.eros', 'context', 'design-brief.md')],
         onFailure: 'retry',
         plan: 'Phase 1: Creative Direction. Assembling design brief with memory insights.',
       }
@@ -147,7 +147,7 @@ const ACTION_MAP = [
     resolve: (taskId, state, queue, project) => ({
       action: 'spawn-agent',
       agent: 'designer',
-      prompt: `Read ${p(project, '.brain', 'context', 'design-brief.md')}. Produce DESIGN.md + docs/tokens.md following the 12-point designer gate.`,
+      prompt: `Read ${p(project, '.eros', 'context', 'design-brief.md')}. Produce DESIGN.md + docs/tokens.md following the 12-point designer gate.`,
       expectedOutputs: [p(project, 'DESIGN.md'), p(project, 'docs', 'tokens.md')],
       onFailure: 'retry',
       timeout: 300000,
@@ -159,7 +159,7 @@ const ACTION_MAP = [
     resolve: (taskId, state, queue, project) => ({
       action: 'spawn-agent',
       agent: 'designer',
-      prompt: `Read ${p(project, '.brain', 'context', 'design-brief.md')} + ${p(project, 'DESIGN.md')} + ${p(project, 'docs', 'tokens.md')}. Produce docs/pages/*.md with full section recipes for every page.`,
+      prompt: `Read ${p(project, '.eros', 'context', 'design-brief.md')} + ${p(project, 'DESIGN.md')} + ${p(project, 'docs', 'tokens.md')}. Produce docs/pages/*.md with full section recipes for every page.`,
       expectedOutputs: [p(project, 'docs', 'pages')],
       onFailure: 'retry',
       timeout: 300000,
@@ -196,7 +196,7 @@ const ACTION_MAP = [
     test: /^setup\/scaffold$/,
     resolve: (taskId, state, queue, project) => ({
       action: 'run-script',
-      command: `node "${p(SCRIPTS, 'generate-tokens.js')}" "${project}"`,
+      command: `node "${p(SCRIPTS, '..', 'panel', 'generate-tokens.js')}" "${project}"`,
       expectedOutputs: [p(project, 'src', 'main.js')],
       onFailure: 'retry',
       plan: 'Phase 2: Scaffold. Generating token CSS from design system.',
@@ -206,7 +206,7 @@ const ACTION_MAP = [
     test: /^setup\/gen-tokens$/,
     resolve: (taskId, state, queue, project) => ({
       action: 'run-script',
-      command: `node "${p(SCRIPTS, 'generate-tokens.js')}" "${project}"`,
+      command: `node "${p(SCRIPTS, '..', 'panel', 'generate-tokens.js')}" "${project}"`,
       expectedOutputs: [p(project, 'src', 'styles', 'tokens.css')],
       onFailure: 'retry',
       plan: 'Phase 2: Scaffold. Generating CSS custom properties from tokens.md.',
@@ -217,10 +217,10 @@ const ACTION_MAP = [
     resolve: (taskId, state, queue, project) => ({
       action: 'spawn-agent',
       agent: 'builder',
-      prompt: `Read ${p(project, '.brain', 'context', 'atmosphere.md')}. Write AtmosphereCanvas.vue + report.`,
+      prompt: `Read ${p(project, '.eros', 'context', 'atmosphere.md')}. Write AtmosphereCanvas.vue + report.`,
       expectedOutputs: [
         p(project, 'src', 'components', 'AtmosphereCanvas.vue'),
-        p(project, '.brain', 'reports', 'atmosphere.md'),
+        p(project, '.eros', 'reports', 'atmosphere.md'),
       ],
       preCommand: `node "${p(SCRIPTS, 'eros-context.mjs')}" atmosphere --project "${project}"`,
       onFailure: 'retry',
@@ -239,7 +239,7 @@ const ACTION_MAP = [
       return {
         action: 'run-script',
         command: `node "${p(SCRIPTS, 'eros-context.mjs')}" section --project "${project}" --section "${sec}" --page "${page}"`,
-        expectedOutputs: [p(project, '.brain', 'context', `${sec}.md`)],
+        expectedOutputs: [p(project, '.eros', 'context', `${sec}.md`)],
         onFailure: 'retry',
         plan: `Phase 3: Sections. Assembling context file for ${sec} with memory insights + dynamic threshold.`,
       }
@@ -252,10 +252,10 @@ const ACTION_MAP = [
       return {
         action: 'spawn-agent',
         agent: 'builder',
-        prompt: `Read ${p(project, '.brain', 'context', `${sec}.md`)}. Write src/components/sections/${sec}.vue + .brain/reports/${sec}.md. Run Preview Loop.`,
+        prompt: `Read ${p(project, '.eros', 'context', `${sec}.md`)}. Write src/components/sections/${sec}.vue + .eros/reports/${sec}.md. Run Preview Loop.`,
         expectedOutputs: [
           p(project, 'src', 'components', 'sections', `${sec}.vue`),
-          p(project, '.brain', 'reports', `${sec}.md`),
+          p(project, '.eros', 'reports', `${sec}.md`),
         ],
         onFailure: 'retry',
         timeout: 300000,
@@ -269,8 +269,8 @@ const ACTION_MAP = [
       const sec = sectionName(taskId)
       return {
         action: 'run-script',
-        command: `cd "${SCRIPTS}" && node capture-refs.mjs --local --port 5173 "${p(project, '.brain', 'observer')}" && npm run refresh:quality -- --project "${project}"`,
-        expectedOutputs: [p(project, '.brain', 'observer', 'localhost')],
+        command: `cd "${SCRIPTS}" && node capture-refs.mjs --local --port 5173 "${p(project, '.eros', 'observer')}" && npm run refresh:quality -- --project "${project}"`,
+        expectedOutputs: [p(project, '.eros', 'observer', 'localhost')],
         onFailure: 'flag',
         note: 'Run `server/start` before this task if no dev server is active. Use server/stop after the observation phase to free the port.',
         plan: `Phase 3: Sections. Observing ${sec} — capturing screenshots + refreshing quality metrics.`,
@@ -283,39 +283,39 @@ const ACTION_MAP = [
   // These are declarative server tasks that the state machine can insert
   // before / after observation phases so the dev-server lifecycle becomes
   // part of the orchestrated flow instead of being glued into auto-train.
-  // The underlying worker is scripts/eros-server.mjs which manages a
-  // `<project>/.brain/server.json` state file with { pid, port, startedAt }.
+  // The underlying worker is scripts/panel/server.mjs which manages a
+  // `<project>/.eros/server.json` state file with { pid, port, startedAt }.
   {
     test: /^server\/start$/,
     resolve: (taskId, state, queue, project) => ({
       action: 'run-script',
-      command: `node "${p(SCRIPTS, 'eros-server.mjs')}" start --project "${project}"`,
-      expectedOutputs: [p(project, '.brain', 'server.json')],
+      command: `node "${p(SCRIPTS, '..', 'panel', 'server.mjs')}" start --project "${project}"`,
+      expectedOutputs: [p(project, '.eros', 'server.json')],
       onFailure: 'retry',
       timeout: 60000,
-      plan: 'Dev server: starting vite on a free port. State written to .brain/server.json.',
+      plan: 'Dev server: starting vite on a free port. State written to .eros/server.json.',
     }),
   },
   {
     test: /^server\/stop$/,
     resolve: (taskId, state, queue, project) => ({
       action: 'run-script',
-      command: `node "${p(SCRIPTS, 'eros-server.mjs')}" stop --project "${project}"`,
+      command: `node "${p(SCRIPTS, '..', 'panel', 'server.mjs')}" stop --project "${project}"`,
       expectedOutputs: [],
       onFailure: 'flag',
       timeout: 30000,
-      plan: 'Dev server: killing the pid recorded in .brain/server.json and clearing state.',
+      plan: 'Dev server: killing the pid recorded in .eros/server.json and clearing state.',
     }),
   },
   {
     test: /^server\/status$/,
     resolve: (taskId, state, queue, project) => ({
       action: 'run-script',
-      command: `node "${p(SCRIPTS, 'eros-server.mjs')}" status --project "${project}"`,
+      command: `node "${p(SCRIPTS, '..', 'panel', 'server.mjs')}" status --project "${project}"`,
       expectedOutputs: [],
       onFailure: 'flag',
       timeout: 10000,
-      plan: 'Dev server: checking pid+port from .brain/server.json.',
+      plan: 'Dev server: checking pid+port from .eros/server.json.',
     }),
   },
   {
@@ -325,8 +325,8 @@ const ACTION_MAP = [
       return {
         action: 'spawn-agent',
         agent: 'evaluator',
-        prompt: `Read ${p(project, '.brain', 'context', `evaluate-${sec}.md`)}. Produce .brain/evaluations/${sec}.md with APPROVE/RETRY/FLAG decision.`,
-        expectedOutputs: [p(project, '.brain', 'evaluations', `${sec}.md`)],
+        prompt: `Read ${p(project, '.eros', 'context', `evaluate-${sec}.md`)}. Produce .eros/evaluations/${sec}.md with APPROVE/RETRY/FLAG decision.`,
+        expectedOutputs: [p(project, '.eros', 'evaluations', `${sec}.md`)],
         preCommand: `node "${p(SCRIPTS, 'eros-context.mjs')}" evaluate --project "${project}" --section "${sec}"`,
         onFailure: 'retry',
         timeout: 180000,
@@ -338,10 +338,10 @@ const ACTION_MAP = [
     test: /^review\/observer$/,
     resolve: (taskId, state, queue, project) => ({
       action: 'run-script',
-      command: `cd "${SCRIPTS}" && node capture-refs.mjs --local --port 5173 "${p(project, '.brain', 'observer')}" && npm run refresh:quality -- --project "${project}"`,
+      command: `cd "${SCRIPTS}" && node capture-refs.mjs --local --port 5173 "${p(project, '.eros', 'observer')}" && npm run refresh:quality -- --project "${project}"`,
       expectedOutputs: [
-        p(project, '.brain', 'observer', 'localhost', 'analysis.md'),
-        p(project, '.brain', 'reports', 'quality', 'scorecard.json'),
+        p(project, '.eros', 'observer', 'localhost', 'analysis.md'),
+        p(project, '.eros', 'reports', 'quality', 'scorecard.json'),
       ],
       onFailure: 'flag',
       plan: 'Phase 3: Sections. Batch observer pass — refreshing quality metrics for all sections.',
@@ -378,7 +378,7 @@ const ACTION_MAP = [
     resolve: (taskId, state, queue, project) => ({
       action: 'run-script',
       command: `node "${p(SCRIPTS, 'eros-context.mjs')}" motion --project "${project}"`,
-      expectedOutputs: [p(project, '.brain', 'context', 'motion.md')],
+      expectedOutputs: [p(project, '.eros', 'context', 'motion.md')],
       onFailure: 'retry',
       plan: 'Phase 4: Motion. Assembling motion context with insights + section list.',
     }),
@@ -388,11 +388,11 @@ const ACTION_MAP = [
     resolve: (taskId, state, queue, project) => ({
       action: 'spawn-agent',
       agent: 'polisher',
-      prompt: `Read ${p(project, '.brain', 'context', 'motion.md')}. Write composables, preloader, transitions. QA at 4 breakpoints.`,
+      prompt: `Read ${p(project, '.eros', 'context', 'motion.md')}. Write composables, preloader, transitions. QA at 4 breakpoints.`,
       expectedOutputs: [
         p(project, 'src', 'composables', 'useLenis.js'),
         p(project, 'src', 'composables', 'useMotion.js'),
-        p(project, '.brain', 'reports', 'motion.md'),
+        p(project, '.eros', 'reports', 'motion.md'),
       ],
       onFailure: 'retry',
       timeout: 300000,
@@ -447,8 +447,8 @@ const ACTION_MAP = [
     test: /^review\/observer-final$/,
     resolve: (taskId, state, queue, project) => ({
       action: 'run-script',
-      command: `cd "${SCRIPTS}" && node capture-refs.mjs --local --port 5173 "${p(project, '.brain', 'observer', 'final')}" && npm run refresh:quality -- --project "${project}"`,
-      expectedOutputs: [p(project, '.brain', 'observer', 'final')],
+      command: `cd "${SCRIPTS}" && node capture-refs.mjs --local --port 5173 "${p(project, '.eros', 'observer', 'final')}" && npm run refresh:quality -- --project "${project}"`,
+      expectedOutputs: [p(project, '.eros', 'observer', 'final')],
       onFailure: 'flag',
       plan: 'Phase 5: Integration. Final observer pass on complete site.',
     }),

@@ -97,11 +97,10 @@ const cmdAnalyze = async (args) => {
 
   // Step 1: Capture screenshots using capture-refs.mjs
   try {
-    const captureScript = path.join(__dirname, 'capture-refs.mjs')
     // Use eros-observer.mjs (V2, Playwright) — faster and more reliable
-    const observerScript = path.join(__dirname, 'eros-observer.mjs')
+    const observerScript = path.join(__dirname, '..', 'eros-core', 'eros-observer.mjs')
     await execFile(process.execPath, [observerScript, '--no-discover', url, refDir], {
-      cwd: __dirname,
+      cwd: path.join(__dirname, '..', 'eros-core'),
       timeout: 180000,
     })
   } catch (e) {
@@ -444,9 +443,9 @@ const cmdSession = async (args) => {
   } else {
     // Capture
     try {
-      const captureScript = path.join(__dirname, 'capture-refs.mjs')
+      const captureScript = path.join(__dirname, '..', 'eros-core', 'capture-refs.mjs')
       await execFile(process.execPath, [captureScript, '--no-discover', url, refDir], {
-        cwd: __dirname,
+        cwd: path.join(__dirname, '..', 'eros-core'),
         timeout: 120000,
       })
     } catch (e) {
