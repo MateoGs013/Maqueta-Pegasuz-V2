@@ -59,6 +59,7 @@ const routes = {
     feedback: state.feedback.slice(0, 60),
     activity: state.activity.slice(0, 60),
     assetRequests: state.assetRequests.slice(0, 40),
+    assistantFeed: state.assistantFeed.slice(0, 40),
     inboxDir: assets.inboxDir(),
   }),
 

@@ -73,7 +73,7 @@ async function sendFree() {
       <!-- Assistant presence feed -->
       <div class="feed">
         <span class="k-label">eros dice</span>
-        <div v-for="(m, i) in store.assistantFeed.slice(0, 8)" :key="m.ts + '-' + i"
+        <div v-for="(m, i) in store.assistantFeed.slice(0, 30)" :key="m.ts + '-' + i"
              class="feed-item" :class="{ err: m.error }">{{ m.text }}</div>
       </div>
 
@@ -94,12 +94,12 @@ async function sendFree() {
 </template>
 
 <style scoped>
-.dock { display: flex; flex-direction: column; height: 100%; background: var(--bg-panel); }
+.dock { display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; background: var(--bg-panel); }
 .dock-head {
   display: flex; justify-content: space-between; align-items: center;
   padding: 8px 14px; border-bottom: 1px solid var(--line);
 }
-.dock-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 22px; }
+.dock-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px; display: flex; flex-direction: column; gap: 22px; }
 
 .card.active {
   border: 1px solid var(--accent);

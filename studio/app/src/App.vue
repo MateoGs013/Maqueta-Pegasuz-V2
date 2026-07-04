@@ -109,8 +109,10 @@ async function toggleSession() {
   flex: 1; display: grid; grid-template-columns: 1fr 380px;
   min-height: 0;
 }
-.panel-preview { border-right: 1px solid var(--line); min-width: 0; }
-.panel-dock { min-width: 0; }
+/* min-height: 0 on grid children — otherwise content forces the track taller
+   than the viewport and inner overflow-y:auto never engages */
+.panel-preview { border-right: 1px solid var(--line); min-width: 0; min-height: 0; }
+.panel-dock { min-width: 0; min-height: 0; }
 
 .strip { border-top: 1px solid var(--line); }
 .status { border-top: 1px solid var(--line); }

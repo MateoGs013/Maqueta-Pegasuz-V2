@@ -311,7 +311,12 @@ function handleSdkMessage(message) {
     case 'assistant': {
       const text = (message.message?.content || [])
         .filter((b) => b.type === 'text').map((b) => b.text).join('\n')
-      if (text.trim()) broadcast({ type: 'assistant-text', text: text.slice(0, 2000) })
+      if (text.trim()) {
+        state.assistantFeed.unshift({ ts: Date.now(), text: text.slice(0, 2000) })
+        state.assistantFeed = state.assistantFeed.slice(0, 60)
+        persist()
+        broadcast({ type: 'assistant-text', text: text.slice(0, 2000) })
+      }
       break
     }
     case 'result':

@@ -43,6 +43,8 @@ export const state = {
   /** Asset requests (handoff pipeline): { id, slot, kind, prompt, negative, tool, toolUrl,
    *  settings, filename, treatment, status: open|received|treated|failed, outputs, ts } */
   assetRequests: saved.assetRequests || [],
+  /** Eros's spoken feed ("eros dice") — persisted so a page refresh keeps history */
+  assistantFeed: saved.assistantFeed || [],
 }
 
 export function persist() {
