@@ -17,6 +17,7 @@
  * UI -> Session: pushMessage() feeds the streaming input generator.
  */
 
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { state, nextId, persist, logActivity, unresolvedAdjustPins, pendingFeedback, CAPTURES_DIR } from './state.mjs'
@@ -231,9 +232,18 @@ export async function startSession({ projectDir, brief }) {
   broadcast({ type: 'status', status: 'starting' })
   logActivity('session', `starting in ${projectDir}`)
 
+  // The project cwd has no SessionStart hooks, so the brain does NOT arrive by
+  // itself — embed START.md (identity + PROMOTED rules + top techniques,
+  // <=2K tokens by design) directly in the system prompt. Root cause of the
+  // Barro Norte incident: the session worked without its rules.
+  let brainStart = ''
+  try { brainStart = fs.readFileSync(path.join(MAQUETA_DIR, 'brain', 'START.md'), 'utf8') } catch {}
+
   const systemAppend = [
     `You are Eros running inside Eros Studio — Mateo is watching a live surface, not a chat.`,
-    `Identity: read ${path.join(MAQUETA_DIR, 'EROS.md')} and brain/START.md (injected by hooks if configured).`,
+    `Full identity: ${path.join(MAQUETA_DIR, 'EROS.md')} · full brain: ${path.join(MAQUETA_DIR, 'brain')}/`,
+    brainStart ? `\n===== YOUR BRAIN (brain/START.md) =====\n${brainStart}\n===== END BRAIN =====\n` : '',
+    `The PROMOTED rules above are HARD constraints on everything you design. Before writing any section, check it against them; before calling report_critique, audit the capture against them and treat any violation as verdict "adjust" minimum.`,
     `Studio protocol (MANDATORY):`,
     `- At real decision points (palette, hero direction, motion technique, asset choice) call propose_decision — do NOT ask in prose, do NOT use AskUserQuestion.`,
     `- After finishing each visual work unit call capture_now, Read the capture file, judge it honestly against the brief and your own standards (brain/rules/), then call report_critique. Verdict "adjust" means you keep working; list concrete pins.`,

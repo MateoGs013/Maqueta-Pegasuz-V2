@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'M=/c/Users/mateo/Desktop/Eros; echo \"═══ EROS (cerebro inyectado desde $M) ═══\"; cat \"$M/EROS.md\" \"$M/brain/START.md\" 2>/dev/null; echo \"\"; echo \"═══ ESTADO DEL PROYECTO ═══\"; [ -f .eros/state.md ] && cat .eros/state.md || echo \"(sin state.md)\"'"
+          }
+        ]
+      }
+    ]
+  }
+}

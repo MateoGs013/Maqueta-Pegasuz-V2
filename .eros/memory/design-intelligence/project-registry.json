@@ -39,6 +39,16 @@
       "machine": "MASTERACE",
       "updatedAt": "2026-05-24T17:24:39.815Z",
       "createdAt": "2026-05-24T17:24:39.816Z"
+    },
+    {
+      "slug": "barro-norte",
+      "name": "barro-norte",
+      "branch": "barro-norte",
+      "remote": "https://github.com/MateoGs013/pegasuz-projects.git",
+      "projectDir": "C:\\Users\\mateo\\Desktop\\barro-norte",
+      "machine": "MASTERACE",
+      "updatedAt": "2026-07-04T18:51:30.040Z",
+      "createdAt": "2026-07-04T18:51:30.041Z"
     }
   ]
 }

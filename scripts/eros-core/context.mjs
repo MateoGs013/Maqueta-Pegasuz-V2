@@ -90,6 +90,35 @@ const readPersonality = async () => {
   return lines.join('\n')
 }
 
+// Anti-AI rules from the vault (brain/rules/) — the canonical source since
+// 2026-07-04. The legacy interpret path below still reads the frozen JSONs;
+// this block guarantees the CURRENT ruleset reaches every generated context.
+// (Root cause of the Barro Norte incident: contexts carried zero rules.)
+const vaultRulesMarkdown = async () => {
+  try {
+    const { listNotes } = await import('../memory/vault.mjs')
+    const rules = listNotes('rule').filter((n) => n.fm.status !== 'RETIRED')
+    if (!rules.length) return ''
+    const firstLine = (n) => (n.body.trim().split(/\r?\n/).find((l) => l.trim() && !l.startsWith('#') && !l.startsWith('Mapa:')) || '').trim()
+    const promoted = rules.filter((n) => n.fm.status === 'PROMOTED')
+    const candidates = rules.filter((n) => n.fm.status === 'CANDIDATE')
+    return [
+      '## Reglas anti-IA vigentes (vault — OBLIGATORIAS)',
+      '',
+      '### PROMOTED — violarlas es un gate failure',
+      '',
+      ...promoted.map((n) => `- **${n.fm.id}**: ${firstLine(n)}`),
+      '',
+      '### CANDIDATE — aplicar salvo conflicto justificado (documentar si se ignora)',
+      '',
+      ...candidates.map((n) => `- ${n.fm.id}: ${firstLine(n)}`),
+      '',
+    ].join('\n')
+  } catch {
+    return '## Reglas anti-IA vigentes\n\n_ERROR: vault ilegible — no continuar sin leer brain/rules/._\n'
+  }
+}
+
 // Call eros-memory.mjs interpret
 const callInterpret = (taskType, extraArgs = []) => {
   return new Promise((resolve) => {
@@ -106,6 +135,10 @@ const callInterpret = (taskType, extraArgs = []) => {
         resolve({ insightsMarkdown: '## Memory Insights\n\n_Parse error._\n', threshold: null, relevantRules: [] })
       }
     })
+  }).then(async (memory) => {
+    const rulesBlock = await vaultRulesMarkdown()
+    if (rulesBlock) memory.insightsMarkdown = `${rulesBlock}\n${memory.insightsMarkdown}`
+    return memory
   })
 }
 
