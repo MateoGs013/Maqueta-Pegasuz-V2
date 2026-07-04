@@ -90,9 +90,18 @@ Eros/
 ├── .gemini/         # Gemini settings.json + overrides
 ├── .codex/          # Codex AGENTS.override.md + config.toml
 │
+├── brain/           # THE BRAIN — Obsidian vault: rules, techniques, projects, lessons,
+│                    # palettes, assets. Machine entry: START.md · Human entry: Home.md
+│                    # Writer: scripts/memory/vault.mjs (never edit above append markers)
+│
+├── studio/          # EROS STUDIO — live collaboration surface (see studio/README.md)
+│                    # Node server (Agent SDK session host + eyes loop) + Vue app
+│                    # (live preview + decision dock + eyes strip). Not a chat.
+│
 ├── cli/             # Terminal wizard CLI — see cli/README.md (AI entry point)
 │                    # Go + Bubble Tea. Thin UX layer over scripts/pipeline.
 ├── panel/           # Dual Vue panel: Eros (quality observability) + Workshop (ABM editor)
+│                    # (short-term: Studio supersedes it as primary surface)
 ├── _project-scaffold/   # Template copied to each new project
 ├── _components/     # Curated seed library (heroes, navs as creative anchors)
 │
@@ -182,7 +191,7 @@ The full **measurable enforcement criteria** (composition ratios, z-index counts
 
 ## Evolving Personality
 
-After each project, Eros regenerates its `personality.json` — values, voice, and philosophy shift based on what worked. The Eros you use today is shaped by every prior project. Run `node eros-meta.mjs personality` after a project to update.
+Eros's mind is an Obsidian vault at `brain/` — open it in Obsidian to browse the graph, or read `brain/Home.md`. After each project Eros records what it learned as linked notes (rules gain validations, techniques gain scores, lessons accumulate) and regenerates its entry point with `node scripts/memory/vault.mjs regen-start`. The Eros you use today is shaped by every prior project. (The old `design-intelligence/*.json` files are a frozen 2026-07-04 snapshot.)
 
 ## Environment Variables
 

@@ -1,0 +1,22 @@
+{
+  "name": "eros-studio",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Eros Studio — live human-AI collaboration surface. Node server (session host + eyes) + Vue app (preview, decision dock, eyes strip).",
+  "scripts": {
+    "server": "node server/index.mjs",
+    "app": "npm --prefix app run dev",
+    "dev": "node server/index.mjs & npm --prefix app run dev",
+    "postinstall": "npm --prefix app install"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.92",
+    "chokidar": "^4.0.3",
+    "pixelmatch": "^7.1.0",
+    "playwright": "^1.59.1",
+    "pngjs": "^7.0.0",
+    "ws": "^8.18.0",
+    "zod": "^4.0.0"
+  }
+}
