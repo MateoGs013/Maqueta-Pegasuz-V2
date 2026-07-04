@@ -1,20 +1,37 @@
-/* Eros Studio — internal tool, but it eats its own cooking:
-   no fingerprint fonts, no purple, no cream+amber, deliberate radius vocabulary (2px),
-   spacing rhythm, designed hovers. Accent = Eros CLI steel #6da5b8. */
+/* Eros Studio — eats its own cooking.
+   Warm near-black ground (rich, never #000) + one cool steel accent (#6da5b8,
+   the Eros CLI identity) — warm/cool tension instead of the amber-cream cliché.
+   Radius vocabulary: 2px signature. Easing: cubic-bezier(0.16,1,0.3,1) always.
+   No fingerprint fonts: Archivo (variable width) + Fragment Mono. */
 
 :root {
-  --bg: #0e0f11;
-  --bg-raise: #15171a;
-  --bg-panel: #101214;
-  --line: #23262b;
-  --text: #e8e6e1;
-  --text-dim: #9a978f;
+  /* ground — warm near-blacks */
+  --bg: #0f0e0c;
+  --bg-panel: #121110;
+  --bg-raise: #191713;
+  --bg-well: #0a0908;
+  --line: #262320;
+  --line-soft: #1c1a17;
+
+  /* ink — warm whites */
+  --text: #ece7dd;
+  --text-dim: #9c948a;
+  --text-faint: #635d55;
+
+  /* accent — steel (cool against warm ground) */
   --accent: #6da5b8;
+  --accent-bright: #8fc1d3;
+  --accent-dim: #43606c;
   --accent-ink: #0b1418;
+  --accent-wash: rgba(109, 165, 184, 0.08);
+
+  /* semantic */
   --danger: #c8553d;
   --warn: #d9a441;
   --ok: #7fa66a;
+
   --r: 2px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --font-ui: 'Archivo', system-ui, sans-serif;
   --font-mono: 'Fragment Mono', monospace;
 }
@@ -28,49 +45,100 @@ body {
   color: var(--text);
   font-family: var(--font-ui);
   font-size: 14px;
+  line-height: 1.5;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+::selection { background: var(--accent-dim); color: var(--text); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 5px;
+  border: 3px solid var(--bg-panel);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* ---------------------------------------------------------------- controls */
 
 button {
   font-family: var(--font-ui);
   font-size: 12.5px;
+  font-weight: 500;
   color: var(--text);
-  background: var(--bg-raise);
+  background: transparent;
   border: 1px solid var(--line);
   border-radius: var(--r);
-  padding: 6px 12px;
+  padding: 6px 13px;
   cursor: pointer;
-  transition: border-color 160ms cubic-bezier(0.16, 1, 0.3, 1), background 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 220ms var(--ease), background 220ms var(--ease),
+              color 220ms var(--ease), transform 220ms var(--ease);
 }
-button:hover { border-color: var(--accent); }
-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
-button.primary:hover { filter: brightness(1.12); }
-button:disabled { opacity: 0.45; cursor: not-allowed; }
+button:hover { border-color: var(--accent-dim); background: var(--accent-wash); }
+button:active { transform: translateY(1px); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  font-weight: 650;
+}
+button.primary:hover { background: var(--accent-bright); border-color: var(--accent-bright); }
+button.ghost { border-color: transparent; color: var(--text-dim); }
+button.ghost:hover { color: var(--text); border-color: var(--line); background: transparent; }
+button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 input, textarea {
   font-family: var(--font-ui);
   font-size: 13px;
   color: var(--text);
-  background: var(--bg);
+  background: var(--bg-well);
   border: 1px solid var(--line);
   border-radius: var(--r);
-  padding: 7px 10px;
+  padding: 8px 11px;
   width: 100%;
+  transition: border-color 220ms var(--ease);
 }
-input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+input::placeholder, textarea::placeholder { color: var(--text-faint); }
+input:focus, textarea:focus { outline: none; border-color: var(--accent-dim); }
+
+/* ---------------------------------------------------------------- utility */
 
 .mono { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.02em; }
 .dim { color: var(--text-dim); }
 
+/* section labels — the studio's editorial voice */
 .k-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 9.5px;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--text-dim);
+  letter-spacing: 0.22em;
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
 }
+.k-label::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: var(--line-soft);
+}
+.k-label.bare::after { display: none; }
+
+/* status dot */
+.dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--danger);
+  transition: background 400ms var(--ease);
+  flex-shrink: 0;
+}
+.dot.on { background: var(--ok); }
+.dot.pulse { animation: dot-pulse 1.4s var(--ease) infinite; }
+
+@keyframes dot-pulse { 50% { opacity: 0.35; } }
+@keyframes arrive { from { opacity: 0; transform: translateY(10px); } }
+@keyframes fade-in { from { opacity: 0; } }
