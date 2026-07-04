@@ -1,0 +1,19 @@
+filters:
+  and:
+    - file.inFolder("palettes")
+views:
+  - type: cards
+    name: Dark
+    filters:
+      and:
+        - theme-type != "light"
+    sort:
+      - property: created
+        direction: DESC
+  - type: table
+    name: All palettes
+    order:
+      - file.name
+      - mood
+      - canvas
+      - reaction

@@ -1,0 +1,65 @@
+{
+  "colorGroups": [
+    {
+      "query": "path:rules",
+      "color": {
+        "a": 1,
+        "rgb": 16007990
+      }
+    },
+    {
+      "query": "path:techniques",
+      "color": {
+        "a": 1,
+        "rgb": 2201331
+      }
+    },
+    {
+      "query": "path:projects",
+      "color": {
+        "a": 1,
+        "rgb": 16761095
+      }
+    },
+    {
+      "query": "path:self",
+      "color": {
+        "a": 1,
+        "rgb": 16777215
+      }
+    },
+    {
+      "query": "path:maps",
+      "color": {
+        "a": 1,
+        "rgb": 9662683
+      }
+    },
+    {
+      "query": "path:palettes",
+      "color": {
+        "a": 1,
+        "rgb": 5025616
+      }
+    },
+    {
+      "query": "path:typography",
+      "color": {
+        "a": 1,
+        "rgb": 15277667
+      }
+    },
+    {
+      "query": "path:lessons",
+      "color": {
+        "a": 1,
+        "rgb": 15158332
+      }
+    }
+  ],
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "scale": 1
+}

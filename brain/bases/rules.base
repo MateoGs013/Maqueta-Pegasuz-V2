@@ -1,0 +1,30 @@
+filters:
+  and:
+    - file.inFolder("rules")
+views:
+  - type: table
+    name: Ready to promote
+    filters:
+      and:
+        - validations >= 3
+        - status != "PROMOTED"
+        - status != "RETIRED"
+    order:
+      - file.name
+      - validations
+      - status
+      - source
+    sort:
+      - property: validations
+        direction: DESC
+  - type: table
+    name: All rules
+    order:
+      - file.name
+      - id
+      - status
+      - validations
+      - promoted-to
+    sort:
+      - property: id
+        direction: ASC

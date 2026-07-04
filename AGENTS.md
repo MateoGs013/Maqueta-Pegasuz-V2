@@ -43,8 +43,10 @@ Vue 3 (`<script setup>`) + Vite + Vue Router + Pinia · GSAP 3 + ScrollTrigger +
 | Layer | Location | Purpose | Lifetime |
 |-------|----------|---------|----------|
 | Working Memory | `$PROJECT_DIR/.eros/` | Hot state: tasks, context, reports, approvals | Per project |
-| Long-Term Memory | `$MAQUETA_DIR/.eros/memory/design-intelligence/` | Cross-project intelligence | Permanent |
+| Long-Term Memory | `$MAQUETA_DIR/brain/` | Obsidian vault: rules, techniques, projects, lessons, palettes, assets — markdown notes with wikilinks | Permanent |
 | Session State | `$PROJECT_DIR/.eros/state.md` | Crash recovery | Per project |
+
+**Vault protocol:** machine entry point is `brain/START.md` (regenerated, injected at SessionStart). Query with Grep on frontmatter (`Grep "^status: CANDIDATE" brain/rules/ -l`). Write ONLY via `scripts/memory/vault.mjs` (new / append / set-field / regen-start / validate) — never rewrite prose above the `<!-- eros:append-below -->` marker. Legacy JSONs in `.eros/memory/design-intelligence/` are a frozen snapshot (2026-07-04).
 
 ## Autonomous Brain Loop (V8 — next/done)
 

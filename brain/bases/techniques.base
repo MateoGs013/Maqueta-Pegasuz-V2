@@ -1,0 +1,26 @@
+filters:
+  and:
+    - file.inFolder("techniques")
+formulas:
+  reliability: 'if(times-used >= 3, confidence, "insufficient-data")'
+views:
+  - type: table
+    name: Leaderboard
+    order:
+      - file.name
+      - avg-score
+      - times-used
+      - formula.reliability
+      - best-with
+    sort:
+      - property: avg-score
+        direction: DESC
+  - type: table
+    name: Needs more evidence
+    filters:
+      and:
+        - times-used < 3
+    order:
+      - file.name
+      - avg-score
+      - times-used

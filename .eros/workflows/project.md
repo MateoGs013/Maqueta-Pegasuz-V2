@@ -16,7 +16,8 @@ Scripts own all state files. You NEVER write directly to:
 | `approvals.md` | `dev/log.mjs` |
 | `decisions.md` | `dev/log.mjs` |
 | `context/*.md` | `eros-core/context.mjs` |
-| `design-intelligence/*.json` | `memory/memory.mjs` |
+| `design-intelligence/*.json` (legacy, frozen) | `memory/memory.mjs` |
+| `brain/**/*.md` (canonical knowledge) | `memory/vault.mjs` |
 
 **Exception:** You DO write `identity.md`, `DESIGN.md`, Vue components, router, views, and App.vue directly.
 
@@ -125,7 +126,8 @@ node "$SCRIPTS/memory/train.mjs" impact
 
 ## What the CEO NEVER Does
 
-- Write to state/queue/approvals/decisions/context/design-intelligence files directly
+- Write to state/queue/approvals/decisions/context files directly
+- Rewrite prose in `brain/` notes above the `<!-- eros:append-below -->` marker (Mateo's territory — machine writes go through `vault.mjs` new/append/set-field)
 - Skip the orchestrator loop (no manual gate calls, no manual advance)
 - Decide what script to run (Eros decides via `next`)
 - Interpret gate verdicts (Eros interprets via `done`)
@@ -134,7 +136,29 @@ node "$SCRIPTS/memory/train.mjs" impact
 
 ## Pipeline Issue Recovery
 
+Knowledge lives in the vault now. Record the lesson as a note:
+
 ```bash
-node "$SCRIPTS/memory/memory.mjs" learn --event pipeline_issue \
-  --data '{"project":"{slug}","phase":"{phase}","issue":"{what}","resolution":"{how}","prevention":"{avoid}"}'
+node "$SCRIPTS/memory/vault.mjs" new lesson {slug-descriptivo} \
+  --set severity=warning --set phase={phase} --set project="[[{project-slug}]]" \
+  --set prevention-adopted=false \
+  --body "## Problema
+{what}
+
+## Resolución
+{how}
+
+## Prevención
+{avoid}
+
+Mapa: [[lessons-map]]"
 ```
+
+If the lesson validates an existing rule, also bump it:
+
+```bash
+node "$SCRIPTS/memory/vault.mjs" append {rule-slug} "- {date} [{project}] {evidence}"
+node "$SCRIPTS/memory/vault.mjs" set-field {rule-slug} validations {n+1}
+```
+
+(Legacy `memory.mjs learn` still exists but writes to the frozen JSON snapshot — do not use it for new knowledge.)

@@ -1,0 +1,14 @@
+filters:
+  and:
+    - file.inFolder("projects")
+views:
+  - type: table
+    name: All projects
+    order:
+      - file.name
+      - status
+      - machine
+      - updated
+    sort:
+      - property: updated
+        direction: DESC

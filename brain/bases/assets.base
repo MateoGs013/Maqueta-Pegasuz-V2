@@ -1,0 +1,22 @@
+filters:
+  and:
+    - file.inFolder("assets")
+views:
+  - type: table
+    name: Pending review
+    filters:
+      and:
+        - review-status == "pending"
+    order:
+      - file.name
+      - asset-kind
+      - source-type
+      - project
+  - type: table
+    name: All assets
+    order:
+      - file.name
+      - asset-kind
+      - source-type
+      - review-status
+      - project

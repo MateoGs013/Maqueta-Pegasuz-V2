@@ -73,3 +73,13 @@ dist-check/
 
 # Eros CLI (Go) — built artifacts
 cli/bin/
+
+# Brain vault (Obsidian) — commit knowledge + curated config, ignore volatile UI state
+brain/.obsidian/workspace.json
+brain/.obsidian/workspace-mobile.json
+brain/.obsidian/plugins/*/data.json
+brain/.trash/
+
+# Eros Studio — runtime state
+studio/server/.state/
+studio/captures/
