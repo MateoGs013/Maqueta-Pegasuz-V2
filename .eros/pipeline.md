@@ -1,5 +1,14 @@
 # Pipeline V7 — Autonomous Brain (Eros Script Architecture)
 
+> **⚠️ SUPERSEDED (2026-07-04).** The live runtime loop is **V8**, defined in
+> [`.eros/workflows/project.md`](./workflows/project.md) — a deterministic
+> `state.mjs next/done` protocol. The 9-step manual loop below invokes scripts by
+> old flat paths (`eros-context.mjs`, `eros-gate.mjs`, …) that now live under
+> `scripts/eros-core/`, `scripts/memory/`, `scripts/dev/`.
+> **Do not follow the loop below.** This file remains only for the
+> *Front-Brain Runtime Contract* section (the `$PROJECT_DIR/.eros/` file layout),
+> which is still accurate and referenced by `EROS_FEED_SCHEMA.md`.
+
 ## Core Concept: Three Memory Layers
 
 ```

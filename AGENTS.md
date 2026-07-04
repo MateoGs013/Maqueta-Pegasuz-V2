@@ -46,15 +46,14 @@ Vue 3 (`<script setup>`) + Vite + Vue Router + Pinia · GSAP 3 + ScrollTrigger +
 | Long-Term Memory | `$MAQUETA_DIR/.eros/memory/design-intelligence/` | Cross-project intelligence | Permanent |
 | Session State | `$PROJECT_DIR/.eros/state.md` | Crash recovery | Per project |
 
-## Autonomous Brain Loop
+## Autonomous Brain Loop (V8 — next/done)
 
-1. Read `.eros/state.md` — where am I?
-2. Read `.eros/queue.md` — what's next?
-3. INTERPRET — read design-intelligence, inject Memory Insights
-4. Execute ONE micro-task — context file | agent spawn | integration
-5. AUTO-EVALUATE — pass/fail vs config thresholds
-6. MEMORY HOOK — write learning to design-intelligence immediately
-7. Log to approvals.md + decisions.md; update queue + state
+The loop is deterministic: scripts decide, the AI executes. Full contract in `.eros/workflows/project.md`.
+
+1. `node scripts/eros-core/state.mjs next --project "$PROJECT_DIR"` → returns ONE instruction (`run-script` | `spawn-agent` | `write-code` | `ask-user` | `verify` | `auto-approve` | `complete`)
+2. Execute exactly that instruction — nothing more
+3. `node scripts/eros-core/state.mjs done --project "$PROJECT_DIR" --result '{...}'` → gate auto-evaluates (APPROVE/RETRY/FLAG), memory hook fires, state+queue advance atomically, and the response carries the NEXT instruction
+4. Repeat from 2. After context compaction: run `next` again and trust script output over conversation memory
 
 ## Agent Registry
 
@@ -145,7 +144,8 @@ Validates multi-AI architecture integrity: required root files, canonical `.eros
 ## References
 
 - Soul: `EROS.md`
-- Runtime loop: `.eros/pipeline.md`
+- Runtime loop (V8, canonical): `.eros/workflows/project.md`
+- Project file-layout contract: `.eros/pipeline.md` (loop section superseded — layout contract still valid)
 - Thresholds: `.eros/config.md`
 - Schema contracts: `.eros/EROS_FEED_SCHEMA.md`
 - Claude specifics: `CLAUDE.md`

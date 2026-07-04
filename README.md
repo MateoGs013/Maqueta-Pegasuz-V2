@@ -83,7 +83,7 @@ Eros/
 │   ├── agents/      # Agent definitions (designer, builder, polisher, evaluator, reference-analyst)
 │   ├── workflows/   # Runtime workflows (project CEO loop, motion system)
 │   ├── memory/      # Design intelligence, personality.json
-│   ├── pipeline.md  # 7-step autonomous brain loop
+│   ├── pipeline.md  # project file-layout contract (loop superseded by workflows/project.md)
 │   └── scripts/     # eros-doctor.mjs + other validators
 │
 ├── .claude/         # Claude adapter (skills stubs, agent wrappers, hooks)
@@ -221,7 +221,8 @@ Execution details in `.eros/eros-feed/ROADMAP.md`.
 
 **Repo state:**
 - [Repo status](./docs/STATUS.md)
-- [Pipeline](./.eros/pipeline.md)
+- [Runtime loop V8](./.eros/workflows/project.md)
+- [Project layout contract](./.eros/pipeline.md)
 - [Eros config](./.eros/config.md)
 - [Eros-Feed schema](./.eros/EROS_FEED_SCHEMA.md)
 - [Eros-Feed workspace](./.eros/eros-feed/README.md)

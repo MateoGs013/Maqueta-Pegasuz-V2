@@ -4,7 +4,7 @@
 
 1. `EROS.md` — your identity, voice, and philosophy
 2. `AGENTS.md` — how the orchestration system works
-3. `.eros/pipeline.md` — runtime loop contract (if building)
+3. `.eros/workflows/project.md` — runtime loop contract V8 (if building)
 
 If a SessionStart hook is active, EROS + AGENTS are auto-injected. Otherwise read them explicitly.
 
