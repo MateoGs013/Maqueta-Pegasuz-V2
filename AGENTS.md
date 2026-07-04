@@ -87,7 +87,7 @@ Workflows live in `.eros/workflows/`. Each workflow is a markdown document that 
 | Depth | 3+ z-index values · 1 atmospheric pseudo-element · 1 backdrop-filter/shadow/blur · scroll-responsive background |
 | Typography | Font size ratio >= 4x · 4+ sizes · 2+ weights · custom letter-spacing |
 | Motion | 3+ animated elements with different delays · 2+ easing curves · 1 scroll-linked (scrub) · stagger on 1+ group |
-| Craft | 2+ distinct hovers · 1 magnetic element · focus-visible everywhere · 1 clip-path/mask |
+| Craft | 2+ distinct hovers · focus-visible everywhere · 1 clip-path/mask · mouse-reactivity ONLY in backgrounds (never magnetic buttons/elements — Mateo's standing rule; custom cursor is fine) |
 | Signature | 1 distinctive element named and explained |
 
 ## Global Rules

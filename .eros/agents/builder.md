@@ -119,7 +119,7 @@ safe choice below and note it in your report.
 
 ### Craft (CSS + JS)
 - 2+ distinct hover effects
-- 1 magnetic element
+- NO magnetic buttons/elements (Mateo's standing rule) — mouse-reactivity only in backgrounds; custom cursor is fine
 - focus-visible on all interactive
 - 1 clip-path/mask
 
