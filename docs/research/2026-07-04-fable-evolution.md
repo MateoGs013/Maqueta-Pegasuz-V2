@@ -208,14 +208,23 @@ El razonamiento vive **solo** en la sesión de Claude Code. El server nunca llam
 6. `studio/` v1: server (SDK host + hooks + watcher + MCP tools) + app Vue (3 paneles) (Frente 4)
 7. Actualización de AGENTS.md/CLAUDE.md/README para reflejar el mundo nuevo
 
-## 7. Decisiones abiertas para Mateo (consolidadas)
+## 7. Decisiones — RESUELTAS por Mateo (2026-07-04, misma jornada)
 
-| # | Decisión | Contexto |
-|---|---|---|
-| 1 | GPU ≥12GB VRAM → ¿ComfyUI + Flux 2 local? | Único text-to-image autónomo y gratis |
-| 2 | ¿Aceptar handoff Firefly Boards (pausa humana para generar)? | Único acceso a modelos top sin API nueva |
-| 3 | ¿Recraft API paga para SVG ilustrativo? | Nicho donde nada gratis compite |
-| 4 | Verificar cuota Adobe Stock del plan | La estrategia stock-first la asume disponible |
-| 5 | ¿Cuándo retirar `panel/` una vez que Studio cubra Workshop? | Evitar dos superficies en paralelo |
-| 6 | ¿El CLI Go se retira si Studio absorbe el intake? | Hoy convive sin conflicto |
-| 7 | Licencia/visibilidad del repo (MIT + remote `Maqueta-Pegasuz-V2`) | Pendiente de la auditoría, sin cambios |
+| # | Decisión | Respuesta de Mateo | Consecuencia ejecutada |
+|---|---|---|---|
+| 1 | ¿ComfyUI + Flux 2 local? | GPU 10GB VRAM + 32GB RAM | Por debajo del umbral (12GB). Opcional/marginal (SDXL o Flux Klein cuantizado); NO es ruta primaria |
+| 2 | ¿Handoff para generar? | **Sí** — "mientras me digas dónde" | Pipeline V2: Eros escribe prompt packs con herramienta+URL concreta (gratis); Asset Tray en Studio |
+| 3 | ¿APIs pagas (Recraft etc.)? | **No** | Descartadas todas |
+| 4 | ¿Adobe? | **Descartado por completo** | media.md V2 sin Adobe; tratamiento local con sharp (`scripts/media/treat.mjs`); las secciones Adobe del research quedan como registro histórico |
+| 5 | ¿Panel vs Studio? | **Todo en Eros Studio** | Studio es LA superficie; panel deprecado, absorción de Workshop pendiente (fase 2) |
+| 6 | ¿CLI Go? | **Queda aparte** | Sin cambios; sigue siendo el intake de terminal, independiente de Studio |
+| 7 | Licencia/visibilidad del repo | (sin respuesta aún) | Pendiente |
+
+### Nota sobre el Frente 2 (§2)
+
+La estrategia "Adobe Stock primero" de §2 quedó **superada el mismo día** por la
+decisión #4. El pipeline vigente es **media.md V2**: prompt pack → Mateo genera
+gratis (Gemini/Copilot/Ideogram/Krea/Flux Playground) → `treat.mjs` local
+(crop editorial → grade soft-light → grain → AVIF/WebP/JPG) → nota del vault.
+El principio de fondo no cambió: el asset nunca se shippea crudo, un grade por
+proyecto, y el sistema aprende de los veredictos de Mateo.

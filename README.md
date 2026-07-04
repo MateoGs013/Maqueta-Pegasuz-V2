@@ -99,9 +99,9 @@ Eros/
 │                    # (live preview + decision dock + eyes strip). Not a chat.
 │
 ├── cli/             # Terminal wizard CLI — see cli/README.md (AI entry point)
-│                    # Go + Bubble Tea. Thin UX layer over scripts/pipeline.
-├── panel/           # Dual Vue panel: Eros (quality observability) + Workshop (ABM editor)
-│                    # (short-term: Studio supersedes it as primary surface)
+│                    # Go + Bubble Tea. Stays SEPARATE from Studio by design (Mateo, 2026-07-04)
+├── panel/           # DEPRECATED (Mateo, 2026-07-04): Studio is THE surface.
+│                    # Kept only until Workshop (token editor) is absorbed into Studio.
 ├── _project-scaffold/   # Template copied to each new project
 ├── _components/     # Curated seed library (heroes, navs as creative anchors)
 │

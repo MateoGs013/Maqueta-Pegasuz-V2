@@ -24,3 +24,4 @@ tags: [self]
 
 ## Evidence log
 <!-- eros:append-below -->
+- **2026-07-04** [decision-mateo] Decisiones de la evolución: Adobe descartado completo, sin APIs pagas, handoff aceptado (GPU 10GB — ComfyUI marginal), todo en Eros Studio, CLI aparte. Pipeline de medios reescrito a V2 + Asset Tray construido y verificado e2e.

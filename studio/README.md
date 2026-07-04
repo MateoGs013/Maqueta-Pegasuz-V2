@@ -12,7 +12,8 @@ Onlook, Devin, tldraw make-real, Vercel Comments, v0, Krea).
 | Panel | Qué es |
 |---|---|
 | **Live Preview** | iframe del dev server del proyecto. **Pin mode**: anotás sobre la última captura (patrón tldraw "draw on top") — cada pin llega a Eros como feedback estructurado anclado a coordenadas. |
-| **Decision Dock** | Las preguntas proactivas de Eros llegan como cards estructuradas (opciones + detalle + swatches + su recomendación). Una card bloqueante por vez. Abajo: feed de presencia ("eros dice") e historial. |
+| **Decision Dock** | Las preguntas proactivas de Eros llegan como cards estructuradas (opciones + detalle + swatches + su recomendación). Una card bloqueante por vez. Abajo: **Asset Tray** + feed de presencia ("eros dice") e historial. |
+| **Asset Tray** (en el dock) | El pipeline de medios V2 en vivo: Eros pide un asset (`request_asset`) → aparece la card con el prompt (botón copiar), la herramienta gratuita donde generarlo (link directo) y el nombre de archivo. Lo guardás en el inbox (`src/assets/media/_inbox/`, botón para copiar la ruta) → Studio lo trata solo (grade+grain local, `scripts/media/treat.mjs`), lo registra en el vault y le avisa a Eros. |
 | **Eyes Strip** | Filmstrip de capturas (cada una atada a un git ref + % de diff pixel). El último veredicto de autocrítica (SHIP / ADJUST / RETHINK) con sus pins de severidad sobre la captura. |
 
 ## Arquitectura (restricción dura respetada)
@@ -56,7 +57,8 @@ npm run app          # terminal 2 — UI :4310
 ## Fase 2 (no construido aún, decidido)
 
 - Instrumentación `data-eros-id` (estudiar `packages/parser` de Onlook, MIT)
-- Workshop absorbido (edición de tokens sin tokens de LLM, à la v0 design mode)
+- Workshop absorbido (edición de tokens sin tokens de LLM, à la v0 design mode) — **prioridad subida**: Mateo decidió que TODO vive en Studio y panel/ queda deprecado
 - Before/after wipe entre capturas consecutivas
-- Asset tray conectado al pipeline de medios (`.eros/workflows/media.md`)
 - Heartbeat de link-health (hook HTTP → server caído = badge "Eros está sordo")
+
+> El Asset Tray ya está construido (V2 del pipeline de medios, sin Adobe). Requisito de setup: `npx playwright install chromium` dentro de `studio/` la primera vez (los ojos lo necesitan).
