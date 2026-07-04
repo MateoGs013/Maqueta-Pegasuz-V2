@@ -77,6 +77,7 @@ Workflows live in `.eros/workflows/`. Each workflow is a markdown document that 
 |----------|---------|
 | `project` | CEO orchestration loop (next/done protocol) |
 | `motion-system` | Motion vocabulary, GSAP patterns, stagger values |
+| `media` | Real media pipeline: stock-first, grade+grain treatment, Firefly escalation, vault asset registry (task `design/assets`) |
 
 ## Quality Standards (measurable, per section)
 

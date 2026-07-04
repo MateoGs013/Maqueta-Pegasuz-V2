@@ -72,15 +72,23 @@ That is: NO distinguishable structural visual, NO readable column split, NO dept
 → NO (does not match): continue
 → YES (matches): **REBUILD**. Pick from the concrete spatial recipes in design-decisions.md Section 10.
 
+**FIRST: check the asset manifest.** Since 2026-07-04 the pipeline produces real,
+art-directed assets BEFORE the build phase (task `design/assets`, workflow
+`.eros/workflows/media.md`). Read `$PROJECT_DIR/.eros/context/assets.md` — if your
+section has a slot there, use that file from `src/assets/media/`. Never invent a
+CSS placeholder for a slot that exists (RULE-009). If a slot is `deferred`, use a
+safe choice below and note it in your report.
+
 **Safe visual choices for mid-plane (never fail):**
-- Gradient mesh in accent colors: `radial-gradient(circle at 70% 40%, var(--accent-primary-20), transparent 60%)` — always visible, always high contrast
 - SVG illustration with brand colors at 100% opacity — always visible
-- Bright/warm photography at 75-85% opacity (NOT dark studio/code/night shots)
+- Real photography from the asset manifest at 75-85% opacity (already graded + grained)
 - Oversized type `font-weight: 700+` at 8-12% opacity at `22vw+` — reads as texture even at low opacity
+- Gradient mesh in accent colors ONLY as last resort for deferred slots, at low opacity with hue variation (avg score 6.8 — weakest option, feels generic fast)
 
 **Never use as mid-plane:**
 - Dark photography (code editor, dark studio, night shots) at ≤60% opacity — invisible on dark background
-- Unsplash stock photos without checking their dominant brightness first
+- Untreated stock photos — every image goes through the media grade chain first
+- A gradient placeholder for a slot the manifest already resolved
 
 ## Excellence Standard — ALL must pass
 

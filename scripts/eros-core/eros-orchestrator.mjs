@@ -190,6 +190,25 @@ const ACTION_MAP = [
   },
 
   // =========================================================================
+  // Phase 1.5: Real media (Fable evolution 2026-07 — Frente 2)
+  // =========================================================================
+  // Asset work happens in the MAIN session (CEO) because the media MCPs
+  // (Adobe/Canva/Pencil) live there, not in subagents. The CEO follows
+  // .eros/workflows/media.md: stock-first, one grade per project, grain,
+  // vault note per asset. Placeholders are a gate failure (RULE-009).
+  {
+    test: /^design\/assets$/,
+    resolve: (taskId, state, queue, project) => ({
+      action: 'write-code',
+      instruction: `Follow ${p(MAQUETA_DIR, '.eros', 'workflows', 'media.md')} end to end for this project: read DESIGN.md + docs/tokens.md + docs/pages/*.md, derive the asset slot list, produce every asset via the media pipeline (Adobe Stock -> grade -> grain; escalate per the workflow), place web-ready files in ${p(project, 'src', 'assets', 'media')}, write the manifest to ${p(project, '.eros', 'context', 'assets.md')}, and register each asset as a vault note (scripts/memory/vault.mjs new asset ...). If MCPs are unavailable this session, write the manifest with status=deferred per slot and flag - do NOT fabricate CSS placeholders.`,
+      expectedOutputs: [p(project, '.eros', 'context', 'assets.md')],
+      onFailure: 'flag',
+      timeout: 900000,
+      plan: 'Phase 1.5: Real media. Producing project assets via MCP pipeline (stock-first).',
+    }),
+  },
+
+  // =========================================================================
   // Phase 2: Scaffold
   // =========================================================================
   {

@@ -411,6 +411,7 @@ const buildQueueJson = ({ hasReferences }) => {
     createTask('design/tokens', 'designer', 'pending'),
     createTask('design/pages', 'designer', 'pending'),
     createTask('review/creative', 'ceo', 'pending'),
+    createTask('design/assets', 'ceo', 'pending', 'Real media via MCPs — .eros/workflows/media.md'),
     createTask('setup/scaffold', 'ceo', 'pending'),
     createTask('setup/gen-tokens', 'ceo', 'pending'),
     createTask('context/atmosphere', 'ceo', 'pending'),
