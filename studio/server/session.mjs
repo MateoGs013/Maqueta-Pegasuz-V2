@@ -250,8 +250,23 @@ export async function startSession({ projectDir, brief }) {
     prompt: inputStream(),
     options: {
       cwd: projectDir,
+      // The user's CLI default model may not be available to SDK-spawned
+      // sessions (e.g. "fable" errors) — pin an explicit model here.
+      model: process.env.EROS_STUDIO_MODEL || 'opus',
       mcpServers: { 'eros-studio': mcpServer },
       permissionMode: 'acceptEdits',
+      // acceptEdits only auto-approves file edits — MCP tools and shell need
+      // explicit pre-approval or they die with "permission not granted" in
+      // programmatic mode (no interactive prompt exists to grant them).
+      allowedTools: [
+        'mcp__eros-studio__propose_decision',
+        'mcp__eros-studio__report_critique',
+        'mcp__eros-studio__get_pending_feedback',
+        'mcp__eros-studio__capture_now',
+        'mcp__eros-studio__request_asset',
+        'Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep',
+        'WebFetch', 'WebSearch', 'TodoWrite', 'Task', 'Skill', 'NotebookEdit',
+      ],
       systemPrompt: { type: 'preset', preset: 'claude_code', append: systemAppend },
       hooks: {
         Stop: [{
