@@ -6,7 +6,7 @@
 [![Motion: GSAP 3](https://img.shields.io/badge/GSAP-3-88ce02)](https://gsap.com)
 [![CLI: Go + Bubble Tea](https://img.shields.io/badge/CLI-Go%20%7C%20Bubble%20Tea-6da5b8)](./cli/README.md)
 [![AI-Friendly: Claude · Gemini · Codex](https://img.shields.io/badge/AI-Claude%20%7C%20Gemini%20%7C%20Codex-8e44ad)](./AGENTS.md)
-[![License: MIT](https://img.shields.io/badge/License-MIT-f5d76e)](./LICENSE)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-8a8a8a)](./LICENSE)
 
 ## What is Eros?
 
@@ -244,4 +244,4 @@ Execution details in `.eros/eros-feed/ROADMAP.md`.
 
 ## License
 
-Released under the [MIT License](./LICENSE) © 2026 MateoGs013.
+Proprietary — © 2026 MateoGs013, all rights reserved. See [LICENSE](./LICENSE). Private repository; Eros is a personal system, not a distributable product.
