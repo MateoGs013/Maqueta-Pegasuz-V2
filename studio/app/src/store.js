@@ -10,6 +10,8 @@ export const store = reactive({
   feedback: [],
   activity: [],
   assistantFeed: [],
+  assetRequests: [],
+  inboxDir: null,
   /** UI: selected capture for pin mode / inspection */
   selectedCaptureId: null,
   pinMode: false,
@@ -62,6 +64,12 @@ export function connectWs() {
         break
       }
       case 'feedback': store.feedback.unshift(msg.pin); break
+      case 'asset-request': {
+        const i = store.assetRequests.findIndex((r) => r.id === msg.request.id)
+        if (i >= 0) store.assetRequests[i] = msg.request
+        else store.assetRequests.unshift(msg.request)
+        break
+      }
       case 'feedback-drained':
         for (const p of store.feedback) if (msg.ids.includes(p.id)) p.drainedAt = new Date().toISOString()
         break

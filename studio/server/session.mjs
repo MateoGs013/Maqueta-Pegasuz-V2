@@ -21,6 +21,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { state, nextId, persist, logActivity, unresolvedAdjustPins, pendingFeedback, CAPTURES_DIR } from './state.mjs'
 import * as eyes from './eyes.mjs'
+import * as assets from './assets.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const MAQUETA_DIR = path.resolve(__dirname, '..', '..')
@@ -175,10 +176,43 @@ async function buildMcpServer() {
     },
   )
 
+  const requestAsset = tool(
+    'request_asset',
+    'Request a real image asset from Mateo via the Studio Asset Tray (handoff pipeline — no Adobe, no paid APIs). You write the FULL prompt pack: prompt in English following the de-AI-ing rules of .eros/workflows/media.md, which free tool to use, and the treatment (project grade). Mateo generates and drops the file in the inbox; Studio treats it locally and notifies you.',
+    {
+      slot: z.string().describe('kebab-case slot, e.g. hero-background'),
+      kind: z.enum(['photo', 'illustration', 'texture']).default('photo'),
+      prompt: z.string().describe('Full generation prompt IN ENGLISH (camera/film named, imperfection explicit, off-center composition)'),
+      negative: z.string().optional(),
+      tool: z.string().describe('Recommended free tool, e.g. "Google AI Studio (Gemini)"'),
+      tool_url: z.string().describe('URL where Mateo generates, e.g. https://aistudio.google.com'),
+      settings: z.string().optional().describe('Aspect/mode settings to use in the tool, e.g. "21:9, raw style"'),
+      filename: z.string().optional().describe('Expected filename, defaults to {slot}.png'),
+      treatment: z.object({
+        aspect: z.string().optional(),
+        tint: z.string().optional().describe('Palette hex for the soft-light wash'),
+        saturation: z.number().optional(),
+        contrast: z.number().optional(),
+        brightness: z.number().optional(),
+        grain: z.number().optional(),
+        vignette: z.number().optional(),
+      }).optional().describe('Project grade — SAME values for every asset of the project'),
+    },
+    async (args) => {
+      const entry = assets.createRequest(args)
+      return {
+        content: [{
+          type: 'text',
+          text: `Asset request ${entry.id} en el tray. Mateo debe guardar "${entry.filename}" en ${assets.inboxDir()}. Recibirás una notificación [studio/assets] cuando esté tratado — seguí con otra cosa mientras tanto.`,
+        }],
+      }
+    },
+  )
+
   return createSdkMcpServer({
     name: 'eros-studio',
     version: '0.1.0',
-    tools: [proposeDecision, reportCritique, getPendingFeedback, captureNow],
+    tools: [proposeDecision, reportCritique, getPendingFeedback, captureNow, requestAsset],
   })
 }
 
@@ -203,6 +237,7 @@ export async function startSession({ projectDir, brief }) {
     `- At real decision points (palette, hero direction, motion technique, asset choice) call propose_decision — do NOT ask in prose, do NOT use AskUserQuestion.`,
     `- After finishing each visual work unit call capture_now, Read the capture file, judge it honestly against the brief and your own standards (brain/rules/), then call report_critique. Verdict "adjust" means you keep working; list concrete pins.`,
     `- Call get_pending_feedback at natural checkpoints and honor Mateo's pins before new work.`,
+    `- For image assets use request_asset (handoff pipeline, .eros/workflows/media.md V2) — never CSS placeholders, never Adobe, never paid APIs. Keep working on other sections while Mateo generates.`,
     `- The Stop hook will refuse to let the phase end while unresolved "adjust" critiques exist.`,
     brief ? `Project brief: ${brief}` : '',
   ].filter(Boolean).join('\n')

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { store, api } from '../store.js'
+import AssetTray from './AssetTray.vue'
 
 /**
  * The decision dock: Eros's proactive questions arrive as structured cards
@@ -65,6 +66,9 @@ async function sendFree() {
         <template v-else-if="store.sessionStatus === 'idle'">Sin sesión activa.</template>
         <template v-else>{{ store.sessionStatus }}…</template>
       </div>
+
+      <!-- Asset handoff tray -->
+      <AssetTray />
 
       <!-- Assistant presence feed -->
       <div class="feed">

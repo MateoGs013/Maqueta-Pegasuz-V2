@@ -1,9 +1,10 @@
 ---
 name: media
 description: >
-  Real media pipeline for Eros projects: Adobe Stock first, one film grade per
-  project, grain 30-45, Firefly Boards escalation, vault asset registry.
-  Kills gradient placeholders (RULE-009) with real, art-directed assets.
+  Real media pipeline V2 (no Adobe, no paid APIs): Eros writes prompt packs and
+  says WHERE to generate (free tools), Mateo drops files in _inbox/, local
+  treatment via scripts/media/treat.mjs (grade + grain + editorial crop),
+  vault asset registry. Kills gradient placeholders (RULE-009).
 triggers:
   - "assets"
   - "media"
@@ -12,8 +13,7 @@ triggers:
   - "images"
   - "photo"
   - "foto"
-  - "stock"
-  - "firefly"
+  - "prompt pack"
   - "generar imagen"
   - "design/assets"
 ---

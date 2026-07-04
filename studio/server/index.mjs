@@ -15,6 +15,7 @@ import { WebSocketServer } from 'ws'
 import { state, persist, logActivity, CAPTURES_DIR } from './state.mjs'
 import * as eyes from './eyes.mjs'
 import * as session from './session.mjs'
+import * as assets from './assets.mjs'
 
 const PORT = Number(process.env.EROS_STUDIO_PORT || 4300)
 
@@ -29,6 +30,10 @@ function broadcast(payload) {
   }
 }
 session.onBroadcast(broadcast)
+assets.wire({
+  onBroadcast: broadcast,
+  onNotifySession: (text) => { if (session.isRunning()) session.pushMessage(text) },
+})
 
 // --- HTTP helpers --------------------------------------------------------------
 
@@ -53,6 +58,8 @@ const routes = {
     critiques: state.critiques.slice(0, 60),
     feedback: state.feedback.slice(0, 60),
     activity: state.activity.slice(0, 60),
+    assetRequests: state.assetRequests.slice(0, 40),
+    inboxDir: assets.inboxDir(),
   }),
 
   'POST /api/project': async (body) => {
@@ -61,6 +68,7 @@ const routes = {
     state.project = { dir, previewUrl: previewUrl || 'http://localhost:5173/', name: name || path.basename(dir) }
     persist()
     eyes.watchProject(session.onMeaningfulCapture)
+    assets.watchInbox()
     logActivity('project', `active: ${state.project.name} -> ${state.project.previewUrl}`)
     broadcast({ type: 'project', project: state.project })
     return { ok: true, project: state.project }
@@ -89,6 +97,12 @@ const routes = {
   'POST /api/critique/resolve': async (body) => { session.resolveCritique(body.id); return { ok: true } },
 
   'POST /api/feedback': async (body) => ({ ok: true, pin: session.addFeedback(body) }),
+
+  // Manual asset request (normally created by the session via request_asset MCP tool)
+  'POST /api/asset/request': async (body) => {
+    if (!body.slot || !body.prompt || !body.tool) throw new Error('slot, prompt and tool are required')
+    return { ok: true, request: assets.createRequest(body) }
+  },
 
   'POST /api/capture': async (body) => {
     if (body.breakpoint) eyes.setBreakpoint(body.breakpoint)
@@ -150,6 +164,7 @@ server.listen(PORT, () => {
   console.log(`[eros-studio] server on http://localhost:${PORT}  (ws: /ws)`)
   if (state.project) {
     eyes.watchProject(session.onMeaningfulCapture)
+    assets.watchInbox()
     console.log(`[eros-studio] resumed project: ${state.project.name}`)
   }
 })

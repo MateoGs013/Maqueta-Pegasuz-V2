@@ -40,6 +40,9 @@ export const state = {
   feedback: saved.feedback || [],
   /** Activity log lines for the status bar */
   activity: saved.activity || [],
+  /** Asset requests (handoff pipeline): { id, slot, kind, prompt, negative, tool, toolUrl,
+   *  settings, filename, treatment, status: open|received|treated|failed, outputs, ts } */
+  assetRequests: saved.assetRequests || [],
 }
 
 export function persist() {
