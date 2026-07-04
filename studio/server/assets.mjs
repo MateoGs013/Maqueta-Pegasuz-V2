@@ -65,10 +65,12 @@ export function createRequest(req) {
 
 function matchRequest(file) {
   const base = path.parse(file).name.toLowerCase()
-  const open = state.assetRequests.filter((r) => r.status === 'open')
+  // 'failed' included so re-detecting the inbox file (or a server restart)
+  // retries the treatment after a fix.
+  const open = state.assetRequests.filter((r) => r.status === 'open' || r.status === 'failed')
   return open.find((r) => path.parse(r.filename).name.toLowerCase() === base)
     || open.find((r) => r.slot.toLowerCase() === base)
-    || open[open.length - 1] // oldest open request as fallback
+    || open.filter((r) => r.status === 'open').pop() // oldest open as fallback
     || null
 }
 
@@ -116,6 +118,7 @@ async function processInboxFile(file) {
     return
   }
   request.status = 'received'
+  request.error = null
   persist()
   broadcast({ type: 'asset-request', request })
 

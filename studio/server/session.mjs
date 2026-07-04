@@ -190,12 +190,13 @@ async function buildMcpServer() {
       filename: z.string().optional().describe('Expected filename, defaults to {slot}.png'),
       treatment: z.object({
         aspect: z.string().optional(),
-        tint: z.string().optional().describe('Palette hex for the soft-light wash'),
-        saturation: z.number().optional(),
-        contrast: z.number().optional(),
-        brightness: z.number().optional(),
-        grain: z.number().optional(),
-        vignette: z.number().optional(),
+        tint: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a 6-digit hex like #b4543a — semantic names are NOT accepted').optional()
+          .describe('Palette HEX (e.g. #b4543a) for the soft-light wash — resolve your token to its hex value first'),
+        saturation: z.number().min(0.3).max(1.5).optional(),
+        contrast: z.number().min(0.7).max(1.5).optional(),
+        brightness: z.number().min(0.7).max(1.3).optional(),
+        grain: z.number().min(0).max(100).optional().describe('Film grain on a 0-100 scale; 25-45 recommended'),
+        vignette: z.number().min(0).max(0.6).optional(),
       }).optional().describe('Project grade — SAME values for every asset of the project'),
     },
     async (args) => {

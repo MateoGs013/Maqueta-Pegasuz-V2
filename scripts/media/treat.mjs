@@ -47,9 +47,11 @@ async function grainOverlay(width, height, intensity) {
   return sharp(noise).resize(width, height, { kernel: 'nearest' }).png().toBuffer()
 }
 
+/** Tolerant hex parser: returns null (skip tint) for anything non-hex. */
 function hexToRgb(hex) {
-  const m = String(hex).replace('#', '')
-  const full = m.length === 3 ? m.split('').map((c) => c + c).join('') : m
+  const m = String(hex).match(/#?([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/)
+  if (!m) return null
+  const full = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1]
   return { r: parseInt(full.slice(0, 2), 16), g: parseInt(full.slice(2, 4), 16), b: parseInt(full.slice(4, 6), 16) }
 }
 
@@ -70,9 +72,12 @@ export async function treat(input, opts = {}) {
     outDir, slot = path.parse(input).name,
     aspect = null, gravity = 'attention',
     tint = null, saturation = 0.85, contrast = 1.05, brightness = 0.99,
-    grain = 32, vignette = 0,
+    vignette = 0,
     widths = [2400, 1200],
   } = opts
+  // Grain scale is 0-100; tolerate 0-1 fractions (e.g. an agent passing 0.15)
+  let grain = Number(opts.grain ?? 32)
+  if (grain > 0 && grain <= 1) grain = Math.round(grain * 100)
   if (!outDir) throw new Error('outDir required')
   fs.mkdirSync(outDir, { recursive: true })
 
@@ -101,9 +106,11 @@ export async function treat(input, opts = {}) {
   const composites = []
   // 2b. Tint as low-opacity soft-light wash — shifts temperature toward the
   // palette WITHOUT flattening hue variety (sharp's tint() recolors entirely).
-  if (tint) {
+  // Non-hex tints (semantic names etc.) are skipped, never fatal.
+  const tintRgb = tint ? hexToRgb(tint) : null
+  if (tintRgb) {
     composites.push({
-      input: { create: { width: dims.width, height: dims.height, channels: 4, background: { ...hexToRgb(tint), alpha: 0.22 } } },
+      input: { create: { width: dims.width, height: dims.height, channels: 4, background: { ...tintRgb, alpha: 0.22 } } },
       blend: 'soft-light',
     })
   }
